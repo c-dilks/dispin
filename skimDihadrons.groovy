@@ -29,7 +29,8 @@ inHipoList << inHipo
 
 
 // set up list of hadrons to pair into dihadrons
-hadPIDs = [ 211, -211 ]
+//hadPIDlist = [ 211, -211 ]
+hadPIDlist = [ 211, -211, 321, -321 ]
 
 
 // get runnum
@@ -48,8 +49,8 @@ def pPrint = { str -> JsonOutput.prettyPrint(JsonOutput.toJson(str)) }
 // define variables
 def event
 def particleBank, configBank, eventBank, calBank
-def eleMap
-def hadMapList
+def eleTree
+def hadTreeList
 def eleDIS
 def evnum
 def helicity
@@ -58,35 +59,43 @@ def evCount
 def detIdEC = DetectorType.ECAL.getDetectorId()
 
 
-// subroutine which, for a specified PID, returns a map 
-// REC::Particle row -> coatjava Particle object
+// subroutine which returns a tree of information about particles
+// with the specified PID; the tree is called `particleTree`
 def pidList = []
-def findParticles = { pid ->
+def growParticleTree = { pid ->
 
-  // get list of bank rows and Particle objects corresponding to this PID
+  // get list of bank row numbers corresponding to this PID
   def rowList = pidList.findIndexValues{ it == pid }.collect{it as Integer}
-  def particleMap = rowList.collectEntries { row ->
+
+  // define particleTree, which is a list of branches, which are maps with
+  //   'row' -> bank row number
+  //   'particle' -> COATJAVA Particle object
+  //   'status' -> REC::Particle::status
+  //   'chi2pid' -> REC::Particle::chi2pid
+  def particleTree = rowList.collect { row ->
     [
-      row,
-      new Particle(
+      'row':row,
+      'particle':new Particle(
         pid,
         *['px','py','pz'].collect{particleBank.getFloat(it,row)}
-      )
+      ),
+      'status':particleBank.getShort('status',row),
+      'chi2pid':particleBank.getFloat('chi2pid',row)
     ]
   }
 
   // verbose printing
   if(verbose) {
     println "- pid=$pid  found in rows $rowList"
-    particleMap.each{ row, par ->
-      def status = particleBank.getShort('status',row)
-      def chi2pid = particleBank.getFloat('chi2pid',row)
-      println " row=$row  status=$status  chi2pid=$chi2pid"
-      println par
+    particleTree.each{ parBr ->
+      //print " row=" + parBr.row
+      //print " status=" + parBr.status
+      //println " chi2pid=" + parBr.chi2pid
+      println parBr.particle
     }
   }
 
-  return particleMap
+  return particleTree
 }
 
 
@@ -97,15 +106,33 @@ def findParticles = { pid ->
 def diskimFile = new ROOTFile('diskim/test.root')
 
 
-// setup ntuples
+// subroutines for particle ntuples
 def buildParticleNt = { name ->
   def vars = [
+    'Pid',
     'Px','Py','Pz',
-    'E'
+    'E',
+    'chi2pid','status'
   ].join(":${name}")
   vars = "${name}vars"
   return diskimFile.makeNtuple("${name}Nt","${name}Nt",vars)
 }
+////
+def fillParticleNt = { nt, br ->
+  def pid = br.particle.pid()
+  //if(pid==11) // TODO for electrons, set pid to something useful, 
+                // e.g. +1 for trigger elec, -1 for FT elec
+  nt.fill(
+    pid,
+    br.particle.px(), br.particle.py(), br.particle.pz(),
+    br.particle.e(),
+    br.chi2pid, br.status
+  )
+}
+
+
+
+// define ntuples
 def eleNt = buildParticleNt('ele')
 def hadANt = buildParticleNt('hadA')
 def hadBNt = buildParticleNt('hadB')
@@ -116,21 +143,8 @@ def evNt = diskimFile.makeNtuple("evNt","evNt",
 )
 
 
-// subroutine to fill ntuple with particle data
-def fillParticleNt = { nt, par ->
-  nt.fill(
-    par.px(), par.py(), par.pz(),
-    par.e()
-  )
-}
 
-
-
-
-
-//----------------------
-// event loop
-//----------------------
+// loop over hipo files (single file if skim file)
 evCount = 0
 inHipoList.each { inHipoFile ->
 
@@ -138,7 +152,10 @@ inHipoList.each { inHipoFile ->
   reader = new HipoDataSource()
   reader.open(inHipoFile)
 
-  // EVENT LOOP
+
+  //----------------------
+  // event loop
+  //----------------------
   while(reader.hasEvent()) {
     if(evCount>10000) break // limiter
     evCount++
@@ -170,51 +187,60 @@ inHipoList.each { inHipoFile ->
 
 
       
+      //----------------------------------
       // find the scattered electron
+      //----------------------------------
       // - first get the electrons which satisfy cuts
       // - then choose from this list the electron with the highest E
-      eleMap = findParticles(11).findAll { row, ele ->
-        def status = particleBank.getShort('status',row)
-        def chi2pid = particleBank.getFloat('chi2pid',row)
+      eleTree = growParticleTree(11).findAll { br ->
+        def status = br.status
+        def chi2pid = br.chi2pid
         status<0 &&
           ( Math.abs(status/1000).toInteger() & 0x2 || 
             Math.abs(status/1000).toInteger() & 0x4 ) &&
           Math.abs(chi2pid)<3
       }
-      if(verbose) {
-        println "----- candidate electrons:"
-        println eleMap
-      }
+      //if(verbose) { println "----- eleTree:"; println eleTree; }
 
-      if(eleMap.size()==0) continue
-      if(eleMap.size()>1) {
+      if(eleTree.size()==0) continue
+      if(eleTree.size()>1) {
         System.err << 
           "WARNING: found more than 1 trigger e- in event; " <<
           " using highest-E one\n"
       }
-      eleDIS = eleMap.max{it.value.e()}.value
-      if(verbose) {
-        println "- eleDIS:"
-        println eleDIS
-      }
+
+      // choose maximum energy electron branch
+      eleDIS = eleTree.max{it.particle.e()}
+      if(verbose) { println "----- eleDIS:"; println eleDIS.particle; }
 
 
-      // get hadrons which will be paired
-      hadMapList = hadPIDs.collect{ findParticles(it) }
-      if(verbose) {
-        println "----- candidate hadrons"
-        println hadMapList
-      }
+      //------------------------------
+      // dihadron pairing
+      //------------------------------
 
-      // loop over pairs of hadron PIDs
-      hadMapList.eachWithIndex { hadMapA, hadIdxA ->
-        hadMapList.eachWithIndex { hadMapB, hadIdxB ->
+      // first build a list of hadron trees; one list element = one PID
+      if(verbose) println "..... hadrons:"
+      hadTreeList = hadPIDlist.collect{ growParticleTree(it) }
+      //if(verbose) { println "--- hadTreeList:"; println hadTreeList; }
+
+      // then loop over pairs of hadron PIDs
+      // (`Idx` is a local ID, defined as the index of the PID in `hadPIDlist`)
+      hadTreeList.eachWithIndex { hadTreeA, hadIdxA ->
+        hadTreeList.eachWithIndex { hadTreeB, hadIdxB ->
+
+          // take only permutations of PIDs, with repetition allowed
           if( hadIdxB < hadIdxA ) return
 
+          // proceed only if there are one or more hadrons for each PID
+          if( hadTreeA.size()==0 || hadTreeB.size==0) return;
+  
           // loop over pairs of hadrons with the specified PIDs
-          hadMapA.each { rowA, hadA ->
-            hadMapB.each { rowB, hadB ->
-              if(hadIdxA==hadIdxB && rowB<=rowA) return
+          hadTreeA.each { hadA ->
+            hadTreeB.each { hadB ->
+
+              // like PIDs -> take all permutations of pairs (no repetition)
+              // unlike PIDs -> take all combinations of pairs
+              if(hadIdxA==hadIdxB && hadB.row <= hadA.row) return
 
               // fill ntuples
               fillParticleNt(eleNt,eleDIS)
@@ -225,11 +251,14 @@ inHipoList.each { inHipoFile ->
                 helicity
               )
 
-              if(verbose) {
+              // print dihadron hadrons
+              if(verbose) { 
                 20.times{print '.'}
-                println " dihadrons"
+                println " dihadron "+
+                  hadPIDlist[hadIdxA]+" "+hadPIDlist[hadIdxB];
+                println hadA.particle
+                println hadB.particle
               }
-
 
             }
           }
