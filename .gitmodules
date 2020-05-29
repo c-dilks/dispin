@@ -1,0 +1,3 @@
+[submodule "deps/j2root"]
+	path = deps/j2root
+	url = https://github.com/drewkenjo/j2root.git
