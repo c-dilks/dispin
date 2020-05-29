@@ -25,6 +25,10 @@ def inHipoList = []
 inHipoList << inHipo
 
 
+// set up list of hadrons to pair into dihadrons
+hadPIDs = [ 211, -211 ]
+
+
 // get runnum
 def runnum
 if(inHipo.contains('postprocess'))
@@ -34,7 +38,6 @@ else
 println "runnum=$runnum"
 
 
-"mkdir -p diskim".execute()
 
 def pPrint = { str -> JsonOutput.prettyPrint(JsonOutput.toJson(str)) }
 
@@ -43,7 +46,8 @@ def pPrint = { str -> JsonOutput.prettyPrint(JsonOutput.toJson(str)) }
 def event
 def particleBank, configBank, eventBank, calBank
 def eleMap
-def disElectron
+def hadMapList
+def eleDIS
 def eventNum
 def helicity
 def reader
@@ -81,6 +85,36 @@ def findParticles = { pid ->
 
 
 
+
+// setup diskim file
+"mkdir -p diskim".execute()
+def diskimFile = new ROOTFile('diskim/test.root')
+
+
+// setup ntuples
+def buildParticleNt = { name ->
+  def vars = [
+    'Px','Py','Pz',
+    'E'
+  ].join(":${name}")
+  vars = "${name}vars"
+  return diskimFile.makeNtuple("${name}Nt","${name}Nt",vars)
+}
+def eleNt = buildParticleNt('ele')
+
+
+// subroutine to fill ntuple with particle data
+def fillParticleNt = { nt, par ->
+  nt.fill(
+    par.px(), par.py(), par.pz(),
+    par.e()
+  )
+}
+
+
+
+
+
 //----------------------
 // event loop
 //----------------------
@@ -93,7 +127,7 @@ inHipoList.each { inHipoFile ->
 
   // EVENT LOOP
   while(reader.hasEvent()) {
-    //if(evCount>100000) break // limiter
+    if(evCount>10000) break // limiter
     evCount++
     if(evCount % 100000 == 0) println "read $evCount events"
     println "============================="
@@ -136,76 +170,54 @@ inHipoList.each { inHipoFile ->
       }
       println "----------------"
       println eleMap
+
+      if(eleMap.size()==0) continue
       if(eleMap.size()>1) {
         System.err << 
           "WARNING: found more than 1 trigger e- in event; " <<
           " using highest-E one\n"
       }
-      if(eleMap.size()>0) {
-        disElectron = eleMap.max{it.value.e()}.value
-        println "disElectron:"
-        println disElectron
-      }
+      eleDIS = eleMap.max{it.value.e()}.value
+      println "eleDIS:"
+      println eleDIS
 
 
+      // get hadrons which will be paired
+      hadMapList = hadPIDs.collect{ findParticles(it) }
+      println "....................."
+      println hadMapList
 
-      // CUT: find scattered electron: highest-E electron such that 2 < E < 11
-      /*
-      disElectron = eleMap.findAll{ it.e()>2 && it.e()<11 }.max{it.e()}
-      if(disElectron) {
+      // loop over pairs of hadron PIDs
+      hadMapList.eachWithIndex { hadMapA, hadIdxA ->
+        hadMapList.eachWithIndex { hadMapB, hadIdxB ->
+          if( hadIdxB < hadIdxA ) return
 
-        // calculate Q2
-        vecQ.copy(vecBeam)
-        vecEle.copy(disElectron.vector())
-        vecQ.sub(vecEle) 
-        Q2 = -1*vecQ.mass2()
+          // loop over pairs of hadrons with the specified PIDs
+          hadMapA.each { rowA, hadA ->
+            hadMapB.each { rowB, hadB ->
+              if(hadIdxA==hadIdxB && rowB<=rowA) return
 
-        // calculate W
-        vecW.copy(vecBeam)
-        vecW.add(vecTarget)
-        vecW.sub(vecEle)
-        W = vecW.mass()
-
-        // calculate x and y
-        nu = vecBeam.e() - vecEle.e()
-        x = Q2 / ( 2 * 0.938272 * nu )
-        y = nu / EBEAM
+              // fill ntuples
+              fillParticleNt(eleNt,eleDIS)
 
 
-        // CUT: Q2 and W and y
-        if( Q2>1 && W>2 && y<0.8) {
-
-          // get lists of pions
-          pipList = findParticles(211)
-          pimList = findParticles(-211)
-
-          // calculate pion kinematics and fill histograms
-          // countEvent will be set to true if a pion is added to the histos 
-          countEvent = false
-          fillHistos(pipList,'pip')
-          fillHistos(pimList,'pim')
-
-          if(countEvent) {
-
-            // fill event-level histograms
-            histTree.DIS.Q2.fill(Q2)
-            histTree.DIS.W.fill(W)
-            histTree.DIS.x.fill(x)
-            histTree.DIS.y.fill(y)
-            histTree.DIS.Q2VsW.fill(W,Q2)
-
-            // increment event counter
-
+            }
           }
+              
         }
       }
-      */
+
 
 
     } // end if event has specific banks
 
   } // end event loop
   reader.close()
+
+
+  // write out to diskim file
+  eleNt.write()
+  diskimFile.close()
 
 
   // close reader
