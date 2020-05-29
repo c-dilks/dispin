@@ -17,6 +17,9 @@ import java.lang.Math.*
 def inHipo = "../data/skim/skim4_5052.hipo" // skim file
 if(args.length>=1) inHipo = args[0]
 ////////////////////////
+// OPTIONS
+def verbose = true
+////////////////////////
 
 
 // list of hipo files (one for now, but allows for future
@@ -48,7 +51,7 @@ def particleBank, configBank, eventBank, calBank
 def eleMap
 def hadMapList
 def eleDIS
-def eventNum
+def evnum
 def helicity
 def reader
 def evCount
@@ -73,13 +76,16 @@ def findParticles = { pid ->
   }
 
   // verbose printing
-  println "pid=$pid  found in rows $rowList"
-  particleMap.each{ row, par ->
-    def status = particleBank.getShort('status',row)
-    def chi2pid = particleBank.getFloat('chi2pid',row)
-    println " row=$row  status=$status  chi2pid=$chi2pid"
-    println par
+  if(verbose) {
+    println "- pid=$pid  found in rows $rowList"
+    particleMap.each{ row, par ->
+      def status = particleBank.getShort('status',row)
+      def chi2pid = particleBank.getFloat('chi2pid',row)
+      println " row=$row  status=$status  chi2pid=$chi2pid"
+      println par
+    }
   }
+
   return particleMap
 }
 
@@ -101,6 +107,13 @@ def buildParticleNt = { name ->
   return diskimFile.makeNtuple("${name}Nt","${name}Nt",vars)
 }
 def eleNt = buildParticleNt('ele')
+def hadANt = buildParticleNt('hadA')
+def hadBNt = buildParticleNt('hadB')
+def evNt = diskimFile.makeNtuple("evNt","evNt",
+  [ 'evnum',
+    'helicity',
+  ].join(':')
+)
 
 
 // subroutine to fill ntuple with particle data
@@ -130,7 +143,7 @@ inHipoList.each { inHipoFile ->
     if(evCount>10000) break // limiter
     evCount++
     if(evCount % 100000 == 0) println "read $evCount events"
-    println "============================="
+    if(verbose) { 30.times{print '='}; println " begin event" }
     event = reader.getNextEvent()
 
     if(event.hasBank("REC::Particle") &&
@@ -146,14 +159,14 @@ inHipoList.each { inHipoFile ->
 
       // get event-level information
       helicity = eventBank.getByte('helicity',0)
-      eventNum = BigInteger.valueOf(configBank.getInt('event',0))
+      evnum = BigInteger.valueOf(configBank.getInt('event',0))
 
 
       // get list of PIDs, with list index corresponding to bank row
       pidList = (0..<particleBank.rows()).collect{ 
         particleBank.getInt('pid',it)
       }
-      println "pidList = $pidList"
+      if(verbose) println "pidList = $pidList"
 
 
       
@@ -168,8 +181,10 @@ inHipoList.each { inHipoFile ->
             Math.abs(status/1000).toInteger() & 0x4 ) &&
           Math.abs(chi2pid)<3
       }
-      println "----------------"
-      println eleMap
+      if(verbose) {
+        println "----- candidate electrons:"
+        println eleMap
+      }
 
       if(eleMap.size()==0) continue
       if(eleMap.size()>1) {
@@ -178,14 +193,18 @@ inHipoList.each { inHipoFile ->
           " using highest-E one\n"
       }
       eleDIS = eleMap.max{it.value.e()}.value
-      println "eleDIS:"
-      println eleDIS
+      if(verbose) {
+        println "- eleDIS:"
+        println eleDIS
+      }
 
 
       // get hadrons which will be paired
       hadMapList = hadPIDs.collect{ findParticles(it) }
-      println "....................."
-      println hadMapList
+      if(verbose) {
+        println "----- candidate hadrons"
+        println hadMapList
+      }
 
       // loop over pairs of hadron PIDs
       hadMapList.eachWithIndex { hadMapA, hadIdxA ->
@@ -199,11 +218,21 @@ inHipoList.each { inHipoFile ->
 
               // fill ntuples
               fillParticleNt(eleNt,eleDIS)
+              fillParticleNt(hadANt,hadA)
+              fillParticleNt(hadBNt,hadB)
+              evNt.fill(
+                evnum,
+                helicity
+              )
+
+              if(verbose) {
+                20.times{print '.'}
+                println " dihadrons"
+              }
 
 
             }
           }
-              
         }
       }
 
@@ -216,7 +245,10 @@ inHipoList.each { inHipoFile ->
 
 
   // write out to diskim file
+  evNt.write()
   eleNt.write()
+  hadANt.write()
+  hadBNt.write()
   diskimFile.close()
 
 
