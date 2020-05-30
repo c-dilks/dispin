@@ -18,7 +18,7 @@ def inHipo = "../data/skim/skim4_5052.hipo" // skim file
 if(args.length>=1) inHipo = args[0]
 ////////////////////////
 // OPTIONS
-def verbose = true
+def verbose = false
 ////////////////////////
 
 
@@ -29,8 +29,8 @@ inHipoList << inHipo
 
 
 // set up list of hadrons to pair into dihadrons
-//hadPIDlist = [ 211, -211 ]
-hadPIDlist = [ 211, -211, 321, -321 ]
+hadPIDlist = [ 211, -211 ]
+//hadPIDlist += [ 321, -321 ] // include kaons
 
 
 // get runnum
@@ -53,6 +53,7 @@ def eleTree
 def hadTreeList
 def eleDIS
 def evnum
+def evnumLo, evnumHi
 def helicity
 def reader
 def evCount
@@ -101,48 +102,53 @@ def growParticleTree = { pid ->
 
 
 
-// setup diskim file
+//------------------------------------------
+// setup diskim file and ntuple `NT`
+//------------------------------------------
+
 "mkdir -p diskim".execute()
 def diskimFile = new ROOTFile('diskim/test.root')
 
 
-// subroutines for particle ntuples
-def buildParticleNt = { name ->
-  def vars = [
+// subroutines for particle ntuple leaves
+// - return list of particle leaf names
+def buildParticleLeaves = { name ->
+  return [
     'Pid',
     'Px','Py','Pz',
     'E',
     'chi2pid','status'
-  ].join(":${name}")
-  vars = "${name}vars"
-  return diskimFile.makeNtuple("${name}Nt","${name}Nt",vars)
+  ].collect{name+it}
 }
-////
-def fillParticleNt = { nt, br ->
+// - return list of leaf values associated with the particle branch b
+def fillParticleLeaves = { br ->
   def pid = br.particle.pid()
   //if(pid==11) // TODO for electrons, set pid to something useful, 
                 // e.g. +1 for trigger elec, -1 for FT elec
-  nt.fill(
+  return [
     pid,
     br.particle.px(), br.particle.py(), br.particle.pz(),
     br.particle.e(),
     br.chi2pid, br.status
-  )
+  ]
 }
 
 
-
-// define ntuples
-def eleNt = buildParticleNt('ele')
-def hadANt = buildParticleNt('hadA')
-def hadBNt = buildParticleNt('hadB')
-def evNt = diskimFile.makeNtuple("evNt","evNt",
-  [ 'evnum',
-    'helicity',
-  ].join(':')
-)
+// define ntuple NT (be sure order matches NT.fill call)
+def NT = diskimFile.makeNtuple("ditr","ditr",[
+  *buildParticleLeaves('ele'),
+  *buildParticleLeaves('hadA'),
+  *buildParticleLeaves('hadB'),
+  'evnumLo','evnumHi',
+  'helicity'
+].join(':'))
 
 
+
+
+//-------------------
+// read HIPO file(s)
+//-------------------
 
 // loop over hipo files (single file if skim file)
 evCount = 0
@@ -157,7 +163,7 @@ inHipoList.each { inHipoFile ->
   // event loop
   //----------------------
   while(reader.hasEvent()) {
-    if(evCount>10000) break // limiter
+    //if(evCount>10000) break // limiter
     evCount++
     if(evCount % 100000 == 0) println "read $evCount events"
     if(verbose) { 30.times{print '='}; println " begin event" }
@@ -175,8 +181,14 @@ inHipoList.each { inHipoFile ->
 
 
       // get event-level information
+      // - evnum may surpass float precision limit, if it has more than 7
+      //   digits; since ntuples only store floats, we split evnum into
+      //   two 16-bit halves; reconstruct full evnum with 
+      //   `evnumLo+(evnumHi<<16)`
       helicity = eventBank.getByte('helicity',0)
-      evnum = BigInteger.valueOf(configBank.getInt('event',0))
+      evnum = configBank.getInt('event',0)
+      evnumLo = evnum & 0xFFFF
+      evnumHi = (evnum>>16) & 0xFFFF
 
 
       // get list of PIDs, with list index corresponding to bank row
@@ -242,12 +254,12 @@ inHipoList.each { inHipoFile ->
               // unlike PIDs -> take all combinations of pairs
               if(hadIdxA==hadIdxB && hadB.row <= hadA.row) return
 
-              // fill ntuples
-              fillParticleNt(eleNt,eleDIS)
-              fillParticleNt(hadANt,hadA)
-              fillParticleNt(hadBNt,hadB)
-              evNt.fill(
-                evnum,
+              // fill ntuple (be sure order matches defined order)
+              NT.fill(
+                *fillParticleLeaves(eleDIS),
+                *fillParticleLeaves(hadA),
+                *fillParticleLeaves(hadB),
+                evnumLo,evnumHi,
                 helicity
               )
 
@@ -274,10 +286,7 @@ inHipoList.each { inHipoFile ->
 
 
   // write out to diskim file
-  evNt.write()
-  eleNt.write()
-  hadANt.write()
-  hadBNt.write()
+  NT.write()
   diskimFile.close()
 
 
