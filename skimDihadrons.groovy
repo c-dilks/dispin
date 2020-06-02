@@ -1,8 +1,3 @@
-// a more general monitor, for things like <sinPhiH> or helicity
-// - this reads DST files or skim files
-// - can be run on slurm
-// - note: search for 'CUT' to find which cuts are applied
-
 import org.jlab.io.hipo.HipoDataSource
 import org.jlab.clas.physics.Particle
 import org.jlab.detector.base.DetectorType
@@ -10,6 +5,7 @@ import org.jlab.jroot.ROOTFile
 import org.jlab.jroot.TNtuple
 import groovy.json.JsonOutput
 import java.lang.Math.*
+import clasqa.QADB
 
 
 ////////////////////////
@@ -58,6 +54,10 @@ def helicity
 def reader
 def evCount
 def detIdEC = DetectorType.ECAL.getDetectorId()
+
+
+// setup QA database
+QADB qa = new QADB()
 
 
 // subroutine which returns a tree of information about particles
@@ -167,6 +167,7 @@ inHipoList.each { inHipoFile ->
     evCount++
     if(evCount % 100000 == 0) println "read $evCount events"
     if(verbose) { 30.times{print '='}; println " begin event" }
+
     event = reader.getNextEvent()
 
     if(event.hasBank("REC::Particle") &&
@@ -189,6 +190,13 @@ inHipoList.each { inHipoFile ->
       evnum = configBank.getInt('event',0)
       evnumLo = evnum & 0xFFFF
       evnumHi = (evnum>>16) & 0xFFFF
+
+
+      // query QA database
+      if(!qa.golden(runnum,evnum)) {
+        //println "toss file " + qa.getFilenum() + " (evnum=$evnum)"
+        continue;
+      }
 
 
       // get list of PIDs, with list index corresponding to bank row

@@ -1,3 +1,8 @@
 [submodule "deps/j2root"]
 	path = deps/j2root
 	url = https://github.com/drewkenjo/j2root.git
+  ignore = dirty
+[submodule "deps/clasqaDB"]
+	path = deps/clasqaDB
+	url = https://github.com/c-dilks/clasqaDB.git
+  ignore = dirty
