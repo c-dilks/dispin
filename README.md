@@ -23,6 +23,8 @@ dihadron spin asymmetry analysis
   clone a copy of [`j2root`](https://github.com/drewkenjo/j2root) to the
   directory `deps/j2root`
 - `cd` to this directory and follow the `README.md` within
+- this repository provides the ability to write data to `root` files with
+  groovy
 - notes:
   - added `export JAVA_HOME="/usr/lib/jvm/default-java"` to `~/.zshrc`
   - troubleshooting:
@@ -34,5 +36,13 @@ dihadron spin asymmetry analysis
         followed by `sudo update-java-alternatives --set /path/to/java-1.8.0`
       - fix symlink `usr/lib/jvm/default-java` to point to 1.8.0
 
+## clasqaDB
+- if you clone this repository with the option `--recurse-submodules`, it will
+  clone a copy of [`clasqaDB`](https://github.com/c-dilks/clasqaDB) to the
+  directory `deps/clasqaDB`
+- this repository contains the file quality assurance (QA) database, and
+  uses the groovy accessors to query information in an event loop
+
+
 # Usage
-- call `source env.sh`
+- first call `source env.sh`
