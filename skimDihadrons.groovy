@@ -15,7 +15,7 @@ def inHipo = "../data/skim/skim4_5052.hipo" // skim file
 if(args.length>=1) inHipo = args[0]
 ////////////////////////
 // OPTIONS
-def verbose = true
+def verbose = 0
 ////////////////////////
 
 
@@ -45,7 +45,7 @@ def diskimFile = new ROOTFile('diskim/test.root')
 
 
 def pPrint = { str -> JsonOutput.prettyPrint(JsonOutput.toJson(str)) }
-def undef = -10000
+def undef = -10000.0
 
 
 // define variables
@@ -73,7 +73,7 @@ QADB qa = new QADB()
 // read calorimeter bank entries for specified row
 def getCalorimeterLeaves = { c ->
   def calBr = [:]
-  calBr['sector'] = calBank.getByte('sector',c)
+  calBr['sector'] = (float) calBank.getByte('sector',c)
   calBr['energy'] = calBank.getFloat('energy',c)
   calBr['time'] = calBank.getFloat('time',c)
   calBr['path'] = calBank.getFloat('path',c)
@@ -107,8 +107,8 @@ def getDetectorBranch = { pidx ->
       if(detector == DetectorType.DC.getDetectorId()) {
         if(!detBr.containsKey('dcTrk')) detBr['dcTrk'] = [:]
         detBr['dcTrk']['chi2'] = trkBank.getFloat('chi2',r)
-        detBr['dcTrk']['ndf'] = trkBank.getShort('NDF',r)
-        detBr['dcTrk']['status'] = trkBank.getShort('status',r)
+        detBr['dcTrk']['ndf'] = (float) trkBank.getShort('NDF',r)
+        detBr['dcTrk']['status'] = (float) trkBank.getShort('status',r)
       }
     }
   }
@@ -125,7 +125,7 @@ def getDetectorBranch = { pidx ->
         else if(layer==18) region=2
         else if(layer==36) region=3
         if(region>0) {
-          detBr['dcTraj']["region$region"] = ['x','y','z'].collectEntries{
+          detBr['dcTraj']["c$region"] = ['x','y','z'].collectEntries{
             [it,trajBank.getFloat(it,r)]
           }
         }
@@ -147,38 +147,48 @@ def calorimeterLeafList = [
 def detectorLeafList = [
   /* calorimeters */
   ['pcal','ecin','ecout'].collect{ detName ->
+    ["${detName}_found"] +
     calorimeterLeafList.collect{ varName -> "${detName}_${varName}" }
   },
   /* tracking */
-  ['chi2','ndf','status'].collect{ varName -> "dcTrk_${varName}" },
+  ['found','chi2','ndf','status'].collect{ varName -> "dcTrk_${varName}" },
   /* trajectories */
+  'dcTraj_found',
   (1..3).collect{ reg ->
-    ['x','y','z'].collect{ coord -> "dcTraj_region${reg}_${coord}" }
+    ['x','y','z'].collect{ coord -> "dcTraj_c${reg}${coord}" }
   }
 ].flatten()
+println "detectorLeafList = $detectorLeafList"
 
 
 // fill detector ntuple leaves
 def fillDetectorLeaves = { br ->
   def leaves = []
   def brDet = br['detector']
+  def found
   /* calorimeters */
   ['pcal','ecin','ecout'].each{ det ->
+    found = brDet.containsKey(det)
+    leaves << (found ? 1.0 : 0.0)
     leaves << calorimeterLeafList.collect{ leaf ->
-      brDet.containsKey(det) ? brDet[det][leaf] : undef
+      found ? brDet[det][leaf] : undef
     }
   }
   /* tracking */
+  found = brDet.containsKey('dcTrk')
+  leaves << (found ? 1.0 : 0.0)
   leaves << ['chi2','ndf','status'].collect{
-    brDet.containsKey('dcTrk') ? brDet['dcTrk'][it] : undef
+    found ? brDet['dcTrk'][it] : undef
   }
   /* trajectories */
+  found = brDet.containsKey('dcTraj')
+  leaves << (found ? 1.0 : 0.0)
   (1..3).each{ reg ->
     leaves << ['x','y','z'].collect{ 
-      brDet.containsKey('dcTraj') ? brDet['dcTraj']["region$reg"][it] : undef
+      found ? brDet['dcTraj']["c$reg"][it] : undef
     }
   }
-  return leaves
+  return leaves.flatten()
 }
 
 
@@ -202,14 +212,14 @@ def growParticleTree = { pid ->
   //   'chi2pid' -> REC::Particle::chi2pid
   def particleTree = rowList.collect { row ->
     [
-      'row':row,
+      'row': (float) row,
       'particle':new Particle(
         pid,
         *['px','py','pz'].collect{particleBank.getFloat(it,row)}
       ),
       *:['vx','vy','vz'].collectEntries{[it,particleBank.getFloat(it,row)]},
       'chi2pid':particleBank.getFloat('chi2pid',row),
-      'status':particleBank.getShort('status',row),
+      'status': (float) particleBank.getShort('status',row),
       'beta':particleBank.getFloat('beta',row),
       'detector':getDetectorBranch(row)
     ]
@@ -233,11 +243,13 @@ def growParticleTree = { pid ->
 // define particle ntuple leaves
 def buildParticleLeaves = { name ->
   return [
+    'Row',
     'Pid',
     'Px','Py','Pz',
     'E',
     'Vx','Vy','Vz',
-    'chi2pid','status','beta',*detectorLeafList
+    'chi2pid','status','beta',
+    *detectorLeafList
   ].collect{name+'_'+it}
 }
 
@@ -247,11 +259,13 @@ def fillParticleLeaves = { br ->
   //if(pid==11) // TODO for electrons, set pid to something useful, 
                 // e.g. +1 for trigger elec, -1 for FT elec
   return [
+    br.row,
     pid,
     br.particle.px(), br.particle.py(), br.particle.pz(),
     br.particle.e(),
     br.vx, br.vy, br.vz,
-    br.chi2pid, br.status, br.beta,*fillDetectorLeaves(br)
+    br.chi2pid, br.status, br.beta,
+    *fillDetectorLeaves(br)
   ]
 }
 
@@ -288,7 +302,7 @@ inHipoList.each { inHipoFile ->
   // event loop
   //----------------------
   while(reader.hasEvent()) {
-    //if(evCount>10000) break // limiter
+    if(evCount>10000) break // limiter
     evCount++
     if(evCount % 100000 == 0) println "read $evCount events"
     if(verbose) { 30.times{print '='}; println " begin event" }
@@ -390,6 +404,7 @@ inHipoList.each { inHipoFile ->
               if(hadIdxA==hadIdxB && hadB.row <= hadA.row) return
 
               // fill ntuple (be sure order matches defined order)
+              ///*
               NT.fill(
                 *fillParticleLeaves(eleDIS),
                 *fillParticleLeaves(hadA),
@@ -397,6 +412,17 @@ inHipoList.each { inHipoFile ->
                 evnumLo,evnumHi,
                 helicity
               )
+              //*/
+              /*
+              def tst = [
+                *fillParticleLeaves(eleDIS),
+                *fillParticleLeaves(hadA),
+                *fillParticleLeaves(hadB),
+                evnumLo,evnumHi,
+                helicity
+              ]
+              println "$tst\n"
+              */
 
               // print dihadron hadrons
               if(verbose) { 
