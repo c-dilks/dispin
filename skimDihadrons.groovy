@@ -1,5 +1,6 @@
 import org.jlab.io.hipo.HipoDataSource
 import org.jlab.clas.physics.Particle
+import org.jlab.detector.base.DetectorLayer
 import org.jlab.detector.base.DetectorType
 import org.jlab.jroot.ROOTFile
 import org.jlab.jroot.TNtuple
@@ -14,7 +15,7 @@ def inHipo = "../data/skim/skim4_5052.hipo" // skim file
 if(args.length>=1) inHipo = args[0]
 ////////////////////////
 // OPTIONS
-def verbose = false
+def verbose = true
 ////////////////////////
 
 
@@ -37,14 +38,19 @@ else
   runnum = inHipo.tokenize('.')[-2].tokenize('_')[-1].toInteger()
 println "runnum=$runnum"
 
+// define root file
+"mkdir -p diskim".execute()
+def diskimFile = new ROOTFile('diskim/test.root')
+
 
 
 def pPrint = { str -> JsonOutput.prettyPrint(JsonOutput.toJson(str)) }
+def undef = -10000
 
 
 // define variables
 def event
-def particleBank, configBank, eventBank, calBank
+def particleBank, configBank, eventBank, calBank, trkBank, trajBank
 def eleTree
 def hadTreeList
 def eleDIS
@@ -53,16 +59,137 @@ def evnumLo, evnumHi
 def helicity
 def reader
 def evCount
-def detIdEC = DetectorType.ECAL.getDetectorId()
+def pidList = []
 
 
 // setup QA database
 QADB qa = new QADB()
 
 
-// subroutine which returns a tree of information about particles
-// with the specified PID; the tree is called `particleTree`
-def pidList = []
+//-----------------------
+// detector leaves
+//-----------------------
+
+// read calorimeter bank entries for specified row
+def getCalorimeterLeaves = { c ->
+  def calBr = [:]
+  calBr['sector'] = calBank.getByte('sector',c)
+  calBr['energy'] = calBank.getFloat('energy',c)
+  calBr['time'] = calBank.getFloat('time',c)
+  calBr['path'] = calBank.getFloat('path',c)
+  calBr << ['x','y','z'].collectEntries{[it,calBank.getFloat(it,c)]}
+  calBr << ['lu','lv','lw'].collectEntries{[it,calBank.getFloat(it,c)]}
+  return calBr
+}
+
+// read detector banks for specified particle
+// - `pidx` is the row of `REC::Particle` of the associated particle
+def getDetectorBranch = { pidx ->
+  def detBr = [:]
+
+  // calorimeter bank
+  (0..calBank.rows()).each { r ->
+    if(calBank.getShort('pindex',r) == pidx) {
+      def layer = calBank.getByte('layer',r)
+      def calStr = ''
+      if(layer == DetectorLayer.PCAL_U) calStr = 'pcal' // layer 1
+      else if(layer == DetectorLayer.EC_INNER_U) calStr = 'ecin' // layer 4
+      else if(layer == DetectorLayer.EC_OUTER_U) calStr = 'ecout' // layer 7
+      if(!calStr.isEmpty()) detBr[calStr] = getCalorimeterLeaves(r)
+      if(verbose) println "-> calorimeter layer $layer"
+    }
+  }
+
+  // tracking bank
+  (0..trkBank.rows()).each { r ->
+    if(trkBank.getShort('pindex',r) == pidx) {
+      def detector = trkBank.getByte('detector',r)
+      if(detector == DetectorType.DC.getDetectorId()) {
+        if(!detBr.containsKey('dcTrk')) detBr['dcTrk'] = [:]
+        detBr['dcTrk']['chi2'] = trkBank.getFloat('chi2',r)
+        detBr['dcTrk']['ndf'] = trkBank.getShort('NDF',r)
+        detBr['dcTrk']['status'] = trkBank.getShort('status',r)
+      }
+    }
+  }
+
+  // trajectory bank
+  (0..trajBank.rows()).each { r ->
+    if(trajBank.getShort('pindex',r) == pidx) {
+      def detector = trajBank.getByte('detector',r)
+      if(detector == DetectorType.DC.getDetectorId()) {
+        if(!detBr.containsKey('dcTraj')) detBr['dcTraj'] = [:]
+        def layer = trajBank.getByte('layer',r)
+        def region = 0
+        if(layer==6) region=1
+        else if(layer==18) region=2
+        else if(layer==36) region=3
+        if(region>0) {
+          detBr['dcTraj']["region$region"] = ['x','y','z'].collectEntries{
+            [it,trajBank.getFloat(it,r)]
+          }
+        }
+      }
+    }
+  }
+
+  return detBr
+}
+
+// list of variables associated to calorimeters
+def calorimeterLeafList = [
+  'sector', 'energy', 'time', 'path',
+  'x', 'y', 'z',
+  'lu', 'lv', 'lw'
+]
+
+// define ntuple leaves for detectors
+def detectorLeafList = [
+  /* calorimeters */
+  ['pcal','ecin','ecout'].collect{ detName ->
+    calorimeterLeafList.collect{ varName -> "${detName}_${varName}" }
+  },
+  /* tracking */
+  ['chi2','ndf','status'].collect{ varName -> "dcTrk_${varName}" },
+  /* trajectories */
+  (1..3).collect{ reg ->
+    ['x','y','z'].collect{ coord -> "dcTraj_region${reg}_${coord}" }
+  }
+].flatten()
+
+
+// fill detector ntuple leaves
+def fillDetectorLeaves = { br ->
+  def leaves = []
+  def brDet = br['detector']
+  /* calorimeters */
+  ['pcal','ecin','ecout'].each{ det ->
+    leaves << calorimeterLeafList.collect{ leaf ->
+      brDet.containsKey(det) ? brDet[det][leaf] : undef
+    }
+  }
+  /* tracking */
+  leaves << ['chi2','ndf','status'].collect{
+    brDet.containsKey('dcTrk') ? brDet['dcTrk'][it] : undef
+  }
+  /* trajectories */
+  (1..3).each{ reg ->
+    leaves << ['x','y','z'].collect{ 
+      brDet.containsKey('dcTraj') ? brDet['dcTraj']["region$reg"][it] : undef
+    }
+  }
+  return leaves
+}
+
+
+
+
+//------------------------------------------
+// particle leaves
+//------------------------------------------
+
+// read REC::Particle bank entries; this subroutine returns a tree
+// associated with specified PID
 def growParticleTree = { pid ->
 
   // get list of bank row numbers corresponding to this PID
@@ -80,8 +207,11 @@ def growParticleTree = { pid ->
         pid,
         *['px','py','pz'].collect{particleBank.getFloat(it,row)}
       ),
+      *:['vx','vy','vz'].collectEntries{[it,particleBank.getFloat(it,row)]},
+      'chi2pid':particleBank.getFloat('chi2pid',row),
       'status':particleBank.getShort('status',row),
-      'chi2pid':particleBank.getFloat('chi2pid',row)
+      'beta':particleBank.getFloat('beta',row),
+      'detector':getDetectorBranch(row)
     ]
   }
 
@@ -92,35 +222,26 @@ def growParticleTree = { pid ->
       //print " row=" + parBr.row
       //print " status=" + parBr.status
       //println " chi2pid=" + parBr.chi2pid
-      println parBr.particle
+      //println parBr.particle
+      println pPrint(parBr)
     }
   }
 
   return particleTree
 }
 
-
-
-
-//------------------------------------------
-// setup diskim file and ntuple `NT`
-//------------------------------------------
-
-"mkdir -p diskim".execute()
-def diskimFile = new ROOTFile('diskim/test.root')
-
-
-// subroutines for particle ntuple leaves
-// - return list of particle leaf names
+// define particle ntuple leaves
 def buildParticleLeaves = { name ->
   return [
     'Pid',
     'Px','Py','Pz',
     'E',
-    'chi2pid','status'
-  ].collect{name+it}
+    'Vx','Vy','Vz',
+    'chi2pid','status','beta',*detectorLeafList
+  ].collect{name+'_'+it}
 }
-// - return list of leaf values associated with the particle branch b
+
+// fill particle ntuple leaves
 def fillParticleLeaves = { br ->
   def pid = br.particle.pid()
   //if(pid==11) // TODO for electrons, set pid to something useful, 
@@ -129,12 +250,15 @@ def fillParticleLeaves = { br ->
     pid,
     br.particle.px(), br.particle.py(), br.particle.pz(),
     br.particle.e(),
-    br.chi2pid, br.status
+    br.vx, br.vy, br.vz,
+    br.chi2pid, br.status, br.beta,*fillDetectorLeaves(br)
   ]
 }
 
 
-// define ntuple NT (be sure order matches NT.fill call)
+//-----------------------------
+// define the full ntuple
+//-----------------------------
 def NT = diskimFile.makeNtuple("ditr","ditr",[
   *buildParticleLeaves('ele'),
   *buildParticleLeaves('hadA'),
@@ -142,6 +266,7 @@ def NT = diskimFile.makeNtuple("ditr","ditr",[
   'evnumLo','evnumHi',
   'helicity'
 ].join(':'))
+
 
 
 
@@ -179,6 +304,8 @@ inHipoList.each { inHipoFile ->
       eventBank = event.getBank("REC::Event")
       configBank = event.getBank("RUN::config")
       calBank = event.getBank("REC::Calorimeter")
+      trkBank = event.getBank("REC::Track")
+      trajBank = event.getBank("REC::Traj")
 
 
       // get event-level information
