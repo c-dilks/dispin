@@ -93,8 +93,8 @@ def getDetectorBranch = { pidx ->
       def layer = calBank.getByte('layer',r)
       def calStr = ''
       if(layer == DetectorLayer.PCAL_U) calStr = 'pcal' // layer 1
-      else if(layer == DetectorLayer.EC_INNER_U) calStr = 'ecin' // layer 4
-      else if(layer == DetectorLayer.EC_OUTER_U) calStr = 'ecout' // layer 7
+      //else if(layer == DetectorLayer.EC_INNER_U) calStr = 'ecin' // layer 4
+      //else if(layer == DetectorLayer.EC_OUTER_U) calStr = 'ecout' // layer 7
       if(!calStr.isEmpty()) detBr[calStr] = getCalorimeterLeaves(r)
       if(verbose) println "-> calorimeter layer $layer"
     }
@@ -104,7 +104,7 @@ def getDetectorBranch = { pidx ->
   (0..trkBank.rows()).each { r ->
     if(trkBank.getShort('pindex',r) == pidx) {
       def detector = trkBank.getByte('detector',r)
-      if(detector == DetectorType.DC.getDetectorId()) {
+      if(detector == DetectorType.DC.getDetectorId()) { // DC = 6
         if(!detBr.containsKey('dcTrk')) detBr['dcTrk'] = [:]
         detBr['dcTrk']['chi2'] = trkBank.getFloat('chi2',r)
         detBr['dcTrk']['ndf'] = (float) trkBank.getShort('NDF',r)
@@ -117,7 +117,7 @@ def getDetectorBranch = { pidx ->
   (0..trajBank.rows()).each { r ->
     if(trajBank.getShort('pindex',r) == pidx) {
       def detector = trajBank.getByte('detector',r)
-      if(detector == DetectorType.DC.getDetectorId()) {
+      if(detector == DetectorType.DC.getDetectorId()) { // DC = 6
         if(!detBr.containsKey('dcTraj')) detBr['dcTraj'] = [:]
         def layer = trajBank.getByte('layer',r)
         def region = 0
@@ -143,22 +143,27 @@ def calorimeterLeafList = [
   'lu', 'lv', 'lw'
 ]
 
+// list of  calorimeters
+//def calorimeterList = ['pcal','ecin','ecout'] 
+def calorimeterList = ['pcal'] // pcal only
+
 // define ntuple leaves for detectors
-def detectorLeafList = [
-  /* calorimeters */
-  ['pcal','ecin','ecout'].collect{ detName ->
-    ["${detName}_found"] +
-    calorimeterLeafList.collect{ varName -> "${detName}_${varName}" }
-  },
-  /* tracking */
-  ['found','chi2','ndf','status'].collect{ varName -> "dcTrk_${varName}" },
-  /* trajectories */
-  'dcTraj_found',
-  (1..3).collect{ reg ->
-    ['x','y','z'].collect{ coord -> "dcTraj_c${reg}${coord}" }
-  }
-].flatten()
-println "detectorLeafList = $detectorLeafList"
+def buildDetectorLeaves = { par ->
+  return [
+    /* calorimeters */
+    calorimeterList.collect{ detName ->
+      ["${detName}_found"] +
+      calorimeterLeafList.collect{ varName -> "${detName}_${varName}" }
+    },
+    /* tracking */
+    ['found','chi2','ndf','status'].collect{ varName -> "dcTrk_${varName}" },
+    /* trajectories */
+    'dcTraj_found',
+    (1..3).collect{ reg ->
+      ['x','y','z'].collect{ coord -> "dcTraj_c${reg}${coord}" }
+    }
+  ].flatten().collect{par+'_'+it}
+}
 
 
 // fill detector ntuple leaves
@@ -167,7 +172,7 @@ def fillDetectorLeaves = { br ->
   def brDet = br['detector']
   def found
   /* calorimeters */
-  ['pcal','ecin','ecout'].each{ det ->
+  calorimeterList.each{ det ->
     found = brDet.containsKey(det)
     leaves << (found ? 1.0 : 0.0)
     leaves << calorimeterLeafList.collect{ leaf ->
@@ -240,17 +245,16 @@ def growParticleTree = { pid ->
   return particleTree
 }
 
-// define particle ntuple leaves
-def buildParticleLeaves = { name ->
+// define ntuple leaves for particles
+def buildParticleLeaves = { par ->
   return [
     'Row',
     'Pid',
     'Px','Py','Pz',
     'E',
     'Vx','Vy','Vz',
-    'chi2pid','status','beta',
-    *detectorLeafList
-  ].collect{name+'_'+it}
+    'chi2pid','status','beta'
+  ].collect{par+'_'+it}
 }
 
 // fill particle ntuple leaves
@@ -265,7 +269,6 @@ def fillParticleLeaves = { br ->
     br.particle.e(),
     br.vx, br.vy, br.vz,
     br.chi2pid, br.status, br.beta,
-    *fillDetectorLeaves(br)
   ]
 }
 
@@ -273,13 +276,16 @@ def fillParticleLeaves = { br ->
 //-----------------------------
 // define the full ntuple
 //-----------------------------
-def NT = diskimFile.makeNtuple("ditr","ditr",[
-  *buildParticleLeaves('ele'),
+def NTleafNames = [
+  *buildParticleLeaves('ele'), *buildDetectorLeaves('ele'),
   *buildParticleLeaves('hadA'),
   *buildParticleLeaves('hadB'),
   'evnumLo','evnumHi',
   'helicity'
-].join(':'))
+].join(':')
+//println NTleafNames
+def NT = diskimFile.makeNtuple("ditr","ditr",NTleafNames)
+def NTleaves
 
 
 
@@ -404,25 +410,15 @@ inHipoList.each { inHipoFile ->
               if(hadIdxA==hadIdxB && hadB.row <= hadA.row) return
 
               // fill ntuple (be sure order matches defined order)
-              ///*
-              NT.fill(
-                *fillParticleLeaves(eleDIS),
-                *fillParticleLeaves(hadA),
-                *fillParticleLeaves(hadB),
-                evnumLo,evnumHi,
-                helicity
-              )
-              //*/
-              /*
-              def tst = [
-                *fillParticleLeaves(eleDIS),
+              NTleaves = [
+                *fillParticleLeaves(eleDIS), *fillDetectorLeaves(eleDIS),
                 *fillParticleLeaves(hadA),
                 *fillParticleLeaves(hadB),
                 evnumLo,evnumHi,
                 helicity
               ]
-              println "$tst\n"
-              */
+              NT.fill(*NTleaves)
+              //println NTleaves//.size()
 
               // print dihadron hadrons
               if(verbose) { 
