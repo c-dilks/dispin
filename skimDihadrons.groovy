@@ -278,8 +278,8 @@ def fillParticleLeaves = { br ->
 //-----------------------------
 def NTleafNames = [
   *buildParticleLeaves('ele'), *buildDetectorLeaves('ele'),
-  *buildParticleLeaves('hadA'),
-  *buildParticleLeaves('hadB'),
+  *buildParticleLeaves('hadA'), *buildDetectorLeaves('hadA'),
+  *buildParticleLeaves('hadB'), *buildDetectorLeaves('hadB'),
   'evnumLo','evnumHi',
   'helicity'
 ].join(':')
@@ -308,7 +308,7 @@ inHipoList.each { inHipoFile ->
   // event loop
   //----------------------
   while(reader.hasEvent()) {
-    if(evCount>10000) break // limiter
+    //if(evCount>10000) break // limiter
     evCount++
     if(evCount % 100000 == 0) println "read $evCount events"
     if(verbose) { 30.times{print '='}; println " begin event" }
@@ -409,11 +409,17 @@ inHipoList.each { inHipoFile ->
               // unlike PIDs -> take all combinations of pairs
               if(hadIdxA==hadIdxB && hadB.row <= hadA.row) return
 
+              // reject hadrons which are only in the CD; they will fail
+              // fiducial cuts because they do not have a DC trajectory,
+              // but rather only a CVT trajectory
+              if( (hadA.status>=4000 && hadA.status<5000) ||
+                  (hadB.status>=4000 && hadB.status<5000) ) return
+
               // fill ntuple (be sure order matches defined order)
               NTleaves = [
                 *fillParticleLeaves(eleDIS), *fillDetectorLeaves(eleDIS),
-                *fillParticleLeaves(hadA),
-                *fillParticleLeaves(hadB),
+                *fillParticleLeaves(hadA), *fillDetectorLeaves(hadA),
+                *fillParticleLeaves(hadB), *fillDetectorLeaves(hadB),
                 evnumLo,evnumHi,
                 helicity
               ]

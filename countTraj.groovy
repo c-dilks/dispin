@@ -29,18 +29,43 @@ while(reader.hasEvent()) {
     trajBank = event.getBank("REC::Traj")
 
     rowList = (0..<particleBank.rows()).findAll{
-      particleBank.getInt('pid',it) in [211,-211]
+      particleBank.getInt('pid',it) == -211 &&
+      ( particleBank.getShort('status',it) < 4000 ||
+        particleBank.getShort('status',it) > 4999 )
     }
     piCount += rowList.size()
 
+    /*
+    // count if in layer 6 (region 1)
     trajList = (0..<trajBank.rows()).findAll{
       (int) (trajBank.getShort('pindex',it)) in rowList &&
       trajBank.getByte('detector',it) == DetectorType.DC.getDetectorId() &&
       trajBank.getByte('layer',it) == 6
     }
     trajCount += trajList.size()
+    */
+    // count if in any layer
+    ///*
+    trajList = rowList
+    //println "----"
+    (0..<trajBank.rows()).each{
+      //println trajList
+      def pindex = (int) trajBank.getShort('pindex',it)
+      if( pindex in rowList &&
+        trajBank.getByte('detector',it) == DetectorType.DC.getDetectorId()
+      ) {
+        //println "found $pindex"
+        trajList = trajList.collect{
+          if(it==pindex) return it+1000
+          else return it
+        }
+      }
+
+    }
+    trajCount += trajList.findAll{it>1000}.size()
+    //*/
   }
 }
 println "number of events with REC::Particle bank: $evCount"
 println "number of pions in REC::Particle: $piCount"
-println "number of matching pions in DC layer 6 REC::Traj: $trajCount"
+println "number of matching pions in REC::Traj for DC: $trajCount"
