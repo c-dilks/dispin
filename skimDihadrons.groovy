@@ -1,3 +1,10 @@
+// reads HIPO skim files and outputs an NTuple containing dihadron momenta, and
+// the scattered electron momentum, along with everything else needed for dihadron
+// spin asymmetry analysis
+//
+// some basic cuts are applied here; search for CUT (in all caps)
+//
+
 import org.jlab.io.hipo.HipoDataSource
 import org.jlab.clas.physics.Particle
 import org.jlab.detector.base.DetectorLayer
@@ -11,36 +18,23 @@ import clasqa.QADB
 
 ////////////////////////
 // ARGUMENTS
-def inHipo = "../data/skim/skim4_5052.hipo" // skim file
-if(args.length>=1) inHipo = args[0]
+def inHipoName = "../data/skim/skim4_5052.hipo" // skim file
+if(args.length>=1) inHipoName = args[0]
 ////////////////////////
 // OPTIONS
 def verbose = 0
+hadPIDlist = [ 211, -211 ] // list of hadron PIDs which will be paired
+//hadPIDlist += [ 321, -321 ] // include kaons
 ////////////////////////
 
 
-// list of hipo files (one for now, but allows for future
-// capability to read DST files in a list)
-def inHipoList = []
-inHipoList << inHipo
-
-
-// set up list of hadrons to pair into dihadrons
-hadPIDlist = [ 211, -211 ]
-//hadPIDlist += [ 321, -321 ] // include kaons
-
-
-// get runnum
-def runnum
-if(inHipo.contains('postprocess'))
-  runnum = inHipo.tokenize('.')[-2].tokenize('/')[-1].toInteger()
-else
-  runnum = inHipo.tokenize('.')[-2].tokenize('_')[-1].toInteger()
-println "runnum=$runnum"
 
 // define root file
 "mkdir -p diskim".execute()
-def diskimFile = new ROOTFile('diskim/test.root')
+def diskimName = 'diskim/' + inHipoName.tokenize('/')[-1] + '.root'
+def diskimFile = new ROOTFile(diskimName)
+println "INPUT FILE: $inHipoName"
+println "OUTPUT FILE: $diskimName"
 
 
 
@@ -54,6 +48,7 @@ def particleBank, configBank, eventBank, calBank, trkBank, trajBank
 def eleTree
 def hadTreeList
 def eleDIS
+def runnum
 def evnum
 def evnumLo, evnumHi
 def helicity
@@ -70,7 +65,7 @@ QADB qa = new QADB()
 // detector leaves
 //-----------------------
 
-// read calorimeter bank entries for specified row
+// closure to read calorimeter bank entries for specified row
 def getCalorimeterLeaves = { c ->
   def calBr = [:]
   calBr['sector'] = (float) calBank.getByte('sector',c)
@@ -82,7 +77,7 @@ def getCalorimeterLeaves = { c ->
   return calBr
 }
 
-// read detector banks for specified particle
+// closure to read detector banks for specified particle
 // - `pidx` is the row of `REC::Particle` of the associated particle
 def getDetectorBranch = { pidx ->
   def detBr = [:]
@@ -147,7 +142,7 @@ def calorimeterLeafList = [
 //def calorimeterList = ['pcal','ecin','ecout'] 
 def calorimeterList = ['pcal'] // pcal only
 
-// define ntuple leaves for detectors
+// closure to define ntuple leaves for detectors
 def buildDetectorLeaves = { par ->
   return [
     /* calorimeters */
@@ -166,7 +161,7 @@ def buildDetectorLeaves = { par ->
 }
 
 
-// fill detector ntuple leaves
+// closure for filling detector ntuple leaves
 def fillDetectorLeaves = { br ->
   def leaves = []
   def brDet = br['detector']
@@ -203,8 +198,8 @@ def fillDetectorLeaves = { br ->
 // particle leaves
 //------------------------------------------
 
-// read REC::Particle bank entries; this subroutine returns a tree
-// associated with specified PID
+// closure to read REC::Particle bank entries
+// returns a tree (nested map) associated with specified PID
 def growParticleTree = { pid ->
 
   // get list of bank row numbers corresponding to this PID
@@ -245,7 +240,7 @@ def growParticleTree = { pid ->
   return particleTree
 }
 
-// define ntuple leaves for particles
+// closure to define ntuple leaves for particles
 def buildParticleLeaves = { par ->
   return [
     'Row',
@@ -257,10 +252,10 @@ def buildParticleLeaves = { par ->
   ].collect{par+'_'+it}
 }
 
-// fill particle ntuple leaves
+// closure to fill particle ntuple leaves
 def fillParticleLeaves = { br ->
   def pid = br.particle.pid()
-  //if(pid==11) // TODO for electrons, set pid to something useful, 
+  //if(pid==11) // TODO for electrons, maybe set pid to something useful, 
                 // e.g. +1 for trigger elec, -1 for FT elec
   return [
     br.row,
@@ -289,171 +284,170 @@ def NTleaves
 
 
 
-
-
-//-------------------
-// read HIPO file(s)
-//-------------------
-
-// loop over hipo files (single file if skim file)
+//----------------------
+// event loop
+//----------------------
+def once = true
 evCount = 0
-inHipoList.each { inHipoFile ->
 
-  // open skim/DST file
-  reader = new HipoDataSource()
-  reader.open(inHipoFile)
+// open skim HIPO file
+reader = new HipoDataSource()
+reader.open(inHipoName)
 
+// begin event loop
+while(reader.hasEvent()) {
+  //if(evCount>10000) break // limiter
+  evCount++
+  if(evCount % 100000 == 0) println "read $evCount events"
+  if(verbose) { 30.times{print '='}; println " begin event" }
 
-  //----------------------
-  // event loop
-  //----------------------
-  while(reader.hasEvent()) {
-    //if(evCount>10000) break // limiter
-    evCount++
-    if(evCount % 100000 == 0) println "read $evCount events"
-    if(verbose) { 30.times{print '='}; println " begin event" }
+  event = reader.getNextEvent()
 
-    event = reader.getNextEvent()
+  if(event.hasBank("REC::Particle") &&
+     event.hasBank("REC::Event") &&
+     event.hasBank("RUN::config") ) {
 
-    if(event.hasBank("REC::Particle") &&
-       event.hasBank("REC::Event") &&
-       event.hasBank("RUN::config") ) {
-
-      // get banks
-      particleBank = event.getBank("REC::Particle")
-      eventBank = event.getBank("REC::Event")
-      configBank = event.getBank("RUN::config")
-      calBank = event.getBank("REC::Calorimeter")
-      trkBank = event.getBank("REC::Track")
-      trajBank = event.getBank("REC::Traj")
+    // get banks
+    particleBank = event.getBank("REC::Particle")
+    eventBank = event.getBank("REC::Event")
+    configBank = event.getBank("RUN::config")
+    calBank = event.getBank("REC::Calorimeter")
+    trkBank = event.getBank("REC::Track")
+    trajBank = event.getBank("REC::Traj")
 
 
-      // get event-level information
-      // - evnum may surpass float precision limit, if it has more than 7
-      //   digits; since ntuples only store floats, we split evnum into
-      //   two 16-bit halves; reconstruct full evnum with 
-      //   `evnumLo+(evnumHi<<16)`
-      helicity = eventBank.getByte('helicity',0)
-      evnum = configBank.getInt('event',0)
-      evnumLo = evnum & 0xFFFF
-      evnumHi = (evnum>>16) & 0xFFFF
+    // get event-level information
+    // - evnum may surpass float precision limit, if it has more than 7
+    //   digits; since ntuples only store floats, we split evnum into
+    //   two 16-bit halves; reconstruct full evnum with 
+    //   `evnumLo+(evnumHi<<16)`
+    helicity = eventBank.getByte('helicity',0)
+    runnum = configBank.getInt('run',0)
+    evnum = configBank.getInt('event',0)
+    evnumLo = evnum & 0xFFFF
+    evnumHi = (evnum>>16) & 0xFFFF
+    if(once) {
+      println "ANALYZING RUN $runnum"
+      once = false
+    }
 
 
-      // query QA database
-      if(!qa.golden(runnum,evnum)) {
-        //println "toss file " + qa.getFilenum() + " (evnum=$evnum)"
-        continue;
-      }
+    // CUT: data monitoring QA cut
+    if(!qa.OkForAsymmetry(runnum,evnum)) {
+      //println "toss file " + qa.getFilenum() + " (evnum=$evnum)"
+      continue;
+    }
 
 
-      // get list of PIDs, with list index corresponding to bank row
-      pidList = (0..<particleBank.rows()).collect{ 
-        particleBank.getInt('pid',it)
-      }
-      if(verbose) println "pidList = $pidList"
+    // get list of PIDs, with list index corresponding to bank row
+    pidList = (0..<particleBank.rows()).collect{ 
+      particleBank.getInt('pid',it)
+    }
+    if(verbose) println "pidList = $pidList"
 
 
-      
-      //----------------------------------
-      // find the scattered electron
-      //----------------------------------
-      // - first get the electrons which satisfy cuts
-      // - then choose from this list the electron with the highest E
-      eleTree = growParticleTree(11).findAll { br ->
-        def status = br.status
-        def chi2pid = br.chi2pid
-        status<0 &&
-          ( Math.abs(status/1000).toInteger() & 0x2 || 
-            Math.abs(status/1000).toInteger() & 0x4 ) &&
-          Math.abs(chi2pid)<3
-      }
-      //if(verbose) { println "----- eleTree:"; println eleTree; }
+    
+    //----------------------------------
+    // find the DIS electron
+    //----------------------------------
+    // CUT: select trigger electrons with |chi2pid|<3
+    eleTree = growParticleTree(11).findAll { br ->
+      def status = br.status
+      def chi2pid = br.chi2pid
+      status<0 &&
+        ( Math.abs(status/1000).toInteger() & 0x2 || 
+          Math.abs(status/1000).toInteger() & 0x4 ) &&
+        Math.abs(chi2pid)<3
+    }
+    //if(verbose) { println "----- eleTree:"; println eleTree; }
 
-      if(eleTree.size()==0) continue
-      if(eleTree.size()>1) {
-        System.err << 
-          "WARNING: found more than 1 trigger e- in event; " <<
-          " using highest-E one\n"
-      }
+    // skip event if no electron found
+    if(eleTree.size()==0) continue
 
-      // choose maximum energy electron branch
-      eleDIS = eleTree.max{it.particle.e()}
-      if(verbose) { println "----- eleDIS:"; println eleDIS.particle; }
+    // warn if more than one candidate DIS electron is found
+    if(eleTree.size()>1) {
+      System.err << 
+        "WARNING: found more than 1 trigger e- in event; " <<
+        " using highest-E one\n"
+    }
+
+    // CUT: choose maximum energy electron branch (only needed if more than
+    //      one candidate DIS electron was found
+    eleDIS = eleTree.max{it.particle.e()}
+    if(verbose) { println "----- eleDIS:"; println eleDIS.particle; }
 
 
-      //------------------------------
-      // dihadron pairing
-      //------------------------------
+    //------------------------------
+    // dihadron pairing
+    //------------------------------
 
-      // first build a list of hadron trees; one list element = one PID
-      if(verbose) println "..... hadrons:"
-      hadTreeList = hadPIDlist.collect{ growParticleTree(it) }
-      //if(verbose) { println "--- hadTreeList:"; println hadTreeList; }
+    // first build a list of hadron trees; one list element = one PID
+    if(verbose) println "..... hadrons:"
+    hadTreeList = hadPIDlist.collect{ growParticleTree(it) }
+    //if(verbose) { println "--- hadTreeList:"; println hadTreeList; }
 
-      // then loop over pairs of hadron PIDs
-      // (`Idx` is a local ID, defined as the index of the PID in `hadPIDlist`)
-      hadTreeList.eachWithIndex { hadTreeA, hadIdxA ->
-        hadTreeList.eachWithIndex { hadTreeB, hadIdxB ->
+    // then loop over pairs of hadron PIDs
+    // (`Idx` is a local ID, defined as the index of the PID in `hadPIDlist`)
+    hadTreeList.eachWithIndex { hadTreeA, hadIdxA ->
+      hadTreeList.eachWithIndex { hadTreeB, hadIdxB ->
 
-          // take only permutations of PIDs, with repetition allowed
-          if( hadIdxB < hadIdxA ) return
+        // take only permutations of PIDs, with repetition allowed
+        if( hadIdxB < hadIdxA ) return
 
-          // proceed only if there are one or more hadrons for each PID
-          if( hadTreeA.size()==0 || hadTreeB.size==0) return;
-  
-          // loop over pairs of hadrons with the specified PIDs
-          hadTreeA.each { hadA ->
-            hadTreeB.each { hadB ->
+        // proceed only if there are one or more hadrons for each PID
+        if( hadTreeA.size()==0 || hadTreeB.size==0) return;
 
-              // like PIDs -> take all permutations of pairs (no repetition)
-              // unlike PIDs -> take all combinations of pairs
-              if(hadIdxA==hadIdxB && hadB.row <= hadA.row) return
+        // loop over pairs of hadrons with the specified PIDs
+        hadTreeA.each { hadA ->
+          hadTreeB.each { hadB ->
 
-              // reject hadrons which are only in the CD; they will fail
-              // fiducial cuts because they do not have a DC trajectory,
-              // but rather only a CVT trajectory
-              if( (hadA.status>=4000 && hadA.status<5000) ||
-                  (hadB.status>=4000 && hadB.status<5000) ) return
+            // like PIDs -> take all permutations of pairs (no repetition)
+            // unlike PIDs -> take all combinations of pairs
+            if(hadIdxA==hadIdxB && hadB.row <= hadA.row) return
 
-              // fill ntuple (be sure order matches defined order)
-              NTleaves = [
-                *fillParticleLeaves(eleDIS), *fillDetectorLeaves(eleDIS),
-                *fillParticleLeaves(hadA), *fillDetectorLeaves(hadA),
-                *fillParticleLeaves(hadB), *fillDetectorLeaves(hadB),
-                evnumLo,evnumHi,
-                helicity
-              ]
-              NT.fill(*NTleaves)
-              //println NTleaves//.size()
+            // CUT: reject hadrons which are only in the CD; they will fail
+            //      fiducial cuts because they do not have a DC trajectory,
+            //      but rather only a CVT trajectory
+            if( (hadA.status>=4000 && hadA.status<5000) ||
+                (hadB.status>=4000 && hadB.status<5000) ) return
 
-              // print dihadron hadrons
-              if(verbose) { 
-                20.times{print '.'}
-                println " dihadron "+
-                  hadPIDlist[hadIdxA]+" "+hadPIDlist[hadIdxB];
-                println hadA.particle
-                println hadB.particle
-              }
+            // fill ntuple (be sure order matches defined order)
+            NTleaves = [
+              *fillParticleLeaves(eleDIS), *fillDetectorLeaves(eleDIS),
+              *fillParticleLeaves(hadA), *fillDetectorLeaves(hadA),
+              *fillParticleLeaves(hadB), *fillDetectorLeaves(hadB),
+              evnumLo,evnumHi,
+              helicity
+            ]
+            NT.fill(*NTleaves)
+            //println NTleaves//.size()
 
+            // print dihadron hadrons
+            if(verbose) { 
+              20.times{print '.'}
+              println " dihadron "+
+                hadPIDlist[hadIdxA]+" "+hadPIDlist[hadIdxB];
+              println hadA.particle
+              println hadB.particle
             }
+
           }
         }
       }
+    }
 
 
 
-    } // end if event has specific banks
+  } // end if event has specific banks
 
-  } // end event loop
-  reader.close()
-
-
-  // write out to diskim file
-  NT.write()
-  diskimFile.close()
+} // end event loop
+reader.close()
 
 
-  // close reader
-  reader = null
-  System.gc()
-} // end loop over hipo files
+// write out to diskim file
+NT.write()
+diskimFile.close()
+
+
+// close reader
+reader = null

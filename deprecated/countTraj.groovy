@@ -1,5 +1,6 @@
 // counts number of pions in REC::Particle compared to number of corresponding
 // trajectories in a DC layer
+// - used for checking something with fiducial cuts
 
 import org.jlab.io.hipo.HipoDataSource
 import org.jlab.detector.base.DetectorType
