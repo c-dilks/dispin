@@ -30,7 +30,8 @@ class DIS : public TObject
 
     //void SetBeamEn(Float_t newBeamEn);
     void SetElectron(Trajectory * tr);
-    void Analyse();
+    void CalculateKinematics();
+    void CalculateKinematics(Trajectory * tr);
     void PrintEvent();
 
     void ComputeBreitKinematics();

@@ -37,7 +37,7 @@ class Dihadron : public TObject
     Bool_t debugTheta;
     Bool_t useBreit;
 
-    void SetEvent(
+    void CalculateKinematics(
       Trajectory * trajA, Trajectory * trajB, DIS * disEv);
     void ComputeAngles();
     Float_t PlaneAngle(TVector3 vA, TVector3 vB,
@@ -62,6 +62,14 @@ class Dihadron : public TObject
 
     // BRANCHES  ///////////////////////////////////////
     //
+    Int_t pairType; // two digit number with Idx of each hadron (see Constants.h)
+    Int_t hadIdx[2]; // Idx for each hadron (redundant, but useful)
+    Int_t hadRow[2]; // row in REC::Particle
+    Float_t hadE[2]; // hadron energy
+    Float_t hadP[2]; // hadron momentum
+    Float_t hadPt[2]; // hadron transverse momentum
+    Float_t hadEta[2]; // hadron pseudorapidity
+    Float_t hadPhi[2];  // hadron lab-frame azimuth
     Float_t PhMag; // dihadron total momentum
     Float_t PhPerpMag; // transverse component of dihadron total momentum (perp frame)
     Float_t PhEta; // pseudorapidity of dihadron pair

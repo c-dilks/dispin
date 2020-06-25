@@ -275,7 +275,7 @@ def NTleafNames = [
   *buildParticleLeaves('ele'), *buildDetectorLeaves('ele'),
   *buildParticleLeaves('hadA'), *buildDetectorLeaves('hadA'),
   *buildParticleLeaves('hadB'), *buildDetectorLeaves('hadB'),
-  'evnumLo','evnumHi',
+  'runnum','evnumLo','evnumHi',
   'helicity'
 ].join(':')
 //println NTleafNames
@@ -416,7 +416,7 @@ while(reader.hasEvent()) {
               *fillParticleLeaves(eleDIS), *fillDetectorLeaves(eleDIS),
               *fillParticleLeaves(hadA), *fillDetectorLeaves(hadA),
               *fillParticleLeaves(hadB), *fillDetectorLeaves(hadB),
-              evnumLo,evnumHi,
+              runnum,evnumLo,evnumHi,
               helicity
             ]
             NT.fill(*NTleaves)

@@ -148,9 +148,11 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
   objDihadron = new Dihadron();
   candDih= new Dihadron();
   objDIS = new DIS();
-  trEle = new Trajectory(kE);
+  trEle = new Trajectory();
+  trEle->Idx = kE;
   for(int h=0; h<2; h++) {
-    trHad[h] = new Trajectory(dihHadIdx(whichHad[qA],whichHad[qB],h));
+    trHad[h] = new Trajectory();
+    trHad[h]->Idx = dihHadIdx(whichHad[qA],whichHad[qB],h);
   };
   whichHelicityMC = 0;
 };
@@ -480,13 +482,13 @@ Dihadron * EventTree::GetDihadronObj() {
   objDihadron->ResetVars();
   for(int h=0; h<2; h++) {
     hadMom[h].SetPtEtaPhiE(hadPt[h],hadEta[h],hadPhi[h],hadE[h]);
-    trHad[h]->SetVec(hadMom[h]);
+    trHad[h]->Momentum = hadMom[h];
     trHad[h]->Status = hadStatus[h];
     trHad[h]->chi2pid = hadChi2pid[h];
-    trHad[h]->SetVertex(hadVertex[h][eX],hadVertex[h][eY],hadVertex[h][eZ]);
+    trHad[h]->Vertex.SetXYZ(hadVertex[h][eX],hadVertex[h][eY],hadVertex[h][eZ]);
   };
   this->GetDISObj();
-  objDihadron->SetEvent(trHad[qA],trHad[qB],objDIS);
+  objDihadron->CalculateKinematics(trHad[qA],trHad[qB],objDIS);
   return objDihadron;
 };
 
@@ -495,13 +497,12 @@ DIS * EventTree::GetDISObj() {
   objDIS->ResetVars();
 
   eleMom.SetPtEtaPhiE(elePt,eleEta,elePhi,eleE);
-  trEle->SetVec(eleMom);
+  trEle->Momentum = eleMom;
   trEle->Status = eleStatus;
   trEle->chi2pid = eleChi2pid;
-  trEle->SetVertex(eleVertex[eX],eleVertex[eY],eleVertex[eZ]);
+  trEle->Vertex.SetXYZ(eleVertex[eX],eleVertex[eY],eleVertex[eZ]);
 
-  objDIS->SetElectron(trEle);
-  objDIS->Analyse();
+  objDIS->CalculateKinematics(trEle);
   return objDIS;
 };
 

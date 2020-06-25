@@ -40,7 +40,7 @@ void DIS::SetBeamEn(Float_t newBeamEn) {
 
 
 void DIS::SetElectron(Trajectory * tr) {
-  vecElectron = tr->Vec;
+  vecElectron = tr->Momentum;
   eleE = vecElectron.E();
   eleP = vecElectron.P();
   elePt = vecElectron.Pt();
@@ -55,7 +55,7 @@ void DIS::SetElectron(Trajectory * tr) {
 
 
 // compute DIS kinematics
-void DIS::Analyse() {
+void DIS::CalculateKinematics() {
   ResetVars();
 
   // compute W
@@ -95,6 +95,11 @@ void DIS::Analyse() {
   };
 
   return;
+};
+
+void DIS::CalculateKinematics(Trajectory * tr) {
+  this->SetElectron(tr);
+  this->CalculateKinematics();
 };
 
 

@@ -294,6 +294,11 @@ static Int_t EncodePairType(Int_t ha, Int_t hb) {
   return (ha<<4) + hb;
 };
 
+// return true if Idx pair (ia,ib) is in the proper order
+static Bool_t CorrectOrder(Int_t ia, Int_t ib) {
+  return ia==dihHadIdx(ia,ib,qA) && ib==dihHadIdx(ia,ib,qB);
+};
+
 
 // how to loop through unique pairs:
 // IterPair converts observable indices (a,b) to particle indices (p_a,p_b);
@@ -310,7 +315,7 @@ static Int_t EncodePairType(Int_t ha, Int_t hb) {
 static Bool_t IterPair(Int_t a, Int_t b, Int_t & p_a, Int_t & p_b) {
   p_a = OI(a);
   p_b = OI(b);
-  return p_a==dihHadIdx(p_a,p_b,qA) && p_b==dihHadIdx(p_a,p_b,qB);
+  return CorrectOrder(p_a,p_b);
 };
 
 

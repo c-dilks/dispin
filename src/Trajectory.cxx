@@ -5,41 +5,23 @@ ClassImp(Trajectory)
 using namespace std;
 
 
-Trajectory::Trajectory(Int_t particle_index) {
+Trajectory::Trajectory() {
   debug = false;
-  Idx = particle_index;
-  Vec = TLorentzVector(0,0,0,0);
-  Vec.SetXYZM(
-    0.0,
-    0.0,
-    0.0,
-    PartMass(Idx) > 0 ? PartMass(Idx) : 0.0
-  );
-
+  Idx = UNDEF;
+  Row = UNDEF;
+  Momentum = TLorentzVector(0,0,0,0);
   Vertex.SetXYZ(UNDEF,UNDEF,UNDEF);
   chi2pid = UNDEF;
   Status = UNDEF;
   Beta = UNDEF;
-
   if(debug) printf("Trajectory instantiated\n");
 };
-
-
-void Trajectory::SetMomentum(Float_t px, Float_t py, Float_t pz) {
-  Vec.SetXYZM(
-    px,
-    py,
-    pz,
-    PartMass(Idx) > 0 ? PartMass(Idx) : 0.0
-  );
-};
-
 
 
 
 // calcuate momentum transverse to q, denoted "Ptq" or "pTq"
 Float_t Trajectory::Ptq(TLorentzVector q_) {
-  TVector3 pVec_ = Vec.Vect();
+  TVector3 pVec_ = Momentum.Vect();
   TVector3 qVec_ = q_.Vect();
   TVector3 PtqVec = Tools::Reject(pVec_,qVec_);
   /*
@@ -55,4 +37,3 @@ Float_t Trajectory::Ptq(TLorentzVector q_) {
 
 Trajectory::~Trajectory() {
 };
-

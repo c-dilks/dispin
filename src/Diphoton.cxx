@@ -8,7 +8,8 @@ using namespace std;
 Diphoton::Diphoton() {
   debug = true;
 
-  Traj = new Trajectory(kDiph);
+  Traj = new Trajectory();
+  Traj->Idx = kDiph;
   vecDiphoton.SetXYZM(0,0,0,0);
 
   printf("Diphoton instantiated\n");
@@ -21,16 +22,16 @@ void Diphoton::SetEvent(Trajectory * traj1, Trajectory * traj2) {
 
   photon[0] = traj1;
   photon[1] = traj2;
-  vecDiphoton = photon[0]->Vec + photon[1]->Vec;
+  vecDiphoton = photon[0]->Momentum + photon[1]->Momentum;
 
 
   // get photon kinematics
   for(int h=0; h<2; h++) {
-    momPhoton[h] = (photon[h]->Vec).Vect();
-    photE[h] = (photon[h]->Vec).E();
-    photPt[h] = (photon[h]->Vec).Pt();
-    photEta[h] = (photon[h]->Vec).Eta();
-    photPhi[h] = (photon[h]->Vec).Phi();
+    momPhoton[h] = (photon[h]->Momentum).Vect();
+    photE[h] = (photon[h]->Momentum).E();
+    photPt[h] = (photon[h]->Momentum).Pt();
+    photEta[h] = (photon[h]->Momentum).Eta();
+    photPhi[h] = (photon[h]->Momentum).Phi();
     photChi2pid[h] = photon[h]->chi2pid;
     photVertex[h][eX] = (photon[h]->Vertex).X();
     photVertex[h][eY] = (photon[h]->Vertex).Y();
@@ -66,7 +67,7 @@ void Diphoton::SetEvent(Trajectory * traj1, Trajectory * traj2) {
 
 
   // set Trajectory
-  Traj->SetVec(vecDiphoton);
+  Traj->Momentum = vecDiphoton;
 
 
   // set booleans
