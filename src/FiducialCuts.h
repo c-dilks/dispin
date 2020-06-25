@@ -1,135 +1,95 @@
+// Stefan Diehl's Fiducial Volume Cuts
+// version: 04/16/2020
+// changes for `dispin` analysis code:
+// -> encapsulated in a class for implementation in `dispin`
+// -> changes to Stefan's code are kept to a minimum
+//
+
 #ifndef FiducialCuts_
 #define FiducialCuts_
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <iostream>
 #include <math.h>
 
+// ROOT
 #include "TObject.h"
-#include "Constants.h"
-
-// dihbsa implementation of Stefan Diehl's fiducial volume cut functions
-
-/*
- * VARIABLES WHICH MUST BE DEFINED TO USE CUTS
- *
- * set enableFiducialCut to true
- *  
- * PCAL vars
- * ---------
- * - from REC::Calorimeter
- * pcalSec
- * pcalLayer
- * pcalL[u,v,w]
- *  
- * DC vars
- * --------
- * - from REC::Track
- * dcSec
- * dcTrackDetector
- * - from REC::Traj
- * dcTrajDetector[r1,r2,r3]
- * dcTrajLayer[r1,r2,r3]
- * dcTraj[r1,r2,r3][x,y,z]
- *  
- * other vars
- * ----------
- * torus
- */
-    
 
 
-class FiducialCuts : public TObject
-{
+class FiducialCuts : public TObject {
   public:
-    FiducialCuts();
-    ~FiducialCuts();
+    
+    FiducialCuts(int particleType_);
+    ~FiducialCuts(){};
+
+    // method which applies the cuts
+    // - needs particleType
+    // - sets booleans listed below
+    void ApplyCuts(int runnum_, int pid_);
+    // - booleans (so far just one)
+    Bool_t fiduCut[nLevel];
 
     
+    // Stefan's methods (the integer argument is the particle number, 
+    // just use 0; see below); these are called by ApplyCuts
+    int determineSector(int i);
+    bool EC_hit_position_fiducial_cut_homogeneous(int j); // electrons, photons
+    bool EC_hit_position_fiducial_cut(int j); // photons
+    bool DC_hit_position_counts_fiducial_cut(int j, int region); // electrons only
+    bool DC_fiducial_cut_chi2(int j, int region, int part_pid); // electrons, hadrons
+
+
     enum levelEnum { cutTight, cutMedium, cutLoose, nLevel }; // cut levels
-    bool enableFiducialCut; // if false, cuts will return false
-    bool debug;
+    enum particleTypeEnum { kElectron, kHadron, nParticleType };
+    const int nReg = 3; // number of DC regions
 
-
-    // PCAL cuts
-    bool FidPCAL(int level) {
-      if(!enableFiducialCut) return false;
-      return EC_hit_position_fiducial_cut(level);
-    };
-    // PCAL variables
-    int pcalSec;
-    int pcalLayer;
-    enum pcalLenum {u,v,w,nL};
-    double pcalL[nL];
-
-
-    // DC cuts
-    bool FidDC(int level) {
-      if(!enableFiducialCut) return false;
-      ///*
-      return DC_hit_position_region1_fiducial_cut(level) &&
-             DC_hit_position_region2_fiducial_cut(level) &&
-             DC_hit_position_region3_fiducial_cut(level);
-             //*/
-      /*
-      // old cuts
-      return DC_hit_position_region1_fiducial_cut_triangle(level) && 
-             DC_hit_position_region2_fiducial_cut_triangle(level) &&
-             DC_hit_position_region2_fiducial_cut_triangle(level);
-             */
-    };
-    // DC variables
-    // - tracks
-    int dcSec;
-    int dcTrackDetector;
-    // - trajectories
-    enum dcRegEnum {r1,r2,r3,nReg};
-    int dcTrajDetector[nReg];
-    int dcTrajLayer[nReg];
-    enum dcDirEnum {x,y,z,nDir};
-    double dcTraj[nReg][nDir];
-
-    static int regLayer(int rr) {
-      switch(rr) {
-        case r1: return 6; break;
-        case r2: return 18; break;
-        case r3: return 30; break;
-        default: 
-          fprintf(stderr,"ERROR: unknown FiducialCuts::regLayer");
-          return -1;
-      };
-    };
-
-    
-    // torus B-field (-1=inbending, +1=outbending)
-    int torus;
-
-
-    bool ErrPrint(const char * str) {
-      fprintf(stderr,"ERROR: FiducialCuts::%s\n",str);
-      return false;
-    };
-    void PrintFiducialCuts(int lev);
-
-
-  protected:
-    // Stefan's cuts
-    bool EC_hit_position_fiducial_cut(int level);
-    bool DC_hit_position_region1_fiducial_cut_triangle(int level);
-    bool DC_hit_position_region2_fiducial_cut_triangle(int level);
-    bool DC_hit_position_region3_fiducial_cut_triangle(int level);
-    bool DC_hit_position_region1_fiducial_cut(int level);
-    bool DC_hit_position_region2_fiducial_cut(int level);
-    bool DC_hit_position_region3_fiducial_cut(int level);
-
-    bool SetSwitches(int lev);
-    bool CheckDCid();
-
-    bool inbending,outbending;
-    bool tight,medium,loose;
-    bool success;
-
-    char msg[256];
+    // variables are arrays of length 1
+    // - Stefan's original code is meant to run at the event level; 
+    // - this class that encapsulates his code is meant to run at the particle level
+    // - these arrays store info for each particle, and since only one is needed, the size
+    //   is limited to 1
+    // - preserving the array structure, rather than just defining floats, minimizes 
+    //   changes to Stefan's code
+    Float_t part_Cal_PCAL_found[1];
+    Float_t part_Cal_PCAL_sector[1];
+    Float_t part_Cal_PCAL_energy[1];
+    Float_t part_Cal_PCAL_time[1];
+    Float_t part_Cal_PCAL_path[1];
+    Float_t part_Cal_PCAL_x[1];
+    Float_t part_Cal_PCAL_y[1];
+    Float_t part_Cal_PCAL_z[1];
+    Float_t part_Cal_PCAL_lu[1];
+    Float_t part_Cal_PCAL_lv[1];
+    Float_t part_Cal_PCAL_lw[1];
+    Float_t part_DC_Track_found[1];
+    Float_t part_DC_Track_chi2[1];
+    Float_t part_DC_Track_NDF[1];
+    Float_t part_DC_Track_status[1];
+    Float_t part_DC_Traj_found[1];
+    Float_t part_DC_c1x[1];
+    Float_t part_DC_c1y[1];
+    Float_t part_DC_c1z[1];
+    Float_t part_DC_c2x[1];
+    Float_t part_DC_c2y[1];
+    Float_t part_DC_c2z[1];
+    Float_t part_DC_c3x[1];
+    Float_t part_DC_c3y[1];
+    Float_t part_DC_c3z[1];
 
   private:
+    
+    int particleType;
+    bool inbending, outbending, tight, medium, loose;
+    int part_DC_sector[1];
+    const double Pival = 3.1415927;
+
+    bool fcutEleEC;
+    bool fcutEleDC1[nReg];
+    bool fcutEleDC2[nReg];
+    bool fcutHadDC[nReg];
+
+  
   ClassDef(FiducialCuts,1);
 };
 

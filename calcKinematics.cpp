@@ -32,8 +32,8 @@ TTree * ditr;
 TFile * outrootFile;
 TTree * outrootTr;
 
-void SetParticleBranchAddress(Int_t par, TString brName, Float_t * brVar) {
-  ditr->SetBranchAddress(TString(parName[par]+"_"+brName),&(brVar[par]));
+void SetParticleBranchAddress(Int_t par, TString brName, void * brAddr) {
+  ditr->SetBranchAddress(TString(parName[par]+"_"+brName),brAddr);
 };
 
 
@@ -46,6 +46,20 @@ int main(int argc, char** argv) {
     exit(0);
   };
   if(argc>1) infileN = TString(argv[1]);
+
+
+  // instantiate useful objects
+  DIS * disEv = new DIS();
+  disEv->debug = 0;
+  Dihadron * dih = new Dihadron();
+  dih->debug = 0;
+  dih->useBreit = false;
+  Trajectory * traj[nPar];
+  FiducialCuts * fidu[nPar];
+  for(int p=0; p<nPar; p++) traj[p] = new Trajectory();
+  fidu[kEle] = new FiducialCuts(FiducialCuts::kElectron);
+  fidu[kHadA] = new FiducialCuts(FiducialCuts::kHadron);
+  fidu[kHadB] = new FiducialCuts(FiducialCuts::kHadron);
 
 
   // open diskim file
@@ -72,32 +86,6 @@ int main(int argc, char** argv) {
   Float_t chi2pid[nPar];
   Float_t status[nPar];
   Float_t beta[nPar];
-  Float_t pcal_found[nPar];
-  Float_t pcal_sector[nPar];
-  Float_t pcal_energy[nPar];
-  Float_t pcal_time[nPar];
-  Float_t pcal_path[nPar];
-  Float_t pcal_x[nPar];
-  Float_t pcal_y[nPar];
-  Float_t pcal_z[nPar];
-  Float_t pcal_lu[nPar];
-  Float_t pcal_lv[nPar];
-  Float_t pcal_lw[nPar];
-  Float_t dcTrk_found[nPar];
-  Float_t dcTrk_chi2[nPar];
-  Float_t dcTrk_ndf[nPar];
-  Float_t dcTrk_status[nPar];
-  Float_t dcTraj_found[nPar];
-  Float_t dcTraj_c1x[nPar];
-  Float_t dcTraj_c1y[nPar];
-  Float_t dcTraj_c1z[nPar];
-  Float_t dcTraj_c2x[nPar];
-  Float_t dcTraj_c2y[nPar];
-  Float_t dcTraj_c2z[nPar];
-  Float_t dcTraj_c3x[nPar];
-  Float_t dcTraj_c3y[nPar];
-  Float_t dcTraj_c3z[nPar];
-
   // set branch addresses
   // - event branches
   ditr->SetBranchAddress("runnum",&runnum_float);
@@ -109,55 +97,48 @@ int main(int argc, char** argv) {
   parName[kHadA] = "hadA";
   parName[kHadB] = "hadB";
   for(int p=0; p<nPar; p++) {
-    SetParticleBranchAddress(p,"Row",Row);
-    SetParticleBranchAddress(p,"Pid",Pid);
-    SetParticleBranchAddress(p,"Px",Px);
-    SetParticleBranchAddress(p,"Py",Py);
-    SetParticleBranchAddress(p,"Pz",Pz);
-    SetParticleBranchAddress(p,"E",E);
-    SetParticleBranchAddress(p,"Vx",Vx);
-    SetParticleBranchAddress(p,"Vy",Vy);
-    SetParticleBranchAddress(p,"Vz",Vz);
-    SetParticleBranchAddress(p,"chi2pid",chi2pid);
-    SetParticleBranchAddress(p,"status",status);
-    SetParticleBranchAddress(p,"beta",beta);
-    SetParticleBranchAddress(p,"pcal_found",pcal_found);
-    SetParticleBranchAddress(p,"pcal_sector",pcal_sector);
-    SetParticleBranchAddress(p,"pcal_energy",pcal_energy);
-    SetParticleBranchAddress(p,"pcal_time",pcal_time);
-    SetParticleBranchAddress(p,"pcal_path",pcal_path);
-    SetParticleBranchAddress(p,"pcal_x",pcal_x);
-    SetParticleBranchAddress(p,"pcal_y",pcal_y);
-    SetParticleBranchAddress(p,"pcal_z",pcal_z);
-    SetParticleBranchAddress(p,"pcal_lu",pcal_lu);
-    SetParticleBranchAddress(p,"pcal_lv",pcal_lv);
-    SetParticleBranchAddress(p,"pcal_lw",pcal_lw);
-    SetParticleBranchAddress(p,"dcTrk_found",dcTrk_found);
-    SetParticleBranchAddress(p,"dcTrk_chi2",dcTrk_chi2);
-    SetParticleBranchAddress(p,"dcTrk_ndf",dcTrk_ndf);
-    SetParticleBranchAddress(p,"dcTrk_status",dcTrk_status);
-    SetParticleBranchAddress(p,"dcTraj_found",dcTraj_found);
-    SetParticleBranchAddress(p,"dcTraj_c1x",dcTraj_c1x);
-    SetParticleBranchAddress(p,"dcTraj_c1y",dcTraj_c1y);
-    SetParticleBranchAddress(p,"dcTraj_c1z",dcTraj_c1z);
-    SetParticleBranchAddress(p,"dcTraj_c2x",dcTraj_c2x);
-    SetParticleBranchAddress(p,"dcTraj_c2y",dcTraj_c2y);
-    SetParticleBranchAddress(p,"dcTraj_c2z",dcTraj_c2z);
-    SetParticleBranchAddress(p,"dcTraj_c3x",dcTraj_c3x);
-    SetParticleBranchAddress(p,"dcTraj_c3y",dcTraj_c3y);
-    SetParticleBranchAddress(p,"dcTraj_c3z",dcTraj_c3z);
+    // - particle info
+    SetParticleBranchAddress(p,"Row",&(Row[p]));
+    SetParticleBranchAddress(p,"Pid",&(Pid[p]));
+    SetParticleBranchAddress(p,"Px",&(Px[p]));
+    SetParticleBranchAddress(p,"Py",&(Py[p]));
+    SetParticleBranchAddress(p,"Pz",&(Pz[p]));
+    SetParticleBranchAddress(p,"E",&(E[p]));
+    SetParticleBranchAddress(p,"Vx",&(Vx[p]));
+    SetParticleBranchAddress(p,"Vy",&(Vy[p]));
+    SetParticleBranchAddress(p,"Vz",&(Vz[p]));
+    SetParticleBranchAddress(p,"chi2pid",&(chi2pid[p]));
+    SetParticleBranchAddress(p,"status",&(status[p]));
+    SetParticleBranchAddress(p,"beta",&(beta[p]));
+    // - detector info
+    SetParticleBranchAddress(p,"pcal_found",&(fidu[p]->part_Cal_PCAL_found[0]));
+    SetParticleBranchAddress(p,"pcal_sector",&(fidu[p]->part_Cal_PCAL_sector[0]));
+    SetParticleBranchAddress(p,"pcal_energy",&(fidu[p]->part_Cal_PCAL_energy[0]));
+    SetParticleBranchAddress(p,"pcal_time",&(fidu[p]->part_Cal_PCAL_time[0]));
+    SetParticleBranchAddress(p,"pcal_path",&(fidu[p]->part_Cal_PCAL_path[0]));
+    SetParticleBranchAddress(p,"pcal_x",&(fidu[p]->part_Cal_PCAL_x[0]));
+    SetParticleBranchAddress(p,"pcal_y",&(fidu[p]->part_Cal_PCAL_y[0]));
+    SetParticleBranchAddress(p,"pcal_z",&(fidu[p]->part_Cal_PCAL_z[0]));
+    SetParticleBranchAddress(p,"pcal_lu",&(fidu[p]->part_Cal_PCAL_lu[0]));
+    SetParticleBranchAddress(p,"pcal_lv",&(fidu[p]->part_Cal_PCAL_lv[0]));
+    SetParticleBranchAddress(p,"pcal_lw",&(fidu[p]->part_Cal_PCAL_lw[0]));
+    //
+    SetParticleBranchAddress(p,"dcTrk_found",&fidu[p]->part_DC_Track_found[0]());
+    SetParticleBranchAddress(p,"dcTrk_chi2",&(fidu[p]->part_DC_Track_chi2[0]));
+    SetParticleBranchAddress(p,"dcTrk_ndf",&(fidu[p]->part_DC_Track_NDF[0]));
+    SetParticleBranchAddress(p,"dcTrk_status",&(fidu[p]->part_DC_Track_status[0]));
+    //
+    SetParticleBranchAddress(p,"dcTraj_found",&(fidu[p]->part_DC_Traj_found[0]));
+    SetParticleBranchAddress(p,"dcTraj_c1x",&(fidu[p]->part_DC_c1x[0]));
+    SetParticleBranchAddress(p,"dcTraj_c1y",&(fidu[p]->part_DC_c1y[0]));
+    SetParticleBranchAddress(p,"dcTraj_c1z",&(fidu[p]->part_DC_c1z[0]));
+    SetParticleBranchAddress(p,"dcTraj_c2x",&(fidu[p]->part_DC_c2x[0]));
+    SetParticleBranchAddress(p,"dcTraj_c2y",&(fidu[p]->part_DC_c2y[0]));
+    SetParticleBranchAddress(p,"dcTraj_c2z",&(fidu[p]->part_DC_c2z[0]));
+    SetParticleBranchAddress(p,"dcTraj_c3x",&(fidu[p]->part_DC_c3x[0]));
+    SetParticleBranchAddress(p,"dcTraj_c3y",&(fidu[p]->part_DC_c3y[0]));
+    SetParticleBranchAddress(p,"dcTraj_c3z",&(fidu[p]->part_DC_c3z[0]));
   };
-
-
-
-  // instantiate useful objects
-  DIS * disEv = new DIS();
-  disEv->debug = 0;
-  Dihadron * dih = new Dihadron();
-  dih->debug = 0;
-  dih->useBreit = false;
-  Trajectory * traj[nPar];
-  for(int p=0; p<nPar; p++) traj[p] = new Trajectory();
 
 
   // define outroot file
@@ -183,6 +164,7 @@ int main(int argc, char** argv) {
   outrootTr->Branch("eleVertex",disEv->eleVertex,"eleVertex[3]/F");
   outrootTr->Branch("eleStatus",&(disEv->eleStatus),"eleStatus/I");
   outrootTr->Branch("eleChi2pid",&(disEv->eleChi2pid),"eleChi2pid/F");
+  outrootTr->Branch("eleFiduCut",fidu[kEle]->fiduCut,"eleFiduCut[3]/O");
   // - hadron branches
   outrootTr->Branch("pairType",&(dih->pairType),"pairType/I");
   outrootTr->Branch("hadRow",dih->hadRow,"hadRow[2]/I");
@@ -197,6 +179,8 @@ int main(int argc, char** argv) {
   outrootTr->Branch("hadStatus",dih->hadStatus,"hadStatus[2]/I");
   outrootTr->Branch("hadBeta",dih->hadBeta,"hadBeta[2]/F");
   outrootTr->Branch("hadChi2pid",dih->hadChi2pid,"hadChi2pid[2]/F");
+  Bool_t fiduCutHad[2][FiducialCuts::nLevel];
+  outrootTr->Branch("hadFiduCut",fiduCutHad,"hadFiduCut[2][3]/O");
   // - dihadron branches
   outrootTr->Branch("Mh",&(dih->Mh),"Mh/F");
   outrootTr->Branch("Mmiss",&(dih->Mmiss),"Mmiss/F");
@@ -227,7 +211,10 @@ int main(int argc, char** argv) {
   outrootTr->Branch("helicity",&helicity,"helicity/I");
 
 
+
+  //-----------------------------------
   // loop through diskim tree
+  //-----------------------------------
   for(int i=0; i<ditr->GetEntries(); i++) {
     if(i%10000==0) printf("[+] %.2f%%\n",100*((float)i)/ditr->GetEntries());
     //if(i>30000) break; // limiter
@@ -244,7 +231,12 @@ int main(int argc, char** argv) {
     evnumHi = (Int_t) evnumHi_float;
     evnum = evnumLo + (evnumHi<<16);
 
-    // set trajectories
+    // fiducial cuts
+    for(int p=0; p<nPar; p++) {
+      fidu[p]->ApplyCuts(runnum,(int)Pid[p]);
+    };
+
+    // set Trajectory values (not DC trajectories, but Trajectory class)
     for(int p=0; p<nPar; p++) {
       traj[p]->Row = (Int_t) Row[p];
       traj[p]->Idx = PIDtoIdx((Int_t)Pid[p]);
@@ -261,11 +253,21 @@ int main(int argc, char** argv) {
     // calculate dihadron kinematics
     // - CorrectOrder (from Constants.h) ensures the standard hadron
     //   ordering is used (see Constants::diHadIdx)
+    //   - also ensures the hadrons' fiducial cuts are ordered properly
     if(CorrectOrder( traj[kHadA]->Idx, traj[kHadB]->Idx )) {
       dih->CalculateKinematics( traj[kHadA], traj[kHadB], disEv );
+      for(int l=0; l<FiducialCuts::nLevel; l++) {
+        fiduCutHad[qA][l] = fidu[kHadA]->fiduCut[l];
+        fiduCutHad[qB][l] = fidu[kHadB]->fiduCut[l];
+      };
     } else {
       dih->CalculateKinematics( traj[kHadB], traj[kHadA], disEv );
+      for(int l=0; l<FiducialCuts::nLevel; l++) {
+        fiduCutHad[qA][l] = fidu[kHadB]->fiduCut[l];
+        fiduCutHad[qB][l] = fidu[kHadA]->fiduCut[l];
+      };
     };
+
 
     // fill the outroot tree
     outrootTr->Fill();
@@ -277,34 +279,4 @@ int main(int argc, char** argv) {
   outrootTr->Write();
   printf("tree written\n");
   outrootFile->Close();
-
-
-
-  // electron fiducial cuts branches TODO
-  /*
-  Bool_t eleFidPCAL[FiducialCuts::nLevel];
-  Bool_t eleFidDC[FiducialCuts::nLevel];
-  TString brsuffix = Form("[%d]",FiducialCuts::nLevel);
-  tree->Branch("eleFidPCAL",eleFidPCAL,TString("eleFidPCAL"+brsuffix+"/O"));
-  tree->Branch("eleFidDC",eleFidDC,TString("eleFidDC"+brsuffix+"/O"));
-  */
-
-  // multiplicity branches TODO: remove from downstream code
-  /*
-  Int_t particleCntAll;
-  TString particleCntStr = Form("particleCnt[%d]/I",nParticles);
-  tree->Branch("particleCnt",trajCnt,particleCntStr); // number of each type of particle
-  // that we consider, as defined in
-  // Constants.h
-  tree->Branch("particleCntAll",&particleCntAll,"particleCntAll/I"); // total number
-  // of particles in the event (note:
-  // includes particles not in
-  // Constants.h)
-  */
-  //tree->Branch("hadOrder",&hadOrder,"hadOrder/I"); // TODO
-  //tree->Branch("torus",&torus,"torus/F"); // TODO
-  //tree->Branch("solenoid",&solenoid,"solenoid/F"); // TODO
-  //tree->Branch("triggerBits",&triggerBits,"triggerBits/L"); // TODO
-
-
 };
