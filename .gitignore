@@ -2,7 +2,7 @@
 *.exe
 *.o
 *.so
-*.pcm
+src/*.pcm
 *.root
 *.png
 *.pdf

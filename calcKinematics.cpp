@@ -29,6 +29,7 @@ enum parEnum {kEle,kHadA,kHadB,nPar};
 TString parName[nPar];
 TFile * diskimFile;
 TTree * ditr;
+TFile * outrootFile;
 TTree * outrootTr;
 
 void SetParticleBranchAddress(Int_t par, TString brName, Float_t * brVar) {
@@ -162,7 +163,7 @@ int main(int argc, char** argv) {
   // define outroot file
   TString outrootFileN = infileN;
   outrootFileN(TRegexp("^.*/")) = "outroot/";
-  TFile * outrootFile = new TFile(outrootFileN,"RECREATE");
+  outrootFile = new TFile(outrootFileN,"RECREATE");
 
 
   // define outroot tree
@@ -229,8 +230,8 @@ int main(int argc, char** argv) {
   // loop through diskim tree
   for(int i=0; i<ditr->GetEntries(); i++) {
     if(i%10000==0) printf("[+] %.2f%%\n",100*((float)i)/ditr->GetEntries());
-    if(i>30000) break; // limiter
-    ditr->GetEntry();
+    //if(i>30000) break; // limiter
+    ditr->GetEntry(i);
 
     // reset branches
     disEv->ResetVars();
@@ -272,6 +273,7 @@ int main(int argc, char** argv) {
 
 
   // write output and close
+  outrootFile->cd();
   outrootTr->Write();
   printf("tree written\n");
   outrootFile->Close();
