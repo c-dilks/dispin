@@ -182,6 +182,11 @@ def fillDetectorLeaves = { br ->
   }
   /* trajectories */
   found = brDet.containsKey('dcTraj')
+  if(found) {
+    found = brDet['dcTraj'].containsKey('c1') &&
+            brDet['dcTraj'].containsKey('c2') &&
+            brDet['dcTraj'].containsKey('c3');
+  }
   leaves << (found ? 1.0 : 0.0)
   (1..3).each{ reg ->
     leaves << ['x','y','z'].collect{ 

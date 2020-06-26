@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
     SetParticleBranchAddress(p,"pcal_lv",&(fidu[p]->part_Cal_PCAL_lv[0]));
     SetParticleBranchAddress(p,"pcal_lw",&(fidu[p]->part_Cal_PCAL_lw[0]));
     //
-    SetParticleBranchAddress(p,"dcTrk_found",&fidu[p]->part_DC_Track_found[0]());
+    SetParticleBranchAddress(p,"dcTrk_found",&(fidu[p]->part_DC_Track_found[0]));
     SetParticleBranchAddress(p,"dcTrk_chi2",&(fidu[p]->part_DC_Track_chi2[0]));
     SetParticleBranchAddress(p,"dcTrk_ndf",&(fidu[p]->part_DC_Track_NDF[0]));
     SetParticleBranchAddress(p,"dcTrk_status",&(fidu[p]->part_DC_Track_status[0]));

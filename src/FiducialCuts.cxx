@@ -57,14 +57,16 @@ void FiducialCuts::ApplyCuts(int runnum_, int pid_) {
     // apply cuts, depending on the value of particleType
     // - electron
     if(particleType == kElectron) {
+      // -- cut 1.1
       fcutEleEC = (part_Cal_PCAL_found[0]>0) ? 
         this->EC_hit_position_fiducial_cut_homogeneous(0) : false;
       for(int r=0; r<nReg; r++) {
         if(part_DC_Traj_found[0]>0) {
-          fcutEleDC1[r] = 
-            this->DC_hit_position_counts_fiducial_cut(0,r+1);
-          fcutEleDC2[r] =
-            this->DC_fiducial_cut_chi2(0,r+1,11);
+          // -- cut 2.1 // DISABLED
+          //fcutEleDC1[r] = this->DC_hit_position_counts_fiducial_cut(0,r+1);
+          fcutEleDC1[r] = true;
+          // -- cut 2.2
+          fcutEleDC2[r] = this->DC_fiducial_cut_chi2(0,r+1,11);
         } else {
           fcutEleDC1[r] = false;
           fcutEleDC2[r] = false;
@@ -77,6 +79,7 @@ void FiducialCuts::ApplyCuts(int runnum_, int pid_) {
     // - hadrons
     else if(particleType == kHadron) {
       for(int r=0; r<nReg; r++) {
+        // -- cut 2.2
         fcutHadDC[r] = (part_DC_Traj_found[0]>0) ? 
           this->DC_fiducial_cut_chi2(0,r+1,pid_) : false;
       };

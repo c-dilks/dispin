@@ -23,6 +23,10 @@ class FiducialCuts : public TObject {
     FiducialCuts(int particleType_);
     ~FiducialCuts(){};
 
+    // enumerators
+    enum levelEnum { cutTight, cutMedium, cutLoose, nLevel }; // cut levels
+    enum particleTypeEnum { kElectron, kHadron, nParticleType };
+
     // method which applies the cuts
     // - needs particleType
     // - sets booleans listed below
@@ -34,15 +38,40 @@ class FiducialCuts : public TObject {
     // Stefan's methods (the integer argument is the particle number, 
     // just use 0; see below); these are called by ApplyCuts
     int determineSector(int i);
-    bool EC_hit_position_fiducial_cut_homogeneous(int j); // electrons, photons
-    bool EC_hit_position_fiducial_cut(int j); // photons
-    bool DC_hit_position_counts_fiducial_cut(int j, int region); // electrons only
-    bool DC_fiducial_cut_chi2(int j, int region, int part_pid); // electrons, hadrons
+    /// 1.1 A homgenous cut for all sectors which does not consider variations
+    // of the sampling fraction. This cut assumes, that for the electron ID
+    // only a proper cluster formation is required, which is given, if the
+    // center of the cluster has enough distance to the edges.  
+    // - loose: cuts 1 bar from the outer side (4.5 cm)
+    // - medium: cuts 2 bars from the outer side (9.0 cm)
+    // - tight: cuts 3 bars from the outer side (13.5 cm)
+    // - applies to: electrons, photons
+    bool EC_hit_position_fiducial_cut_homogeneous(int j);
+    /// 1.2 PCAL fiducial cut based on fitted sampling fraction; cut
+    // criterium is drop of sampling fraction
+    // - loose: The mean value of E/p is allowed to drop to 2 RMS of the
+    //   distribution 
+    // - medium: The mean value of E/p is allowed to drop to 1.5 RMS of the
+    //   distribution 
+    // - tight: The mean value of E/p is allowed to drop to 1 RMS of the
+    //   distribution 
+    // - applies to: photons
+    bool EC_hit_position_fiducial_cut(int j);
+    /// 2.1 DC fiducial cuts for the 3 regions based on the drop of the count
+    // rate at the edeges of the DC
+    // - loose: count rate can drop to 35 %
+    // - medium: count rate can drop to 50 %
+    // - tight: count rate can drop to 65 %
+    // - applies to: electrons only
+    bool DC_hit_position_counts_fiducial_cut(int j, int region);
+    /// 2.2 DC fiducial cuts for the 3 regions based on the chi2/NDF value of
+    // the tracks
+    // - loose,medium,tight: no difference
+    // - applies to: hadrons (also electrons, but with some uncertainty)
+    bool DC_fiducial_cut_chi2(int j, int region, int part_pid);
 
 
-    enum levelEnum { cutTight, cutMedium, cutLoose, nLevel }; // cut levels
-    enum particleTypeEnum { kElectron, kHadron, nParticleType };
-    const int nReg = 3; // number of DC regions
+    static const int nReg = 3; // number of DC regions
 
     // variables are arrays of length 1
     // - Stefan's original code is meant to run at the event level; 
