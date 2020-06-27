@@ -6,14 +6,20 @@ if [ -z "$DISPIN_HOME" ]; then source env.sh; fi
 if [ $# -ne 1 ];then echo "USAGE: $0 [train directory]"; exit; fi
 traindir=$1
 
+if [ ! -d "diskim" ]; then
+  echo "ERROR: create/link diskim directory"; exit;
+fi
+if [ ! -d "outroot" ]; then
+  echo "ERROR: create/link outroot directory"; exit;
+fi
+
 
 # build list of files, and cleanup outdat and outmon directories
 jobsuffix=$(echo $traindir|sed 's/^.*\///g')
-joblist=jobs.${jubsuffix}.slurm
-echo "writing joblist to $joblist"
+joblist=jobs.${jobsuffix}.slurm
 > $joblist
-for skimfile in ${train}/skim*.hipo; do
-  diskimfile="$(echo $skimfile|sed 's/^.*\///g').root"
+for skimfile in ${traindir}/skim*.hipo; do
+  diskimfile="diskim/$(echo $skimfile|sed 's/^.*\///g').root"
   cmd="run-groovy skimDihadrons.groovy $skimfile"
   cmd="$cmd && calcKinematics.exe $diskimfile"
   cmd="$cmd && rm $diskimfile"
@@ -24,7 +30,7 @@ done
 # write job descriptor
 slurm=job.${jobsuffix}.slurm
 > $slurm
-rm -v /farm_out/`whoami`/clasqa*
+rm -v /farm_out/`whoami`/dispin_diskim*
 
 function app { echo "$1" >> $slurm; }
 

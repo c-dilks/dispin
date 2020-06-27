@@ -10,3 +10,6 @@ src/*.pcm
 src/DiSpinDict.*
 outz
 fiducial_cuts_preliminary_version.cxx
+outroot
+diskim
+*.slurm
