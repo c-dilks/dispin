@@ -10,8 +10,6 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
 
   debug = true;
 
-  useDiphBG = false;
-
   DecodePairType(whichPair_,whichHad[qA],whichHad[qB]);
   printf("\n>>> DIHADRON SELECTION: %s\n\n",PairName(whichHad[qA],whichHad[qB]).Data());
 
@@ -37,12 +35,11 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
   chain->SetBranchAddress("eleVertex",eleVertex);
   chain->SetBranchAddress("eleStatus",&eleStatus);
   chain->SetBranchAddress("eleChi2pid",&eleChi2pid);
-  chain->SetBranchAddress("eleFidPCAL",eleFidPCAL);
-  chain->SetBranchAddress("eleFidDC",eleFidDC);
 
+  chain->SetBranchAddress("eleFiduCut",eleFiduCut);
+  chain->SetBranchAddress("hadFiduCut",hadFiduCut);
 
   chain->SetBranchAddress("pairType",&pairType);
-  chain->SetBranchAddress("hadOrder",&hadOrder);
   chain->SetBranchAddress("hadIdx",hadIdx);
   chain->SetBranchAddress("hadE",hadE);
   chain->SetBranchAddress("hadP",hadP);
@@ -65,9 +62,6 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
   if(chain->GetBranch("hadXF")) chain->SetBranchAddress("hadXF",hadXF);
   else { for(int h=0; h<2; h++) hadXF[h]=UNDEF; };
   /////////////
-
-  chain->SetBranchAddress("particleCnt",particleCnt);
-  //chain->SetBranchAddress("particleCntAll",&particleCntAll);
 
   chain->SetBranchAddress("Mh",&Mh);
   chain->SetBranchAddress("Mmiss",&Mmiss);
@@ -96,8 +90,6 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
 
   chain->SetBranchAddress("runnum",&runnum);
   chain->SetBranchAddress("evnum",&evnum);
-  chain->SetBranchAddress("torus",&torus);
-  chain->SetBranchAddress("triggerBits",&triggerBits);
   chain->SetBranchAddress("helicity",&helicity);
 
   if(chain->GetBranch("helicityMC")) chain->SetBranchAddress("helicityMC",helicityMC);
@@ -128,19 +120,6 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
     };
   };
 
-  chain->SetBranchAddress("diphCnt",&diphCnt);
-  chain->SetBranchAddress("diphPhotE",diphPhotE);
-  chain->SetBranchAddress("diphPhotPt",diphPhotPt);
-  chain->SetBranchAddress("diphPhotEta",diphPhotEta);
-  chain->SetBranchAddress("diphPhotPhi",diphPhotPhi);
-  chain->SetBranchAddress("diphE",diphE);
-  chain->SetBranchAddress("diphZ",diphZ);
-  chain->SetBranchAddress("diphPt",diphPt);
-  chain->SetBranchAddress("diphM",diphM);
-  chain->SetBranchAddress("diphAlpha",diphAlpha);
-  chain->SetBranchAddress("diphEta",diphEta);
-  chain->SetBranchAddress("diphPhi",diphPhi);
-
   // random number generator (for random theta symmetrization)
   RNG = new TRandom(928); // (argument is seed)
 
@@ -163,44 +142,6 @@ void EventTree::GetEvent(Int_t i) {
 
   chain->GetEntry(i);
 
-  /* 
-   * // CODE TO BE USED FOR MC GEN READING
-   *
-  // calculate DIS and Dihadron kinematics (GetDihadronObj calls GetDISObj,
-  // so that both `objDihadron` and `objDIS` will contain all the kinematics we want)
-  this->GetDihadronObj();
-
-  // set kinematic variables
-  // -- DIS kinematics
-  W = objDIS->W;
-  Q2 = objDIS->Q2;
-  Nu = objDIS->Nu;
-  x = objDIS->x;
-  y = objDIS->y;
-  // -- dihadron kinematics
-  Mh = objDihadron->Mh;
-  Mmiss = objDihadron->Mmiss;
-  for(int h=0; h<2; h++) Z[h] = objDihadron->z[h];
-  Zpair = objDihadron->zpair;
-  zeta = objDihadron->zeta;
-  xF = objDihadron->xF;
-  alpha = objDihadron->alpha;
-  theta = objDihadron->theta;
-  Ph = objDihadron->PhMag;
-  PhPerp = objDihadron->PhPerpMag;
-  PhEta = objDihadron->PhEta;
-  PhPhi = objDihadron->PhPhi;
-  R = objDihadron->RMag;
-  RPerp = objDihadron->RPerpMag;
-  RT = objDihadron->RTMag;
-  PhiH = objDihadron->PhiH;
-  // -- phiR angles
-  PhiRq = objDihadron->PhiRq; // via R_perp
-  PhiRp = objDihadron->PhiRp; // via R_T
-  PhiRp_r = objDihadron->PhiRp_r; // via R_T (frame-dependent)
-  PhiRp_g = objDihadron->PhiRp_g; // via eq. 9 in 1408.5721
-  */
-
   // set preferred PhiR angle
   PhiR = PhiRp; // preferred definition by Bacchetta (see Dihadron.cxx)
   PhiHR = Tools::AdjAngle( PhiH - PhiR );
@@ -218,7 +159,8 @@ void EventTree::GetEvent(Int_t i) {
   //if( RNG->Rndm() > 0.5 ) theta = PI - theta; // coin-flip symmetrization
   //theta = PI-theta; // full theta flip
 
-  // convert eta to polar angle theta (not to be confused with partial wave theta)
+  // convert eta to polar angle theta 
+  // (not to be confused with partial wave theta)
   for(int h=0; h<2; h++) {
     hadTheta[h] = Tools::EtaToTheta(hadEta[h]);
     gen_hadTheta[h] = MCrecMode ? Tools::EtaToTheta(gen_hadEta[h]) : UNDEF;
@@ -230,49 +172,6 @@ void EventTree::GetEvent(Int_t i) {
   cutY = y < 0.8;
   cutDIS = cutQ2 && cutW && cutY;
 
-
-
-  // diphoton and pi0/BG cuts
-  // -- if dihadron does not include pi0s, just set to true; first we set
-  //    the booleans' default values to true
-  for(int h=0; h<2; h++) {
-    cutDiphKinematics[h] = true;
-    cutDiph[h] = true;
-    for(int p=0; p<2; p++) angEle[h][p] = UNDEF;
-  };
-  // -- then if there are diphotons in this dihadron we evaluate their cuts
-  if(diphCnt>0) {
-    eleMom.SetPtEtaPhiE(elePt,eleEta,elePhi,eleE);
-    for(int h=0; h<diphCnt; h++) {
-
-      // compute angle of photons wrt electron
-      for(int p=0; p<2; p++) {
-        photMom[p].SetPtEtaPhiE(
-          diphPhotPt[h][p], diphPhotEta[h][p],
-          diphPhotPhi[h][p], diphPhotE[h][p] );
-        angEle[h][p] = Tools::AngleSubtend( photMom[p].Vect(), eleMom.Vect() );
-        angEle[h][p] *= TMath::RadToDeg();
-      };
-
-      // diphoton kinematics cut
-      cutDiphKinematics[h] = angEle[h][0]>8 && angEle[h][1]>8 &&
-                             diphPhotE[h][0]>0.6 && diphPhotE[h][1]>0.6;
-                             //Tools::PhiFiducialCut(diphPhotPhi[h][0]) && 
-                             //Tools::PhiFiducialCut(diphPhotPhi[h][1]);
-
-      // mass cut (depends on whether pi0 signal or BG is desired
-      if(useDiphBG) {
-        // BG cut
-        cutDiph[h] = cutDiphKinematics[h] && diphM[h] < 0.1 || diphM[h] > 0.16;
-      } else {
-        // pi0 cut
-        cutDiph[h] = cutDiphKinematics[h] && diphM[h] >= 0.1 && diphM[h] <= 0.16;
-      };
-    };
-  };
-
-
-
   // dihadron kinematics cuts
   cutDihadronKinematics = 
     Zpair < 0.95 &&
@@ -280,52 +179,29 @@ void EventTree::GetEvent(Int_t i) {
     hadXF[qA] > 0 && hadXF[qB] > 0 &&
     hadP[qA] > 1.25 && hadP[qB] > 1.25;
 
+
   // cutDihadron is the full dihadron cut
   cutDihadron = 
     Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) &&
-    cutDihadronKinematics && 
-    cutDiph[qA] && cutDiph[qB];
-
-  
-  //// cut for doing cross-checks - deprecated
-  //// -- tim's cuts
-  //cutCrossCheck = 
-    //Tools::PairSame(hadIdx[qA],hadIdx[qB],kPip,kPim) &&
-    ///*
-    //particleCnt[kPip]==1 && particleCnt[kPim]==1 &&
-    //Tools::EMtoP(hadE[qA],PartMass(kPip)) > 1.0 &&
-    //Tools::EMtoP(hadE[qB],PartMass(kPim)) > 1.0 &&
-    //Tools::EMtoP(eleE,PartMass(kE)) > 2.0 &&
-    //*/
-    //Q2>1 && W>2;
+    cutDihadronKinematics;
 
 
   // vertex cuts
   cutVertex = eleVertex[eZ]     > -8  &&  eleVertex[eZ]     < 3  &&
               hadVertex[qA][eZ] > -8  &&  hadVertex[qA][eZ] < 3  &&
               hadVertex[qB][eZ] > -8  &&  hadVertex[qB][eZ] < 3;
-  if(diphCnt>0) { // diphotons don't yet have a vertex! TODO
-    if(hadIdx[qA]==kDiph && hadIdx[qB]==kDiph) 
-      cutVertex = eleVertex[eZ] > -8  &&  eleVertex[eZ] < 3;
-    else if(hadIdx[qA]==kDiph) 
-      cutVertex = eleVertex[eZ]     > -8  &&  eleVertex[eZ]     < 3  &&
-                  hadVertex[qB][eZ] > -8  &&  hadVertex[qB][eZ] < 3;
-    else if(hadIdx[qB]==kDiph) 
-      cutVertex = eleVertex[eZ]     > -8  &&  eleVertex[eZ]     < 3  &&
-                  hadVertex[qA][eZ] > -8  &&  hadVertex[qA][eZ] < 3;
-  };
 
 
   // fiducial cuts
   whichLevel = FiducialCuts::cutLoose;
-  cutFiducial = eleFidPCAL[whichLevel] && eleFidDC[whichLevel];
-  //cutFiducial = true; // override
+  cutFiducial = eleFiduCut[whichLevel] && 
+                hadFiduCut[qA][whichLevel] &&
+                hadFiduCut[qB][whichLevel];
   
-  // require hadrons observed in forward detectors
-  cutDihadronStatus = 
-    ( TMath::Abs(hadStatus[qA])<4000 || TMath::Abs(hadStatus[qA])>=5000 ) &&
-    ( TMath::Abs(hadStatus[qB])<4000 || TMath::Abs(hadStatus[qB])>=5000 );
 
+  // check if helicity is defined
+  cutHelicity = this->SpinState()==sP || this->SpinState()==sM;
+  
 
   // MCgen and MCrec matching cut
   cutMCmatch = MCrecMode && matchDiff>=0 && matchDiff<0.02;
@@ -336,8 +212,7 @@ void EventTree::GetEvent(Int_t i) {
 /////////////////////////////////////////////////////////
 // MAIN ANALYSIS CUT
 Bool_t EventTree::Valid() {
-  return cutDIS && cutDihadron &&
-         /*cutVertex && cutFiducial &&*/ cutDihadronStatus;
+  return cutDIS && cutDihadron && cutHelicity /*&& cutVertex && cutFiducial*/;
 };
 /////////////////////////////////////////////////////////
 
@@ -387,9 +262,6 @@ void EventTree::PrintEventVerbose() {
   printf("  pairType=0x%x",pairType);
   printf("\n");
   printf("  helicity=%d",helicity);
-  printf("  torus=%.1f",torus);
-  printf("\n");
-  printf("  triggerBits=%lld",triggerBits);
   printf("\n");
   printf("[---] DIS Kinematics\n");
   printf("  x=%.2f",x);
@@ -447,7 +319,6 @@ void EventTree::PrintEvent() {
 
 void EventTree::PrintEventLine() {
   printf("%d",evnum);
-  printf(" %d",hadOrder);
   for(int h=0; h<2; h++) {
     printf(" %.5f",hadP[h]);
     printf(" %.5f",hadPt[h]);

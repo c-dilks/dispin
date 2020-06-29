@@ -18,7 +18,7 @@ import clasqa.QADB
 
 ////////////////////////
 // ARGUMENTS
-def inHipoName = "../data/skim/skim4_5052.hipo" // skim file
+def inHipoName = "../data/skim/skim4_005052.hipo" // skim file
 if(args.length>=1) inHipoName = args[0]
 ////////////////////////
 // OPTIONS

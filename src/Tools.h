@@ -119,16 +119,6 @@ class Tools {
       return (a1==b1 && a2==b2) || (a1==b2 && a2==b1);
     };
 
-
-
-    // azimuthal fiducial cut
-    static Bool_t PhiFiducialCut(Float_t phi_) {
-      for(int p=0; p<=3; p++) {
-        if( fabs( fabs(phi_) - p*PI/3.0) < 0.35 ) return true;
-      };
-      return false;
-    };
-
     
     static void ApplyProfile(TH2D * histo, Int_t whichAxis) {
       TProfile * prof;

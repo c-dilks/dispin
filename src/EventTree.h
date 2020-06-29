@@ -65,7 +65,6 @@ class EventTree : public TObject
 
     // hadron kinematics
     Int_t pairType;
-    Int_t hadOrder;
     Int_t hadIdx[2];
     Float_t hadE[2];
     Float_t hadP[2];
@@ -89,13 +88,12 @@ class EventTree : public TObject
     Float_t eleVertex[3];
     Int_t eleStatus;
     Float_t eleChi2pid;
-    Bool_t eleFidPCAL[FiducialCuts::nLevel];
-    Bool_t eleFidDC[FiducialCuts::nLevel];
 
+    // fiducial cuts
+    Bool_t eleFiduCut[FiducialCuts::nLevel];
+    Bool_t hadFiduCut[2][FiducialCuts::nLevel];
 
     // dihadron kinematics
-    Int_t particleCnt[nParticles];
-    //Int_t particleCntAll;
     Float_t Mh,Zpair,PhiH,Mmiss,xF,alpha;
     Float_t Z[2];
     Float_t zeta;
@@ -107,8 +105,6 @@ class EventTree : public TObject
 
     // event-level branches
     Int_t evnum,runnum;
-    Float_t torus;
-    Long64_t triggerBits;
     Int_t helicity;
     static const Int_t NhelicityMC = 12;
     Int_t helicityMC[NhelicityMC];
@@ -129,21 +125,6 @@ class EventTree : public TObject
     Float_t b_PhiRp_g;
     */
 
-    // diphotons
-    Int_t diphCnt;
-    Float_t diphPhotE[2][2]; // [diphCnt] [photon 0 or 1]
-    Float_t diphPhotPt[2][2];
-    Float_t diphPhotEta[2][2];
-    Float_t diphPhotPhi[2][2];
-    Float_t diphE[2]; // [diphCnt]
-    Float_t diphZ[2];
-    Float_t diphPt[2];
-    Float_t diphM[2];
-    Float_t diphAlpha[2];
-    Float_t diphEta[2];
-    Float_t diphPhi[2];
-    Float_t angEle[2][2];
-    ///////////////////////////
 
 
     ///////////////////////////
@@ -152,16 +133,13 @@ class EventTree : public TObject
     Bool_t cutQ2,cutW,cutY,cutDIS;
     Bool_t cutDihadronKinematics;
     Bool_t cutDihadron;
-    Bool_t cutDiphKinematics[2];
-    Bool_t cutDiph[2];
+    Bool_t cutHelicity;
     //Bool_t cutCrossCheck;
     Bool_t cutVertex;
     Bool_t cutFiducial;
-    Bool_t cutDihadronStatus;
     Bool_t cutMCmatch;
 
     // OTHER VARIABLES
-    Bool_t useDiphBG;
     Int_t whichHelicityMC;
 
     /*
@@ -200,7 +178,6 @@ class EventTree : public TObject
     Trajectory * trEle;
     Trajectory * trHad[2];
 
-    TLorentzVector photMom[2];
     TLorentzVector hadMom[2];
     TLorentzVector eleMom;
 
