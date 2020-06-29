@@ -16,17 +16,17 @@ if [ ! -d "outroot" ]; then
   echo "ERROR: you must create or link an outroot directory"; exit;
 fi
 
+# cleanup
+rm -vf diskim/*.root
+rm -vf outroot/*.root
+
 
 # build list of files, and cleanup outdat and outmon directories
 jobsuffix=$(echo $traindir|sed 's/\/$//'|sed 's/^.*\///g')
 joblist=jobs.${jobsuffix}.slurm
 > $joblist
 for skimfile in ${traindir}/skim*.hipo; do
-  diskimfile="diskim/$(echo $skimfile|sed 's/^.*\///g').root"
-  cmd="run-groovy skimDihadrons.groovy $skimfile"
-  cmd="$cmd && calcKinematics.exe $diskimfile"
-  #cmd="$cmd && rm $diskimfile"#####################################
-  echo $cmd >> $joblist
+  echo "./runDiskim.sh $skimfile" >> $joblist
 done
 
 # TESTING
@@ -39,7 +39,7 @@ rm tempo
 # write job descriptor
 slurm=job.${jobsuffix}.slurm
 > $slurm
-rm -v /farm_out/`whoami`/dispin_diskim*
+rm -vf /farm_out/`whoami`/dispin_diskim*
 
 function app { echo "$1" >> $slurm; }
 
