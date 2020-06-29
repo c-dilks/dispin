@@ -22,7 +22,7 @@ dihadron spin asymmetry analysis
 - if you clone this repository with the option `--recurse-submodules`, it will
   clone a copy of [`j2root`](https://github.com/drewkenjo/j2root) to the
   directory `deps/j2root`
-- `cd` to this directory and follow the `README.md` within
+- `cd` to this directory and follow the `README.md` within for compilation
 - this repository provides the ability to write data to `root` files with
   groovy
 - notes:
@@ -46,3 +46,6 @@ dihadron spin asymmetry analysis
 
 # Usage
 - first call `source env.sh`
+- create or link `diskim` and `outroot` directories
+
+

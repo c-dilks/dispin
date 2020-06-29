@@ -1,30 +1,39 @@
 #!/bin/bash
 # builds diskim files, and subsequently, outroot files
 
-if [ -z "$DISPIN_HOME" ]; then source env.sh; fi
 
 if [ $# -ne 1 ];then echo "USAGE: $0 [train directory]"; exit; fi
 traindir=$1
 
+# check setup
+if [ -z "$DISPIN_HOME" ]; then
+  echo "ERROR: you must source env.sh first"; exit
+fi
 if [ ! -d "diskim" ]; then
-  echo "ERROR: create/link diskim directory"; exit;
+  echo "ERROR: you must create or link a diskim directory"; exit;
 fi
 if [ ! -d "outroot" ]; then
-  echo "ERROR: create/link outroot directory"; exit;
+  echo "ERROR: you must create or link an outroot directory"; exit;
 fi
 
 
 # build list of files, and cleanup outdat and outmon directories
-jobsuffix=$(echo $traindir|sed 's/^.*\///g')
+jobsuffix=$(echo $traindir|sed 's/\/$//'|sed 's/^.*\///g')
 joblist=jobs.${jobsuffix}.slurm
 > $joblist
 for skimfile in ${traindir}/skim*.hipo; do
   diskimfile="diskim/$(echo $skimfile|sed 's/^.*\///g').root"
   cmd="run-groovy skimDihadrons.groovy $skimfile"
   cmd="$cmd && calcKinematics.exe $diskimfile"
-  cmd="$cmd && rm $diskimfile"
+  #cmd="$cmd && rm $diskimfile"#####################################
   echo $cmd >> $joblist
 done
+
+# TESTING
+mv $joblist tempo
+head -n5 tempo > $joblist
+rm tempo
+#########3
 
 
 # write job descriptor
@@ -60,7 +69,7 @@ printf '%70s\n' | tr ' ' -
 echo "JOB DESCRIPTOR: $slurm"
 cat $slurm
 printf '%70s\n' | tr ' ' -
-exit # exit before job submission
+#exit # exit before job submission (for testing)
 echo "submitting to slurm..."
 sbatch $slurm
 squeue -u `whoami`
