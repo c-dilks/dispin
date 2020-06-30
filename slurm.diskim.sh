@@ -29,12 +29,6 @@ for skimfile in ${traindir}/skim*.hipo; do
   echo "./runDiskim.sh $skimfile" >> $joblist
 done
 
-# TESTING
-mv $joblist tempo
-head -n5 tempo > $joblist
-rm tempo
-#########3
-
 
 # write job descriptor
 slurm=job.${jobsuffix}.slurm

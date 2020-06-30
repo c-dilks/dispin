@@ -19,4 +19,5 @@ fi
 skimfile=$1
 diskimfile="diskim/$(echo $skimfile|sed 's/^.*\///g').root"
 run-groovy skimDihadrons.groovy $skimfile && sleep 1 && calcKinematics.exe $diskimfile
+sleep 1
 rm -v $diskimfile
