@@ -329,6 +329,10 @@ Asymmetry::Asymmetry(Binning * binScheme, Int_t binNum) {
   rfRellum = new RooRealVar("rfRellum","R",0,3);
 
   // - data sets for each spin
+  // -- stored as RooDataSet; by default, RooDataSet uses a std::vector 
+  //    backend, which is memory based; since we are analyzing a large data
+  //    set, it is much more efficient to use the TTree backend, which
+  //    is disk IO based
   RooAbsData::setDefaultStorageType(RooAbsData::Tree); // use TTree backend
   rfData = new RooDataSet(
     TString("rfData"+binN),TString("rfData"+binN),

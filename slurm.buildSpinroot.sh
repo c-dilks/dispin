@@ -12,6 +12,8 @@ if [ $# -eq 0 ]; then
 fi
 args=$*
 
+rm -vf spinroot/*.root
+
 
 slurm=job.${exe}.slurm
 > $slurm
@@ -22,7 +24,7 @@ nruns=$(ls ${outrootdir}/*.root | wc -l)
 let nruns--
 
 app "#!/bin/bash"
-app "#SBATCH --job-name=dihbsa_${exe}"
+app "#SBATCH --job-name=dispin_${exe}"
 app "#SBATCH --account=clas12"
 app "#SBATCH --partition=production"
 app "#SBATCH --mem-per-cpu=500"
