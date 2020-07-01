@@ -10,7 +10,9 @@ DIS::DIS() {
   debug = false;
   speedup = false;
 
-  BeamEn = 10.6041;
+  BeamEn = 10.6041; // this is constant for all of pass1 data:
+                    // 5032-5419 inbending
+                    // 5422-5666 outbending
 
   vecBeam = TLorentzVector(
     0.0,

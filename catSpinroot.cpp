@@ -60,10 +60,9 @@ int main(int argc, char** argv) {
   };
 
   // extract binning scheme from a spinroot file, 
-  TFile * spinrootFile;
-  spinrootFile = new TFile(spinrootFileList.at(0),"READ");
-  spinrootFile->GetObject("BS",BS);
-  spinrootFile->Close();
+  TFile * spinrootFileBS = new TFile(spinrootFileList.at(0),"READ");
+  spinrootFileBS->GetObject("BS",BS);
+  spinrootFileBS->Close();
   
 
   // instantiate catFile Asymmetry objects, following the extracted binning scheme
@@ -79,6 +78,7 @@ int main(int argc, char** argv) {
   // - the extracted binning scheme from above will be the one written to the catFile
   // - the Asymmetry objects are combined together using Asymmetry::AppendData, which
   //   hadds histograms and concatenates RooFit data structures
+  TFile * spinrootFile;
   for(TString spinrootFileN : spinrootFileList) {
     Tools::PrintSeparator(40,".");
     printf("concatenating data from %s\n",spinrootFileN.Data());

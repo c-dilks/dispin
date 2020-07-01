@@ -329,6 +329,7 @@ Asymmetry::Asymmetry(Binning * binScheme, Int_t binNum) {
   rfRellum = new RooRealVar("rfRellum","R",0,3);
 
   // - data sets for each spin
+  RooAbsData::setDefaultStorageType(RooAbsData::Tree); // use TTree backend
   rfData = new RooDataSet(
     TString("rfData"+binN),TString("rfData"+binN),
     *rfVars,
@@ -488,7 +489,7 @@ void Asymmetry::FitAsymGraph() {
   
   if(debug) {
     printf("calculate asymmetries for:\n");
-    PrintSettings(); 
+    PrintSettings();
   };
 
   // compute asymmetry for each modulation bin
@@ -884,7 +885,7 @@ void Asymmetry::DenomAppend(Int_t TW, Int_t L, Int_t M, Int_t lev) {
 Float_t Asymmetry::EvalWeight() {
   Float_t wt;
   if(useWeighting) { 
-    wt = Mh>0 ? PhPerp/Mh : 0; 
+    wt = Mh>0 ? PhPerp/Mh : 0;
   }
   else wt = 1;
   return wt;
@@ -946,13 +947,13 @@ void Asymmetry::StreamData(TFile * tf) {
 
   switch(whichDim) {
     case 1: 
-      objName = appName + ivDist1->GetName(); ivDist1->Write(objName); 
+      objName = appName + ivDist1->GetName(); ivDist1->Write(objName);
       break;
     case 2: 
-      objName = appName + ivDist2->GetName(); ivDist2->Write(objName); 
+      objName = appName + ivDist2->GetName(); ivDist2->Write(objName);
       break;
     case 3: 
-      objName = appName + ivDist3->GetName(); ivDist3->Write(objName); 
+      objName = appName + ivDist3->GetName(); ivDist3->Write(objName);
       break;
   };
 
@@ -963,7 +964,7 @@ void Asymmetry::StreamData(TFile * tf) {
     };
     if(whichDim==1) {
       objName = appName + IVvsModDist->GetName(); IVvsModDist->Write(objName);
-    }; 
+    };
     for(int s=0; s<nSpin; s++) {
       objName = appName + aziDist[s]->GetName(); aziDist[s]->Write(objName);
     };
@@ -999,65 +1000,53 @@ void Asymmetry::AppendData(TFile * tf) {
   switch(whichDim) {
     case 1: 
       objName = appName + ivDist1->GetName();
-      appDist1 = (TH1D*) tf->Get(objName);
-      ivDist1->Add(appDist1); 
+      ivDist1->Add((TH1D*) tf->Get(objName));
       break;
     case 2: 
       objName = appName + ivDist2->GetName();
-      appDist2 = (TH2D*) tf->Get(objName);
-      ivDist2->Add(appDist2); 
+      ivDist2->Add((TH2D*) tf->Get(objName));
       break;
     case 3: 
       objName = appName + ivDist3->GetName();
-      appDist3 = (TH3D*) tf->Get(objName);
-      ivDist3->Add(appDist3); 
+      ivDist3->Add((TH3D*) tf->Get(objName));
       break;
   };
 
   if(gridDim==1) {
     objName = appName + modDist->GetName();
-    appDist1 = (TH1D*) tf->Get(objName);
-    modDist->Add(appDist1);
+    modDist->Add((TH1D*) tf->Get(objName));
     for(Int_t m=0; m<nModBins; m++) {
       objName = appName + modBinDist[m]->GetName();
-      appDist1 = (TH1D*) tf->Get(objName);
-      modBinDist[m]->Add(appDist1);
+      modBinDist[m]->Add((TH1D*) tf->Get(objName));
     };
     if(whichDim==1) {
       objName = appName + IVvsModDist->GetName();
-      appDist2 = (TH2D*) tf->Get(objName);
-      IVvsModDist->Add(appDist2);
+      IVvsModDist->Add((TH2D*) tf->Get(objName));
     };
     for(int s=0; s<nSpin; s++) {
       objName = appName + aziDist[s]->GetName();
-      appDist1 = (TH1D*) tf->Get(objName);
-      aziDist[s]->Add(appDist1);
+      aziDist[s]->Add((TH1D*) tf->Get(objName));
     };
   } else {
     objName = appName + modDist2->GetName();
-    appDist2 = (TH2D*) tf->Get(objName);
-    modDist2->Add(appDist2);
+    modDist2->Add((TH2D*) tf->Get(objName));
     for(Int_t mmH=0; mmH<nModBins2; mmH++) {
       for(Int_t mmR=0; mmR<nModBins2; mmR++) {
         objName = appName + modBinDist2[mmH][mmR]->GetName();
-        appDist2 = (TH2D*) tf->Get(objName);
-        modBinDist2[mmH][mmR]->Add(appDist2);
+        modBinDist2[mmH][mmR]->Add((TH2D*) tf->Get(objName));
       };
     };
     for(int s=0; s<nSpin; s++) {
       objName = appName + aziDist2[s]->GetName();
-      appDist2 = (TH2D*) tf->Get(objName);
-      aziDist2[s]->Add(appDist2);
+      aziDist2[s]->Add((TH2D*) tf->Get(objName));
     };
   };
 
-  objName = appName + yieldDist->GetName(); 
-  appDist1 = (TH1D*) tf->Get(objName);
-  yieldDist->Add(appDist1);
+  objName = appName + yieldDist->GetName();
+  yieldDist->Add((TH1D*) tf->Get(objName));
 
-  objName = appName + kfDist->GetName(); 
-  appDist1 = (TH1D*) tf->Get(objName);
-  kfDist->Add(appDist1);
+  objName = appName + kfDist->GetName();
+  kfDist->Add((TH1D*) tf->Get(objName));
 
   objName = appName + rfData->GetName();
   appRooDataSet = (RooDataSet*) tf->Get(objName);

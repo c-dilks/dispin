@@ -258,9 +258,6 @@ class Asymmetry : public TObject
     Int_t spinbin;
 
     TString objName,appName;
-    TH1D * appDist1;
-    TH2D * appDist2;
-    TH3D * appDist3;
     RooDataSet * appRooDataSet;
 
 
