@@ -13,4 +13,6 @@ fiducial_cuts_preliminary_version.cxx
 outroot
 diskim
 *.slurm
+*.condor
+logfiles/*
 valgrind.log
