@@ -172,28 +172,21 @@ void EventTree::GetEvent(Int_t i) {
   cutY = y < 0.8;
   cutDIS = cutQ2 && cutW && cutY;
 
-  // dihadron kinematics cuts
-  cutDihadronKinematics = 
+  // dihadron cuts
+  cutDihadron = 
+    Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) &&
     Zpair < 0.95 &&
     Mmiss > 1.5 &&
     hadXF[qA] > 0 && hadXF[qB] > 0 &&
     hadP[qA] > 1.25 && hadP[qB] > 1.25;
-
-
-  // cutDihadron is the full dihadron cut
-  cutDihadron = 
-    Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) &&
-    cutDihadronKinematics;
-
 
   // vertex cuts
   cutVertex = eleVertex[eZ]     > -8  &&  eleVertex[eZ]     < 3  &&
               hadVertex[qA][eZ] > -8  &&  hadVertex[qA][eZ] < 3  &&
               hadVertex[qB][eZ] > -8  &&  hadVertex[qB][eZ] < 3;
 
-
   // fiducial cuts
-  whichLevel = FiducialCuts::cutLoose;
+  whichLevel = FiducialCuts::cutTight;
   cutFiducial = eleFiduCut[whichLevel] && 
                 hadFiduCut[qA][whichLevel] &&
                 hadFiduCut[qB][whichLevel];
@@ -212,7 +205,7 @@ void EventTree::GetEvent(Int_t i) {
 /////////////////////////////////////////////////////////
 // MAIN ANALYSIS CUT
 Bool_t EventTree::Valid() {
-  return cutDIS && cutDihadron && cutHelicity /*&& cutVertex && cutFiducial*/;
+  return cutDIS && cutDihadron && cutHelicity && cutFiducial /*&& cutVertex*/;
 };
 /////////////////////////////////////////////////////////
 
@@ -253,6 +246,15 @@ Int_t EventTree::SpinState() {
   else fprintf(stderr,"WARNING: runnum %d not in EventTree::SpinState\n",runnum);
   return UNDEF;
 };
+
+
+Float_t EventTree::Polarization() {
+  if(runnum>=5032 && runnum<5333)       return 0.8592; // +-0.0129
+  else if(runnum>=5333 && runnum<=5666) return 0.8922; // +-0.02509
+  fprintf(stderr,"WARNING: runnum %d not in EventTree::Polarization\n",runnum);
+  return UNDEF;
+};
+
 
 
 void EventTree::PrintEventVerbose() {

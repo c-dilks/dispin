@@ -139,6 +139,7 @@ int main(int argc, char** argv) {
   std::map<Int_t, TGraphErrors*> rellumMap;
 
   TString grTitle,grTitleSuffix,grName,grNameSuffix;
+  TString polOAstr = Form("(pol. fixed at %.2f)",Asymmetry::polOA);
   Bool_t first = true;
   for(Int_t bn : BS->binVec) {
     A = asymMap.at(bn);
@@ -190,6 +191,8 @@ int main(int argc, char** argv) {
       kindepGrOA = new TGraphErrors();
       kindepGrOA->SetName(grName);
       kindepGrOA->SetTitle(grTitle);
+      grTitle = TString(kindepGrOA->GetTitle()) + " " + polOAstr;
+      kindepGrOA->SetTitle(grTitle);
       kindepGrOA->SetLineStyle(2);
 
       for(int aa=0; aa<N_AMP; aa++) {
@@ -219,6 +222,9 @@ int main(int argc, char** argv) {
       chindfGrOA = new TGraphErrors();
       chindfGrOA->SetName(grName);
       chindfGrOA->SetTitle(grTitle);
+      grTitle = TString(chindfGrOA->GetTitle()) + " " + polOAstr;
+      chindfGrOA->SetTitle(grTitle);
+
 
       // instantiate relative luminosity graphs
       grTitle = "relative luminosity vs. " + grTitleSuffix;

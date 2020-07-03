@@ -38,6 +38,7 @@ class EventTree : public TObject
 
     void GetEvent(Int_t i);
     Int_t SpinState();
+    Float_t Polarization();
     Bool_t Valid();
     void PrintEventVerbose();
     void PrintEvent();
@@ -131,7 +132,6 @@ class EventTree : public TObject
     //   EventCuts
     ///////////////////////////
     Bool_t cutQ2,cutW,cutY,cutDIS;
-    Bool_t cutDihadronKinematics;
     Bool_t cutDihadron;
     Bool_t cutHelicity;
     //Bool_t cutCrossCheck;

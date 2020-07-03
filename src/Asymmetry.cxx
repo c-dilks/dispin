@@ -85,12 +85,6 @@ Asymmetry::Asymmetry(Binning * binScheme, Int_t binNum) {
   };
 
 
-  // fixed polarization (for now...)
-  ///////////////////////////////////////////////////
-  pol = 1; //0.86;
-  ///////////////////////////////////////////////////
-
-
   // set up binning title and name
   binT = "::";
   binN = "";
@@ -299,9 +293,10 @@ Asymmetry::Asymmetry(Binning * binScheme, Int_t binNum) {
   rfPhiH = new RooRealVar("rfPhiH","#phi_{h}",-PIe,PIe);
   rfPhiR = new RooRealVar("rfPhiR","#phi_{R}",-PIe,PIe);
   rfTheta = new RooRealVar("rfTheta","#theta",-PIe,PIe);
+  rfPol = new RooRealVar("rfPol","P",0,1);
   rfWeight = new RooRealVar("rfWeight","P_{h}^{T}/M_{h}",0,10);
 
-  rfVars = new RooArgSet(*rfPhiH,*rfPhiR,*rfTheta);
+  rfVars = new RooArgSet(*rfPhiH,*rfPhiR,*rfTheta,*rfPol);
   rfVars->add(*rfWeight);
   rfVars->add(*rfSpinCateg);
 
@@ -324,8 +319,7 @@ Asymmetry::Asymmetry(Binning * binScheme, Int_t binNum) {
   rfYield[sP] = new RooRealVar("rfYieldP","YP",0,1e10);
   rfYield[sM] = new RooRealVar("rfYieldM","YM",0,1e10);
 
-  // - polarization and rellum
-  rfPol = new RooRealVar("rfPol","P",0,1);
+  // - rellum
   rfRellum = new RooRealVar("rfRellum","R",0,3);
 
   // - data sets for each spin
@@ -417,6 +411,10 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
   spinn = ev->SpinState();
   if(spinn<0 || spinn>=nSpin) return false;
 
+  // set polarization
+  pol = ev->Polarization();
+  if(pol<=0) return false;
+
   // get kinematic factor
   kf = EvalKinematicFactor(ev);
   if(kf<kfLB || kf>kfUB) return KickEvent("KF out of range",kf);
@@ -432,8 +430,9 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
   // set RooFit vars
   rfPhiH->setVal(PhiH);
   rfPhiR->setVal(PhiR);
-  rfWeight->setVal(weight);
   rfTheta->setVal(theta);
+  rfPol->setVal(pol);
+  rfWeight->setVal(weight);
   rfSpinCateg->setLabel(rfSpinName[spinn]);
   rfData->add(*rfVars,rfWeight->getVal());
 
@@ -683,14 +682,14 @@ void Asymmetry::SetAsymGrPoint(Int_t modBin_, Int_t modBin2_) {
 
   if(asymDenom>0) {
     // compute asymmetry value
-    asymVal = (1.0/pol) * (asymNumer/asymDenom);
+    asymVal = (1.0/polOA) * (asymNumer/asymDenom);
 
     // compute asymmetry statistical error
     // -- full formula
     asymErr = ( 2 * rellum * sqrt( yL*pow(yR,2) + yR*pow(yL,2) ) ) / 
-              ( pol * pow(yL+rellum*yR,2) );
-    // -- compare to simple formula (assumes asym*pol<<1 and R~1)
-    //printf("difference = %f\n",asymErr - 1.0 / ( pol * sqrt(yL+yR) ));
+              ( polOA * pow(yL+rellum*yR,2) );
+    // -- compare to simple formula (assumes asym*polOA<<1 and R~1)
+    //printf("difference = %f\n",asymErr - 1.0 / ( polOA * sqrt(yL+yR) ));
 
     // compute azimuthal modulation value and error
     if(gridDim==1) {
@@ -786,9 +785,7 @@ void Asymmetry::FitAsymMLM() {
 
 
   // fix polarization and rellum PDF parameters to their values
-  rfPol->setVal(pol);
   rfRellum->setVal(rellum);
-  rfPol->setConstant(true);
   rfRellum->setConstant(true);
 
 

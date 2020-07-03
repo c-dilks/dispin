@@ -250,7 +250,7 @@ int main(int argc, char** argv) {
     // calculate DIS kinematics
     disEv->CalculateKinematics(traj[kEle]);
 
-    // calculate dihadron kinematics
+    // calculate dihadron kinematics and obtain hadron fiducial cuts
     // - CorrectOrder (from Constants.h) ensures the standard hadron
     //   ordering is used (see Constants::diHadIdx)
     //   - also ensures the hadrons' fiducial cuts are ordered properly

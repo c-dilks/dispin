@@ -106,6 +106,12 @@ class Asymmetry : public TObject
     Int_t gridDim;
     Bool_t useWeighting;
 
+    // fixed polarization value used for OA fits only
+    // - this value is the weighted average of the polarizations from
+    //   pass1 inbending data, for before and after the Wien angle change
+    // - this is *not* used by the MLM fit
+    static constexpr Float_t polOA = 0.87;
+
 
 
     // event-level variables -- these must be set for each event
@@ -118,8 +124,8 @@ class Asymmetry : public TObject
     Float_t Ph;
     Float_t Q2;
     Float_t theta;
-    Float_t pol;
     Int_t spinn;
+    Float_t pol;
     
     Float_t kfA,kfC,kfW;
 
