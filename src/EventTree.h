@@ -37,9 +37,12 @@ class EventTree : public TObject
     ~EventTree();
 
     void GetEvent(Int_t i);
+    Bool_t Valid();
+
     Int_t SpinState();
     Float_t Polarization();
-    Bool_t Valid();
+    Bool_t CheckVertex();
+
     void PrintEventVerbose();
     void PrintEvent();
     void PrintEventLine();
@@ -134,7 +137,6 @@ class EventTree : public TObject
     Bool_t cutQ2,cutW,cutY,cutDIS;
     Bool_t cutDihadron;
     Bool_t cutHelicity;
-    //Bool_t cutCrossCheck;
     Bool_t cutVertex;
     Bool_t cutFiducial;
     Bool_t cutMCmatch;
@@ -180,6 +182,13 @@ class EventTree : public TObject
 
     TLorentzVector hadMom[2];
     TLorentzVector eleMom;
+
+    Bool_t vzBoolEle;
+    Bool_t vzBoolHad[2];
+    Bool_t vrBool;
+    Bool_t vzdiffBool;
+    Float_t vzdiffHads;
+    Float_t vzdiff[2];
 
     /*
     std::map<Int_t,std::vector<Int_t>> evnumMap;

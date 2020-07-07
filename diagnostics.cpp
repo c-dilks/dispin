@@ -82,7 +82,10 @@ int main(int argc, char** argv) {
      NBINS,-PIe,PIe,NBINS,0,12);
    TH2D * elePtVsPhi = new TH2D("elePtvsPhi","e^{-} p_{T} vs #phi;#phi;#p_{T}",
      NBINS,-PIe,PIe,NBINS,0,4);
-   TH1D * eleVzDist = new TH1D("eleVzDist","e^{-} V_{z} distribution",NBINS,-20,20);
+   TH1D * eleVzDist = new TH1D("eleVzDist","e^{-} V_{z} distribution",
+     NBINS,-20,20);
+   TH2D * eleVxyDist = new TH2D("eleVxyDist","e^{-} V_{y} vs. V_{x}",
+     3*NBINS,-6,6,3*NBINS,-6,6);
 
    // dihadron's hadron kinematic correlations
    TH2D * hadECorr = new TH2D("hadECorr",corrTitle("E"),NBINS,0,10,NBINS,0,10);
@@ -92,8 +95,10 @@ int main(int argc, char** argv) {
    TH2D * hadPhiCorr = new TH2D("hadPhiCorr",corrTitle("#phi"),
                                              NBINS,-PIe,PIe,NBINS,-PIe,PIe);
    TH2D * hadZCorr = new TH2D("hadZCorr",corrTitle("z"),NBINS,0,1,NBINS,0,1);
-   TH2D * hadXFCorr = new TH2D("hadXFZCorr",corrTitle("x_{F}"),
+   TH2D * hadXFCorr = new TH2D("hadXFCorr",corrTitle("x_{F}"),
      NBINS,-1,1,NBINS,-1,1);
+   TH2D * hadVzCorr = new TH2D("hadVzCorr",corrTitle("V_{z}"),
+     NBINS,-20,20,NBINS,-20,20);
    
    // dihadron's hadron kinematics
    TH1D * hadEDist[2];
@@ -104,6 +109,7 @@ int main(int argc, char** argv) {
    TH1D * hadZDist[2];
    TH1D * hadXFDist[2];
    TH1D * hadVzDist[2];
+   TH2D * hadVxyDist[2];
    TH2D * hadEtaVsPhi[2];
    TH2D * hadEVsPhi[2];
    TH2D * hadPtVsPhi[2];
@@ -122,8 +128,12 @@ int main(int argc, char** argv) {
        NBINS,0,1);
      hadXFDist[h] = new TH1D(TString(hadName[h]+"hadXFDist"),distTitle("x_{F}"),
        NBINS,-1,1);
-     hadVzDist[h] = new TH1D(TString(hadName[h]+"hadVzDist"),distTitle("V_{z}"),
+     hadVzDist[h] = new TH1D(TString(hadName[h]+"hadVzDist"),
+       distTitle("V_{z}"),
        NBINS,-20,20);
+     hadVxyDist[h] = new TH2D(TString("hadVxyDist_"+hadName[h]),
+       TString(hadTitle[h]+" V_{y} vs. V_{x}"),
+       3*NBINS,-6,6,3*NBINS,-6,6);
 
      hadEtaVsPhi[h] = new TH2D(
        TString(hadName[h]+"hadEtaVsPhi"),dist2Title(hadTitle[h],"#phi","#eta"),
@@ -243,6 +253,14 @@ int main(int argc, char** argv) {
    TH2D * PhiHRvsAlpha = new TH2D("PhiHRvsAlpha",
      "#phi_{h}-#phi_{R} vs. #alpha;#alpha;#phi_{h}-#phi_{R}",
      NBINS,0,1.3,NBINS,-PIe,PIe);
+   TH1D * vzDiffHadHad = new TH1D("vzDiffHadHad",
+     TString("V_{z}("+hadTitle[qA]+")-V_{z}("+hadTitle[qB]+") distribution"),
+     NBINS,-20,20);
+   TH2D * vzDiffEleHad = new TH2D("vzDiffEleHad",
+     TString("V_{z}("+
+       hadTitle[qA]+")-V_{z}(e^{-}) vs. V_{z}("+
+       hadTitle[qB]+")-V_{z}(e^{-})"),
+     NBINS,-40,40,NBINS,-40,40);
 
 
    // kinematic factor distributions
@@ -356,6 +374,7 @@ int main(int argc, char** argv) {
        eleEVsPhi->Fill(ev->elePhi,ev->eleE);
        elePtVsPhi->Fill(ev->elePhi,ev->elePt);
        eleVzDist->Fill(ev->eleVertex[eZ]);
+       eleVxyDist->Fill(ev->eleVertex[eX],ev->eleVertex[eY]);
 
 
        Q2vsX->Fill(ev->x,ev->Q2);
@@ -370,6 +389,7 @@ int main(int argc, char** argv) {
        hadPhiCorr->Fill(ev->hadPhi[qB],ev->hadPhi[qA]);
        hadZCorr->Fill(ev->Z[qB],ev->Z[qA]);
        hadXFCorr->Fill(ev->hadXF[qB],ev->hadXF[qA]);
+       hadVzCorr->Fill(ev->hadVertex[qB][eZ],ev->hadVertex[qA][eZ]);
 
        for(int h=0; h<2; h++) {
          hadEDist[h]->Fill(ev->hadE[h]);
@@ -380,11 +400,15 @@ int main(int argc, char** argv) {
          hadZDist[h]->Fill(ev->Z[h]);
          hadXFDist[h]->Fill(ev->hadXF[h]);
          hadVzDist[h]->Fill(ev->hadVertex[h][eZ]);
+         hadVxyDist[h]->Fill(ev->hadVertex[h][eX],ev->hadVertex[h][eY]);
 
          hadEtaVsPhi[h]->Fill(ev->hadPhi[h],ev->hadEta[h]);
          hadEVsPhi[h]->Fill(ev->hadPhi[h],ev->hadE[h]);
          hadPtVsPhi[h]->Fill(ev->hadPhi[h],ev->hadPt[h]);
        };
+       vzDiffHadHad->Fill(ev->hadVertex[qA][eZ]-ev->hadVertex[qB][eZ]);
+       vzDiffEleHad->Fill(ev->hadVertex[qB][eZ]-ev->eleVertex[eZ],
+                          ev->hadVertex[qA][eZ]-ev->eleVertex[eZ]);
 
        deltaPhi = Tools::AdjAngle(ev->hadPhi[qA] - ev->hadPhi[qB]);
        deltaPhiDist->Fill(deltaPhi);
@@ -479,6 +503,7 @@ int main(int argc, char** argv) {
    eleEtaDist->Write();
    elePhiDist->Write();
    eleVzDist->Write();
+   eleVxyDist->Write();
 
    eleEtaVsPhi->Write();
    eleEVsPhi->Write();
@@ -492,6 +517,7 @@ int main(int argc, char** argv) {
    TCanvas * hadPhiCanv = new TCanvas("hadPhiCanv","hadPhiCanv",1000,800);
    TCanvas * hadZCanv = new TCanvas("hadZCanv","hadZCanv",1000,800);
    TCanvas * hadXFCanv = new TCanvas("hadXFCanv","hadXFCanv",1000,800);
+   TCanvas * hadVzCanv = new TCanvas("hadVzCanv","hadVzCanv",1000,800);
    TCanvas * hadEtaVsPhiCanv = new TCanvas("hadEtaVsPhiCanv","hadEtaVsPhiCanv",1000,800);
    TCanvas * hadEVsPhiCanv = new TCanvas("hadEVsPhiCanv","hadEVsPhiCanv",1000,800);
    TCanvas * hadPtVsPhiCanv = new TCanvas("hadPtVsPhiCanv","hadPtVsPhiCanv",1000,800);
@@ -503,6 +529,7 @@ int main(int argc, char** argv) {
    HadronCompareCanv(hadPhiCanv, hadPhiDist, hadPhiCorr);
    HadronCompareCanv(hadZCanv, hadZDist, hadZCorr);
    HadronCompareCanv(hadXFCanv, hadXFDist, hadXFCorr);
+   HadronCompareCanv(hadVzCanv, hadVzDist, hadVzCorr);
    Hadron2dCanv(hadEtaVsPhiCanv, hadEtaVsPhi[qA], hadEtaVsPhi[qB]);
    Hadron2dCanv(hadEVsPhiCanv, hadEVsPhi[qA], hadEVsPhi[qB]);
    Hadron2dCanv(hadPtVsPhiCanv, hadPtVsPhi[qA], hadPtVsPhi[qB]);
@@ -518,9 +545,11 @@ int main(int argc, char** argv) {
    hadEVsPhiCanv->Write();
    hadPtVsPhiCanv->Write();
 
-   hadVzDist[qA]->Write();
-   hadVzDist[qB]->Write();
-
+   hadVzCanv->Write();
+   hadVxyDist[qA]->Write();
+   hadVxyDist[qB]->Write();
+   vzDiffHadHad->Write();
+   vzDiffEleHad->Write();
 
    deltaPhiDist->Write();
 

@@ -181,9 +181,7 @@ void EventTree::GetEvent(Int_t i) {
     hadP[qA] > 1.25 && hadP[qB] > 1.25;
 
   // vertex cuts
-  cutVertex = eleVertex[eZ]     > -8  &&  eleVertex[eZ]     < 3  &&
-              hadVertex[qA][eZ] > -8  &&  hadVertex[qA][eZ] < 3  &&
-              hadVertex[qB][eZ] > -8  &&  hadVertex[qB][eZ] < 3;
+  cutVertex = CheckVertex();
 
   // fiducial cuts
   whichLevel = FiducialCuts::cutTight;
@@ -205,11 +203,13 @@ void EventTree::GetEvent(Int_t i) {
 /////////////////////////////////////////////////////////
 // MAIN ANALYSIS CUT
 Bool_t EventTree::Valid() {
-  return cutDIS && cutDihadron && cutHelicity && cutFiducial /*&& cutVertex*/;
+  return cutDIS && cutDihadron && cutHelicity && cutFiducial && cutVertex;
 };
 /////////////////////////////////////////////////////////
 
 
+
+// translate "helicity" to a local index for the spin
 Int_t EventTree::SpinState() {
   if(runnum>=4700 && runnum<=6000) {
     // Fall 2018 convention
@@ -248,6 +248,7 @@ Int_t EventTree::SpinState() {
 };
 
 
+// return polarization, which can depend on the run number
 Float_t EventTree::Polarization() {
   if(runnum>=5032 && runnum<5333)       return 0.8592; // +-0.0129
   else if(runnum>=5333 && runnum<=5666) return 0.8922; // +-0.02509
@@ -255,6 +256,62 @@ Float_t EventTree::Polarization() {
   return UNDEF;
 };
 
+
+// return true if the event passes vertex cuts
+Bool_t EventTree::CheckVertex() {
+
+
+  // electron Vz cuts
+  vzBoolEle = -13 < eleVertex[eZ] && eleVertex[eZ] < 12; // Stefan's cut
+  //vzBoolEle = -7 <= eleVertex[eZ] && eleVertex[eZ] <= 1; // tight cut
+
+
+  // | had_Vz - ele_Vz | cut
+  for(int h=0; h<2; h++) {
+    vzdiff[h] = TMath::Abs(hadVertex[h][eZ]-eleVertex[eZ]);
+  };
+  vzdiffBool = vzdiff[qA] < 20 && vzdiff[qB] < 20; // Stefan's cut
+  //vzdiffBool = vzdiff[qA] < 5 && vzdiff[qB] < 5; // tight cut
+
+
+  // full boolean:
+  return vzBoolEle && vzdiffBool;
+
+
+  // other cuts:
+
+  /*
+  // hadron Vz cuts
+  for(int h=0; h<2; h++) {
+    switch(hadIdx[h]) {
+      case kPip: 
+        vzBoolHad[h] = -9 <= hadVertex[h][eZ] && hadVertex[h][eZ] <= 1;
+        break;
+      case kPim: 
+        vzBoolHad[h] = -8 <= hadVertex[h][eZ] && hadVertex[h][eZ] <= 2;
+        break;
+      default:
+        fprintf(stderr,
+          "WARNING: no Vz cut for hadron with hadIdx=%d\n",hadIdx[h]);
+        vzBoolHad[h] = true;
+    };
+  };
+
+  // Vr cuts (Vr^2=Vx^2+Vy^2)
+  vrBool = 
+    TMath::Hypot(eleVertex[eX],eleVertex[eY]) <= 3.0 &&
+    TMath::Hypot(hadVertex[qA][eX],hadVertex[qA][eY]) <= 3.0 &&
+    TMath::Hypot(hadVertex[qB][eX],hadVertex[qB][eY]) <= 3.0;
+
+  return vrBool && vzBoolEle && vzBoolHad[qA] && vzBoolHad[qB] && vzdiffBool;
+  */
+
+
+  // - DNP2019 cuts
+  /*return eleVertex[eZ]     > -8  &&  eleVertex[eZ]     < 3  &&
+         hadVertex[qA][eZ] > -8  &&  hadVertex[qA][eZ] < 3  &&
+         hadVertex[qB][eZ] > -8  &&  hadVertex[qB][eZ] < 3;*/
+};
 
 
 void EventTree::PrintEventVerbose() {

@@ -45,6 +45,10 @@ Int_t gridDim;
 Binning * BS;
 Asymmetry * A;
 
+// plot range for asymmetries
+const Float_t ASYM_PLOT_MIN = -0.07;
+const Float_t ASYM_PLOT_MAX = 0.07;
+
 
 
 int main(int argc, char** argv) {
@@ -579,6 +583,8 @@ int main(int argc, char** argv) {
 
       multiGrCanvArr = new TObjArray();
       multiGrCanvArr->AddLast(multiGrCanv);
+      multiGrCanv->Print(TString(spinrootDir+"/"+multiGrCanvN+".png"),"png");
+
 
     };
   };
@@ -798,8 +804,8 @@ void DrawKinDepGraph(TGraphErrors * g_, Binning * B_, Int_t d_) {
 
   // set vertical axis range (it is overridden if the plot's vertical range
   // is larger than the desired range)
-  Float_t yMin = -0.05;
-  Float_t yMax = 0.05;
+  Float_t yMin = ASYM_PLOT_MIN;
+  Float_t yMax = ASYM_PLOT_MAX;
   if(g_->GetYaxis()->GetXmin() < yMin) yMin = g_->GetYaxis()->GetXmin();
   if(g_->GetYaxis()->GetXmax() > yMax) yMax = g_->GetYaxis()->GetXmax();
   g_->GetYaxis()->SetRangeUser(yMin,yMax);
@@ -876,8 +882,8 @@ void DrawAsymGr(TGraphErrors * g_) {
 
   // set vertical axis range (it is overridden if the plot's vertical range
   // is larger than the desired range)
-  Float_t yMin = -0.05;
-  Float_t yMax = 0.05;
+  Float_t yMin = ASYM_PLOT_MIN;
+  Float_t yMax = ASYM_PLOT_MAX;
   if(g_->GetYaxis()->GetXmin() < yMin) yMin = g_->GetYaxis()->GetXmin() - 0.05;
   if(g_->GetYaxis()->GetXmax() > yMax) yMax = g_->GetYaxis()->GetXmax() + 0.05;
   g_->GetYaxis()->SetRangeUser(yMin,yMax);
