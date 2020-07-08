@@ -245,7 +245,7 @@ class Asymmetry : public TObject
     Modulation * modu[nAmp];
     Modulation * moduD[nDparam];
 
-    Float_t DparamVal;
+    Float_t DparamVal[nDparam];
 
   private:
     Bool_t enablePW;

@@ -57,23 +57,39 @@ int main(int argc, char** argv) {
   // ARGUMENTS
   TString spinrootDir = "spinroot";
   Int_t fitMode, fitAlgo;
-  Float_t DparamVal = 0; // (for systematic uncertainty from D_1 pp-wave)
+  Float_t DparamVal[Asymmetry::nDparam]; // (for sigma_UU systematic)
+  Int_t nD = 0; // (for sigma_UU systematic)
+  TString DparamStr = ""; // (for sigma_UU systematic)
   if(argc<3) {
-    fprintf(stderr,"USAGE: asymFit.cpp [fitMode] [fitAlgo] [spinrootDir] [(opt)DparamVal]\n");
+    fprintf(stderr,"USAGE: asymFit.cpp [fitMode] [fitAlgo] [spinrootDir] [(opt)DparamVal List]\n");
     fprintf(stderr," [fitMode] which modulations to fit (see Asymmetry::SetFitMode)\n");
     fprintf(stderr," [fitAlgo] which fit algorithm to use:\n");
     fprintf(stderr,"\t0 = MLM fit: single or multi-amp, depending on fitMode\n");
     fprintf(stderr,"\t1 = 1d fit: single-amp only (depends on what was used as twist,L,M in buildSpinroot\n");
     fprintf(stderr,"\t2 = 2d fit: single or multi-amp, depending on fitMode\n");
-    fprintf(stderr," [spinrootDir]: directory of spinroot files (default=spinroot)\n");
-    fprintf(stderr," [(opt)DparamValue]: for studying variations in UU cross section modulation amps\n");
+    fprintf(stderr," [(opt)spinrootDir]: directory of spinroot files (default=spinroot)\n");
+    fprintf(stderr," [(opt)DparamValue List]: for studying variations in UU cross section modulation amps\n");
     return 0;
   }
   if(argc>1) fitMode = (Int_t)strtof(argv[1],NULL);
   if(argc>2) fitAlgo = (Int_t)strtof(argv[2],NULL);
   if(argc>3) spinrootDir = TString(argv[3]);
-  if(argc>4) DparamVal = (Float_t)strtof(argv[4],NULL);
+  if(argc>4) {
+    for(int ar=4; ar<argc; ar++) {
+      if(ar-4<Asymmetry::nDparam) {
+        DparamVal[ar-4] = (Float_t)strtof(argv[ar],NULL);
+        DparamStr = Form("%s_%.2f",DparamStr.Data(),DparamVal[ar-4]);
+        nD++;
+      };
+    }
+  };
+  //
+  if(nD>0) {
+    printf("D params:\n");
+    for(int ar=0; ar<nD; ar++) printf("%f\n",DparamVal[ar]);
+  };
   //////////////////////////////////////////////
+
 
 
   //////////////////////////////////////////////
@@ -84,11 +100,15 @@ int main(int argc, char** argv) {
 
 
   // check fitAlgo
-  if(fitAlgo<0 || fitAlgo>2) { fprintf(stderr,"ERROR: bad fitAlgo value\n"); return 0; }
+  if(fitAlgo<0 || fitAlgo>2) { 
+    fprintf(stderr,"ERROR: bad fitAlgo value\n");
+    return 0;
+  }
 
 
   // open spinroot cat file and result file
-  TString asymFileN = Form("%s/asym_%d.root",spinrootDir.Data(),fitMode);
+  TString asymFileN = Form("%s/asym_%d%s.root",
+    spinrootDir.Data(),fitMode,DparamStr.Data());
   TFile * asymFile = new TFile(asymFileN,"RECREATE");
   TFile * catFile = new TFile(TString(spinrootDir+"/cat.root"),"READ");
 
@@ -122,8 +142,12 @@ int main(int argc, char** argv) {
   printf("--- calculate asymmetries\n");
   for(Int_t bn : BS->binVec) {
     A = asymMap.at(bn);
+
+    // preparation
+    if(nD>0) { for(int v=0; v<nD; v++) A->DparamVal[v]=DparamVal[v]; };
     A->SetFitMode(fitMode);
-    A->DparamVal = DparamVal; // (for deprecated b-scan)
+
+    // fitting
     A->FitAsymGraph();
     if(fitAlgo==0) A->FitAsymMLM();
   };
@@ -583,7 +607,9 @@ int main(int argc, char** argv) {
 
       multiGrCanvArr = new TObjArray();
       multiGrCanvArr->AddLast(multiGrCanv);
-      multiGrCanv->Print(TString(spinrootDir+"/"+multiGrCanvN+".png"),"png");
+      multiGrCanv->Print(
+        TString(spinrootDir+"/"+multiGrCanvN+DparamStr+".png"),
+        "png");
 
 
     };

@@ -310,7 +310,8 @@ Asymmetry::Asymmetry(Binning * binScheme, Int_t binNum) {
 
   for(int dd=0; dd<nDparam; dd++) {
     rfDname[dd] = Form("D%d",dd);
-    rfD[dd] = new RooRealVar(rfDname[dd],rfDname[dd],-1,1);
+    rfD[dd] = new RooRealVar(rfDname[dd],rfDname[dd],-10,10);
+    DparamVal[dd] = 0;
   };
   nDparamUsed = 0;
 
@@ -631,6 +632,16 @@ void Asymmetry::SetFitMode(Int_t fitMode) {
       this->FormuAppend(3,1,-1);
       this->DenomAppend(2,2,0,0); // tw2 |2,0> UU,T
       break;
+    case 200:
+      this->FormuAppend(3,0,0);
+      this->FormuAppend(2,1,1);
+      this->FormuAppend(3,1,1);
+      this->DenomAppend(3,0,0,0);
+      this->DenomAppend(2,1,1,0);
+      this->DenomAppend(3,1,1,0);
+      this->DenomAppend(2,2,0,0); // tw2 |2,0> UU,T
+      this->DenomAppend(3,2,0,0);
+      break;
     case 1000:
       this->FormuAppend(2,1,1,0,Modulation::kLL); // double-spin asym
       this->FormuAppend(3,1,1,0,Modulation::kLL);
@@ -728,14 +739,10 @@ void Asymmetry::FitAsymMLM() {
   asymFormu = "rfPol*("+asymFormu+")";
 
   // append unpolarized denominator, if D_1 is expanded in partial waves
-  // (for systematic uncertainty study from unmeasured/non-orthogonal D_1 pp-wave)
+  // (for systematic uncertainty study from unmeasured/non-orthogonal 
+  //  F_UU partial waves)
   if(nDparamUsed>0) asymFormu += "/(" + denomFormu + ")";
-  /*
-  if(nDparamUsed==1) { // DEPRECATED (use for "b-scan")
-    rfD[0]->setVal(DparamVal);
-    rfD[0]->setConstant(kTRUE);
-  */
-      
+
   // rellum factors
   rellumFactor[sP] = "rfRellum/(rfRellum+1)";
   rellumFactor[sM] = "1/(rfRellum+1)";
@@ -796,15 +803,17 @@ void Asymmetry::FitAsymMLM() {
   Tools::PrintSeparator(70,"=");
 
   // get number of available threads; if this method fails, set number of threads to 1
+  /*
   nThreads = (Int_t) std::thread::hardware_concurrency();
   if(nThreads<1) nThreads=1;
   printf("---- fit with %d parallel threads\n",nThreads);
+  */
 
   // perform the fit
   if(extendMLM) {
     rfSimPdf->fitTo(*rfData, RooFit::Extended(kTRUE), RooFit::Save(kTRUE));
   } else {
-    rfSimPdf->fitTo(*rfData, RooFit::NumCPU(nThreads), RooFit::Save());
+    rfSimPdf->fitTo(*rfData, /*RooFit::NumCPU(nThreads),*/ RooFit::Save());
   }
 
   // get -log likelihood
@@ -876,6 +885,8 @@ void Asymmetry::DenomAppend(Int_t TW, Int_t L, Int_t M, Int_t lev) {
 
   denomFormu += "D"+TString::Itoa(nDparamUsed,10)+"*"+moduD[nDparamUsed]->FormuRF();
   rfD[nDparamUsed]->SetTitle(TString("D"+moduD[nDparamUsed]->StateTitle()));
+  rfD[nDparamUsed]->setVal(DparamVal[nDparamUsed]);
+  rfD[nDparamUsed]->setConstant(kTRUE);
 
   nDparamUsed++;
 
