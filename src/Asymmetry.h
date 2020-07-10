@@ -73,6 +73,7 @@ class Asymmetry : public TObject
     void FormuAppend(Int_t TW, Int_t L, Int_t M,
       Int_t lev=0, Int_t polarization=Modulation::kLU);
     void DenomAppend(Int_t TW, Int_t L, Int_t M, Int_t lev);
+    Double_t DenomEval(Float_t phiR_, Float_t phiH_, Float_t theta_);
 
 
     Bool_t AddEvent(EventTree * ev);
@@ -173,6 +174,11 @@ class Asymmetry : public TObject
 
     // kf dist (for computing <K(y)>)
     TH1D * kfDist;
+
+    // denom dist (for studying sigma_UU partial waves systematic; this
+    // distribution is only used externally)
+    TH1D * denomDist;
+    Float_t denomLB,denomUB;
 
     // asymmetry vs. azimuthal modulation bin
     TGraphErrors * asymGr;

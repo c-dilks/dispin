@@ -249,6 +249,14 @@ Asymmetry::Asymmetry(Binning * binScheme, Int_t binNum) {
     TString("K(y) distribution :: "+binT),
     300,kfLB,kfUB);
 
+  // denomDist
+  denomLB = -3;
+  denomUB = 3;
+  denomDist = new TH1D(
+    TString("denomDist"+binN),
+    TString("d#sigma_{UU} distribution :: "+binT),
+    300,denomLB,denomUB);
+
 
   // asymGr
   asymName = Form("asym%s",binN.Data());
@@ -890,6 +898,17 @@ void Asymmetry::DenomAppend(Int_t TW, Int_t L, Int_t M, Int_t lev) {
 
   nDparamUsed++;
 
+};
+
+
+// evaluates the denominator at the specified (phiR,phiH,theta) point,
+// with assumed D parameters `DparamVal[]`
+Double_t Asymmetry::DenomEval(Float_t phiR_, Float_t phiH_, Float_t theta_) {
+  Double_t retval = 1;
+  for(int i=0; i<nDparamUsed; i++) {
+    retval += DparamVal[i] * moduD[i]->Evaluate(phiR_,phiH_,theta_);
+  };
+  return retval;
 };
 
 

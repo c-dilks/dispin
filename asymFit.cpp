@@ -109,7 +109,6 @@ int main(int argc, char** argv) {
   // open spinroot cat file and result file
   TString asymFileN = Form("%s/asym_%d%s.root",
     spinrootDir.Data(),fitMode,DparamStr.Data());
-  TFile * asymFile = new TFile(asymFileN,"RECREATE");
   TFile * catFile = new TFile(TString(spinrootDir+"/cat.root"),"READ");
 
 
@@ -702,13 +701,16 @@ int main(int argc, char** argv) {
 
 
   // write output to asymFile
-  asymFile->cd();
+  TFile * asymFile = new TFile(asymFileN,"RECREATE");
   // -- Asymmetry objects
+  /*
+  asymFile->cd();
   printf("--- write Asymmetry objects\n");
   for(Int_t bn : BS->binVec) {
     A = asymMap.at(bn);
     A->StreamData(asymFile);
   };
+  */
 
   // -- "full" distributions
   if(BS->dimensions==1) {
