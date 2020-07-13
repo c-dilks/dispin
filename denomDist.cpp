@@ -85,10 +85,21 @@ int main(int argc, char** argv) {
 
   // write distributions
   TFile * outfile;
+  Double_t bc;
   if(writeHists) {
     outfile = new TFile("dplots.root","RECREATE");
     for(Int_t bn : BS->binVec) {
       A = asymMap.at(bn);
+
+      /*
+      for(int b=1; b<=A->denomDist->GetNbinsX(); b++) {
+        bc = A->denomDist->GetBinContent(b);
+        bc = bc>0 ? TMath::Log10(bc) : 0;
+        A->denomDist->SetBinContent(b,bc);
+      };
+      */
+
+
       A->denomDist->Write();
       printf("bin%d: <D>=%f +- %f\n",bn,A->denomDist->GetMean(),A->denomDist->GetRMS());
     };

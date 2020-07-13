@@ -107,7 +107,22 @@ void analyse() {
     // CUT on D
     //if(TMath::Abs(Dval[3])>0) continue;
     //if(TMath::Abs(Dval[0])>0) continue;
-    if(Dval[3]<0.5) continue;
+    //if(Dval[3]<0.5) continue;
+    /*
+    if( ! ( Dval[0]==-0.25 &&
+            Dval[1]==0 &&
+            Dval[2]==0 &&
+            Dval[3]==-0 &&
+            Dval[4]==0)) continue;
+            */
+    /*
+    if(Dval[3]!=0.25) continue;
+    if(TMath::Abs(Dval[0])>0.25) continue;
+    if(TMath::Abs(Dval[1])>0.25) continue;
+    if(TMath::Abs(Dval[2])>0.25) continue;
+    if(TMath::Abs(Dval[4])>0.25) continue;
+    */
+
 
     // CUT out bad fits
     badFit = false;
