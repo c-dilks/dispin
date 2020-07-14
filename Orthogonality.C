@@ -1,7 +1,7 @@
 R__LOAD_LIBRARY(DiSpin)
 
-#include "Constants.h"
-#include "Modulation.h"
+//#include "Constants.h"
+//#include "Modulation.h"
 
 void Draw3d(TH3D * dd, Int_t whichProj);
 
@@ -16,7 +16,7 @@ void Orthogonality(Int_t weightSetting=0, TString infileN="ortho.root") {
   // OPTIONS
   ///////////////////
   Bool_t enableLegendre = 1;
-  Int_t polarization = Modulation::kUU;
+  Int_t polarizationSetting = Modulation::kLU;
   Int_t LMAX = 2;
   Bool_t useModulationTitle = true; // if true, print functions instaed of kets
   ///////////////////
@@ -86,22 +86,23 @@ void Orthogonality(Int_t weightSetting=0, TString infileN="ortho.root") {
   Modulation * modu;
   TObjArray * moduArr = new TObjArray();
   // F_LU modulations
-  /*
+  ///*
   for(l=0; l<=LMAX; l++) {
     for(m=0; m<=l; m++) {
       for(twist=2; twist<=3; twist++) {
         if(!enableLegendre && l<LMAX) continue;
         if((twist==2 && m>0) || twist==3) {
-          moduArr->AddLast(new Modulation(twist,l,m,0,enableLegendre,polarization));
+          moduArr->AddLast(new Modulation(twist,l,m,0,enableLegendre,polarizationSetting));
           if(twist==3 && m>0) { // negative m states
-            moduArr->AddLast(new Modulation(twist,l,-m,0,enableLegendre,polarization));
+            moduArr->AddLast(new Modulation(twist,l,-m,0,enableLegendre,polarizationSetting));
           };
         } 
       };
     };
   };
-  */
+  //*/
   // F_UU modulations
+  /*
   Int_t levMax;
   for(l=0; l<=LMAX; l++) {
     for(m=0; m<=l; m++) {
@@ -110,15 +111,16 @@ void Orthogonality(Int_t weightSetting=0, TString infileN="ortho.root") {
         for(lev=0; lev<=levMax; lev++) {
           if(!enableLegendre && l<LMAX) continue;
           if((twist==2 && lev==0 && m>=0) || (twist==2 && lev==1) || twist==3) {
-            moduArr->AddLast(new Modulation(twist,l,m,lev,enableLegendre,polarization));
+            moduArr->AddLast(new Modulation(twist,l,m,lev,enableLegendre,polarizationSetting));
             if(((twist==2 && lev==1) || twist==3) && m>0) { // negative m states
-              moduArr->AddLast(new Modulation(twist,l,-m,lev,enableLegendre,polarization));
+              moduArr->AddLast(new Modulation(twist,l,-m,lev,enableLegendre,polarizationSetting));
             };
           };
         };
       };
     };
   };
+  */
   Int_t NMODi = moduArr->GetEntries();
   const Int_t NMOD = NMODi;
 
@@ -235,9 +237,9 @@ void Orthogonality(Int_t weightSetting=0, TString infileN="ortho.root") {
   orthMatrix->SetMaximum(1);
   orthMatrix->GetXaxis()->SetLabelSize(0.03);
   orthMatrix->GetYaxis()->SetLabelSize(0.03);
-  orthMatrix->Draw("colztext");
-  //orthMatrix->Draw("boxtext");
-  if(polarization==Modulation::kUU) orthMatrix->GetXaxis()->SetRangeUser(0,1);
+  //orthMatrix->Draw("colztext");
+  orthMatrix->Draw("boxtext");
+  if(polarizationSetting==Modulation::kUU) orthMatrix->GetXaxis()->SetRangeUser(0,1);
 
 
 
