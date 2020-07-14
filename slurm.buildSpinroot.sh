@@ -2,15 +2,20 @@
 
 # default args for crosscheck: -i2 -t2 -l1 -m1 -b
 
-outrootdir="outroot"
-
 exe="buildSpinroot"
 if [ $# -eq 0 ]; then
-  echo "usage: $0 [OPTIONS]"
+  echo "usage: $0 [ARGUMENTS]"
+  echo ""
+  echo "the first argument must be the directory of outroot files to analyze;"
+  echo "the remaining arguments can be any of the options listed below:"
+  echo ""
   ./${exe}.exe 2>/dev/null | grep OPTIONS -A100 --color
   exit
 fi
+
 args=$*
+indir=`echo $args|awk '{print $1}'`
+opts=`echo $args|sed 's/[^ ]* *//'`
 
 rm -vf spinroot/*.root
 
@@ -20,7 +25,7 @@ slurm=job.${exe}.slurm
 
 function app { echo "$1" >> $slurm; }
 
-nruns=$(ls ${outrootdir}/*.root | wc -l)
+nruns=$(ls ${indir}/*.root | wc -l)
 let nruns--
 
 app "#!/bin/bash"
@@ -33,9 +38,9 @@ app "#SBATCH --array=0-${nruns}"
 app "#SBATCH --ntasks=1"
 app "#SBATCH --output=/farm_out/%u/%x-%j-%N.out"
 app "#SBATCH --error=/farm_out/%u/%x-%j-%N.err"
-app "dataList=($(pwd)/${outrootdir}/*.root)"
+app "dataList=($(pwd)/${indir}/*.root)"
 
-app "srun ${exe}.exe -f \${dataList[\$SLURM_ARRAY_TASK_ID]} $args"
+app "srun ${exe}.exe -f \${dataList[\$SLURM_ARRAY_TASK_ID]} $opts"
 
 echo "job script"
 printf '%70s\n' | tr ' ' -

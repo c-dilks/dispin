@@ -30,9 +30,9 @@ FiducialCuts::FiducialCuts(int particleType_) {
 void FiducialCuts::ApplyCuts(int runnum_, int pid_) {
 
   // use runnumber to determine torus setting
-  if(runnum_>=5032 && runnum_<=5262) {
+  if(runnum_>=5032 && runnum_<=5419) {
     inbending=true; outbending=false;
-  } else if(runnum_>=5300 && runnum_<=5419) {
+  } else if(runnum_>=5422 && runnum_<=5666) {
     inbending=false; outbending=true;
   } else {
     fprintf(stderr,"ERROR: FiducialCuts does not know whether this run\n");

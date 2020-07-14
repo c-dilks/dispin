@@ -10,6 +10,7 @@ src/*.pcm
 src/DiSpinDict.*
 outz
 outroot
+outroot.*
 diskim
 *.slurm
 *.condor
