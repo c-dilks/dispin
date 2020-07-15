@@ -811,17 +811,18 @@ void Asymmetry::FitAsymMLM() {
   Tools::PrintSeparator(70,"=");
 
   // get number of available threads; if this method fails, set number of threads to 1
-  /*
-  nThreads = (Int_t) std::thread::hardware_concurrency();
+  // - if using D parameters, use single thread, because most likely
+  //   we are exploring the D parameter space
+  if(nDparamUsed>0) nThreads=1;
+  else nThreads = (Int_t) std::thread::hardware_concurrency();
   if(nThreads<1) nThreads=1;
   printf("---- fit with %d parallel threads\n",nThreads);
-  */
 
   // perform the fit
   if(extendMLM) {
     rfSimPdf->fitTo(*rfData, RooFit::Extended(kTRUE), RooFit::Save(kTRUE));
   } else {
-    rfSimPdf->fitTo(*rfData, /*RooFit::NumCPU(nThreads),*/ RooFit::Save());
+    rfSimPdf->fitTo(*rfData, RooFit::NumCPU(nThreads), RooFit::Save());
   }
 
   // get -log likelihood
