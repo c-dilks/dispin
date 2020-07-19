@@ -256,6 +256,11 @@ Float_t EventTree::Polarization() {
   return UNDEF;
 };
 
+// return relative luminosity, which can depend on HWP position
+Float_t EventTree::Rellum() {
+  return 1; // disable for now, until we have a good measure of it
+};
+
 
 // return true if the event passes vertex cuts
 Bool_t EventTree::CheckVertex() {

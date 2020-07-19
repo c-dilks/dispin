@@ -41,6 +41,7 @@ class EventTree : public TObject
 
     Int_t SpinState();
     Float_t Polarization();
+    Float_t Rellum();
     Bool_t CheckVertex();
 
     void PrintEventVerbose();

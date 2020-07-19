@@ -208,6 +208,7 @@ class Asymmetry : public TObject
     TString aName;
 
     Double_t rNumer,rDenom,rellum,rellumErr;
+    Double_t average_rellum;
 
 
 

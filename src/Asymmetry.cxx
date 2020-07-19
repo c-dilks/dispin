@@ -7,7 +7,6 @@ Asymmetry::Asymmetry(Binning * binScheme, Int_t binNum) {
 
   // OPTIONS ////////////
   debug = true;
-  enableRellum = true; // (seems ineffective in MLM fit, since absorbed into norm)
   extendMLM = false; // if true, MLM fit will be extended; WARNING: might not be
                      // implemented correctly! Use with CAUTION!
   ///////////////////////
@@ -302,9 +301,10 @@ Asymmetry::Asymmetry(Binning * binScheme, Int_t binNum) {
   rfPhiR = new RooRealVar("rfPhiR","#phi_{R}",-PIe,PIe);
   rfTheta = new RooRealVar("rfTheta","#theta",-PIe,PIe);
   rfPol = new RooRealVar("rfPol","P",0,1);
+  rfRellum = new RooRealVar("rfRellum","R",0,3);
   rfWeight = new RooRealVar("rfWeight","P_{h}^{T}/M_{h}",0,10);
 
-  rfVars = new RooArgSet(*rfPhiH,*rfPhiR,*rfTheta,*rfPol);
+  rfVars = new RooArgSet(*rfPhiH,*rfPhiR,*rfTheta,*rfPol,*rfRellum);
   rfVars->add(*rfWeight);
   rfVars->add(*rfSpinCateg);
 
@@ -328,8 +328,6 @@ Asymmetry::Asymmetry(Binning * binScheme, Int_t binNum) {
   rfYield[sP] = new RooRealVar("rfYieldP","YP",0,1e10);
   rfYield[sM] = new RooRealVar("rfYieldM","YM",0,1e10);
 
-  // - rellum
-  rfRellum = new RooRealVar("rfRellum","R",0,3);
 
   // - data sets for each spin
   // -- stored as RooDataSet; by default, RooDataSet uses a std::vector 
@@ -424,6 +422,10 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
   pol = ev->Polarization();
   if(pol<=0) return false;
 
+  // set relative luminosity
+  rellum = ev->Rellum();
+  if(rellum<0) return false;
+
   // get kinematic factor
   kf = EvalKinematicFactor(ev);
   if(kf<kfLB || kf>kfUB) return KickEvent("KF out of range",kf);
@@ -441,6 +443,7 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
   rfPhiR->setVal(PhiR);
   rfTheta->setVal(theta);
   rfPol->setVal(pol);
+  rfRellum->setVal(rellum);
   rfWeight->setVal(weight);
   rfSpinCateg->setLabel(rfSpinName[spinn]);
   rfData->add(*rfVars,rfWeight->getVal());
@@ -665,39 +668,22 @@ void Asymmetry::SetFitMode(Int_t fitMode) {
       this->FormuAppend(2,1,1);
       break;
   };
-
-
-  // COMPUTE RELATIVE LUMINOSITY
-  spinbin = yieldDist->FindBin(sP);
-  rNumer = yieldDist->GetBinContent(spinbin);
-  spinbin = yieldDist->FindBin(sM);
-  rDenom = yieldDist->GetBinContent(spinbin);
-  if(rDenom>0) {
-    // -- relative luminosity
-    rellum = enableRellum ? rNumer/rDenom : 1;
-    // -- relative luminosity statistical uncertainty (assume poissonian yields)
-    rellumErr = sqrt( rNumer * (rNumer+rDenom) / pow(rDenom,3) );
-  } else {
-    rellum = 0;
-    rellumErr = 0;
-    fprintf(stderr,"WARNING: rellum denominator==0, abort asym calculation for this bin\n");
-    return;
-  };
-  printf("rellum = %f / %f =  %.3f  +-  %f\n",rNumer,rDenom,rellum,rellumErr);
-  
 };
 
 
 
 // set new asymGr point and error
 // -- called by FitAsymGraph() for each modulation bin
-// -- need to have yL, yR, and rellum set before calling
+// -- need to have yL, yR, and average rellum set before calling
 // -- modBin_ and modBin2_ are used to address modBinDist for getting mean modulation
 //    for this modulation bin
 void Asymmetry::SetAsymGrPoint(Int_t modBin_, Int_t modBin2_) {
 
-  asymNumer = yL - (rellum * yR);
-  asymDenom = yL + (rellum * yR);
+  average_rellum = 1; // TODO: actually calculate the average;
+                      // since this is not yet done, this fit method does not
+                      // correct for the relative luminosity
+  asymNumer = yL - (average_rellum * yR);
+  asymDenom = yL + (average_rellum * yR);
 
   if(asymDenom>0) {
     // compute asymmetry value
@@ -705,8 +691,8 @@ void Asymmetry::SetAsymGrPoint(Int_t modBin_, Int_t modBin2_) {
 
     // compute asymmetry statistical error
     // -- full formula
-    asymErr = ( 2 * rellum * sqrt( yL*pow(yR,2) + yR*pow(yL,2) ) ) / 
-              ( polOA * pow(yL+rellum*yR,2) );
+    asymErr = ( 2 * average_rellum * sqrt( yL*pow(yR,2) + yR*pow(yL,2) ) ) / 
+              ( polOA * pow(yL+average_rellum*yR,2) );
     // -- compare to simple formula (assumes asym*polOA<<1 and R~1)
     //printf("difference = %f\n",asymErr - 1.0 / ( polOA * sqrt(yL+yR) ));
 
@@ -797,11 +783,6 @@ void Asymmetry::FitAsymMLM() {
   // -log likelihood
   rfNLL = new RooNLLVar("rfNLL","rfNLL",*rfSimPdf,*rfData);
   for(int aa=0; aa<nAmp; aa++) rfNLLplot[aa] = new RooPlot();
-
-
-  // fix polarization and rellum PDF parameters to their values
-  rfRellum->setVal(rellum);
-  rfRellum->setConstant(true);
 
 
   // fit simultaneous PDF to combined data
