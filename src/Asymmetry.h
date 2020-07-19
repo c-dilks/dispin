@@ -96,7 +96,6 @@ class Asymmetry : public TObject
     Bool_t success;
     Bool_t successIVmode;
     Bool_t debug;
-    Bool_t enableRellum;
     Bool_t extendMLM;
 
     Binning * BS;
