@@ -801,9 +801,16 @@ void Asymmetry::FitAsymMLM() {
 
   // perform the fit
   if(extendMLM) {
-    rfSimPdf->fitTo(*rfData, RooFit::Extended(kTRUE), RooFit::Save(kTRUE));
+    rfSimPdf->fitTo(*rfData,
+      RooFit::Extended(kTRUE),
+      RooFit::Save(kTRUE)
+    );
   } else {
-    rfSimPdf->fitTo(*rfData, RooFit::NumCPU(nThreads), RooFit::Save());
+    rfSimPdf->fitTo(*rfData, 
+      RooFit::NumCPU(nThreads),
+      RooFit::Minos(kTRUE),
+      RooFit::Save()
+    );
   }
 
   // get -log likelihood

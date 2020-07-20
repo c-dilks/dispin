@@ -17,3 +17,5 @@ diskim
 logfiles/*
 valgrind.log
 uu/params.dat
+fitOutput.txt
+outz_*

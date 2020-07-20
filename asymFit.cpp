@@ -20,6 +20,7 @@
 #include "TLine.h"
 #include "TStyle.h"
 #include "TMultiGraph.h"
+#include "TGraphAsymmErrors.h"
 #include "TSystem.h"
 #include "TObjArray.h"
 #include "TLegend.h"
@@ -31,11 +32,11 @@
 
 
 // subroutines
-void DrawKinDepGraph(TGraphErrors * g_, Binning * B_, Int_t d_);
+void DrawKinDepGraph(TGraph * g_, Binning * B_, Int_t d_);
 void DrawSimpleGraph(TGraphErrors * g_, Binning * B_, Int_t d_, Bool_t setRange_=true);
 void DrawAsymGr(TGraphErrors * g_);
 void DrawAsymGr2(TGraph2DErrors * g_);
-TGraphErrors * ShiftGraph(TGraphErrors * gr, Int_t nShift);
+TGraphAsymmErrors * ShiftGraph(TGraphAsymmErrors * gr, Int_t nShift);
 void SetCloneName(TH1 * clone_);
 
 // global variables
@@ -154,13 +155,13 @@ int main(int argc, char** argv) {
 
   // build maps from Binning::binVec number to plots etc.
   TGraphErrors * kindepGrOA;
-  TGraphErrors * kindepGrMA[Asymmetry::nAmp];
+  TGraphAsymmErrors * kindepGrMA[Asymmetry::nAmp];
   TGraphErrors * chindfGrOA;
   TGraphErrors * rellumGr;
   TMultiGraph * multiGr;
 
   std::map<Int_t, TGraphErrors*> kindepOAmap;
-  std::map<Int_t, TGraphErrors*> kindepMAmap[Asymmetry::nAmp];
+  std::map<Int_t, TGraphAsymmErrors*> kindepMAmap[Asymmetry::nAmp];
   std::map<Int_t, TMultiGraph*> multiMap;
   std::map<Int_t, TGraphErrors*> chindfOAmap;
   std::map<Int_t, TGraphErrors*> rellumMap;
@@ -226,7 +227,7 @@ int main(int argc, char** argv) {
         grTitle = dihTitle + " " + TString(A->rfA[aa]->GetTitle()) + 
           " vs. " + grTitleSuffix;
         grName = "kindepMA_A" + TString::Itoa(aa,10) + "_" + grNameSuffix;
-        kindepGrMA[aa] = new TGraphErrors();
+        kindepGrMA[aa] = new TGraphAsymmErrors();
         kindepGrMA[aa]->SetName(grName);
         kindepGrMA[aa]->SetTitle(grTitle);
       };
@@ -270,7 +271,7 @@ int main(int argc, char** argv) {
     chindfOAmap.insert(std::pair<Int_t,TGraphErrors*>(bn,chindfGrOA));
     rellumMap.insert(std::pair<Int_t,TGraphErrors*>(bn,rellumGr));
     for(int aa=0; aa<N_AMP; aa++) {
-      kindepMAmap[aa].insert(std::pair<Int_t,TGraphErrors*>(bn,kindepGrMA[aa]) );
+      kindepMAmap[aa].insert(std::pair<Int_t,TGraphAsymmErrors*>(bn,kindepGrMA[aa]) );
     };
   };
 
@@ -282,6 +283,8 @@ int main(int argc, char** argv) {
   Float_t asymValueOA,asymErrorOA;
   Float_t asymValueMA[Asymmetry::nAmp];
   Float_t asymErrorMA[Asymmetry::nAmp];
+  Float_t asymErrorMAhi[Asymmetry::nAmp];
+  Float_t asymErrorMAlo[Asymmetry::nAmp];
   Float_t meanKF;
   Float_t kinValue,kinError;
   Float_t chisq,ndf;
@@ -305,15 +308,23 @@ int main(int argc, char** argv) {
         switch(fitAlgo) {
           case 0:
             asymValueMA[aa] = A->rfA[aa]->getVal();
-            asymErrorMA[aa] = A->rfA[aa]->getError();
+            asymErrorMA[aa] = A->rfA[aa]->getError(); // HESSE (parabolic)
+            // MINOS errors (asymmetric)
+            // note: if MINOS was not used, `hi` and `lo` will be HESSE errors
+            asymErrorMAhi[aa] = TMath::Abs(A->rfA[aa]->getErrorHi());
+            asymErrorMAlo[aa] = TMath::Abs(A->rfA[aa]->getErrorLo());
             break;
           case 1:
             asymValueMA[aa] = 0; // not used
-            asymErrorMA[aa] = 0; // not used
+            asymErrorMA[aa] = 0;
+            asymErrorMAhi[aa] = 0;
+            asymErrorMAlo[aa] = 0;
             break;
           case 2:
             asymValueMA[aa] = A->fitFunc2->GetParameter(aa);
             asymErrorMA[aa] = A->fitFunc2->GetParError(aa);
+            asymErrorMAhi[aa] = asymErrorMA[aa];
+            asymErrorMAlo[aa] = asymErrorMA[aa];
         }
       };
 
@@ -361,7 +372,8 @@ int main(int argc, char** argv) {
       for(int aa=0; aa<N_AMP; aa++) {
         kindepGrMA[aa] = kindepMAmap[aa].at(bn);
         kindepGrMA[aa]->SetPoint(A->B[0],kinValue,asymValueMA[aa]);
-        kindepGrMA[aa]->SetPointError(A->B[0],kinError,asymErrorMA[aa]);
+        kindepGrMA[aa]->SetPointError(A->B[0],
+          kinError,kinError,asymErrorMAlo[aa],asymErrorMAhi[aa]);
       };
 
       chindfGrOA = chindfOAmap.at(bn);
@@ -442,7 +454,7 @@ int main(int argc, char** argv) {
 
   // -- add objects to canvases and graphs to multigraphs
   Int_t pad;
-  TGraphErrors * RFkindepGrClone[Asymmetry::nAmp];
+  TGraphAsymmErrors * kindepGrMAclone[Asymmetry::nAmp];
   Int_t binNum;
   if(BS->dimensions==1) {
     binNum = BS->HashBinNum(0);
@@ -457,8 +469,8 @@ int main(int argc, char** argv) {
       kindepGrMA[aa] = kindepMAmap[aa].at(binNum);
       kindepMAcanv[aa]->cd();
       DrawKinDepGraph(kindepGrMA[aa],BS,0);
-      RFkindepGrClone[aa] = ShiftGraph(kindepGrMA[aa],aa+1);
-      multiGr->Add(RFkindepGrClone[aa]);
+      kindepGrMAclone[aa] = ShiftGraph(kindepGrMA[aa],aa+1);
+      multiGr->Add(kindepGrMAclone[aa]);
     };
 
     chindfGrOA = chindfOAmap.at(binNum);
@@ -500,8 +512,8 @@ int main(int argc, char** argv) {
         kindepGrMA[aa] = kindepMAmap[aa].at(binNum);
         kindepMAcanv[aa]->cd(pad);
         DrawKinDepGraph(kindepGrMA[aa],BS,0);
-        RFkindepGrClone[aa] = ShiftGraph(kindepGrMA[aa],aa+1);
-        multiGr->Add(RFkindepGrClone[aa]);
+        kindepGrMAclone[aa] = ShiftGraph(kindepGrMA[aa],aa+1);
+        multiGr->Add(kindepGrMAclone[aa]);
       };
 
       chindfGrOA = chindfOAmap.at(binNum);
@@ -545,8 +557,8 @@ int main(int argc, char** argv) {
           kindepGrMA[aa] = kindepMAmap[aa].at(binNum);
           kindepMAcanv[aa]->cd(pad);
           DrawKinDepGraph(kindepGrMA[aa],BS,0);
-          RFkindepGrClone[aa] = ShiftGraph(kindepGrMA[aa],aa+1);
-          multiGr->Add(RFkindepGrClone[aa]);
+          kindepGrMAclone[aa] = ShiftGraph(kindepGrMA[aa],aa+1);
+          multiGr->Add(kindepGrMAclone[aa]);
         };
 
         chindfGrOA = chindfOAmap.at(binNum);
@@ -790,8 +802,9 @@ int main(int argc, char** argv) {
 
       printf("fit parameter results:\n");
       for(int aa=0; aa<N_AMP; aa++) {
-        printf(" >> A%d = %.5f +/- %.5f\n",
-            aa, A->rfA[aa]->getVal(), A->rfA[aa]->getError() );
+        printf(" >> A%d = %.5f +/- %.5f  (MINOS: +%.5f %.5f)\n",
+            aa, A->rfA[aa]->getVal(), A->rfA[aa]->getError(),
+            A->rfA[aa]->getErrorHi(), A->rfA[aa]->getErrorLo());
       };
       for(int dd=0; dd<N_D; dd++) {
         printf(" >> D%d = %.5f +/- %.5f\n",
@@ -819,7 +832,7 @@ int main(int argc, char** argv) {
 
 
 
-void DrawKinDepGraph(TGraphErrors * g_, Binning * B_, Int_t d_) {
+void DrawKinDepGraph(TGraph * g_, Binning * B_, Int_t d_) {
   Int_t v_ = B_->ivVar[d_];
 
   g_->Draw("APE"); // draw once, so we can then format it
@@ -963,17 +976,18 @@ void SetCloneName(TH1 * clone_) {
 
 // shift a graph's points to the right slightly (a clone of the graph, with shifted
 // points, is returned)
-TGraphErrors * ShiftGraph(TGraphErrors * gr, Int_t nShift) {
-  //TGraphErrors * retGr = (TGrapErrors*) gr->Clone();
-  TGraphErrors * retGr = new TGraphErrors();
+TGraphAsymmErrors * ShiftGraph(TGraphAsymmErrors * gr, Int_t nShift) {
+  TGraphAsymmErrors * retGr = new TGraphAsymmErrors();
   Double_t * grX = gr->GetX();
   Double_t * grY = gr->GetY();
-  Double_t * grEX = gr->GetEX();
-  Double_t * grEY = gr->GetEY();
+  Double_t * grEXhi = gr->GetEXhigh();
+  Double_t * grEXlo = gr->GetEXlow();
+  Double_t * grEYhi = gr->GetEYhigh();
+  Double_t * grEYlo = gr->GetEYlow();
   for(int nn=0; nn<gr->GetN(); nn++) {
     //retGr->SetPoint(nn, grX[nn]+nShift*0.01, grY[nn]); // shifting enabled
     retGr->SetPoint(nn, grX[nn], grY[nn]); // shifting disabled
-    retGr->SetPointError(nn, grEX[nn], grEY[nn]);
+    retGr->SetPointError(nn, grEXlo[nn], grEXhi[nn], grEYlo[nn], grEYhi[nn]);
   };
 
   switch(nShift) {

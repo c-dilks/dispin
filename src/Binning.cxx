@@ -31,14 +31,14 @@ Binning::Binning(Int_t pairType_) {
   if(numKaons==0) {
 
     // -- M_h (dihadron invariant mass)
-    /* // 7 quantile bins
+    ///* // 7 quantile bins
     AddBinBound(vM,0.46);
     AddBinBound(vM,0.60);
     AddBinBound(vM,0.72);
     AddBinBound(vM,0.81);
     AddBinBound(vM,0.93);
     AddBinBound(vM,1.10);
-    */
+    //*/
     /* // 14 quantile bins
     AddBinBound(vM,0.38);
     AddBinBound(vM,0.44);
@@ -54,10 +54,10 @@ Binning::Binning(Int_t pairType_) {
     AddBinBound(vM,1.02);
     AddBinBound(vM,1.16);
     */
-    ///* // 3 quantile bins
+    /* // 3 quantile bins
     AddBinBound(vM,0.60);
     AddBinBound(vM,0.83);
-    //*/
+    */
     /* // above/below rho
     AddBinBound(vM,0.77);
     */
