@@ -184,7 +184,7 @@ void EventTree::GetEvent(Int_t i) {
   cutVertex = CheckVertex();
 
   // fiducial cuts
-  whichLevel = FiducialCuts::cutTight;
+  whichLevel = FiducialCuts::cutLoose;
   cutFiducial = eleFiduCut[whichLevel] && 
                 hadFiduCut[qA][whichLevel] &&
                 hadFiduCut[qB][whichLevel];

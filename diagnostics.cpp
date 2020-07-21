@@ -187,6 +187,16 @@ int main(int argc, char** argv) {
      "P_{h}^{perp} vs. M_{h};M_{h};P_{h}^{perp}",
      NBINS,0,3,
      NBINS,0,3);
+   TH2D * RTvsMh = new TH2D("RTvsMh",
+     "R_{T} vs. M_{h};M_{h};R_{T}",
+     NBINS,0,3,
+     NBINS,0,1.5);
+   TH2D * xFvsZ[2];
+   for(int h=0; h<2; h++) {
+     xFvsZ[h] = new TH2D(TString("xFvsZ_"+hadName[h]),
+       TString(hadTitle[h]+"x_{F} vs. z;z;x_{F}"),
+       NBINS,0,1,NBINS,-1,1);
+   };
 
    // distributions for partial wave analysis
    TH1D * thetaDist = new TH1D("thetaDist","#theta distribution;#theta",NBINS,0,PI);
@@ -430,6 +440,7 @@ int main(int argc, char** argv) {
        PhiHRDist->Fill(ev->PhiHR);
        g1perpWeightVsMod->Fill(TMath::Sin(ev->PhiHR),ev->PhPerp/ev->Mh);
        PhPerpVsMh->Fill(ev->Mh,ev->PhPerp);
+       RTvsMh->Fill(ev->Mh,ev->RT);
 
        thetaDist->Fill(ev->theta);
        sinThetaDist->Fill(TMath::Sin(ev->theta));
@@ -448,6 +459,7 @@ int main(int argc, char** argv) {
        for(int h=0; h<2; h++) {
          thetaVsZ[h]->Fill(ev->Z[h],ev->theta);
          thetaVsHadP[h]->Fill(ev->hadP[h],ev->theta);
+         xFvsZ[h]->Fill(ev->Z[h],ev->hadXF[h]);
        };
 
        PhiHvsMh->Fill(ev->Mh,ev->PhiH);
@@ -570,6 +582,7 @@ int main(int argc, char** argv) {
    PhiHRDist->Write();
    g1perpWeightVsMod->Write();
    PhPerpVsMh->Write(); 
+   RTvsMh->Write(); 
   
    thetaDist->Write();
    sinThetaDist->Write();
@@ -584,6 +597,7 @@ int main(int argc, char** argv) {
    thetaVsX->Write();
    thetaVsZpair->Write();
    thetaVsZeta->Write();
+   for(int h=0; h<2; h++) xFvsZ[h]->Write();
    for(int h=0; h<2; h++) thetaVsZ[h]->Write();
    thetaVsPh->Write();
    for(int h=0; h<2; h++) thetaVsHadP[h]->Write();
