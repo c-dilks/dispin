@@ -73,6 +73,7 @@ int main(int argc, char** argv) {
   Float_t evnumHi_float;
   Float_t helicity_float;
   Float_t runnum_float;
+  Float_t eleSampFrac;
   // - particle branch vars; array index corresponds to parEnum
   Float_t Row[nPar];
   Float_t Pid[nPar];
@@ -123,6 +124,30 @@ int main(int argc, char** argv) {
     SetParticleBranchAddress(p,"pcal_lv",&(fidu[p]->part_Cal_PCAL_lv[0]));
     SetParticleBranchAddress(p,"pcal_lw",&(fidu[p]->part_Cal_PCAL_lw[0]));
     //
+    SetParticleBranchAddress(p,"ecin_found",&(fidu[p]->part_Cal_ECIN_found[0]));
+    SetParticleBranchAddress(p,"ecin_sector",&(fidu[p]->part_Cal_ECIN_sector[0]));
+    SetParticleBranchAddress(p,"ecin_energy",&(fidu[p]->part_Cal_ECIN_energy[0]));
+    SetParticleBranchAddress(p,"ecin_time",&(fidu[p]->part_Cal_ECIN_time[0]));
+    SetParticleBranchAddress(p,"ecin_path",&(fidu[p]->part_Cal_ECIN_path[0]));
+    SetParticleBranchAddress(p,"ecin_x",&(fidu[p]->part_Cal_ECIN_x[0]));
+    SetParticleBranchAddress(p,"ecin_y",&(fidu[p]->part_Cal_ECIN_y[0]));
+    SetParticleBranchAddress(p,"ecin_z",&(fidu[p]->part_Cal_ECIN_z[0]));
+    SetParticleBranchAddress(p,"ecin_lu",&(fidu[p]->part_Cal_ECIN_lu[0]));
+    SetParticleBranchAddress(p,"ecin_lv",&(fidu[p]->part_Cal_ECIN_lv[0]));
+    SetParticleBranchAddress(p,"ecin_lw",&(fidu[p]->part_Cal_ECIN_lw[0]));
+    //
+    SetParticleBranchAddress(p,"ecout_found",&(fidu[p]->part_Cal_ECOUT_found[0]));
+    SetParticleBranchAddress(p,"ecout_sector",&(fidu[p]->part_Cal_ECOUT_sector[0]));
+    SetParticleBranchAddress(p,"ecout_energy",&(fidu[p]->part_Cal_ECOUT_energy[0]));
+    SetParticleBranchAddress(p,"ecout_time",&(fidu[p]->part_Cal_ECOUT_time[0]));
+    SetParticleBranchAddress(p,"ecout_path",&(fidu[p]->part_Cal_ECOUT_path[0]));
+    SetParticleBranchAddress(p,"ecout_x",&(fidu[p]->part_Cal_ECOUT_x[0]));
+    SetParticleBranchAddress(p,"ecout_y",&(fidu[p]->part_Cal_ECOUT_y[0]));
+    SetParticleBranchAddress(p,"ecout_z",&(fidu[p]->part_Cal_ECOUT_z[0]));
+    SetParticleBranchAddress(p,"ecout_lu",&(fidu[p]->part_Cal_ECOUT_lu[0]));
+    SetParticleBranchAddress(p,"ecout_lv",&(fidu[p]->part_Cal_ECOUT_lv[0]));
+    SetParticleBranchAddress(p,"ecout_lw",&(fidu[p]->part_Cal_ECOUT_lw[0]));
+    //
     SetParticleBranchAddress(p,"dcTrk_found",&(fidu[p]->part_DC_Track_found[0]));
     SetParticleBranchAddress(p,"dcTrk_chi2",&(fidu[p]->part_DC_Track_chi2[0]));
     SetParticleBranchAddress(p,"dcTrk_ndf",&(fidu[p]->part_DC_Track_NDF[0]));
@@ -165,6 +190,8 @@ int main(int argc, char** argv) {
   outrootTr->Branch("eleStatus",&(disEv->eleStatus),"eleStatus/I");
   outrootTr->Branch("eleChi2pid",&(disEv->eleChi2pid),"eleChi2pid/F");
   outrootTr->Branch("eleFiduCut",fidu[kEle]->fiduCut,"eleFiduCut[3]/O");
+  outrootTr->Branch("eleSampFrac",&eleSampFrac,"eleSampFrac/F");
+  outrootTr->Branch("elePCALen",&(fidu[kEle]->part_Cal_PCAL_energy[0]),"elePCALen/F");
   // - hadron branches
   outrootTr->Branch("pairType",&(dih->pairType),"pairType/I");
   outrootTr->Branch("hadRow",dih->hadRow,"hadRow[2]/I");
@@ -249,6 +276,10 @@ int main(int argc, char** argv) {
 
     // calculate DIS kinematics
     disEv->CalculateKinematics(traj[kEle]);
+
+    // compute sampling fraction for electron
+    eleSampFrac = fidu[kEle]->GetECenergy() / disEv->eleP;
+
 
     // calculate dihadron kinematics and obtain hadron fiducial cuts
     // - CorrectOrder (from Constants.h) ensures the standard hadron

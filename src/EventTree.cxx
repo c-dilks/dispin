@@ -35,6 +35,8 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
   chain->SetBranchAddress("eleVertex",eleVertex);
   chain->SetBranchAddress("eleStatus",&eleStatus);
   chain->SetBranchAddress("eleChi2pid",&eleChi2pid);
+  chain->SetBranchAddress("eleSampFrac",&eleSampFrac);
+  chain->SetBranchAddress("elePCALen",&elePCALen);
 
   chain->SetBranchAddress("eleFiduCut",eleFiduCut);
   chain->SetBranchAddress("hadFiduCut",hadFiduCut);
@@ -134,6 +136,8 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
     trHad[h]->Idx = dihHadIdx(whichHad[qA],whichHad[qB],h);
   };
   whichHelicityMC = 0;
+  vertexWarned = false;
+
 };
 
 
@@ -161,6 +165,7 @@ void EventTree::GetEvent(Int_t i) {
 
   // convert eta to polar angle theta 
   // (not to be confused with partial wave theta)
+  eleTheta = Tools::EtaToTheta(eleEta);
   for(int h=0; h<2; h++) {
     hadTheta[h] = Tools::EtaToTheta(hadEta[h]);
     gen_hadTheta[h] = MCrecMode ? Tools::EtaToTheta(gen_hadEta[h]) : UNDEF;
@@ -188,6 +193,16 @@ void EventTree::GetEvent(Int_t i) {
   cutFiducial = eleFiduCut[whichLevel] && 
                 hadFiduCut[qA][whichLevel] &&
                 hadFiduCut[qB][whichLevel];
+
+  // PID refinement cuts
+  cutElePID = TMath::Abs(eleChi2pid) < 5 &&
+              elePCALen > 0.07 &&
+              eleSampFrac > 0.17 &&
+              eleTheta>5 && eleTheta<35;
+  for(int h=0; h<2; h++) {
+    cutHadPID[h] = hadTheta[h]>5 && hadTheta[h]<35;
+  };
+  cutPID = cutElePID && cutHadPID[qA] && cutHadPID[qB];
   
 
   // check if helicity is defined
@@ -265,10 +280,19 @@ Float_t EventTree::Rellum() {
 // return true if the event passes vertex cuts
 Bool_t EventTree::CheckVertex() {
 
-
   // electron Vz cuts
-  vzBoolEle = -13 < eleVertex[eZ] && eleVertex[eZ] < 12; // Stefan's cut
-  //vzBoolEle = -7 <= eleVertex[eZ] && eleVertex[eZ] <= 1; // tight cut
+  if(runnum>=5032 && runnum<=5419) {
+    vzBoolEle = -13 < eleVertex[eZ] && eleVertex[eZ] < 12; // inbending
+  } else if(runnum>=5422 && runnum<=5666) {
+    vzBoolEle = -18 < eleVertex[eZ] && eleVertex[eZ] < 10; // outbending
+  } else {
+    if(!vertexWarned) {
+      fprintf(stderr,"WARNING: run neither inbending or outbending\n");
+      fprintf(stderr,"         electron vertex cut disabled\n");
+      vertexWarned = true;
+    };
+    vzBoolEle = true;
+  };
 
 
   // | had_Vz - ele_Vz | cut

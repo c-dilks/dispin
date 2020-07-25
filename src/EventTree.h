@@ -89,10 +89,13 @@ class EventTree : public TObject
     Float_t eleP;
     Float_t elePt;
     Float_t eleEta;
+    Float_t eleTheta;
     Float_t elePhi;
     Float_t eleVertex[3];
     Int_t eleStatus;
     Float_t eleChi2pid;
+    Float_t eleSampFrac;
+    Float_t elePCALen;
 
     // fiducial cuts
     Bool_t eleFiduCut[FiducialCuts::nLevel];
@@ -140,6 +143,9 @@ class EventTree : public TObject
     Bool_t cutHelicity;
     Bool_t cutVertex;
     Bool_t cutFiducial;
+    Bool_t cutPID;
+    Bool_t cutElePID;
+    Bool_t cutHadPID[2];
     Bool_t cutMCmatch;
 
     // OTHER VARIABLES
@@ -190,6 +196,8 @@ class EventTree : public TObject
     Bool_t vzdiffBool;
     Float_t vzdiffHads;
     Float_t vzdiff[2];
+
+    Bool_t vertexWarned;
 
     /*
     std::map<Int_t,std::vector<Int_t>> evnumMap;

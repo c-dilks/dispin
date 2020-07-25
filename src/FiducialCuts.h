@@ -35,6 +35,13 @@ class FiducialCuts : public TObject {
     // - booleans (so far just one)
     Bool_t fiduCut[nLevel];
 
+    // total EC energy (for sampling fraction)
+    Float_t GetECenergy() {
+      return part_Cal_PCAL_energy[0] +
+             part_Cal_ECIN_energy[0] +
+             part_Cal_ECOUT_energy[0];
+    };
+
     
     // Stefan's methods (the integer argument is the particle number, 
     // just use 0; see below); these are called by ApplyCuts
@@ -81,6 +88,7 @@ class FiducialCuts : public TObject {
     //   is limited to 1
     // - preserving the array structure, rather than just defining floats, minimizes 
     //   changes to Stefan's code
+    
     Float_t part_Cal_PCAL_found[1];
     Float_t part_Cal_PCAL_sector[1];
     Float_t part_Cal_PCAL_energy[1];
@@ -92,10 +100,36 @@ class FiducialCuts : public TObject {
     Float_t part_Cal_PCAL_lu[1];
     Float_t part_Cal_PCAL_lv[1];
     Float_t part_Cal_PCAL_lw[1];
+
+    Float_t part_Cal_ECIN_found[1];
+    Float_t part_Cal_ECIN_sector[1];
+    Float_t part_Cal_ECIN_energy[1];
+    Float_t part_Cal_ECIN_time[1];
+    Float_t part_Cal_ECIN_path[1];
+    Float_t part_Cal_ECIN_x[1];
+    Float_t part_Cal_ECIN_y[1];
+    Float_t part_Cal_ECIN_z[1];
+    Float_t part_Cal_ECIN_lu[1];
+    Float_t part_Cal_ECIN_lv[1];
+    Float_t part_Cal_ECIN_lw[1];
+
+    Float_t part_Cal_ECOUT_found[1];
+    Float_t part_Cal_ECOUT_sector[1];
+    Float_t part_Cal_ECOUT_energy[1];
+    Float_t part_Cal_ECOUT_time[1];
+    Float_t part_Cal_ECOUT_path[1];
+    Float_t part_Cal_ECOUT_x[1];
+    Float_t part_Cal_ECOUT_y[1];
+    Float_t part_Cal_ECOUT_z[1];
+    Float_t part_Cal_ECOUT_lu[1];
+    Float_t part_Cal_ECOUT_lv[1];
+    Float_t part_Cal_ECOUT_lw[1];
+
     Float_t part_DC_Track_found[1];
     Float_t part_DC_Track_chi2[1];
     Float_t part_DC_Track_NDF[1];
     Float_t part_DC_Track_status[1];
+
     Float_t part_DC_Traj_found[1];
     Float_t part_DC_c1x[1];
     Float_t part_DC_c1y[1];

@@ -1,6 +1,6 @@
 // computes quantiles for a variety of distributions in plots.root
 
-const Int_t N = 3; // <-- number of quantiles
+const Int_t N = 14; // <-- number of quantiles
 Double_t q[N];
 Double_t p[N];
 int i;

@@ -88,8 +88,8 @@ def getDetectorBranch = { pidx ->
       def layer = calBank.getByte('layer',r)
       def calStr = ''
       if(layer == DetectorLayer.PCAL_U) calStr = 'pcal' // layer 1
-      //else if(layer == DetectorLayer.EC_INNER_U) calStr = 'ecin' // layer 4
-      //else if(layer == DetectorLayer.EC_OUTER_U) calStr = 'ecout' // layer 7
+      else if(layer == DetectorLayer.EC_INNER_U) calStr = 'ecin' // layer 4
+      else if(layer == DetectorLayer.EC_OUTER_U) calStr = 'ecout' // layer 7
       if(!calStr.isEmpty()) detBr[calStr] = getCalorimeterLeaves(r)
       if(verbose) println "-> calorimeter layer $layer"
     }
@@ -139,8 +139,8 @@ def calorimeterLeafList = [
 ]
 
 // list of  calorimeters
-//def calorimeterList = ['pcal','ecin','ecout'] 
-def calorimeterList = ['pcal'] // pcal only
+def calorimeterList = ['pcal','ecin','ecout'] 
+//def calorimeterList = ['pcal'] // pcal only
 
 // closure to define ntuple leaves for detectors
 def buildDetectorLeaves = { par ->
@@ -170,9 +170,12 @@ def fillDetectorLeaves = { br ->
   calorimeterList.each{ det ->
     found = brDet.containsKey(det)
     leaves << (found ? 1.0 : 0.0)
-    leaves << calorimeterLeafList.collect{ leaf ->
-      found ? brDet[det][leaf] : undef
+    // if !found, all vars set to `undef`, except for energy, set to 0
+    if(found) leaves << calorimeterLeafList.collect{ leaf -> brDet[det][leaf] }
+    else leaves << calorimeterLeafList.collect{ leaf -> 
+      leaf=='energy' ? 0 : undef
     }
+
   }
   /* tracking */
   found = brDet.containsKey('dcTrk')
@@ -355,14 +358,13 @@ while(reader.hasEvent()) {
     //----------------------------------
     // find the DIS electron
     //----------------------------------
-    // CUT: select trigger electrons with |chi2pid|<3
+    // CUT: select FD trigger electrons
     eleTree = growParticleTree(11).findAll { br ->
       def status = br.status
       def chi2pid = br.chi2pid
       status<0 &&
         ( Math.abs(status/1000).toInteger() & 0x2 || 
-          Math.abs(status/1000).toInteger() & 0x4 ) &&
-        Math.abs(chi2pid)<3
+          Math.abs(status/1000).toInteger() & 0x4 )
     }
     //if(verbose) { println "----- eleTree:"; println eleTree; }
 
