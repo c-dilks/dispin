@@ -24,7 +24,7 @@ if(args.length>=1) inHipoName = args[0]
 if(args.length>=2) dataStream = args[1]
 ////////////////////////
 // OPTIONS
-def verbose = 1
+def verbose = 0
 hadPIDlist = [ 211, -211 ] // list of hadron PIDs which will be paired
 //hadPIDlist += [ 321, -321 ] // include kaons
 ////////////////////////
@@ -77,6 +77,7 @@ else {
   System.err << "ERROR: unrecognized dataStream\n"
   return
 }
+if(useMC) println "READING MONTE CARLO FILE"
 
 
 
@@ -289,6 +290,7 @@ def growMCtree = { pidList, pid ->
         *['px','py','pz'].collect{mcParticleBank.getFloat(it,row)}
       ),
       *:['vx','vy','vz'].collectEntries{[it,mcParticleBank.getFloat(it,row)]},
+      'matchDist':10000
     ]
   }
 
@@ -321,6 +323,7 @@ def buildMCleaves = { par ->
     'Px','Py','Pz',
     'E',
     'Vx','Vy','Vz',
+    'matchDist'
   ].collect{par+'_'+it}
 }
 
@@ -346,7 +349,8 @@ def fillMCleaves = { br ->
       br.particle.pid(),
       br.particle.px(), br.particle.py(), br.particle.pz(),
       br.particle.e(),
-      br.vx, br.vy, br.vz
+      br.vx, br.vy, br.vz,
+      br.matchDist
     ]
   } else {
     // match was not found
@@ -355,7 +359,8 @@ def fillMCleaves = { br ->
       undef,
       undef,undef,undef,
       undef,
-      undef,undef,undef
+      undef,undef,undef,
+      undef
     ]
   }
 }
@@ -374,9 +379,9 @@ def NTleafNames = [
 if(useMC) {
   NTleafNames = [
     NTleafNames,
-    buildMCleaves('gen_ele'),
-    buildMCleaves('gen_hadA'),
-    buildMCleaves('gen_hadB')
+    *buildMCleaves('gen_ele'),
+    *buildMCleaves('gen_hadA'),
+    *buildMCleaves('gen_hadB')
   ].join(':')
 }
 //println NTleafNames
@@ -397,7 +402,7 @@ reader.open(inHipoName)
 
 // begin event loop
 while(reader.hasEvent()) {
-  //if(evCount>10000) break // limiter
+  //if(evCount>100000) break // limiter
   evCount++
   if(evCount % 100000 == 0) println "read $evCount events"
   if(verbose) { 30.times{print '='}; println " begin event" }
@@ -436,10 +441,12 @@ while(reader.hasEvent()) {
     }
 
 
-    // CUT: data monitoring QA cut
-    if(!qa.OkForAsymmetry(runnum,evnum)) {
-      //println "toss file " + qa.getFilenum() + " (evnum=$evnum)"
-      continue;
+    // CUT: data monitoring QA cut (not applied to MC)
+    if(!useMC) {
+      if(!qa.OkForAsymmetry(runnum,evnum)) {
+        //println "toss file " + qa.getFilenum() + " (evnum=$evnum)"
+        continue;
+      }
     }
 
 
@@ -459,8 +466,8 @@ while(reader.hasEvent()) {
         mcParticleBank.getInt('pid',it)
       }
       if(verbose) println "MC PIDs = $mcPids"
-      mcgenTreeList = hadPIDlist.collect{ growMCtree(mcpids,it) }
-      mcgenTreeList << growMCtree(mcpids,11)
+      mcgenTreeList = hadPIDlist.collect{ growMCtree(mcPids,it) }
+      mcgenTreeList << growMCtree(mcPids,11)
       if(verbose) {
         println "MCGENTREELIST"
         println pPrint(mcgenTreeList)
@@ -552,7 +559,8 @@ while(reader.hasEvent()) {
                       )
                       // find gen particle with minimum dist from rec
                       if(dist<minDist) {
-                        match = gen
+                        match = gen // `match` is the matched mcgen particle
+                        match.matchDist = dist // for ntuple
                         minDist = dist
                       }
                     }
