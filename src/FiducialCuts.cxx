@@ -34,6 +34,8 @@ void FiducialCuts::ApplyCuts(int runnum_, int pid_) {
     inbending=true; outbending=false;
   } else if(runnum_>=5422 && runnum_<=5666) {
     inbending=false; outbending=true;
+  } else if(runnum_==11) { // MC
+    inbending=true; outbending=false;
   } else {
     fprintf(stderr,"ERROR: FiducialCuts does not know whether this run\n");
     fprintf(stderr,"       is inbending or outbending; setting to inbending\n");

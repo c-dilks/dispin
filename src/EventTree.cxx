@@ -226,7 +226,7 @@ Bool_t EventTree::Valid() {
 
 // translate "helicity" to a local index for the spin
 Int_t EventTree::SpinState() {
-  if(runnum>=4700 && runnum<=6000) {
+  if(runnum>=5032 && runnum<=5666) {
     // Fall 2018 convention
     switch(helicity) {
       case 1: return sM;
@@ -235,23 +235,8 @@ Int_t EventTree::SpinState() {
       default: fprintf(stderr,"WARNING: bad SpinState request: %d\n",helicity);
     };
   }
-  else if(runnum>=4000 && runnum<=4100) {
-    // Spring 2018 (for DNP18) convention
-    switch(helicity) {
-      case 0: return sP;
-      case 1: return sM;
-      default: fprintf(stderr,"WARNING: bad SpinState request: %d\n",helicity);
-    };
-  }
-
   else if(runnum==11) { // MC helicity
-
-    // event matching cut
-    if(MCrecMode && !cutMCmatch) return UNDEF;
-
-    // MC convention (from injected asymmetries)
-    helicity = helicityMC[whichHelicityMC];
-    switch(helicity) {
+    switch(helicityMC[whichHelicityMC]) {
       case 2: return sM;
       case 3: return sP;
       case 0: return UNDEF;
@@ -267,6 +252,7 @@ Int_t EventTree::SpinState() {
 Float_t EventTree::Polarization() {
   if(runnum>=5032 && runnum<5333)       return 0.8592; // +-0.0129
   else if(runnum>=5333 && runnum<=5666) return 0.8922; // +-0.02509
+  else if(runnum==11) return 0.86; // MC
   fprintf(stderr,"WARNING: runnum %d not in EventTree::Polarization\n",runnum);
   return UNDEF;
 };
@@ -285,6 +271,8 @@ Bool_t EventTree::CheckVertex() {
     vzBoolEle = -13 < eleVertex[eZ] && eleVertex[eZ] < 12; // inbending
   } else if(runnum>=5422 && runnum<=5666) {
     vzBoolEle = -18 < eleVertex[eZ] && eleVertex[eZ] < 10; // outbending
+  } else if(runnum==11) {
+    vzBoolEle = -13 < eleVertex[eZ] && eleVertex[eZ] < 12; // inbending MC
   } else {
     if(!vertexWarned) {
       fprintf(stderr,"WARNING: run neither inbending or outbending\n");

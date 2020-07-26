@@ -22,18 +22,18 @@
 #include "FiducialCuts.h"
 #include "Dihadron.h"
 #include "Diphoton.h"
-#include "EventTree.h"
+#include "Modulation.h"
 
 
 enum parEnum {kEle,kHadA,kHadB,nPar};
-TString parName[nPar];
 TFile * diskimFile;
 TTree * ditr;
 TFile * outrootFile;
 TTree * outrootTr;
 
-void SetParticleBranchAddress(Int_t par, TString brName, void * brAddr) {
-  ditr->SetBranchAddress(TString(parName[par]+"_"+brName),brAddr);
+
+void SetParticleBranchAddress(TString parStr, TString brName, void * brAddr) {
+  ditr->SetBranchAddress(TString(parStr+"_"+brName),brAddr);
 };
 
 
@@ -41,22 +41,33 @@ int main(int argc, char** argv) {
 
   // ARGUMENTS
   TString infileN;
+  TString dataStream = "data";
+  TString injectStream = "injgen";
   if(argc<=1) {
     printf("USAGE: %s [diskim file]\n",argv[0]);
+    printf(" additional arguments for MC: [data/mcrec/mcgen] [injgen/injrec]\n");
     exit(0);
   };
   if(argc>1) infileN = TString(argv[1]);
+  if(argc>2) dataStream = TString(argv[2]);
+  if(argc>3) injectStream = TString(argv[3]);
 
 
   // instantiate useful objects
   DIS * disEv = new DIS();
-  disEv->debug = 0;
+  DIS * disEvMC = new DIS();
+  disEv->debug = 0; disEvMC->debug = 0;
   Dihadron * dih = new Dihadron();
-  dih->debug = 0;
-  dih->useBreit = false;
+  Dihadron * dihMC = new Dihadron();
+  dih->debug = 0; dihMC->debug = 0;
+  dih->useBreit = false; dihMC->useBreit = false;
   Trajectory * traj[nPar];
+  Trajectory * trajMC[nPar];
+  for(int p=0; p<nPar; p++) {
+    traj[p] = new Trajectory();
+    trajMC[p] = new Trajectory();
+  };
   FiducialCuts * fidu[nPar];
-  for(int p=0; p<nPar; p++) traj[p] = new Trajectory();
   fidu[kEle] = new FiducialCuts(FiducialCuts::kElectron);
   fidu[kHadA] = new FiducialCuts(FiducialCuts::kHadron);
   fidu[kHadB] = new FiducialCuts(FiducialCuts::kHadron);
@@ -65,6 +76,22 @@ int main(int argc, char** argv) {
   // open diskim file
   diskimFile = new TFile(infileN,"READ");
   ditr = (TTree*) diskimFile->Get("ditr");
+
+  // check MC arguments
+  Bool_t useMC;
+  if(dataStream=="data") useMC=false;
+  else if(dataStream=="mcrec") {
+    useMC=true;
+    if(injectStream!="injrec" && injectStream!="injgen") {
+      fprintf(stderr,"ERROR: unrecognized injectStream\n");
+      return 0;
+    };
+  }
+  else if(dataStream=="mcgen") useMC=true;
+  else {
+    fprintf(stderr,"ERROR: unrecognized dataStream\n");
+    return 0;
+  };
 
 
   // define branch vars
@@ -75,18 +102,24 @@ int main(int argc, char** argv) {
   Float_t runnum_float;
   Float_t eleSampFrac;
   // - particle branch vars; array index corresponds to parEnum
-  Float_t Row[nPar];
-  Float_t Pid[nPar];
-  Float_t Px[nPar];
-  Float_t Py[nPar];
-  Float_t Pz[nPar];
-  Float_t E[nPar];
-  Float_t Vx[nPar];
-  Float_t Vy[nPar];
-  Float_t Vz[nPar];
+  Float_t Row[nPar]; Float_t genRow[nPar];
+  Float_t Pid[nPar]; Float_t genPid[nPar];
+  Float_t Px[nPar]; Float_t genPx[nPar];
+  Float_t Py[nPar]; Float_t genPy[nPar];
+  Float_t Pz[nPar]; Float_t genPz[nPar];
+  Float_t E[nPar]; Float_t genE[nPar];
+  Float_t Vx[nPar]; Float_t genVx[nPar];
+  Float_t Vy[nPar]; Float_t genVy[nPar];
+  Float_t Vz[nPar]; Float_t genVz[nPar];
   Float_t chi2pid[nPar];
   Float_t status[nPar];
   Float_t beta[nPar];
+  TString parName[nPar];
+  parName[kEle] = "ele";
+  parName[kHadA] = "hadA";
+  parName[kHadB] = "hadB";
+  TString parMCname[nPar];
+  for(int p=0; p<nPar; p++) parMCname[p]="gen_"+parName[p];
   // set branch addresses
   // - event branches
   ditr->SetBranchAddress("runnum",&runnum_float);
@@ -94,75 +127,84 @@ int main(int argc, char** argv) {
   ditr->SetBranchAddress("evnumHi",&evnumHi_float);
   ditr->SetBranchAddress("helicity",&helicity_float);
   // - particle branches
-  parName[kEle] = "ele";
-  parName[kHadA] = "hadA";
-  parName[kHadB] = "hadB";
   for(int p=0; p<nPar; p++) {
     // - particle info
-    SetParticleBranchAddress(p,"Row",&(Row[p]));
-    SetParticleBranchAddress(p,"Pid",&(Pid[p]));
-    SetParticleBranchAddress(p,"Px",&(Px[p]));
-    SetParticleBranchAddress(p,"Py",&(Py[p]));
-    SetParticleBranchAddress(p,"Pz",&(Pz[p]));
-    SetParticleBranchAddress(p,"E",&(E[p]));
-    SetParticleBranchAddress(p,"Vx",&(Vx[p]));
-    SetParticleBranchAddress(p,"Vy",&(Vy[p]));
-    SetParticleBranchAddress(p,"Vz",&(Vz[p]));
-    SetParticleBranchAddress(p,"chi2pid",&(chi2pid[p]));
-    SetParticleBranchAddress(p,"status",&(status[p]));
-    SetParticleBranchAddress(p,"beta",&(beta[p]));
+    SetParticleBranchAddress(parName[p],"Row",&(Row[p]));
+    SetParticleBranchAddress(parName[p],"Pid",&(Pid[p]));
+    SetParticleBranchAddress(parName[p],"Px",&(Px[p]));
+    SetParticleBranchAddress(parName[p],"Py",&(Py[p]));
+    SetParticleBranchAddress(parName[p],"Pz",&(Pz[p]));
+    SetParticleBranchAddress(parName[p],"E",&(E[p]));
+    SetParticleBranchAddress(parName[p],"Vx",&(Vx[p]));
+    SetParticleBranchAddress(parName[p],"Vy",&(Vy[p]));
+    SetParticleBranchAddress(parName[p],"Vz",&(Vz[p]));
+    SetParticleBranchAddress(parName[p],"chi2pid",&(chi2pid[p]));
+    SetParticleBranchAddress(parName[p],"status",&(status[p]));
+    SetParticleBranchAddress(parName[p],"beta",&(beta[p]));
+    // - MC generated particle info, matched to recon info
+    if(useMC && dataStream=="mcrec") {
+      SetParticleBranchAddress(parMCname[p],"Row",&(genRow[p]));
+      SetParticleBranchAddress(parMCname[p],"Pid",&(genPid[p]));
+      SetParticleBranchAddress(parMCname[p],"Px",&(genPx[p]));
+      SetParticleBranchAddress(parMCname[p],"Py",&(genPy[p]));
+      SetParticleBranchAddress(parMCname[p],"Pz",&(genPz[p]));
+      SetParticleBranchAddress(parMCname[p],"E",&(genE[p]));
+      SetParticleBranchAddress(parMCname[p],"Vx",&(genVx[p]));
+      SetParticleBranchAddress(parMCname[p],"Vy",&(genVy[p]));
+      SetParticleBranchAddress(parMCname[p],"Vz",&(genVz[p]));
+    };
     // - detector info
-    SetParticleBranchAddress(p,"pcal_found",&(fidu[p]->part_Cal_PCAL_found[0]));
-    SetParticleBranchAddress(p,"pcal_sector",&(fidu[p]->part_Cal_PCAL_sector[0]));
-    SetParticleBranchAddress(p,"pcal_energy",&(fidu[p]->part_Cal_PCAL_energy[0]));
-    SetParticleBranchAddress(p,"pcal_time",&(fidu[p]->part_Cal_PCAL_time[0]));
-    SetParticleBranchAddress(p,"pcal_path",&(fidu[p]->part_Cal_PCAL_path[0]));
-    SetParticleBranchAddress(p,"pcal_x",&(fidu[p]->part_Cal_PCAL_x[0]));
-    SetParticleBranchAddress(p,"pcal_y",&(fidu[p]->part_Cal_PCAL_y[0]));
-    SetParticleBranchAddress(p,"pcal_z",&(fidu[p]->part_Cal_PCAL_z[0]));
-    SetParticleBranchAddress(p,"pcal_lu",&(fidu[p]->part_Cal_PCAL_lu[0]));
-    SetParticleBranchAddress(p,"pcal_lv",&(fidu[p]->part_Cal_PCAL_lv[0]));
-    SetParticleBranchAddress(p,"pcal_lw",&(fidu[p]->part_Cal_PCAL_lw[0]));
+    SetParticleBranchAddress(parName[p],"pcal_found",&(fidu[p]->part_Cal_PCAL_found[0]));
+    SetParticleBranchAddress(parName[p],"pcal_sector",&(fidu[p]->part_Cal_PCAL_sector[0]));
+    SetParticleBranchAddress(parName[p],"pcal_energy",&(fidu[p]->part_Cal_PCAL_energy[0]));
+    SetParticleBranchAddress(parName[p],"pcal_time",&(fidu[p]->part_Cal_PCAL_time[0]));
+    SetParticleBranchAddress(parName[p],"pcal_path",&(fidu[p]->part_Cal_PCAL_path[0]));
+    SetParticleBranchAddress(parName[p],"pcal_x",&(fidu[p]->part_Cal_PCAL_x[0]));
+    SetParticleBranchAddress(parName[p],"pcal_y",&(fidu[p]->part_Cal_PCAL_y[0]));
+    SetParticleBranchAddress(parName[p],"pcal_z",&(fidu[p]->part_Cal_PCAL_z[0]));
+    SetParticleBranchAddress(parName[p],"pcal_lu",&(fidu[p]->part_Cal_PCAL_lu[0]));
+    SetParticleBranchAddress(parName[p],"pcal_lv",&(fidu[p]->part_Cal_PCAL_lv[0]));
+    SetParticleBranchAddress(parName[p],"pcal_lw",&(fidu[p]->part_Cal_PCAL_lw[0]));
     //
-    SetParticleBranchAddress(p,"ecin_found",&(fidu[p]->part_Cal_ECIN_found[0]));
-    SetParticleBranchAddress(p,"ecin_sector",&(fidu[p]->part_Cal_ECIN_sector[0]));
-    SetParticleBranchAddress(p,"ecin_energy",&(fidu[p]->part_Cal_ECIN_energy[0]));
-    SetParticleBranchAddress(p,"ecin_time",&(fidu[p]->part_Cal_ECIN_time[0]));
-    SetParticleBranchAddress(p,"ecin_path",&(fidu[p]->part_Cal_ECIN_path[0]));
-    SetParticleBranchAddress(p,"ecin_x",&(fidu[p]->part_Cal_ECIN_x[0]));
-    SetParticleBranchAddress(p,"ecin_y",&(fidu[p]->part_Cal_ECIN_y[0]));
-    SetParticleBranchAddress(p,"ecin_z",&(fidu[p]->part_Cal_ECIN_z[0]));
-    SetParticleBranchAddress(p,"ecin_lu",&(fidu[p]->part_Cal_ECIN_lu[0]));
-    SetParticleBranchAddress(p,"ecin_lv",&(fidu[p]->part_Cal_ECIN_lv[0]));
-    SetParticleBranchAddress(p,"ecin_lw",&(fidu[p]->part_Cal_ECIN_lw[0]));
+    SetParticleBranchAddress(parName[p],"ecin_found",&(fidu[p]->part_Cal_ECIN_found[0]));
+    SetParticleBranchAddress(parName[p],"ecin_sector",&(fidu[p]->part_Cal_ECIN_sector[0]));
+    SetParticleBranchAddress(parName[p],"ecin_energy",&(fidu[p]->part_Cal_ECIN_energy[0]));
+    SetParticleBranchAddress(parName[p],"ecin_time",&(fidu[p]->part_Cal_ECIN_time[0]));
+    SetParticleBranchAddress(parName[p],"ecin_path",&(fidu[p]->part_Cal_ECIN_path[0]));
+    SetParticleBranchAddress(parName[p],"ecin_x",&(fidu[p]->part_Cal_ECIN_x[0]));
+    SetParticleBranchAddress(parName[p],"ecin_y",&(fidu[p]->part_Cal_ECIN_y[0]));
+    SetParticleBranchAddress(parName[p],"ecin_z",&(fidu[p]->part_Cal_ECIN_z[0]));
+    SetParticleBranchAddress(parName[p],"ecin_lu",&(fidu[p]->part_Cal_ECIN_lu[0]));
+    SetParticleBranchAddress(parName[p],"ecin_lv",&(fidu[p]->part_Cal_ECIN_lv[0]));
+    SetParticleBranchAddress(parName[p],"ecin_lw",&(fidu[p]->part_Cal_ECIN_lw[0]));
     //
-    SetParticleBranchAddress(p,"ecout_found",&(fidu[p]->part_Cal_ECOUT_found[0]));
-    SetParticleBranchAddress(p,"ecout_sector",&(fidu[p]->part_Cal_ECOUT_sector[0]));
-    SetParticleBranchAddress(p,"ecout_energy",&(fidu[p]->part_Cal_ECOUT_energy[0]));
-    SetParticleBranchAddress(p,"ecout_time",&(fidu[p]->part_Cal_ECOUT_time[0]));
-    SetParticleBranchAddress(p,"ecout_path",&(fidu[p]->part_Cal_ECOUT_path[0]));
-    SetParticleBranchAddress(p,"ecout_x",&(fidu[p]->part_Cal_ECOUT_x[0]));
-    SetParticleBranchAddress(p,"ecout_y",&(fidu[p]->part_Cal_ECOUT_y[0]));
-    SetParticleBranchAddress(p,"ecout_z",&(fidu[p]->part_Cal_ECOUT_z[0]));
-    SetParticleBranchAddress(p,"ecout_lu",&(fidu[p]->part_Cal_ECOUT_lu[0]));
-    SetParticleBranchAddress(p,"ecout_lv",&(fidu[p]->part_Cal_ECOUT_lv[0]));
-    SetParticleBranchAddress(p,"ecout_lw",&(fidu[p]->part_Cal_ECOUT_lw[0]));
+    SetParticleBranchAddress(parName[p],"ecout_found",&(fidu[p]->part_Cal_ECOUT_found[0]));
+    SetParticleBranchAddress(parName[p],"ecout_sector",&(fidu[p]->part_Cal_ECOUT_sector[0]));
+    SetParticleBranchAddress(parName[p],"ecout_energy",&(fidu[p]->part_Cal_ECOUT_energy[0]));
+    SetParticleBranchAddress(parName[p],"ecout_time",&(fidu[p]->part_Cal_ECOUT_time[0]));
+    SetParticleBranchAddress(parName[p],"ecout_path",&(fidu[p]->part_Cal_ECOUT_path[0]));
+    SetParticleBranchAddress(parName[p],"ecout_x",&(fidu[p]->part_Cal_ECOUT_x[0]));
+    SetParticleBranchAddress(parName[p],"ecout_y",&(fidu[p]->part_Cal_ECOUT_y[0]));
+    SetParticleBranchAddress(parName[p],"ecout_z",&(fidu[p]->part_Cal_ECOUT_z[0]));
+    SetParticleBranchAddress(parName[p],"ecout_lu",&(fidu[p]->part_Cal_ECOUT_lu[0]));
+    SetParticleBranchAddress(parName[p],"ecout_lv",&(fidu[p]->part_Cal_ECOUT_lv[0]));
+    SetParticleBranchAddress(parName[p],"ecout_lw",&(fidu[p]->part_Cal_ECOUT_lw[0]));
     //
-    SetParticleBranchAddress(p,"dcTrk_found",&(fidu[p]->part_DC_Track_found[0]));
-    SetParticleBranchAddress(p,"dcTrk_chi2",&(fidu[p]->part_DC_Track_chi2[0]));
-    SetParticleBranchAddress(p,"dcTrk_ndf",&(fidu[p]->part_DC_Track_NDF[0]));
-    SetParticleBranchAddress(p,"dcTrk_status",&(fidu[p]->part_DC_Track_status[0]));
+    SetParticleBranchAddress(parName[p],"dcTrk_found",&(fidu[p]->part_DC_Track_found[0]));
+    SetParticleBranchAddress(parName[p],"dcTrk_chi2",&(fidu[p]->part_DC_Track_chi2[0]));
+    SetParticleBranchAddress(parName[p],"dcTrk_ndf",&(fidu[p]->part_DC_Track_NDF[0]));
+    SetParticleBranchAddress(parName[p],"dcTrk_status",&(fidu[p]->part_DC_Track_status[0]));
     //
-    SetParticleBranchAddress(p,"dcTraj_found",&(fidu[p]->part_DC_Traj_found[0]));
-    SetParticleBranchAddress(p,"dcTraj_c1x",&(fidu[p]->part_DC_c1x[0]));
-    SetParticleBranchAddress(p,"dcTraj_c1y",&(fidu[p]->part_DC_c1y[0]));
-    SetParticleBranchAddress(p,"dcTraj_c1z",&(fidu[p]->part_DC_c1z[0]));
-    SetParticleBranchAddress(p,"dcTraj_c2x",&(fidu[p]->part_DC_c2x[0]));
-    SetParticleBranchAddress(p,"dcTraj_c2y",&(fidu[p]->part_DC_c2y[0]));
-    SetParticleBranchAddress(p,"dcTraj_c2z",&(fidu[p]->part_DC_c2z[0]));
-    SetParticleBranchAddress(p,"dcTraj_c3x",&(fidu[p]->part_DC_c3x[0]));
-    SetParticleBranchAddress(p,"dcTraj_c3y",&(fidu[p]->part_DC_c3y[0]));
-    SetParticleBranchAddress(p,"dcTraj_c3z",&(fidu[p]->part_DC_c3z[0]));
+    SetParticleBranchAddress(parName[p],"dcTraj_found",&(fidu[p]->part_DC_Traj_found[0]));
+    SetParticleBranchAddress(parName[p],"dcTraj_c1x",&(fidu[p]->part_DC_c1x[0]));
+    SetParticleBranchAddress(parName[p],"dcTraj_c1y",&(fidu[p]->part_DC_c1y[0]));
+    SetParticleBranchAddress(parName[p],"dcTraj_c1z",&(fidu[p]->part_DC_c1z[0]));
+    SetParticleBranchAddress(parName[p],"dcTraj_c2x",&(fidu[p]->part_DC_c2x[0]));
+    SetParticleBranchAddress(parName[p],"dcTraj_c2y",&(fidu[p]->part_DC_c2y[0]));
+    SetParticleBranchAddress(parName[p],"dcTraj_c2z",&(fidu[p]->part_DC_c2z[0]));
+    SetParticleBranchAddress(parName[p],"dcTraj_c3x",&(fidu[p]->part_DC_c3x[0]));
+    SetParticleBranchAddress(parName[p],"dcTraj_c3y",&(fidu[p]->part_DC_c3y[0]));
+    SetParticleBranchAddress(parName[p],"dcTraj_c3z",&(fidu[p]->part_DC_c3z[0]));
   };
 
 
@@ -236,7 +278,30 @@ int main(int argc, char** argv) {
   outrootTr->Branch("runnum",&runnum,"runnum/I");
   outrootTr->Branch("evnum",&evnum,"evnum/I");
   outrootTr->Branch("helicity",&helicity,"helicity/I");
+  // - MC special branches
+  const Int_t nInject = 5;
+  Int_t helicityMC[nInject];
+  TString helicityMCstr = Form("helicityMC[%d]/I",nInject);
+  if(useMC) {
+    outrootTr->Branch("helicityMC",helicityMC,helicityMCstr);
+  };
 
+
+  // instantiate modulations for MC
+  enum modEnum {modH,modHR,modR,mod2HR,nMod};
+  Modulation * modu[nMod];
+  Double_t moduVal[nMod];
+  Float_t amp,asymInject;
+  TRandom * RNG;
+  Bool_t proceed;
+  Float_t rn;
+  if(useMC) {
+    modu[modH] =   new Modulation(3,0,0,0,false,Modulation::kLU);
+    modu[modHR] =  new Modulation(2,1,1,0,false,Modulation::kLU);
+    modu[modR] =   new Modulation(3,1,1,0,false,Modulation::kLU);
+    modu[mod2HR] = new Modulation(3,1,-1,0,false,Modulation::kLU);
+    RNG = new TRandom(14972);
+  };
 
 
   //-----------------------------------
@@ -296,6 +361,81 @@ int main(int argc, char** argv) {
       for(int l=0; l<FiducialCuts::nLevel; l++) {
         fiduCutHad[qA][l] = fidu[kHadB]->fiduCut[l];
         fiduCutHad[qB][l] = fidu[kHadA]->fiduCut[l];
+      };
+    };
+
+
+    // MC asymmetry injection: assignment of a helicity or weight,
+    //                         according to the asymmetry you want
+    // options: if dataStream==mcrec: using recon particles for outroot
+    //            if injectStream==injmatch
+    //            - use matched gen particles for asym injection
+    //            -> most realistic test, but accuracy relies on good matching
+    //            if injectStream==injrecon
+    //            - use recon particles for asym injection
+    //            -> only useful for testing fit algorithm
+    //          if dataStream==mcgen: using gen particles for outroot
+    //            injectStream value not used
+    //            - use gen particles for asym injection
+    //            -> only useful for testing fit algorithm
+    if(useMC) {
+      // compute DIS and dihadron kinematics from generated, matched set
+      proceed = true;
+      if(dataStream=="mcrec" && injectStream=="injgen") {
+        disEvMC->ResetVars();
+        dihMC->ResetVars();
+        for(int p=0; p<nPar; p++) {
+          trajMC[p]->Row = (Int_t) genRow[p];
+          trajMC[p]->Idx = PIDtoIdx((Int_t)genPid[p]);
+          trajMC[p]->Momentum.SetPxPyPzE(genPx[p],genPy[p],genPz[p],genE[p]);
+          trajMC[p]->Vertex.SetXYZ(genVx[p],genVy[p],genVz[p]);
+          if(trajMC[p]->Row<0) proceed=false; // no matching gen particle
+        };
+        if(proceed) {
+          disEvMC->CalculateKinematics(trajMC[kEle]);
+          if(CorrectOrder( trajMC[kHadA]->Idx, trajMC[kHadB]->Idx )) {
+            dihMC->CalculateKinematics(trajMC[kHadA],trajMC[kHadB],disEvMC);
+          } else {
+            dihMC->CalculateKinematics(trajMC[kHadB],trajMC[kHadA],disEvMC);
+          };
+        };
+      };
+      // proceed is true unless injectStream==injgen and the 
+      // recon particle was not matched to a gen particle
+      if(proceed) {
+        // calculate modulations; depends on injectStream
+        for(int m=0; m<nMod; m++) {
+          if(dataStream=="mcrec" && injectStream=="injgen")
+            moduVal[m] = modu[m]->Evaluate(dihMC->PhiRp,dihMC->PhiH,dihMC->theta);
+          else if(dataStream=="mcrec" && injectStream=="injrec")
+            moduVal[m] = modu[m]->Evaluate(dih->PhiRp,dih->PhiH,dih->theta);
+          else if(dataStream=="mcgen") {
+            moduVal[m] = modu[m]->Evaluate(dih->PhiRp,dih->PhiH,dih->theta);
+          };
+        };
+        // calculate injected asymmetry values and assign helicities
+        for(int f=0; f<nInject; f++) {
+          amp = 0.1;
+          switch(f) {
+            case 0: asymInject=0; break;
+            case 1: asymInject = amp*moduVal[modH]; break;
+            case 2: asymInject = amp*moduVal[modHR]; break;
+            case 3: asymInject = amp*moduVal[modR]; break;
+            case 4: asymInject = amp*moduVal[mod2HR]; break;
+            default:
+              fprintf(stderr,"ERROR: asymInject unknown\n");
+              asymInject = 0;
+          };
+          // polarization factor (cf EventTree::Polarization())
+          asymInject *= 0.86;
+          // generate random number within [0,1]
+          rn = RNG->Uniform();
+          // calculate injected helicity: 2=spin-, 3=spin+
+          helicityMC[f] = (rn<0.5*(1+asymInject)) ? 3 : 2;
+        };
+      }
+      else { // if !proceed
+        for(int f=0; f<nInject; f++) helicityMC[f] = 0;
       };
     };
 
