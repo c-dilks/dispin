@@ -2,8 +2,13 @@
 # builds diskim files, and subsequently, outroot files
 
 
-if [ $# -ne 1 ];then echo "USAGE: $0 [train directory]"; exit; fi
+if [ $# -lt 1 ];then
+  echo "USAGE: $0 [train directory] [optional:data/mcrec/mcgen]"
+  exit
+fi
 traindir=$1
+datastream="data"
+if [ $# -ge 2 ]; then datastream="$2"; fi
 
 # check setup
 if [ -z "$DISPIN_HOME" ]; then
@@ -26,7 +31,7 @@ jobsuffix=$(echo $traindir|sed 's/\/$//'|sed 's/^.*\///g')
 joblist=jobs.${jobsuffix}.slurm
 > $joblist
 for skimfile in ${traindir}/skim*.hipo; do
-  echo "./runDiskim.sh $skimfile" >> $joblist
+  echo "./runDiskim.sh $skimfile $datastream" >> $joblist
 done
 
 

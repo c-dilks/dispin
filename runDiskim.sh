@@ -1,9 +1,12 @@
 #!/bin/bash
 # produces `diskim` file, and subsequently, `outroot` file
 
-if [ $# -ne 1 ]; then
-  echo "USAGE: $0 [skim file]"
+if [ $# -lt 1 ]; then
+  echo "USAGE: $0 [skim file] [optional:data/mcrec/mcgen]"
 fi
+skimfile=$1
+datastream="data"
+if [ $# -ge 2 ]; then datastream="$2"; fi
 
 # check setup
 if [ -z "$DISPIN_HOME" ]; then
@@ -16,8 +19,16 @@ if [ ! -d "outroot" ]; then
   echo "ERROR: you must create or link an outroot directory"; exit;
 fi
 
-skimfile=$1
 diskimfile="diskim/$(echo $skimfile|sed 's/^.*\///g').root"
-run-groovy skimDihadrons.groovy $skimfile && sleep 1 && calcKinematics.exe $diskimfile
+run-groovy skimDihadrons.groovy $skimfile $datastream
+sleep 1
+if [ "$datastream" = "data" ]; then
+  calcKinematics.exe $diskimfile
+elif [ "$datastream" = "mcrec" ]; then
+  calcKinematics.exe $diskimfile $datastream injgen
+  #calcKinematics.exe $diskimfile $datastream injrec
+elif [ "$datastream" = "mcgen" ]; then
+  calcKinematics.exe $diskimfile $datastream
+fi
 sleep 1
 rm -v $diskimfile
