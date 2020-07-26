@@ -30,7 +30,7 @@ rm -vf outroot/*.root
 jobsuffix=$(echo $traindir|sed 's/\/$//'|sed 's/^.*\///g')
 joblist=jobs.${jobsuffix}.slurm
 > $joblist
-for skimfile in ${traindir}/skim*.hipo; do
+for skimfile in ${traindir}/*.hipo; do
   echo "./runDiskim.sh $skimfile $datastream" >> $joblist
 done
 
