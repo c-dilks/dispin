@@ -19,7 +19,9 @@ import clasqa.QADB
 ////////////////////////
 // ARGUMENTS
 def inHipoName = "../data/skim/skim4_005052.hipo" // skim file
+def stream = 'data' // 'data', 'mcrec', 'mcgen'
 if(args.length>=1) inHipoName = args[0]
+if(args.length>=2) stream = args[1]
 ////////////////////////
 // OPTIONS
 def verbose = 0
@@ -45,8 +47,10 @@ def undef = -10000.0
 // define variables
 def event
 def particleBank, configBank, eventBank, calBank, trkBank, trajBank
+def mcParticleBank
 def eleTree
 def hadTreeList
+def mcgenTreeList
 def eleDIS
 def runnum
 def evnum
@@ -54,11 +58,26 @@ def evnumLo, evnumHi
 def helicity
 def reader
 def evCount
-def pidList = []
+def pids = []
+def pidsMC = []
+def mcgenSet = []
+def mcEle,mcHadA,mcHadB
 
 
 // setup QA database
 QADB qa = new QADB()
+
+
+// check `stream` variable
+def useMC
+if(stream=='data') useMC=false
+else if(stream=='mcrec') useMC=true
+else if(stream=='mcgen') useMC=true
+else {
+  System.err << "ERROR: unrecognized stream\n"
+  return
+}
+
 
 
 //-----------------------
@@ -208,7 +227,7 @@ def fillDetectorLeaves = { br ->
 
 // closure to read REC::Particle bank entries
 // returns a tree (nested map) associated with specified PID
-def growParticleTree = { pid ->
+def growParticleTree = { pidList, pid ->
 
   // get list of bank row numbers corresponding to this PID
   def rowList = pidList.findIndexValues{ it == pid }.collect{it as Integer}
@@ -218,6 +237,8 @@ def growParticleTree = { pid ->
   //   'particle' -> COATJAVA Particle object
   //   'status' -> REC::Particle::status
   //   'chi2pid' -> REC::Particle::chi2pid
+  //   'vx,vy,vz' -> vertex
+  //   etc.
   def particleTree = rowList.collect { row ->
     [
       'row': (float) row,
@@ -248,6 +269,40 @@ def growParticleTree = { pid ->
   return particleTree
 }
 
+
+// closure to read MC::Particle bank entries
+// returns a tree (nested map) associated with specified PID
+def growMCtree = { pidList, pid ->
+
+  // get list of bank row numbers corresponding to this PID
+  def rowList = pidList.findIndexValues{ it == pid }.collect{it as Integer}
+
+  // define particleTree, which is a list of branches, which are maps with
+  //   'row' -> bank row number
+  //   'particle' -> COATJAVA Particle object
+  //   'vx,vy,vz' -> vertex
+  def particleTree = rowList.collect { row ->
+    [
+      'row': (float) row,
+      'particle':new Particle(
+        pid,
+        *['px','py','pz'].collect{particleBank.getFloat(it,row)}
+      ),
+      *:['vx','vy','vz'].collectEntries{[it,particleBank.getFloat(it,row)]},
+    ]
+  }
+
+  // verbose printing
+  if(verbose) {
+    println "- pid=$pid  found in rows $rowList"
+    particleTree.each{ parBr -> println pPrint(parBr) }
+  }
+
+  return particleTree
+}
+
+
+
 // closure to define ntuple leaves for particles
 def buildParticleLeaves = { par ->
   return [
@@ -259,12 +314,42 @@ def buildParticleLeaves = { par ->
     'chi2pid','status','beta'
   ].collect{par+'_'+it}
 }
+def buildMCleaves = { par ->
+  return [
+    'Row',
+    'Pid',
+    'Px','Py','Pz',
+    'E',
+    'Vx','Vy','Vz',
+  ].collect{par+'_'+it}
+}
 
 // closure to fill particle ntuple leaves
 def fillParticleLeaves = { br ->
   def pid = br.particle.pid()
   //if(pid==11) // TODO for electrons, maybe set pid to something useful, 
                 // e.g. +1 for trigger elec, -1 for FT elec
+  return [
+    br.row,
+    pid,
+    br.particle.px(), br.particle.py(), br.particle.pz(),
+    br.particle.e(),
+    br.vx, br.vy, br.vz,
+    br.chi2pid, br.status, br.beta,
+  ]
+}
+def fillMCleaves = { br ->
+  if(br==null) {
+    return [
+      -1,
+      undef,
+      undef,undef,undef,
+      undef,undef,undef
+    ]
+  } else {
+    // aqui
+  }
+  def pid = br.particle.pid()
   return [
     br.row,
     pid,
@@ -286,6 +371,14 @@ def NTleafNames = [
   'runnum','evnumLo','evnumHi',
   'helicity'
 ].join(':')
+if(useMC) {
+  NTleafNames = [
+    NTleafNames,
+    buildMCleaves('gen_ele'),
+    buildMCleaves('gen_hadA'),
+    buildMCleaves('gen_hadB')
+  ].join(':')
+}
 //println NTleafNames
 def NT = diskimFile.makeNtuple("ditr","ditr",NTleafNames)
 def NTleaves
@@ -322,6 +415,9 @@ while(reader.hasEvent()) {
     calBank = event.getBank("REC::Calorimeter")
     trkBank = event.getBank("REC::Track")
     trajBank = event.getBank("REC::Traj")
+    if(useMC) {
+      mcParticleBank = event.getBank("MC::Particle")
+    }
 
 
     // get event-level information
@@ -348,10 +444,21 @@ while(reader.hasEvent()) {
 
 
     // get list of PIDs, with list index corresponding to bank row
-    pidList = (0..<particleBank.rows()).collect{ 
+    pids = (0..<particleBank.rows()).collect{ 
       particleBank.getInt('pid',it)
     }
-    if(verbose) println "pidList = $pidList"
+    if(verbose) println "PIDs = $pids"
+
+
+    // read MC generated particles
+    if(useMC) {
+      mcPids = (0..<mcParticleBank.rows()).collect{ 
+        mcParticleBank.getInt('pid',it)
+      }
+      if(verbose) println "MC PIDs = $mcPids"
+      mcgenTreeList = hadPIDlist.collect{ growMCtree(mcpids,it) }
+      mcgenTreeList << growMCtree(mcpids,11)
+    }
 
 
     
@@ -359,7 +466,7 @@ while(reader.hasEvent()) {
     // find the DIS electron
     //----------------------------------
     // CUT: select FD trigger electrons
-    eleTree = growParticleTree(11).findAll { br ->
+    eleTree = growParticleTree(pids,11).findAll { br ->
       def status = br.status
       def chi2pid = br.chi2pid
       status<0 &&
@@ -390,7 +497,7 @@ while(reader.hasEvent()) {
 
     // first build a list of hadron trees; one list element = one PID
     if(verbose) println "..... hadrons:"
-    hadTreeList = hadPIDlist.collect{ growParticleTree(it) }
+    hadTreeList = hadPIDlist.collect{ growParticleTree(pids,it) }
     //if(verbose) { println "--- hadTreeList:"; println hadTreeList; }
 
     // then loop over pairs of hadron PIDs
@@ -412,11 +519,42 @@ while(reader.hasEvent()) {
             // unlike PIDs -> take all combinations of pairs
             if(hadIdxA==hadIdxB && hadB.row <= hadA.row) return
 
+
             // CUT: reject hadrons which are only in the CD; they will fail
             //      fiducial cuts because they do not have a DC trajectory,
             //      but rather only a CVT trajectory
             if( (hadA.status>=4000 && hadA.status<5000) ||
                 (hadB.status>=4000 && hadB.status<5000) ) return
+
+
+            // MC matching
+            if(useMC) {
+              mcgenSet = [eleDIS,hadA,hadB].collect{ rec ->
+                def minDist = 10000.0
+                def dist
+                def match
+                mcgenTreeList.each{ gen ->
+                  if(gen.particle.pid()==rec.particle.pid()) {
+                    // calculate distance between gen and rec particles
+                    dist = Math.sqrt(
+                      Math.pow(gen.particle.phi()-rec.particle.phi(),2) +
+                      Math.pow(gen.particle.theta()-rec.particle.theta(),2)
+                    )
+                    // find gen particle with minimum dist from rec
+                    if(dist<minDist) {
+                      match = gen
+                      minDist = dist
+                    }
+                  }
+                }
+                // threshold distance for matching
+                return minDist<10 ? match : null
+              }
+              mcEle = mcgenSet[0]
+              mcHadA = mcgenSet[1]
+              mcHadB = mcgenSet[2]
+            }
+                  
 
             // fill ntuple (be sure order matches defined order)
             NTleaves = [
@@ -424,7 +562,12 @@ while(reader.hasEvent()) {
               *fillParticleLeaves(hadA), *fillDetectorLeaves(hadA),
               *fillParticleLeaves(hadB), *fillDetectorLeaves(hadB),
               runnum,evnumLo,evnumHi,
-              helicity
+              helicity,
+            ]
+            if(useMC) NTleaves += [
+              *fillMCleaves(mcEle),
+              *fillMCleaves(mcHadA),
+              *fillMCleaves(mcHadB)
             ]
             NT.fill(*NTleaves)
             //println NTleaves//.size()
