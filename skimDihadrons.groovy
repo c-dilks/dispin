@@ -19,12 +19,12 @@ import clasqa.QADB
 ////////////////////////
 // ARGUMENTS
 def inHipoName = "../data/skim/skim4_005052.hipo" // skim file
-def stream = 'data' // 'data', 'mcrec', 'mcgen'
+def dataStream = 'data' // 'data', 'mcrec', 'mcgen'
 if(args.length>=1) inHipoName = args[0]
-if(args.length>=2) stream = args[1]
+if(args.length>=2) dataStream = args[1]
 ////////////////////////
 // OPTIONS
-def verbose = 0
+def verbose = 1
 hadPIDlist = [ 211, -211 ] // list of hadron PIDs which will be paired
 //hadPIDlist += [ 321, -321 ] // include kaons
 ////////////////////////
@@ -68,13 +68,13 @@ def mcEle,mcHadA,mcHadB
 QADB qa = new QADB()
 
 
-// check `stream` variable
+// check `dataStream` variable
 def useMC
-if(stream=='data') useMC=false
-else if(stream=='mcrec') useMC=true
-else if(stream=='mcgen') useMC=true
+if(dataStream=='data') useMC=false
+else if(dataStream=='mcrec') useMC=true
+else if(dataStream=='mcgen') useMC=true
 else {
-  System.err << "ERROR: unrecognized stream\n"
+  System.err << "ERROR: unrecognized dataStream\n"
   return
 }
 
@@ -286,15 +286,15 @@ def growMCtree = { pidList, pid ->
       'row': (float) row,
       'particle':new Particle(
         pid,
-        *['px','py','pz'].collect{particleBank.getFloat(it,row)}
+        *['px','py','pz'].collect{mcParticleBank.getFloat(it,row)}
       ),
-      *:['vx','vy','vz'].collectEntries{[it,particleBank.getFloat(it,row)]},
+      *:['vx','vy','vz'].collectEntries{[it,mcParticleBank.getFloat(it,row)]},
     ]
   }
 
   // verbose printing
   if(verbose) {
-    println "- pid=$pid  found in rows $rowList"
+    println "- MC pid=$pid  found in rows $rowList"
     particleTree.each{ parBr -> println pPrint(parBr) }
   }
 
@@ -339,25 +339,25 @@ def fillParticleLeaves = { br ->
   ]
 }
 def fillMCleaves = { br ->
-  if(br==null) {
+  if(br!=null) {
+    // match was found
+    return [
+      br.row,
+      br.particle.pid(),
+      br.particle.px(), br.particle.py(), br.particle.pz(),
+      br.particle.e(),
+      br.vx, br.vy, br.vz
+    ]
+  } else {
+    // match was not found
     return [
       -1,
       undef,
       undef,undef,undef,
+      undef,
       undef,undef,undef
     ]
-  } else {
-    // aqui
   }
-  def pid = br.particle.pid()
-  return [
-    br.row,
-    pid,
-    br.particle.px(), br.particle.py(), br.particle.pz(),
-    br.particle.e(),
-    br.vx, br.vy, br.vz,
-    br.chi2pid, br.status, br.beta,
-  ]
 }
 
 
@@ -451,6 +451,9 @@ while(reader.hasEvent()) {
 
 
     // read MC generated particles
+    // - mcgenTreeList is a list of trees; one list element = one PID;
+    //   each list element is a 'tree': a list of subtrees (branches), one for 
+    //   for each particle with that PID
     if(useMC) {
       mcPids = (0..<mcParticleBank.rows()).collect{ 
         mcParticleBank.getInt('pid',it)
@@ -458,6 +461,10 @@ while(reader.hasEvent()) {
       if(verbose) println "MC PIDs = $mcPids"
       mcgenTreeList = hadPIDlist.collect{ growMCtree(mcpids,it) }
       mcgenTreeList << growMCtree(mcpids,11)
+      if(verbose) {
+        println "MCGENTREELIST"
+        println pPrint(mcgenTreeList)
+      }
     }
 
 
@@ -496,9 +503,11 @@ while(reader.hasEvent()) {
     //------------------------------
 
     // first build a list of hadron trees; one list element = one PID
+    //   each list element is a 'tree': a list of subtrees (branches), one for 
+    //   for each particle with that PID
     if(verbose) println "..... hadrons:"
     hadTreeList = hadPIDlist.collect{ growParticleTree(pids,it) }
-    //if(verbose) { println "--- hadTreeList:"; println hadTreeList; }
+    //if(verbose) { println "--- hadTreeList:"; println pPrint(hadTreeList); }
 
     // then loop over pairs of hadron PIDs
     // (`Idx` is a local ID, defined as the index of the PID in `hadPIDlist`)
@@ -533,17 +542,19 @@ while(reader.hasEvent()) {
                 def minDist = 10000.0
                 def dist
                 def match
-                mcgenTreeList.each{ gen ->
-                  if(gen.particle.pid()==rec.particle.pid()) {
-                    // calculate distance between gen and rec particles
-                    dist = Math.sqrt(
-                      Math.pow(gen.particle.phi()-rec.particle.phi(),2) +
-                      Math.pow(gen.particle.theta()-rec.particle.theta(),2)
-                    )
-                    // find gen particle with minimum dist from rec
-                    if(dist<minDist) {
-                      match = gen
-                      minDist = dist
+                mcgenTreeList.each{ genTree ->
+                  genTree.each{ gen ->
+                    if(gen.particle.pid()==rec.particle.pid()) {
+                      // calculate distance between gen and rec particles
+                      dist = Math.sqrt(
+                        Math.pow(gen.particle.phi()-rec.particle.phi(),2) +
+                        Math.pow(gen.particle.theta()-rec.particle.theta(),2)
+                      )
+                      // find gen particle with minimum dist from rec
+                      if(dist<minDist) {
+                        match = gen
+                        minDist = dist
+                      }
                     }
                   }
                 }
@@ -562,7 +573,7 @@ while(reader.hasEvent()) {
               *fillParticleLeaves(hadA), *fillDetectorLeaves(hadA),
               *fillParticleLeaves(hadB), *fillDetectorLeaves(hadB),
               runnum,evnumLo,evnumHi,
-              helicity,
+              helicity
             ]
             if(useMC) NTleaves += [
               *fillMCleaves(mcEle),
