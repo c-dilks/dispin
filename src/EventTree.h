@@ -43,6 +43,7 @@ class EventTree : public TObject
     Float_t Polarization();
     Float_t Rellum();
     Bool_t CheckVertex();
+    Bool_t CheckHadChi2pid(Float_t chi2pid, Float_t mom);
 
     void PrintEventVerbose();
     void PrintEvent();
