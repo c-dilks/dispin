@@ -3,6 +3,7 @@
 
 if [ $# -lt 1 ]; then
   echo "USAGE: $0 [skim file] [optional:data/mcrec/mcgen]"
+  exit
 fi
 skimfile=$1
 datastream="data"
