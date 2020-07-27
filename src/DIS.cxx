@@ -58,7 +58,6 @@ void DIS::SetElectron(Trajectory * tr) {
 
 // compute DIS kinematics
 void DIS::CalculateKinematics() {
-  ResetVars();
 
   // compute W
   vecW = vecBeam + vecTarget - vecElectron;
@@ -100,6 +99,7 @@ void DIS::CalculateKinematics() {
 };
 
 void DIS::CalculateKinematics(Trajectory * tr) {
+  this->ResetVars();
   this->SetElectron(tr);
   this->CalculateKinematics();
 };
@@ -219,6 +219,12 @@ void DIS::ResetVars() {
   Nu = UNDEF;
   x = UNDEF;
   y = UNDEF;
+  for(int c=0; c<3; c++) eleVertex[c] = UNDEF;
+  eleE = UNDEF;
+  eleP = UNDEF;
+  elePt = UNDEF;
+  eleEta = UNDEF;
+  elePhi = UNDEF;
   return;
 };
 

@@ -323,6 +323,13 @@ void Dihadron::ResetVars() {
   zpair = UNDEF;
   xF = UNDEF;
   for(h=0; h<2; h++) {
+    hadRow[h] = -1;
+    hadIdx[h] = UNDEF;
+    hadE[h] = UNDEF;
+    hadP[h] = UNDEF;
+    hadPt[h] = UNDEF;
+    hadEta[h] = UNDEF;
+    hadPhi[h] = UNDEF;
     hadXF[h] = UNDEF;
     hadChi2pid[h] = UNDEF;
     hadStatus[h] = UNDEF;
@@ -330,6 +337,8 @@ void Dihadron::ResetVars() {
     for(int c=0; c<3; c++) hadVertex[h][c] = UNDEF;
   };
   alpha = UNDEF;
+  theta = UNDEF;
+  zeta = UNDEF;
 
   PhMag = UNDEF;
   PhPerpMag = UNDEF;

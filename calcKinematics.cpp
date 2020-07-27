@@ -104,13 +104,14 @@ int main(int argc, char** argv) {
   // - particle branch vars; array index corresponds to parEnum
   Float_t Row[nPar]; Float_t genRow[nPar];
   Float_t Pid[nPar]; Float_t genPid[nPar];
-  Float_t Px[nPar]; Float_t genPx[nPar];
-  Float_t Py[nPar]; Float_t genPy[nPar];
-  Float_t Pz[nPar]; Float_t genPz[nPar];
-  Float_t E[nPar]; Float_t genE[nPar];
-  Float_t Vx[nPar]; Float_t genVx[nPar];
-  Float_t Vy[nPar]; Float_t genVy[nPar];
-  Float_t Vz[nPar]; Float_t genVz[nPar];
+  Float_t Px[nPar];  Float_t genPx[nPar];
+  Float_t Py[nPar];  Float_t genPy[nPar];
+  Float_t Pz[nPar];  Float_t genPz[nPar];
+  Float_t E[nPar];   Float_t genE[nPar];
+  Float_t Vx[nPar];  Float_t genVx[nPar];
+  Float_t Vy[nPar];  Float_t genVy[nPar];
+  Float_t Vz[nPar];  Float_t genVz[nPar];
+                     Float_t genMatchDist[nPar];
   Float_t chi2pid[nPar];
   Float_t status[nPar];
   Float_t beta[nPar];
@@ -152,6 +153,7 @@ int main(int argc, char** argv) {
       SetParticleBranchAddress(parMCname[p],"Vx",&(genVx[p]));
       SetParticleBranchAddress(parMCname[p],"Vy",&(genVy[p]));
       SetParticleBranchAddress(parMCname[p],"Vz",&(genVz[p]));
+      SetParticleBranchAddress(parMCname[p],"matchDist",&(genMatchDist[p]));
     };
     // - detector info
     SetParticleBranchAddress(parName[p],"pcal_found",&(fidu[p]->part_Cal_PCAL_found[0]));
@@ -279,12 +281,71 @@ int main(int argc, char** argv) {
   outrootTr->Branch("runnum",&runnum,"runnum/I");
   outrootTr->Branch("evnum",&evnum,"evnum/I");
   outrootTr->Branch("helicity",&helicity,"helicity/I");
-  // - MC special branches
+
+
+  // - MC branches
   const Int_t nInject = 5;
   Int_t helicityMC[nInject];
   TString helicityMCstr = Form("helicityMC[%d]/I",nInject);
+  Float_t gen_eleMatchDist;
+  Float_t gen_hadMatchDist[2];
+  Bool_t gen_eleIsMatch;
+  Bool_t gen_hadIsMatch[2];
   if(useMC) {
     outrootTr->Branch("helicityMC",helicityMC,helicityMCstr);
+    // MC matching generated branches
+    if(dataStream=="mcrec") {
+      // - generated DIS kinematics branches
+      outrootTr->Branch("gen_W",&(disEvMC->W),"gen_W/F");
+      outrootTr->Branch("gen_Q2",&(disEvMC->Q2),"gen_Q2/F");
+      outrootTr->Branch("gen_Nu",&(disEvMC->Nu),"gen_Nu/F");
+      outrootTr->Branch("gen_x",&(disEvMC->x),"gen_x/F");
+      outrootTr->Branch("gen_y",&(disEvMC->y),"gen_y/F");
+      // - generated electron kinematics branches
+      outrootTr->Branch("gen_eleE",&(disEvMC->eleE),"gen_eleE/F");
+      outrootTr->Branch("gen_eleP",&(disEvMC->eleP),"gen_eleP/F");
+      outrootTr->Branch("gen_elePt",&(disEvMC->elePt),"gen_elePt/F");
+      outrootTr->Branch("gen_eleEta",&(disEvMC->eleEta),"gen_eleEta/F");
+      outrootTr->Branch("gen_elePhi",&(disEvMC->elePhi),"gen_elePhi/F");
+      outrootTr->Branch("gen_eleVertex",disEvMC->eleVertex,"gen_eleVertex[3]/F");
+      // - generated hadron branches
+      outrootTr->Branch("gen_pairType",&(dihMC->pairType),"gen_pairType/I");
+      outrootTr->Branch("gen_hadRow",dihMC->hadRow,"gen_hadRow[2]/I");
+      outrootTr->Branch("gen_hadIdx",dihMC->hadIdx,"gen_hadIdx[2]/I");
+      outrootTr->Branch("gen_hadE",dihMC->hadE,"gen_hadE[2]/F");
+      outrootTr->Branch("gen_hadP",dihMC->hadP,"gen_hadP[2]/F");
+      outrootTr->Branch("gen_hadPt",dihMC->hadPt,"gen_hadPt[2]/F");
+      outrootTr->Branch("gen_hadEta",dihMC->hadEta,"gen_hadEta[2]/F");
+      outrootTr->Branch("gen_hadPhi",dihMC->hadPhi,"gen_hadPhi[2]/F");
+      outrootTr->Branch("gen_hadXF",dihMC->hadXF,"gen_hadXF[2]/F");
+      outrootTr->Branch("gen_hadVertex",dihMC->hadVertex,"gen_hadVertex[2][3]/F");
+      // - generated dihadron branches
+      outrootTr->Branch("gen_Mh",&(dihMC->Mh),"gen_Mh/F");
+      outrootTr->Branch("gen_Mmiss",&(dihMC->Mmiss),"gen_Mmiss/F");
+      outrootTr->Branch("gen_Z",dihMC->z,"gen_Z[2]/F");
+      outrootTr->Branch("gen_Zpair",&(dihMC->zpair),"gen_Zpair/F");
+      outrootTr->Branch("gen_xF",&(dihMC->xF),"gen_xF/F");
+      outrootTr->Branch("gen_alpha",&(dihMC->alpha),"gen_alpha/F");
+      outrootTr->Branch("gen_theta",&(dihMC->theta),"gen_theta/F");
+      outrootTr->Branch("gen_zeta",&(dihMC->zeta),"gen_zeta/F");
+      outrootTr->Branch("gen_Ph",&(dihMC->PhMag),"gen_Ph/F");
+      outrootTr->Branch("gen_PhPerp",&(dihMC->PhPerpMag),"gen_PhPerp/F");
+      outrootTr->Branch("gen_PhEta",&(dihMC->PhEta),"gen_PhEta/F");
+      outrootTr->Branch("gen_PhPhi",&(dihMC->PhPhi),"gen_PhPhi/F");
+      outrootTr->Branch("gen_R",&(dihMC->RMag),"gen_R/F");
+      outrootTr->Branch("gen_RPerp",&(dihMC->RPerpMag),"gen_RPerp/F");
+      outrootTr->Branch("gen_RT",&(dihMC->RTMag),"gen_RT/F");
+      outrootTr->Branch("gen_PhiH",&(dihMC->PhiH),"gen_PhiH/F");
+      outrootTr->Branch("gen_PhiRq",&(dihMC->PhiRq),"gen_PhiRq/F");
+      outrootTr->Branch("gen_PhiRp",&(dihMC->PhiRp),"gen_PhiRp/F");
+      outrootTr->Branch("gen_PhiRp_r",&(dihMC->PhiRp_r),"gen_PhiRp_r/F");
+      outrootTr->Branch("gen_PhiRp_g",&(dihMC->PhiRp_g),"gen_PhiRp_g/F");
+      // - match quality
+      outrootTr->Branch("gen_eleIsMatch",&gen_eleIsMatch,"gen_eleIsMatch/O");
+      outrootTr->Branch("gen_hadIsMatch",gen_hadIsMatch,"gen_hadIsMatch[2]/O");
+      outrootTr->Branch("gen_eleMatchDist",&gen_eleMatchDist,"gen_eleMatchDist/F");
+      outrootTr->Branch("gen_hadMatchDist",gen_hadMatchDist,"gen_hadMatchDist[2]/F");
+    };
   };
 
 
@@ -295,6 +356,7 @@ int main(int argc, char** argv) {
   Float_t amp,asymInject;
   TRandom * RNG;
   Bool_t proceed;
+  Bool_t isMatch[nPar];
   Float_t rn;
   if(useMC) {
     modu[modH] =   new Modulation(3,0,0,0,false,Modulation::kLU);
@@ -383,28 +445,48 @@ int main(int argc, char** argv) {
 
       // compute DIS and dihadron kinematics from generated, matched set
       proceed = true;
-      if(dataStream=="mcrec" && injectStream=="injgen") {
+      if(dataStream=="mcrec") {
+        // reset branch vars
         disEvMC->ResetVars();
         dihMC->ResetVars();
+        gen_eleIsMatch = false;
+        gen_eleMatchDist = UNDEF;
+        for(int h=0; h<2; h++) {
+          gen_hadIsMatch[h] = false;
+          gen_hadMatchDist[h] = UNDEF;
+        };
+        // get momenta and verteces
         for(int p=0; p<nPar; p++) {
           trajMC[p]->Row = (Int_t) genRow[p];
           trajMC[p]->Idx = PIDtoIdx((Int_t)genPid[p]);
           trajMC[p]->Momentum.SetPxPyPzE(genPx[p],genPy[p],genPz[p],genE[p]);
           trajMC[p]->Vertex.SetXYZ(genVx[p],genVy[p],genVz[p]);
-          if(trajMC[p]->Row<0) proceed=false; // no matching gen particle
+          isMatch[p] = trajMC[p]->Row>=0; // true if valid match
+          if(injectStream=="injgen" && !isMatch[p]) proceed=false;
         };
-        if(proceed) {
+        // calculate kinematics
+        if(isMatch[kEle]) {
+          gen_eleIsMatch = true;
           disEvMC->CalculateKinematics(trajMC[kEle]);
-          if(CorrectOrder( trajMC[kHadA]->Idx, trajMC[kHadB]->Idx )) {
-            dihMC->CalculateKinematics(trajMC[kHadA],trajMC[kHadB],disEvMC);
-          } else {
-            dihMC->CalculateKinematics(trajMC[kHadB],trajMC[kHadA],disEvMC);
+          gen_eleMatchDist = genMatchDist[kEle];
+          if(isMatch[kHadA] && isMatch[kHadB]) {
+            gen_hadIsMatch[qA] = true;
+            gen_hadIsMatch[qB] = true;
+            if(CorrectOrder( trajMC[kHadA]->Idx, trajMC[kHadB]->Idx )) {
+              dihMC->CalculateKinematics(trajMC[kHadA],trajMC[kHadB],disEvMC);
+              gen_hadMatchDist[qA] = genMatchDist[kHadA];
+              gen_hadMatchDist[qB] = genMatchDist[kHadB];
+            } else {
+              dihMC->CalculateKinematics(trajMC[kHadB],trajMC[kHadA],disEvMC);
+              gen_hadMatchDist[qA] = genMatchDist[kHadB];
+              gen_hadMatchDist[qB] = genMatchDist[kHadA];
+            };
           };
         };
       };
 
-      // note: proceed is true unless injectStream==injgen and the 
-      // recon particle was not matched to a gen particle
+      // note: proceed is true unless injectStream==injgen and any recon
+      // particle (electron or either hadron) was not matched to a gen particle
 
       if(proceed) {
         // calculate modulations; depends on injectStream
@@ -452,6 +534,7 @@ int main(int argc, char** argv) {
       };
 
     };
+    /////////////////////////// end MC asymmetry injection
 
 
     // fill the outroot tree
