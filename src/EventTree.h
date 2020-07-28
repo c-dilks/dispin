@@ -17,7 +17,6 @@
 #include "TFile.h"
 #include "TString.h"
 #include "TMath.h"
-#include "TRandom.h"
 
 // dihbsa
 #include "Constants.h"
@@ -54,11 +53,6 @@ class EventTree : public TObject
 
     Float_t GetKinematicFactor(Char_t kf);
 
-    /*
-    Bool_t BuildMatchTable();
-    Bool_t FindEvent(Int_t evnum_, Dihadron * queryDih);
-    */
-
     Bool_t debug;
     Long64_t ENT;
 
@@ -83,7 +77,6 @@ class EventTree : public TObject
     Float_t hadVertex[2][3];
     Int_t hadStatus[2];
     Float_t hadChi2pid[2];
-    //Bool_t hadFidPCAL[2], hadFidDC[2];
 
     // electron kinematics
     Float_t eleE;
@@ -127,13 +120,6 @@ class EventTree : public TObject
 
     Float_t PhiHR; // PhiH-PhiR
 
-    /*
-    Float_t b_PhiRq;
-    Float_t b_PhiRp;
-    Float_t b_PhiRp_r;
-    Float_t b_PhiRp_g;
-    */
-
 
 
     ///////////////////////////
@@ -147,40 +133,67 @@ class EventTree : public TObject
     Bool_t cutPID;
     Bool_t cutElePID;
     Bool_t cutHadPID[2];
-    Bool_t cutMCmatch;
 
-    // OTHER VARIABLES
-    Int_t whichHelicityMC;
-
-    /*
-    // variables used for MCrec and MCgen matching
-    Float_t MD,MDmin;
-    Int_t iiFound;
-    Float_t queryTheta[2];
-    Float_t queryPhi[2];
-    Float_t candTheta[2];
-    Float_t candPhi[2];
-    */
 
     // tree banches used for matching MCgen event
+    Int_t whichHelicityMC;
     Bool_t MCrecMode;
-    Float_t matchDiff;
+    Float_t gen_hadTheta[2];
+    Float_t gen_W;
+    Float_t gen_Q2;
+    Float_t gen_Nu;
+    Float_t gen_x;
+    Float_t gen_y;
+    // - generated electron kinematics branches
     Float_t gen_eleE;
+    Float_t gen_eleP;
     Float_t gen_elePt;
     Float_t gen_eleEta;
     Float_t gen_elePhi;
-    Float_t gen_hadE[2]; // kinematics for matching MCgen hadron
+    Float_t gen_eleVertex[3];
+    // - generated hadron branches
+    Int_t gen_pairType;
+    Int_t gen_hadRow[2];
+    Int_t gen_hadIdx[2];
+    Float_t gen_hadE[2];
+    Float_t gen_hadP[2];
     Float_t gen_hadPt[2];
     Float_t gen_hadEta[2];
-    Float_t gen_hadTheta[2];
     Float_t gen_hadPhi[2];
+    Float_t gen_hadXF[2];
+    Float_t gen_hadVertex[2][3];
+    // - generated dihadron branches
+    Float_t gen_Mh;
+    Float_t gen_Mmiss;
+    Float_t gen_Z[2];
+    Float_t gen_Zpair;
+    Float_t gen_xF;
+    Float_t gen_alpha;
+    Float_t gen_theta;
+    Float_t gen_zeta;
+    Float_t gen_Ph;
+    Float_t gen_PhPerp;
+    Float_t gen_PhEta;
+    Float_t gen_PhPhi;
+    Float_t gen_R;
+    Float_t gen_RPerp;
+    Float_t gen_RT;
+    Float_t gen_PhiH;
+    Float_t gen_PhiRq;
+    Float_t gen_PhiRp;
+    Float_t gen_PhiRp_r;
+    Float_t gen_PhiRp_g;
+    // - match quality
+    Bool_t gen_eleIsMatch;
+    Bool_t gen_hadIsMatch[2];
+    Float_t gen_eleMatchDist;
+    Float_t gen_hadMatchDist[2];
+
     
   private:
     TChain * chain;
     Int_t whichHad[2];
     Int_t whichLevel;
-
-    TRandom * RNG;
 
     Dihadron * objDihadron;
     Dihadron * candDih;
@@ -199,14 +212,6 @@ class EventTree : public TObject
     Float_t vzdiff[2];
 
     Bool_t vertexWarned;
-
-    /*
-    std::map<Int_t,std::vector<Int_t>> evnumMap;
-    std::vector<Int_t>iList;
-    bool inserted;
-    Int_t evnumTmp;
-    */
-
 
   ClassDef(EventTree,1);
 };

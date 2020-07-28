@@ -51,12 +51,6 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
   chain->SetBranchAddress("hadVertex",hadVertex);
   chain->SetBranchAddress("hadStatus",hadStatus);
   chain->SetBranchAddress("hadChi2pid",hadChi2pid);
-  /*
-  if(chain->GetBranch("hadFidPCAL")) chain->SetBranchAddress("hadFidPCAL",hadFidPCAL);
-  else { for(int h=0; h<2; h++) hadFidPCAL[h]=false; };
-  if(chain->GetBranch("hadFidDC")) chain->SetBranchAddress("hadFidDC",hadFidDC);
-  else { for(int h=0; h<2; h++) hadFidDC[h]=false; };
-  */
 
   // these branches were temporarily used for early crosscheck studies
   if(chain->GetBranch("hadPtq")) chain->SetBranchAddress("hadPtq",hadPtq);
@@ -94,36 +88,116 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
   chain->SetBranchAddress("evnum",&evnum);
   chain->SetBranchAddress("helicity",&helicity);
 
-  if(chain->GetBranch("helicityMC")) chain->SetBranchAddress("helicityMC",helicityMC);
-  else { for(int hh=0; hh<NhelicityMC; hh++) helicityMC[hh]=UNDEF; };
-  if(chain->GetBranch("matchDiff")) {
+  // MC branches
+  if(chain->GetBranch("gen_hadMatchDist")) {
     MCrecMode = true;
-    chain->SetBranchAddress("matchDiff",&matchDiff);
+    chain->SetBranchAddress("helicityMC",helicityMC);
+    chain->SetBranchAddress("gen_W",&gen_W);
+    chain->SetBranchAddress("gen_Q2",&gen_Q2);
+    chain->SetBranchAddress("gen_Nu",&gen_Nu);
+    chain->SetBranchAddress("gen_x",&gen_x);
+    chain->SetBranchAddress("gen_y",&gen_y);
+    // - generated electron kinematics branches
     chain->SetBranchAddress("gen_eleE",&gen_eleE);
+    chain->SetBranchAddress("gen_eleP",&gen_eleP);
     chain->SetBranchAddress("gen_elePt",&gen_elePt);
     chain->SetBranchAddress("gen_eleEta",&gen_eleEta);
     chain->SetBranchAddress("gen_elePhi",&gen_elePhi);
+    chain->SetBranchAddress("gen_eleVertex",gen_eleVertex);
+    // - generated hadron branches
+    chain->SetBranchAddress("gen_pairType",&gen_pairType);
+    chain->SetBranchAddress("gen_hadRow",gen_hadRow);
+    chain->SetBranchAddress("gen_hadIdx",gen_hadIdx);
     chain->SetBranchAddress("gen_hadE",gen_hadE);
+    chain->SetBranchAddress("gen_hadP",gen_hadP);
     chain->SetBranchAddress("gen_hadPt",gen_hadPt);
     chain->SetBranchAddress("gen_hadEta",gen_hadEta);
     chain->SetBranchAddress("gen_hadPhi",gen_hadPhi);
+    chain->SetBranchAddress("gen_hadXF",gen_hadXF);
+    chain->SetBranchAddress("gen_hadVertex",gen_hadVertex);
+    // - generated dihadron branches
+    chain->SetBranchAddress("gen_Mh",&gen_Mh);
+    chain->SetBranchAddress("gen_Mmiss",&gen_Mmiss);
+    chain->SetBranchAddress("gen_Z",gen_Z);
+    chain->SetBranchAddress("gen_Zpair",&gen_Zpair);
+    chain->SetBranchAddress("gen_xF",&gen_xF);
+    chain->SetBranchAddress("gen_alpha",&gen_alpha);
+    chain->SetBranchAddress("gen_theta",&gen_theta);
+    chain->SetBranchAddress("gen_zeta",&gen_zeta);
+    chain->SetBranchAddress("gen_Ph",&gen_Ph);
+    chain->SetBranchAddress("gen_PhPerp",&gen_PhPerp);
+    chain->SetBranchAddress("gen_PhEta",&gen_PhEta);
+    chain->SetBranchAddress("gen_PhPhi",&gen_PhPhi);
+    chain->SetBranchAddress("gen_R",&gen_R);
+    chain->SetBranchAddress("gen_RPerp",&gen_RPerp);
+    chain->SetBranchAddress("gen_RT",&gen_RT);
+    chain->SetBranchAddress("gen_PhiH",&gen_PhiH);
+    chain->SetBranchAddress("gen_PhiRq",&gen_PhiRq);
+    chain->SetBranchAddress("gen_PhiRp",&gen_PhiRp);
+    chain->SetBranchAddress("gen_PhiRp_r",&gen_PhiRp_r);
+    chain->SetBranchAddress("gen_PhiRp_g",&gen_PhiRp_g);
+    // - match quality
+    chain->SetBranchAddress("gen_eleIsMatch",&gen_eleIsMatch);
+    chain->SetBranchAddress("gen_hadIsMatch",gen_hadIsMatch);
+    chain->SetBranchAddress("gen_eleMatchDist",&gen_eleMatchDist);
+    chain->SetBranchAddress("gen_hadMatchDist",gen_hadMatchDist);
   } else { 
     MCrecMode = false;
-    matchDiff=UNDEF; 
+    for(int hh=0; hh<NhelicityMC; hh++) helicityMC[hh]=0; 
+    gen_W = UNDEF;
+    gen_Q2 = UNDEF;
+    gen_Nu = UNDEF;
+    gen_x = UNDEF;
+    gen_y = UNDEF;
+    // - generated electron kinematics branches
     gen_eleE = UNDEF;
+    gen_eleP = UNDEF;
     gen_elePt = UNDEF;
     gen_eleEta = UNDEF;
     gen_elePhi = UNDEF;
+    for(int c=0;c<3;c++) gen_eleVertex[c] = UNDEF;
+    // - generated hadron branches
+    gen_pairType = -1;
     for(int h=0; h<2; h++) {
+      gen_hadRow[h] = -1;
+      gen_hadIdx[h] = -1;
       gen_hadE[h] = UNDEF;
+      gen_hadP[h] = UNDEF;
       gen_hadPt[h] = UNDEF;
       gen_hadEta[h] = UNDEF;
       gen_hadPhi[h] = UNDEF;
+      gen_hadXF[h] = UNDEF;
+      gen_Z[h] = UNDEF;
+      for(int c=0;c<3;c++) gen_hadVertex[h][c] = UNDEF;
+    };
+    // - generated dihadron branches
+    gen_Mh = UNDEF;
+    gen_Mmiss = UNDEF;
+    gen_Zpair = UNDEF;
+    gen_xF = UNDEF;
+    gen_alpha = UNDEF;
+    gen_theta = UNDEF;
+    gen_zeta = UNDEF;
+    gen_Ph = UNDEF;
+    gen_PhPerp = UNDEF;
+    gen_PhEta = UNDEF;
+    gen_PhPhi = UNDEF;
+    gen_R = UNDEF;
+    gen_RPerp = UNDEF;
+    gen_RT = UNDEF;
+    gen_PhiH = UNDEF;
+    gen_PhiRq = UNDEF;
+    gen_PhiRp = UNDEF;
+    gen_PhiRp_r = UNDEF;
+    gen_PhiRp_g = UNDEF;
+    // - match quality
+    gen_eleIsMatch = false;
+    gen_eleMatchDist = UNDEF;
+    for(int h=0; h<2; h++) {
+      gen_hadIsMatch[h] = false;
+      gen_hadMatchDist[h] = UNDEF;
     };
   };
-
-  // random number generator (for random theta symmetrization)
-  RNG = new TRandom(928); // (argument is seed)
 
   // instantiate useful objects
   objDihadron = new Dihadron();
@@ -160,7 +234,6 @@ void EventTree::GetEvent(Int_t i) {
   // theta symmetrization tests
   //theta = fabs( fabs(theta-PI/2.0) - PI/2.0 ); // HERMES symmetrization
   //if(Z[qB] > Z[qA]) theta = PI - theta; // Z symmetrization
-  //if( RNG->Rndm() > 0.5 ) theta = PI - theta; // coin-flip symmetrization
   //theta = PI-theta; // full theta flip
 
   // convert eta to polar angle theta 
@@ -208,10 +281,6 @@ void EventTree::GetEvent(Int_t i) {
 
   // check if helicity is defined
   cutHelicity = this->SpinState()==sP || this->SpinState()==sM;
-  
-
-  // MCgen and MCrec matching cut
-  cutMCmatch = MCrecMode && matchDiff>=0 && matchDiff<0.02;
 
 };
 
@@ -219,7 +288,8 @@ void EventTree::GetEvent(Int_t i) {
 /////////////////////////////////////////////////////////
 // MAIN ANALYSIS CUT
 Bool_t EventTree::Valid() {
-  return cutDIS && cutDihadron && cutHelicity && cutFiducial && cutVertex;
+  return cutDIS && cutDihadron && cutHelicity && 
+         cutFiducial && cutPID && cutVertex;
 };
 /////////////////////////////////////////////////////////
 
@@ -476,110 +546,6 @@ Float_t EventTree::GetKinematicFactor(Char_t kf) {
     return 0;
   };
 };
-
-
-/*
-// build map `evnumMap : evnum -> vector of corresponding tree entries`
-// -- return true if successful
-// -- deprecated, but still here for if you want to test MC matching ideas
-Bool_t EventTree::BuildMatchTable() {
-  printf("building EventTree event matching table...\n");
-
-  for(int i=0; i<ENT; i++) {
-
-    chain->GetEntry(i);
-
-    if(i==0) {
-      evnumTmp = evnum;
-      iList.clear();
-    };
-
-    if(evnum!=evnumTmp || i+1==ENT) {
-      inserted = 
-        evnumMap.insert(std::pair<Int_t,std::vector<Int_t>>(evnumTmp,iList)).second;
-      if(!inserted) {
-        fprintf(stderr,"ERROR: BuildMatchTable failed\n");
-        return false;
-      };
-      iList.clear();
-      evnumTmp = evnum;
-    };
-
-    if(Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB])) {
-      iList.push_back(i);
-    };
-  };
-  return true;
-};
-
-
-// DIHADRON EVENT MATCHING ALGORITHM
-// ---------------------------------
-// find event in `this` which matches the event in `queryEv`
-// - this->BuildMatchTable MUST be (successfully) called before using this
-// - loops through vector of dihadrons, and looks for matches based on how close the
-//   hadrons' kinematics are 
-// - returns true if a match is found
-// - deprecated, but still here for if you want to test MC matching ideas
-Bool_t EventTree::FindEvent(Int_t evnum_, Dihadron * queryDih) {
-
-  // reset vars
-  MDmin = 1e6;
-  MD = 1e6;
-  iiFound = -1;
-
-  // find the event
-  auto evnumMapIT = evnumMap.find(evnum_); 
-  if(evnumMapIT!=evnumMap.end()) {
-
-    // loop through vector of dihadron tree indices within the found event
-    for(auto ii : evnumMapIT->second) {
-      this->GetEvent(ii);
-
-      // get candidate match kinematics
-      candDih = this->GetDihadronObj();
-      for(int h=0; h<2; h++) {
-        queryTheta[h] = (queryDih->vecHad[h]).Theta();
-        candTheta[h] = (candDih->vecHad[h]).Theta();
-        queryPhi[h] = (queryDih->vecHad[h]).Phi();
-        candPhi[h] = (candDih->vecHad[h]).Phi();
-      };
-
-      // calculate euclidean distance between query and candidate dihadrons' kinematics
-      MD = TMath::Sqrt(
-        TMath::Power( Tools::AdjAngle(queryTheta[qA] - candTheta[qA]), 2) +
-        TMath::Power( Tools::AdjAngle(queryTheta[qB] - candTheta[qB]), 2) +
-        TMath::Power( Tools::AdjAngle(queryPhi[qA] - candPhi[qA]), 2) +
-        TMath::Power( Tools::AdjAngle(queryPhi[qB] - candPhi[qB]), 2) );
-
-      // check if this is the smallest MD
-      if(MD < MDmin) {
-        MDmin = MD;
-        iiFound = ii;
-      };
-    };
-  };
-
-  // if a match is found, set branch variables to the matching dihadron;
-  // if not, set MD to a high value and set hadron kinematics to UNDEF
-  if(iiFound>=0) {
-    this->GetEvent(iiFound);
-    MD = MDmin;
-    return true;
-  }
-  else {
-    MD = 1000;
-    for(int h=0; h<2; h++) {
-      hadE[h] = UNDEF;
-      hadPt[h] = UNDEF;
-      hadEta[h] = UNDEF;
-      hadPhi[h] = UNDEF;
-    };
-    return false;
-  };
-  
-};
-*/
 
 
 EventTree::~EventTree() {

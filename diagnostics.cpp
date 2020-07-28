@@ -28,7 +28,7 @@ TString corrTitle(TString var);
 TString distTitle(TString var);
 TString dist2Title(TString hadron, TString varX,TString varY);
 
-TString inDir;
+TString infiles;
 Int_t whichPair;
 Int_t whichHad[2];
 TString hadName[2];
@@ -37,9 +37,9 @@ TString hadTitle[2];
 int main(int argc, char** argv) {
 
    // ARGUMENTS
-   inDir = "outroot";
+   infiles = "outroot/*.root";
    whichPair = EncodePairType(kPip,kPim);
-   if(argc>1) inDir = TString(argv[1]);
+   if(argc>1) infiles = TString(argv[1]);
    if(argc>2) whichPair = (Int_t)strtof(argv[2],NULL);
    
    // get hadron pair from whichPair; note that in the print out, the 
@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
        h,dihHadIdx(whichHad[qA],whichHad[qB],h),hadName[h].Data(),hadTitle[h].Data());
    };
 
-   EventTree * ev = new EventTree(TString(inDir+"/*.root"),whichPair);
+   EventTree * ev = new EventTree(infiles,whichPair);
 
 
    TFile * outfile = new TFile("plots.root","RECREATE");

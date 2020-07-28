@@ -11,7 +11,7 @@
 #include "TProfile.h"
 #include "TCanvas.h"
 
-// DihBsa
+// DiSpin
 #include "Constants.h"
 #include "Tools.h"
 #include "DIS.h"
@@ -24,14 +24,14 @@ Float_t Delta(Float_t vGen, Float_t vRec, Bool_t adjAngle=false);
 int main(int argc, char** argv) {
 
   // ARGUMENTS
-  TString inDir = "outroot.MC.rec";
+  TString infiles = "outroot/*.root";
   Int_t whichPair = EncodePairType(kPip,kPim);
-  if(argc>1) inDir = TString(argv[1]);
+  if(argc>1) infiles = TString(argv[1]);
   if(argc>2) whichPair = (Int_t)strtof(argv[2],NULL);
 
 
   // open input files and define output file
-  EventTree * ev = new EventTree(TString(inDir+"/*.root"),whichPair);
+  EventTree * ev = new EventTree(infiles,whichPair);
   TFile * outfile = new TFile("match.root","RECREATE");
 
   Int_t whichHad[2];
@@ -46,8 +46,14 @@ int main(int argc, char** argv) {
 
 
   // define histograms
+  // - notation `D` represents a matching criterium metric, to allow for
+  //   flexible study of its correlation with other variables or criteria;
+  // - there must already be some base-levelmatching implemented however; in
+  //   this way, `D` is interpreted as a matching criteria refinement
+  // - you are also allowed to also cut on `D`, to see its effect on other
+  //   correlations
   const Int_t NBINS = 100;
-  const Float_t Dlim = 0.3;
+  const Float_t Dlim = 1;
   TH1F * Ddist = new TH1F("Ddist","D distribution",NBINS,0,10);
   TH1F * DdistZoom = new TH1F("DdistZoom","D distribution (zoom)",NBINS,0,Dlim);
 
@@ -110,27 +116,35 @@ int main(int argc, char** argv) {
 
 
   // event loop
+  Double_t D;
   printf("begin loop through %lld events...\n",ev->ENT);
   for(int i=0; i<ev->ENT; i++) {
 
     ev->GetEvent(i);
 
-    if(ev->Valid()) {
+    // event must be "valid" (passing all cuts), and must have recon/gen 
+    // matching (D is cut later)
+    if(ev->Valid() && ev->gen_eleIsMatch && 
+       ev->gen_hadIsMatch[qA] && ev->gen_hadIsMatch[qB]) {
 
-      Ddist->Fill(ev->matchDiff);
-      DdistZoom->Fill(ev->matchDiff);
+    // define `D` //////////////////////////////
+    D = ev->gen_eleMatchDist;
+    ////////////////////////////////////////////
+
+      Ddist->Fill(D);
+      DdistZoom->Fill(D);
 
       for(h=0; h<2; h++) {
-        hadEDeltaVsD[h]->Fill(ev->matchDiff,Delta(ev->gen_hadE[h],ev->hadE[h]));
-        hadPtDeltaVsD[h]->Fill(ev->matchDiff,Delta(ev->gen_hadPt[h],ev->hadPt[h]));
+        hadEDeltaVsD[h]->Fill(D,Delta(ev->gen_hadE[h],ev->hadE[h]));
+        hadPtDeltaVsD[h]->Fill(D,Delta(ev->gen_hadPt[h],ev->hadPt[h]));
 
-        hadThetaDiffVsD[h]->Fill(ev->matchDiff,ev->gen_hadTheta[h]-ev->hadTheta[h]);
-        hadPhiDiffVsD[h]->Fill(ev->matchDiff,
+        hadThetaDiffVsD[h]->Fill(D,ev->gen_hadTheta[h]-ev->hadTheta[h]);
+        hadPhiDiffVsD[h]->Fill(D,
           Tools::AdjAngle(ev->gen_hadPhi[h]-ev->hadPhi[h]));
       }
 
-      // matching cut
-      if(ev->cutMCmatch) {
+      // D cut
+      if(true) {
         for(h=0; h<2; h++) {
           hadECorr[h]->Fill(ev->gen_hadE[h],ev->hadE[h]);
           hadPtCorr[h]->Fill(ev->gen_hadPt[h],ev->hadPt[h]);
