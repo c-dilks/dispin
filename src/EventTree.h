@@ -138,7 +138,6 @@ class EventTree : public TObject
     // tree banches used for matching MCgen event
     Int_t whichHelicityMC;
     Bool_t MCrecMode;
-    Float_t gen_hadTheta[2];
     Float_t gen_W;
     Float_t gen_Q2;
     Float_t gen_Nu;
@@ -149,6 +148,7 @@ class EventTree : public TObject
     Float_t gen_eleP;
     Float_t gen_elePt;
     Float_t gen_eleEta;
+    Float_t gen_eleTheta;
     Float_t gen_elePhi;
     Float_t gen_eleVertex[3];
     // - generated hadron branches
@@ -159,6 +159,7 @@ class EventTree : public TObject
     Float_t gen_hadP[2];
     Float_t gen_hadPt[2];
     Float_t gen_hadEta[2];
+    Float_t gen_hadTheta[2];
     Float_t gen_hadPhi[2];
     Float_t gen_hadXF[2];
     Float_t gen_hadVertex[2][3];

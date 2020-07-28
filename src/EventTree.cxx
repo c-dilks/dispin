@@ -239,6 +239,7 @@ void EventTree::GetEvent(Int_t i) {
   // convert eta to polar angle theta 
   // (not to be confused with partial wave theta)
   eleTheta = Tools::EtaToTheta(eleEta);
+  gen_eleTheta = MCrecMode ? Tools::EtaToTheta(gen_eleEta) : UNDEF;
   for(int h=0; h<2; h++) {
     hadTheta[h] = Tools::EtaToTheta(hadEta[h]);
     gen_hadTheta[h] = MCrecMode ? Tools::EtaToTheta(gen_hadEta[h]) : UNDEF;
