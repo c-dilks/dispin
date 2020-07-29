@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
     hadThetaDiffVsD[h] = new TH2D(
       TString(hadName[h]+"ThetaDiffVsD"),
       TString(hadTitle[h]+" #theta^{gen}-#theta^{rec} vs. D (no D cut)"),
-      NBINS,0,Dlim,NBINS,-0.2,0.2);
+      NBINS,0,Dlim,NBINS,-10,10);
     hadPhiDiffVsD[h] = new TH2D(
       TString(hadName[h]+"PhiDiffVsD"),
       TString(hadTitle[h]+" #phi^{gen}-#phi^{rec} vs. D (no D cut)"),
@@ -152,32 +152,32 @@ int main(int argc, char** argv) {
          ev->gen_hadIsMatch[qA] && ev->gen_hadIsMatch[qB]) {
 
         // define `D` //////////////////////////////
-        /*
+        ///*
         eleD =
             TMath::Power( 
-              (ev->gen_eleTheta - ev->eleTheta) / 
-              (1.0*TMath::DegToRad()), 2) +
+              ev->gen_eleTheta - ev->eleTheta / 
+              (1.0), 2) +
             TMath::Power( 
-              (ev->gen_elePhi - ev->elePhi) / 
+              Tools::AdjAngle(ev->gen_elePhi - ev->elePhi) / 
               (3.0*TMath::DegToRad()), 2);
         for(h=0; h<2; h++) {
           hadD[h] =
               TMath::Power( 
-                (ev->gen_hadTheta[h] - ev->hadTheta[h]) / 
-                (1.0*TMath::DegToRad()), 2) +
+                ev->gen_hadTheta[h] - ev->hadTheta[h] / 
+                (1.0), 2) +
               TMath::Power( 
-                (ev->gen_hadPhi[h] - ev->hadPhi[h]) / 
+                Tools::AdjAngle(ev->gen_hadPhi[h] - ev->hadPhi[h]) / 
                 (3.0*TMath::DegToRad()), 2);
         };
-        D = hadD[qA] + hadD[qB];
-        */
+        D = eleD + hadD[qA] + hadD[qB];
+        //*/
         /*
         D = TMath::Sqrt(
           TMath::Power(ev->gen_eleMatchDist,2)+
           TMath::Power(ev->gen_hadMatchDist[qA],2)+
           TMath::Power(ev->gen_hadMatchDist[qB],2));
         */
-        D = TMath::Abs(Tools::AdjAngle(ev->gen_hadTheta[qA]-ev->hadTheta[qA]));
+        //D = TMath::Abs(ev->gen_hadTheta[qA]-ev->hadTheta[qA]);
         //D = TMath::Abs(Tools::AdjAngle(ev->gen_hadPhi[qA]-ev->hadPhi[qA]))*TMath::RadToDeg();
         ////////////////////////////////////////////
         //
@@ -197,18 +197,22 @@ int main(int argc, char** argv) {
             Tools::AdjAngle(ev->gen_hadPhi[h]-ev->hadPhi[h]));
         }
 
+        /////////////////////////////////
         // refined matching cut ("D cut")
-        //if(D<0.4) {
+        /////////////////////////////////
+
+        // (deltaPhi, deltaTheta) ellipse cut
+        if(D<1) {
         // (deltaPhi, deltaTheta) box cut
-        ///*
+        /*
         if( 
-          TMath::Abs(Tools::AdjAngle(ev->gen_eleTheta-ev->eleTheta)) < 1.0 &&
+          TMath::Abs(ev->gen_eleTheta-ev->eleTheta) < 1.0 &&
           TMath::Abs(Tools::AdjAngle(ev->gen_elePhi-ev->elePhi)) < 3.0*TMath::DegToRad() &&
-          TMath::Abs(Tools::AdjAngle(ev->gen_hadTheta[qA]-ev->hadTheta[qA])) < 1.0 &&
+          TMath::Abs(ev->gen_hadTheta[qA]-ev->hadTheta[qA]) < 1.0 &&
           TMath::Abs(Tools::AdjAngle(ev->gen_hadPhi[qA]-ev->hadPhi[qA])) < 3.0*TMath::DegToRad() &&
-          TMath::Abs(Tools::AdjAngle(ev->gen_hadTheta[qB]-ev->hadTheta[qB])) < 1.0 &&
+          TMath::Abs(ev->gen_hadTheta[qB]-ev->hadTheta[qB]) < 1.0 &&
           TMath::Abs(Tools::AdjAngle(ev->gen_hadPhi[qB]-ev->hadPhi[qB])) < 3.0*TMath::DegToRad() ) {
-          //*/
+          */
 
 
 

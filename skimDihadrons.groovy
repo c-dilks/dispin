@@ -41,6 +41,11 @@ println "OUTPUT FILE: $diskimName"
 
 
 def pPrint = { str -> JsonOutput.prettyPrint(JsonOutput.toJson(str)) }
+def adjAngle = { ang ->
+  while(ang<-Math.PI) ang += 2*Math.PI
+  while(ang>=Math.PI) ang -= 2*Math.PI
+  return ang
+}
 def undef = -10000.0
 
 
@@ -554,8 +559,8 @@ while(reader.hasEvent()) {
                     if(gen.particle.pid()==rec.particle.pid()) {
                       // calculate distance between gen and rec particles
                       dist = Math.sqrt(
-                        Math.pow(gen.particle.phi()-rec.particle.phi(),2) +
-                        Math.pow(gen.particle.theta()-rec.particle.theta(),2)
+                        Math.pow(adjAngle(gen.particle.phi()-rec.particle.phi()),2) +
+                        Math.pow(adjAngle(Math.toRadians(gen.particle.theta()-rec.particle.theta())),2)
                       )
                       // find gen particle with minimum dist from rec
                       if(dist<minDist) {
