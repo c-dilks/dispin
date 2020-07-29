@@ -20,6 +20,7 @@
 #include "EventTree.h"
 
 Float_t Delta(Float_t vGen, Float_t vRec, Bool_t adjAngle=false);
+enum parEnum {kEle,kHadA,kHadB,nPar};
 
 int main(int argc, char** argv) {
 
@@ -58,6 +59,7 @@ int main(int argc, char** argv) {
   TH1D * DdistZoom = new TH1D("DdistZoom","D distribution (zoom)",NBINS,0,Dlim);
   TH2D * DvsD = new TH2D("DvsD","D correlation",NBINS,0,Dlim,NBINS,0,Dlim);
 
+  // match fractions
   Int_t nMbins = 5;
   TH1D * matchFracVsMh = new TH1D("matchFracVsMh","F vs recon M_{h}",nMbins,0,3);
   TH1D * matchFracVsMh_den = new TH1D("matchFracVsMh_den","F vs recon M_{h}",nMbins,0,3);
@@ -72,29 +74,45 @@ int main(int argc, char** argv) {
   matchFracVsZ->Sumw2();
   matchFracVsZ_den->Sumw2();
 
-  TH2D * hadEDeltaVsD[2];
-  TH2D * hadPtDeltaVsD[2];
-  TH2D * hadThetaDiffVsD[2];
-  TH2D * hadPhiDiffVsD[2];
-  for(h=0; h<2; h++) {
-    hadEDeltaVsD[h] = new TH2D(
-      TString(hadName[h]+"EDiffVsD"),
-      TString(hadTitle[h]+" #DeltaE vs. D (no D cut)"),
+  // deltaTheta vs. deltaPhi
+  TH2D * deltaThetaVsDeltaPhi[nPar];
+  TString parName[nPar];
+  TString parTitle[nPar];
+  parName[kEle] = "electron"; parTitle[kEle] = "e^{-}";
+  parName[kHadA] = hadName[qA];
+  parName[kHadB] = hadName[qB];
+  for(int p=0; p<nPar; p++) {
+    deltaThetaVsDeltaPhi[p] = new TH2D(
+      TString("deltaThetaVsDeltaPhi_"+parName[p]),
+      TString(parTitle[p]+" #Delta#theta vs. #Delta#phi [deg];#Delta#phi [deg];#Delta#theta [deg]"),
+      NBINS,-6,6,NBINS,-6,6);
+  };
+
+  // deltaKinematic vs. D
+  TH2D * deltaEVsD[3];
+  TH2D * deltaPtVsD[3];
+  TH2D * deltaThetaVsD[3];
+  TH2D * deltaPhiVsD[3];
+  for(int p=0; p<nPar; p++) {
+    deltaEVsD[p] = new TH2D(
+      TString(parName[p]+"DeltaEVsD"),
+      TString(parTitle[p]+" #DeltaE vs. D (no D cut)"),
       NBINS,0,Dlim,NBINS,-1,1);
-    hadPtDeltaVsD[h] = new TH2D(
-      TString(hadName[h]+"PtDiffVsD"),
-      TString(hadTitle[h]+" #Deltap_{T} vs. D (no D cut)"),
+    deltaPtVsD[p] = new TH2D(
+      TString(parName[p]+"DeltaPtVsD"),
+      TString(parTitle[p]+" #Deltap_{T} vs. D (no D cut)"),
       NBINS,0,Dlim,NBINS,-1,1);
-    hadThetaDiffVsD[h] = new TH2D(
-      TString(hadName[h]+"ThetaDiffVsD"),
-      TString(hadTitle[h]+" #theta^{gen}-#theta^{rec} vs. D (no D cut)"),
+    deltaThetaVsD[p] = new TH2D(
+      TString(parName[p]+"DeltaThetaVsD"),
+      TString(parTitle[p]+" #Delta#theta vs. D (no D cut)"),
       NBINS,0,Dlim,NBINS,-10,10);
-    hadPhiDiffVsD[h] = new TH2D(
-      TString(hadName[h]+"PhiDiffVsD"),
-      TString(hadTitle[h]+" #phi^{gen}-#phi^{rec} vs. D (no D cut)"),
+    deltaPhiVsD[p] = new TH2D(
+      TString(parName[p]+"DeltaPhiVsD"),
+      TString(parTitle[p]+" #Delta#phi vs. D (no D cut)"),
       NBINS,0,Dlim,NBINS,-0.2,0.2);
   };
 
+  // recon vs generated kinematics
   TH2D * hadECorr[2];
   TH2D * hadPtCorr[2];
   TH2D * hadPhiCorr[2];
@@ -129,14 +147,71 @@ int main(int argc, char** argv) {
       NBINS,-1,1);
   };
 
+  // dihadron plots
+  TH2D * deltaPhiRVsRT = new TH2D("di_deltaPhiRVsRT",
+    "#Delta#phi_{R} vs. recon R_{T};R_{T};#Delta#phi_{R}",
+    NBINS,0,1.5,
+    NBINS,-0.8,0.8);
+  TH2D * deltaPhiHVsPhPerp = new TH2D("di_deltaPhiHVsPhPerp",
+    "#Delta#phi_{h} vs. recon P_{h}^{perp};P_{h}^{perp};#Delta#phi_{h}",
+    NBINS,0,2,
+    NBINS,-PI,PI);
+  TH2D * deltaZvsXF = new TH2D("di_deltaZvsXF","di_deltaZvsXF",
+    NBINS,-1,1,
+    NBINS,-0.1,0.3);
+    
 
+  
+  //------------------------
+  // MATCH CUT SETTINGS
+  //------------------------
+
+  // matching cuts
+  Double_t deltaThetaMax[3];
+  Double_t deltaPhiMax[3];
+  deltaThetaMax[kEle] = 1.0*TMath::DegToRad();
+  deltaThetaMax[kHadA] = 1.0*TMath::DegToRad();
+  deltaThetaMax[kHadB] = 1.0*TMath::DegToRad();
+  deltaPhiMax[kEle] = 3.0*TMath::DegToRad();
+  deltaPhiMax[kHadA] = 3.0*TMath::DegToRad();
+  deltaPhiMax[kHadB] = 3.0*TMath::DegToRad();
+
+  // tilt angle for ellipse cut
+  Double_t tilt[3];
+  for(int p=0; p<nPar; p++) {
+    tilt[p] = TMath::Tan(deltaThetaMax[p]/deltaPhiMax[p]);
+  };
+  if(PartCharge(whichHad[qA])==1) tilt[kHadA] *= -0.3;
+  if(PartCharge(whichHad[qB])==1) tilt[kHadB] *= -0.3;
+
+
+  // define variables
+  Double_t deltaE[3];
+  Double_t deltaPt[3];
+  Double_t deltaTheta[3];
+  Double_t deltaPhi[3];
+  Double_t E[3];
+  Double_t D;
+  Bool_t cutD;
+  Bool_t cutEllipse;
+  Bool_t cutRectangle;
+
+
+  //---------------------
   // event loop
-  Double_t D,eleD;
-  Double_t hadD[2];
+  //---------------------
   printf("begin loop through %lld events...\n",ev->ENT);
   for(int i=0; i<ev->ENT; i++) {
 
     ev->GetEvent(i);
+
+    // convert theta to radians (for calculations)
+    ev->eleTheta *= TMath::DegToRad();
+    ev->hadTheta[qA] *= TMath::DegToRad();
+    ev->hadTheta[qB] *= TMath::DegToRad();
+    ev->gen_eleTheta *= TMath::DegToRad();
+    ev->gen_hadTheta[qA] *= TMath::DegToRad();
+    ev->gen_hadTheta[qB] *= TMath::DegToRad();
 
     // event must be "valid" (passing all cuts)
     if(ev->Valid()) {
@@ -147,74 +222,83 @@ int main(int argc, char** argv) {
       matchFracVsZ_den->Fill(ev->Zpair);
 
 
-      // event must have recon/gen matching (D is cut later)
+      // event must have base-level recon/gen matching
       if(ev->gen_eleIsMatch && 
          ev->gen_hadIsMatch[qA] && ev->gen_hadIsMatch[qB]) {
 
-        // define `D` //////////////////////////////
-        ///*
-        eleD =
-            TMath::Power( 
-              ev->gen_eleTheta - ev->eleTheta / 
-              (1.0), 2) +
-            TMath::Power( 
-              Tools::AdjAngle(ev->gen_elePhi - ev->elePhi) / 
-              (3.0*TMath::DegToRad()), 2);
-        for(h=0; h<2; h++) {
-          hadD[h] =
-              TMath::Power( 
-                ev->gen_hadTheta[h] - ev->hadTheta[h] / 
-                (1.0), 2) +
-              TMath::Power( 
-                Tools::AdjAngle(ev->gen_hadPhi[h] - ev->hadPhi[h]) / 
-                (3.0*TMath::DegToRad()), 2);
+
+        // compute deltas
+        deltaE[kEle] = ev->gen_eleE - ev->eleE;
+        deltaE[kHadA] = ev->gen_hadE[qA] - ev->hadE[qA];
+        deltaE[kHadB] = ev->gen_hadE[qB] - ev->hadE[qB];
+        deltaPt[kEle] = ev->gen_elePt - ev->elePt;
+        deltaPt[kHadA] = ev->gen_hadPt[qA] - ev->hadPt[qA];
+        deltaPt[kHadB] = ev->gen_hadPt[qB] - ev->hadPt[qB];
+        deltaTheta[kEle] = Tools::AdjAngle(ev->gen_eleTheta - ev->eleTheta);
+        deltaTheta[kHadA] = Tools::AdjAngle(ev->gen_hadTheta[qA] - ev->hadTheta[qA]);
+        deltaTheta[kHadB] = Tools::AdjAngle(ev->gen_hadTheta[qB] - ev->hadTheta[qB]);
+        deltaPhi[kEle] = Tools::AdjAngle(ev->gen_elePhi - ev->elePhi);
+        deltaPhi[kHadA] = Tools::AdjAngle(ev->gen_hadPhi[qA] - ev->hadPhi[qA]);
+        deltaPhi[kHadB] = Tools::AdjAngle(ev->gen_hadPhi[qB] - ev->hadPhi[qB]);
+
+
+
+        // tilted ellipse
+        // - E is a "radius", where E<1 satisfies the tilted ellipse cut
+        for(int p=0; p<nPar; p++) {
+          E[p] =
+              TMath::Power(
+                (deltaTheta[p]*TMath::Cos(tilt[p])+deltaPhi[p]*TMath::Sin(tilt[p])) /
+                deltaThetaMax[p],2) + 
+              TMath::Power(
+                (deltaTheta[p]*TMath::Sin(tilt[p])-deltaPhi[p]*TMath::Cos(tilt[p])) /
+                deltaPhiMax[p],2); 
         };
-        D = eleD + hadD[qA] + hadD[qB];
-        //*/
-        /*
-        D = TMath::Sqrt(
-          TMath::Power(ev->gen_eleMatchDist,2)+
-          TMath::Power(ev->gen_hadMatchDist[qA],2)+
-          TMath::Power(ev->gen_hadMatchDist[qB],2));
-        */
-        //D = TMath::Abs(ev->gen_hadTheta[qA]-ev->hadTheta[qA]);
-        //D = TMath::Abs(Tools::AdjAngle(ev->gen_hadPhi[qA]-ev->hadPhi[qA]))*TMath::RadToDeg();
-        ////////////////////////////////////////////
-        //
-        //DvsD->Fill(hadD[qB],hadD[qA]);
-        DvsD->Fill(ev->gen_hadMatchDist[qB],ev->gen_hadMatchDist[qA]);
-        //
+
+
+        // define custom cut metric `D` //////////////////////////////
+        D = E[kEle] + E[kHadA] + E[kHadB]; // total elliptic radius
+
+        DvsD->Fill(E[kHadB],E[kHadA]);
+        //DvsD->Fill(ev->gen_hadMatchDist[qB],ev->gen_hadMatchDist[qA]);
 
         Ddist->Fill(D);
         DdistZoom->Fill(D);
 
-        for(h=0; h<2; h++) {
-          hadEDeltaVsD[h]->Fill(D,Delta(ev->gen_hadE[h],ev->hadE[h]));
-          hadPtDeltaVsD[h]->Fill(D,Delta(ev->gen_hadPt[h],ev->hadPt[h]));
-
-          hadThetaDiffVsD[h]->Fill(D,ev->gen_hadTheta[h]-ev->hadTheta[h]);
-          hadPhiDiffVsD[h]->Fill(D,
-            Tools::AdjAngle(ev->gen_hadPhi[h]-ev->hadPhi[h]));
+        for(int p=0; p<nPar; p++) {
+          deltaEVsD[p]->Fill(D,deltaE[p]);
+          deltaPtVsD[p]->Fill(D,deltaPt[p]);
+          deltaThetaVsD[p]->Fill(D,deltaTheta[p]*TMath::RadToDeg());
+          deltaPhiVsD[p]->Fill(D,deltaPhi[p]);
         }
-
-        /////////////////////////////////
-        // refined matching cut ("D cut")
-        /////////////////////////////////
-
-        // (deltaPhi, deltaTheta) ellipse cut
-        if(D<1) {
-        // (deltaPhi, deltaTheta) box cut
-        /*
-        if( 
-          TMath::Abs(ev->gen_eleTheta-ev->eleTheta) < 1.0 &&
-          TMath::Abs(Tools::AdjAngle(ev->gen_elePhi-ev->elePhi)) < 3.0*TMath::DegToRad() &&
-          TMath::Abs(ev->gen_hadTheta[qA]-ev->hadTheta[qA]) < 1.0 &&
-          TMath::Abs(Tools::AdjAngle(ev->gen_hadPhi[qA]-ev->hadPhi[qA])) < 3.0*TMath::DegToRad() &&
-          TMath::Abs(ev->gen_hadTheta[qB]-ev->hadTheta[qB]) < 1.0 &&
-          TMath::Abs(Tools::AdjAngle(ev->gen_hadPhi[qB]-ev->hadPhi[qB])) < 3.0*TMath::DegToRad() ) {
-          */
+        //////////////////////////////////////////////////////////////////
 
 
+
+        //-----------------------------------
+        // refined matching cut
+        //-----------------------------------
+
+        cutD = D<1;
+        cutEllipse = E[kEle]<1 && E[kHadA]<1 && E[kHadB]<1;
+        cutRectangle = true;
+        for(int p=0; p<nPar; p++) {
+          if(TMath::Abs(deltaTheta[p]) >= deltaThetaMax[p]) cutRectangle=false;
+          if(TMath::Abs(deltaPhi[p]) >= deltaPhiMax[p]) cutRectangle=false;
+        };
+
+        //if(true)
+        //if(cutD)
+        if(cutEllipse)
+        //if(cutRectangle)
+        {
+
+          for(int p=0; p<nPar; p++) {
+            deltaThetaVsDeltaPhi[p]->Fill(
+              deltaPhi[p]*TMath::RadToDeg(),
+              deltaTheta[p]*TMath::RadToDeg()
+            );
+          };
 
           // fill numerator distributions for matchFrac
           matchFracVsMh->Fill(ev->Mh);
@@ -226,10 +310,20 @@ int main(int argc, char** argv) {
             hadECorr[h]->Fill(ev->gen_hadE[h],ev->hadE[h]);
             hadPtCorr[h]->Fill(ev->gen_hadPt[h],ev->hadPt[h]);
             hadPhiCorr[h]->Fill(ev->gen_hadPhi[h],ev->hadPhi[h],1);
-            hadThetaCorr[h]->Fill(ev->gen_hadTheta[h],ev->hadTheta[h]);
+            hadThetaCorr[h]->Fill(ev->gen_hadTheta[h]*TMath::RadToDeg(),ev->hadTheta[h]*TMath::RadToDeg());
             hadEDelta[h]->Fill(Delta(ev->gen_hadE[h],ev->hadE[h]));
             hadPtDelta[h]->Fill(Delta(ev->gen_hadPt[h],ev->hadPt[h]));
           };
+
+          deltaPhiRVsRT->Fill(
+            ev->RT,
+            Tools::AdjAngle( ev->gen_PhiRp - ev->PhiRp ));
+          deltaPhiHVsPhPerp->Fill(
+            ev->PhPerp,
+            Tools::AdjAngle( ev->gen_PhiH - ev->PhiH ));
+          deltaZvsXF->Fill(
+            ev->hadXF[qA],
+            ev->gen_Z[qA] - ev->Z[qA]);
         };
       };
     };
@@ -255,11 +349,12 @@ int main(int argc, char** argv) {
   //*/
   Ddist->Write();
   DdistZoom->Write();
-  for(h=0; h<2; h++) {
-    hadEDeltaVsD[h]->Write();
-    hadPtDeltaVsD[h]->Write();
-    hadPhiDiffVsD[h]->Write();
-    hadThetaDiffVsD[h]->Write();
+  for(int p=0; p<nPar; p++) {
+    deltaThetaVsDeltaPhi[p]->Write();
+    deltaEVsD[p]->Write();
+    deltaPtVsD[p]->Write();
+    deltaPhiVsD[p]->Write();
+    deltaThetaVsD[p]->Write();
   };
   for(h=0; h<2; h++) {
     hadECorr[h]->Write();
@@ -269,6 +364,10 @@ int main(int argc, char** argv) {
     hadEDelta[h]->Write();
     hadPtDelta[h]->Write();
   };
+
+  deltaPhiRVsRT->Write();
+  deltaPhiHVsPhPerp->Write();
+  deltaZvsXF->Write();
 
   outfile->Close();
 };
