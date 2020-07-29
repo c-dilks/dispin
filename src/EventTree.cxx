@@ -533,6 +533,17 @@ DIS * EventTree::GetDISObj() {
 };
 
 
+// return Breit frame rapidity for hadron had (qA or qB)
+Float_t EventTree::GetBreitRapidity(Int_t had) {
+  if(had!=qA && had!=qB) return UNDEF;
+  hadMom[had].SetPtEtaPhiE(hadPt[had],hadEta[had],hadPhi[had],hadE[had]);
+  hadMom[had].Boost(this->GetDISObj()->BreitBoost);
+  return hadMom[had].Rapidity();
+};
+
+
+
+
 
 // get y-dependent kinematic factor
 Float_t EventTree::GetKinematicFactor(Char_t kf) {

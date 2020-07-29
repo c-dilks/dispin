@@ -50,6 +50,7 @@ class EventTree : public TObject
 
     Dihadron * GetDihadronObj();
     DIS * GetDISObj();
+    Float_t GetBreitRapidity(Int_t had);
 
     Float_t GetKinematicFactor(Char_t kf);
 

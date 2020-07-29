@@ -18,6 +18,7 @@ void GetQuantiles(TString plotsFile="plots.root") {
   PrintNums("PhPerpDist");
   PrintNums("PhDist");
   PrintNums("Q2Dist");
+  PrintNums("xFDist");
 };
 
 

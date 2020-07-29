@@ -156,9 +156,10 @@ int main(int argc, char** argv) {
     "#Delta#phi_{h} vs. recon P_{h}^{perp};P_{h}^{perp};#Delta#phi_{h}",
     NBINS,0,2,
     NBINS,-PI,PI);
-  TH2D * deltaZvsXF = new TH2D("di_deltaZvsXF","di_deltaZvsXF",
+  TH2D * YHvsXF = new TH2D("di_YHvsXF",
+    "Breit frame rapidity y_{H} vs. x_{F};x_{F};y_{H}",
     NBINS,-1,1,
-    NBINS,-0.1,0.3);
+    NBINS,-4,4);
     
 
   
@@ -321,9 +322,10 @@ int main(int argc, char** argv) {
           deltaPhiHVsPhPerp->Fill(
             ev->PhPerp,
             Tools::AdjAngle( ev->gen_PhiH - ev->PhiH ));
-          deltaZvsXF->Fill(
-            ev->hadXF[qA],
-            ev->gen_Z[qA] - ev->Z[qA]);
+          YHvsXF->Fill(
+            ev->hadXF[qB],
+            ev->GetBreitRapidity(qB));
+            //ev->gen_Z[qA] - ev->Z[qA]);
         };
       };
     };
@@ -367,7 +369,7 @@ int main(int argc, char** argv) {
 
   deltaPhiRVsRT->Write();
   deltaPhiHVsPhPerp->Write();
-  deltaZvsXF->Write();
+  YHvsXF->Write();
 
   outfile->Close();
 };

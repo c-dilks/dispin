@@ -20,6 +20,7 @@ Binning::Binning(Int_t pairType_) {
   minIV[vPt] = 0;  maxIV[vPt] = 2;
   minIV[vPh] = 0;  maxIV[vPh] = 10;
   minIV[vQ] = 0;   maxIV[vQ] = 12;
+  minIV[vXF] = 0;  maxIV[vXF] = 1;
   for(int v=0; v<nIV; v++) nBins[v]=-1;
 
 
@@ -142,6 +143,21 @@ Binning::Binning(Int_t pairType_) {
     // -- Q^2
     AddBinBound(vQ,2.37); // 3 quantile bins, inbending
     AddBinBound(vQ,3.35);
+
+    // -- xF
+    AddBinBound(vXF,0.16);
+    AddBinBound(vXF,0.20);
+    AddBinBound(vXF,0.23);
+    AddBinBound(vXF,0.26);
+    AddBinBound(vXF,0.28);
+    AddBinBound(vXF,0.31);
+    AddBinBound(vXF,0.33);
+    AddBinBound(vXF,0.36);
+    AddBinBound(vXF,0.39);
+    AddBinBound(vXF,0.42);
+    AddBinBound(vXF,0.45);
+    AddBinBound(vXF,0.49);
+    AddBinBound(vXF,0.55);
     
   } else if(numKaons==1) {
 
@@ -171,6 +187,7 @@ Binning::Binning(Int_t pairType_) {
   IVname[vPt] = "Pt";
   IVname[vPh] = "Ph";
   IVname[vQ] = "Q";
+  IVname[vXF] = "XF";
 
   IVtitle[vM] = "M_{h}";
   IVtitle[vX] = "x";
@@ -178,6 +195,7 @@ Binning::Binning(Int_t pairType_) {
   IVtitle[vPt] = "P_{h}^{perp}";
   IVtitle[vPh] = "P_{h}";
   IVtitle[vQ] = "Q^{2}";
+  IVtitle[vXF] = "x_{F}";
 
 
   //PrintBinBounds();
