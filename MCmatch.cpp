@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
   //   this way, `D` is interpreted as a matching criteria refinement
   // - you are also allowed to also cut on `D`, to see its effect on other
   //   correlations
-  const Int_t NBINS = 100;
+  const Int_t NBINS = 150;
   const Float_t Dlim = 10;
   TH1D * Ddist = new TH1D("Ddist","D distribution",NBINS,0,10);
   TH1D * DdistZoom = new TH1D("DdistZoom","D distribution (zoom)",NBINS,0,Dlim);
@@ -160,6 +160,19 @@ int main(int argc, char** argv) {
     "Breit frame rapidity y_{H} vs. x_{F};x_{F};y_{H}",
     NBINS,-1,1,
     NBINS,-4,4);
+
+  TH2D * deltaMhVsMh = new TH2D("di_deltaMhVsMh",
+    "#Delta M_{h} vs. recon M_{h};M_{h};#Delta M_{h}",
+    NBINS,0,3,
+    NBINS,-0.5,0.5);
+  TH2D * deltaXVsX = new TH2D("di_deltaXVsX",
+    "#Delta x vs. recon x;x;#Delta x",
+    NBINS,0,1,
+    NBINS,-1,1);
+  TH2D * deltaZVsZ = new TH2D("di_deltaZVsZ",
+    "#Delta z vs. recon z;z;#Delta z",
+    NBINS,0,1,
+    NBINS,-1,1);
     
 
   
@@ -191,6 +204,11 @@ int main(int argc, char** argv) {
   Double_t deltaPt[3];
   Double_t deltaTheta[3];
   Double_t deltaPhi[3];
+  Double_t deltaMh;
+  Double_t deltaX;
+  Double_t deltaZ;
+  Double_t deltaPhiH;
+  Double_t deltaPhiR;
   Double_t E[3];
   Double_t D;
   Bool_t cutD;
@@ -242,6 +260,12 @@ int main(int argc, char** argv) {
         deltaPhi[kHadA] = Tools::AdjAngle(ev->gen_hadPhi[qA] - ev->hadPhi[qA]);
         deltaPhi[kHadB] = Tools::AdjAngle(ev->gen_hadPhi[qB] - ev->hadPhi[qB]);
 
+        deltaX = ev->gen_x - ev->x;
+        deltaZ = ev->gen_Zpair - ev->Zpair;
+        deltaMh = ev->gen_Mh - ev->Mh;
+        deltaPhiR = Tools::AdjAngle( ev->gen_PhiRp - ev->PhiRp );
+        deltaPhiH = Tools::AdjAngle( ev->gen_PhiH - ev->PhiH );
+
 
 
         // tilted ellipse
@@ -288,9 +312,9 @@ int main(int argc, char** argv) {
           if(TMath::Abs(deltaPhi[p]) >= deltaPhiMax[p]) cutRectangle=false;
         };
 
-        //if(true)
+        if(true)
         //if(cutD)
-        if(cutEllipse)
+        //if(cutEllipse)
         //if(cutRectangle)
         {
 
@@ -316,16 +340,13 @@ int main(int argc, char** argv) {
             hadPtDelta[h]->Fill(Delta(ev->gen_hadPt[h],ev->hadPt[h]));
           };
 
-          deltaPhiRVsRT->Fill(
-            ev->RT,
-            Tools::AdjAngle( ev->gen_PhiRp - ev->PhiRp ));
-          deltaPhiHVsPhPerp->Fill(
-            ev->PhPerp,
-            Tools::AdjAngle( ev->gen_PhiH - ev->PhiH ));
-          YHvsXF->Fill(
-            ev->hadXF[qB],
-            ev->GetBreitRapidity(qB));
-            //ev->gen_Z[qA] - ev->Z[qA]);
+          deltaPhiRVsRT->Fill(ev->RT,deltaPhiR);
+          deltaPhiHVsPhPerp->Fill(ev->PhPerp,deltaPhiH);
+          YHvsXF->Fill(ev->hadXF[qA],ev->GetBreitRapidity(qA)); // pi+
+
+          deltaMhVsMh->Fill(ev->Mh,deltaMh);
+          deltaXVsX->Fill(ev->x,deltaX);
+          deltaZVsZ->Fill(ev->Zpair,deltaZ);
         };
       };
     };
@@ -370,6 +391,10 @@ int main(int argc, char** argv) {
   deltaPhiRVsRT->Write();
   deltaPhiHVsPhPerp->Write();
   YHvsXF->Write();
+
+  deltaMhVsMh->Write();
+  deltaXVsX->Write();
+  deltaZVsZ->Write();
 
   outfile->Close();
 };
