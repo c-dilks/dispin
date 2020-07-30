@@ -370,6 +370,7 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
   PhPerp = ev->PhPerp;
   Ph = ev->Ph;
   Q2 = ev->Q2;
+  xF = ev->xF;
   theta = ev->theta;
 
   // testing single-hadron phiH definition
@@ -388,6 +389,7 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
       case Binning::vPt: iv[d] = PhPerp; break;
       case Binning::vPh: iv[d] = Ph; break;
       case Binning::vQ: iv[d] = Q2; break;
+      case Binning::vXF: iv[d] = xF; break;
       default: 
         fprintf(stderr,
           "ERROR: Asymmetry::AddEvent does not understand I[%d]=%d\n",d,I[d]);
@@ -412,6 +414,7 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
   if(PhPerp<-8000) return KickEvent("PhPerp out of range",PhPerp);
   if(Ph<-8000) return KickEvent("Ph out of range",Ph);
   if(Q2<-8000) return KickEvent("Q2 out of range",Q2);
+  if(xF<-8000) return KickEvent("xF out of range",xF);
   if(theta<0 || theta>PI) return KickEvent("theta out of range",theta);
 
   // set spin state
@@ -937,6 +940,7 @@ void Asymmetry::ResetVars() {
   PhPerp = UNDEF;
   Ph = UNDEF;
   Q2 = UNDEF;
+  xF = UNDEF;
   theta = UNDEF;
   spinn = UNDEF;
   kfA = UNDEF;

@@ -32,14 +32,14 @@ Binning::Binning(Int_t pairType_) {
   if(numKaons==0) {
 
     // -- M_h (dihadron invariant mass)
-    /* // 7 quantile bins
+    ///* // 7 quantile bins
     AddBinBound(vM,0.46);
     AddBinBound(vM,0.60);
     AddBinBound(vM,0.72);
     AddBinBound(vM,0.81);
     AddBinBound(vM,0.93);
     AddBinBound(vM,1.10);
-    */
+    //*/
     /* // 14 quantile bins
     AddBinBound(vM,0.38);
     AddBinBound(vM,0.44);
@@ -55,10 +55,10 @@ Binning::Binning(Int_t pairType_) {
     AddBinBound(vM,1.02);
     AddBinBound(vM,1.16);
     */
-    ///* // 3 quantile bins
+    /* // 3 quantile bins
     AddBinBound(vM,0.60);
     AddBinBound(vM,0.83);
-    //*/
+    */
     /* // above/below rho
     AddBinBound(vM,0.77);
     */
@@ -89,14 +89,18 @@ Binning::Binning(Int_t pairType_) {
     */
 
     // -- z (fragmentation fraction)
-    ///* // 7 quantile bins
+    ///* // 3 quantile bins
+    AddBinBound(vZ,0.51);
+    AddBinBound(vZ,0.61);
+    //*/
+    /* // 7 quantile bins
     AddBinBound(vZ,0.43);
     AddBinBound(vZ,0.48);
     AddBinBound(vZ,0.52);
     AddBinBound(vZ,0.57);
     AddBinBound(vZ,0.62);
     AddBinBound(vZ,0.68);
-    //*/
+    */
     /* // 14 quantile bins
     AddBinBound(vZ,0.40);
     AddBinBound(vZ,0.44);
@@ -145,7 +149,8 @@ Binning::Binning(Int_t pairType_) {
     AddBinBound(vQ,3.35);
 
     // -- xF
-    AddBinBound(vXF,0.16);
+    /*
+    AddBinBound(vXF,0.16); // 14 bins
     AddBinBound(vXF,0.20);
     AddBinBound(vXF,0.23);
     AddBinBound(vXF,0.26);
@@ -158,6 +163,13 @@ Binning::Binning(Int_t pairType_) {
     AddBinBound(vXF,0.45);
     AddBinBound(vXF,0.49);
     AddBinBound(vXF,0.55);
+    */
+    AddBinBound(vXF,0.20); // 7 bins
+    AddBinBound(vXF,0.26);
+    AddBinBound(vXF,0.31);
+    AddBinBound(vXF,0.37);
+    AddBinBound(vXF,0.42);
+    AddBinBound(vXF,0.50);
     
   } else if(numKaons==1) {
 

@@ -224,6 +224,7 @@ int main(int argc, char** argv) {
 
    TH2D * thetaVsZ[2];
    TH2D * thetaVsHadP[2];
+   TH2D * YHvsXF[2];
    for(int h=0; h<2; h++) {
      thetaVsZ[h] = new TH2D(TString("thetaVsZ_"+hadName[h]),
        TString("#theta vs. "+hadTitle[h]+" z;z;#theta"),
@@ -231,6 +232,9 @@ int main(int argc, char** argv) {
      thetaVsHadP[h] = new TH2D(TString("thetaVsHadP_"+hadName[h]),
        TString("#theta vs. "+hadTitle[h]+" p;p;#theta"),
        NBINS,0,10,NBINS,0,PIe);
+     YHvsXF[h] = new TH2D(TString("YHvsXF_"+hadName[h]),
+       TString(hadTitle[h]+" y_{h} vs. x_{F};x_{F};y_{h}"),
+       NBINS,-1,1,NBINS,-4,4);
    };
    
    TH1D * sinThetaDist = new TH1D("sinThetaDist",
@@ -459,6 +463,7 @@ int main(int argc, char** argv) {
        for(int h=0; h<2; h++) {
          thetaVsZ[h]->Fill(ev->Z[h],ev->theta);
          thetaVsHadP[h]->Fill(ev->hadP[h],ev->theta);
+         YHvsXF[h]->Fill(ev->hadXF[h],ev->GetBreitRapidity(h));
          xFvsZ[h]->Fill(ev->Z[h],ev->hadXF[h]);
        };
 
@@ -598,6 +603,7 @@ int main(int argc, char** argv) {
    thetaVsZpair->Write();
    thetaVsZeta->Write();
    for(int h=0; h<2; h++) xFvsZ[h]->Write();
+   for(int h=0; h<2; h++) YHvsXF[h]->Write();
    for(int h=0; h<2; h++) thetaVsZ[h]->Write();
    thetaVsPh->Write();
    for(int h=0; h<2; h++) thetaVsHadP[h]->Write();

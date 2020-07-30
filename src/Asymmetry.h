@@ -123,6 +123,7 @@ class Asymmetry : public TObject
     Float_t PhPerp;
     Float_t Ph;
     Float_t Q2;
+    Float_t xF;
     Float_t theta;
     Int_t spinn;
     Float_t pol;
