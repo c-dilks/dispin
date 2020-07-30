@@ -195,6 +195,7 @@ int main(int argc, char** argv) {
   for(int p=0; p<nPar; p++) {
     tilt[p] = TMath::Tan(deltaThetaMax[p]/deltaPhiMax[p]);
   };
+  tilt[kEle] *= 0.9;
   if(PartCharge(whichHad[qA])==1) tilt[kHadA] *= -0.3;
   if(PartCharge(whichHad[qB])==1) tilt[kHadB] *= -0.3;
 
@@ -312,9 +313,9 @@ int main(int argc, char** argv) {
           if(TMath::Abs(deltaPhi[p]) >= deltaPhiMax[p]) cutRectangle=false;
         };
 
-        if(true)
+        //if(true)
         //if(cutD)
-        //if(cutEllipse)
+        if(cutEllipse)
         //if(cutRectangle)
         {
 
