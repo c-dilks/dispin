@@ -299,7 +299,7 @@ Asymmetry::Asymmetry(Binning * binScheme, Int_t binNum) {
   // - event vars
   rfPhiH = new RooRealVar("rfPhiH","#phi_{h}",-PIe,PIe);
   rfPhiR = new RooRealVar("rfPhiR","#phi_{R}",-PIe,PIe);
-  rfTheta = new RooRealVar("rfTheta","#theta",-PIe,PIe);
+  rfTheta = new RooRealVar("rfTheta","#theta",-0.1,PIe);
   rfPol = new RooRealVar("rfPol","P",0,1);
   rfRellum = new RooRealVar("rfRellum","R",0,3);
   rfWeight = new RooRealVar("rfWeight","P_{h}^{T}/M_{h}",0,10);

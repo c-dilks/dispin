@@ -14,6 +14,7 @@
 #include "TObjArray.h"
 #include "TLorentzVector.h"
 #include "TRandom.h"
+#include "TRandomGen.h"
 
 // dispin
 #include "Constants.h"
@@ -363,7 +364,7 @@ int main(int argc, char** argv) {
     modu[modHR] =  new Modulation(2,1,1,0,false,Modulation::kLU);
     modu[modR] =   new Modulation(3,1,1,0,false,Modulation::kLU);
     modu[mod2HR] = new Modulation(3,1,-1,0,false,Modulation::kLU);
-    RNG = new TRandom(14972);
+    RNG = new TRandomMixMax(14972);
   };
 
 

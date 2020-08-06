@@ -71,15 +71,14 @@ void DIS::CalculateKinematics() {
   vecQ = vecBeam - vecElectron;
   Q2 = -1 * vecQ.M2();
 
-  // compute Nu (using lab frame)
-  Nu = vecBeam.E() - vecElectron.E();
+  // compute Nu
+  Nu = vecTarget.Dot(vecQ) / PartMass(kP);
 
-  // compute x (using lab frame)
-  x = Q2 / ( 2 * PartMass(kP) * Nu );
+  // compute x
+  x = Q2 / ( 2 * vecQ.Dot(vecTarget) );
 
-  // compute y (using lab frame)
-  y = Nu / BeamEn;
-
+  // compute y
+  y = vecTarget.Dot(vecQ) / vecTarget.Dot(vecBeam);
 
   // compute boost vectors
   boostvecBreit = vecQ + 2*x*vecTarget;

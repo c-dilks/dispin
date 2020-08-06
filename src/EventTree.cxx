@@ -274,7 +274,7 @@ void EventTree::GetEvent(Int_t i) {
               eleSampFrac > 0.17 &&
               eleTheta>5 && eleTheta<35;
   for(int h=0; h<2; h++) {
-    cutHadPID[h] = CheckHadChi2pid(hadChi2pid[h],hadP[h]) &&
+    cutHadPID[h] = CheckHadChi2pid(h) &&
                    hadTheta[h]>5 && hadTheta[h]<35;
   };
   cutPID = cutElePID && cutHadPID[qA] && cutHadPID[qB];
@@ -372,36 +372,39 @@ Bool_t EventTree::CheckVertex() {
 
 // PID refinement cut for pions; the upper bound cut at high momentum
 // helps reduce kaon contamination
-Bool_t EventTree::CheckHadChi2pid(Float_t chi2pid, Float_t mom) {
+Bool_t EventTree::CheckHadChi2pid(Int_t had) {
+
   Float_t sigma=1; // n.b. Stefan uses 0.88 for pi+, and 0.93 for pi-
+  if(hadIdx[had]==kPip)      sigma=0.88;
+  else if(hadIdx[had]==kPim) sigma=0.93;
 
   // lower bound
-  if(chi2pid<=-3) return false;
+  if(hadChi2pid[had]<=-3) return false;
   
   // upper bound (from Stefan) :
 
   // - standard cut
   ///*
-  if(mom<2.44) return chi2pid < 3*sigma; // 3-sigma cut at low p
+  if(hadP[had]<2.44) return hadChi2pid[had] < 3*sigma; // 3-sigma cut at low p
   else {
     // 1/2 distance cut at higher p
     // (1/2 distance in beta between kaons and pions)
-    return chi2pid < sigma * (0.00869 + 
-      14.98587 * TMath::Exp(-mom/1.18236) + 1.81751 * exp(-mom/4.86394));
+    return hadChi2pid[had] < sigma * (0.00869 + 
+      14.98587 * TMath::Exp(-hadP[had]/1.18236) + 1.81751 * exp(-hadP[had]/4.86394));
   };
   //*/
   
   // - strict cut
   /*
-  if(mom<2.44) return chi2pid < 3*sigma; // 3-sigma cut at low p
-  else if(2.44<=mom && mom<4.6) {
+  if(hadP[had]<2.44) return hadChi2pid[had] < 3*sigma; // 3-sigma cut at low p
+  else if(2.44<=hadP[had] && hadP[had]<4.6) {
     // 1/2 distance cut at mid p
-    return chi2pid < sigma * (0.00869 +
-      14.98587 * TMath::Exp(-mom/1.18236) + 1.81751 * exp(-mom/4.86394));
+    return hadChi2pid[had] < sigma * (0.00869 +
+      14.98587 * TMath::Exp(-hadP[had]/1.18236) + 1.81751 * exp(-hadP[had]/4.86394));
   } else {
-    // 1-sigma in chi2pid for high p
-    return chi2pid < sigma * (-1.14099 + 
-      24.14992 * TMath::Exp(-mom/1.36554) + 2.66876 * exp(-mom/6.80552));
+    // 1-sigma in hadChi2pid[had] for high p
+    return hadChi2pid[had] < sigma * (-1.14099 + 
+      24.14992 * TMath::Exp(-hadP[had]/1.36554) + 2.66876 * exp(-hadP[had]/6.80552));
   };
   */
 
