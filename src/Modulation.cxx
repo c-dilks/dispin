@@ -88,6 +88,32 @@ Modulation::Modulation(Int_t tw_, Int_t l_, Int_t m_,
       default: aziStr = "0";
     };
   }
+  else if(polarization==kUT) {
+    switch(tw) {
+      case 2:
+        if(lev==0) { // transverse photon // (51)
+          aziStr = Form("sin(%d*phiH-%d*phiR-phiS)",1+m,m);
+        }
+        else if(lev==1) { // unpolarized photon // (52)
+          aziStr = Form("sin(%d*phiH+%d*phiR+phiS)",1-m,m);
+        }
+        else if(lev==2) { // unpolarized photon // (53)
+          aziStr = Form("sin(%d*phiH+%d*phiR-phiS)",3-m,m);
+        }
+        else aziStr = "0";
+        break;
+      case 3:
+        if(lev==0) { // (54), but see (26) for |m|>0 form (m=0 is sinPhiS)
+          aziStr = Form("sin(%d*phiH+%d*phiR+phiS)",-m,m);
+        }
+        else if(lev==1) { // (55)
+          aziStr = Form("sin(%d*phiH+%d*phiR-phiS)",2-m,m);
+        }
+        else aziStr = "0";
+        break;
+      default: aziStr = "0";
+    };
+  }
   else aziStr = "0";
 
 
@@ -128,10 +154,15 @@ Modulation::Modulation(Int_t tw_, Int_t l_, Int_t m_,
 
   // -- clean up baseStr, to make it more human-readable
   if(aziStr=="0") baseStr="0";
-  Tools::GlobalRegexp(baseStr,TRegexp("1\\*"),"");
-  Tools::GlobalRegexp(baseStr,TRegexp("0\\*phi.\\+"),"");
-  Tools::GlobalRegexp(baseStr,TRegexp("\\+0\\*phi."),"");
-  Tools::GlobalRegexp(baseStr,TRegexp("\\+-"),"-");
+  Tools::GlobalRegexp(baseStr,TRegexp("1\\*"),""); // omit 1*
+  Tools::GlobalRegexp(baseStr,TRegexp("\\+0\\*phi."),""); // omit +0*phi
+  Tools::GlobalRegexp(baseStr,TRegexp("-0\\*phi."),""); // omit -0*phi
+  Tools::GlobalRegexp(baseStr,TRegexp("(0\\*phi."),"("); // (0*var -> (
+  Tools::GlobalRegexp(baseStr,TRegexp("\\+-"),"-"); // +- -> -
+  Tools::GlobalRegexp(baseStr,TRegexp("-\\+"),"-"); // -+ -> -
+  Tools::GlobalRegexp(baseStr,TRegexp("--"),"+"); // -- -> +
+  Tools::GlobalRegexp(baseStr,TRegexp("\\+\\+"),"+"); // ++ -> +
+  Tools::GlobalRegexp(baseStr,TRegexp("(\\+"),"("); // (+ -> (
 
   // ----> done building baseStr
 
@@ -145,12 +176,19 @@ Modulation::Modulation(Int_t tw_, Int_t l_, Int_t m_,
 
 // evaluate the modulation for specified values of phiR, phiH, theta
 Double_t Modulation::Evaluate(Float_t phiR, Float_t phiH, Float_t theta) {
+  if(polarization==kUT) {
+    fprintf(stderr,"ERROR: Modulation::Evaluate not yet functional for UT\n");
+    return UNDEF; // TODO
+  };
   return function->Eval(phiR,phiH,theta);
 };
 
 
 // build formula string for TF3
 TString Modulation::Formu() {
+  if(polarization==kUT) {
+    return "1"; // need 4D function for UT // TODO
+  };
   formuStr = baseStr;
   Tools::GlobalRegexp(formuStr,TRegexp("sin"),"TMath::Sin");
   Tools::GlobalRegexp(formuStr,TRegexp("cos"),"TMath::Cos");
@@ -170,6 +208,7 @@ TString Modulation::FormuRF() {
   Tools::GlobalRegexp(formuStr,TRegexp("pow"),"TMath::Power");
   Tools::GlobalRegexp(formuStr,TRegexp("phiH"),"rfPhiH");
   Tools::GlobalRegexp(formuStr,TRegexp("phiR"),"rfPhiR");
+  Tools::GlobalRegexp(formuStr,TRegexp("phiS"),"rfPhiS");
   Tools::GlobalRegexp(formuStr,TRegexp("theta"),"rfTheta");
   return formuStr;
 };
@@ -198,6 +237,18 @@ TString Modulation::PolarizationTitle() {
     case kUU: 
       if(tw==2 && lev==0) return "UU,T";
       else return "UU";
+      break;
+    case kUT:
+      if(tw==2) {
+        if(lev==0)      return "UT,T";
+        else if(lev==1) return "UT";
+        else if(lev==2) return "UT";
+        else return "unknown";
+      } else if(tw==3) {
+        if(lev==0)      return "UT";
+        else if(lev==1) return "UT";
+        else return "unknown";
+      };
       break;
   };
 };

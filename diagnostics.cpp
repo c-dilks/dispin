@@ -292,6 +292,7 @@ int main(int argc, char** argv) {
    kfName[kfBA] = "kfBA"; kfTitle[kfBA] = "B(y)/A(y)";
    Float_t kfVal[Nkf];
    Float_t kfRange[Nkf][2];
+   /*
    kfRange[kfA][0]=0.5; kfRange[kfA][1]=1; 
    kfRange[kfB][0]=0; kfRange[kfB][1]=1; 
    kfRange[kfC][0]=0; kfRange[kfC][1]=0.5;
@@ -301,6 +302,16 @@ int main(int argc, char** argv) {
    kfRange[kfVA][0]=0.5; kfRange[kfVA][1]=1.5;
    kfRange[kfCA][0]=0.5; kfRange[kfCA][1]=1.5; 
    kfRange[kfBA][0]=0; kfRange[kfBA][1]=2; 
+   */
+   kfRange[kfA][0]=-1; kfRange[kfA][1]=2.5; 
+   kfRange[kfB][0]=-1; kfRange[kfB][1]=2.5; 
+   kfRange[kfC][0]=-1; kfRange[kfC][1]=2.5;
+   kfRange[kfV][0]=-1; kfRange[kfV][1]=2.5; 
+   kfRange[kfW][0]=-1; kfRange[kfW][1]=2.5;
+   kfRange[kfWA][0]=-1; kfRange[kfWA][1]=2.5;
+   kfRange[kfVA][0]=-1; kfRange[kfVA][1]=2.5;
+   kfRange[kfCA][0]=-1; kfRange[kfCA][1]=2.5; 
+   kfRange[kfBA][0]=-1; kfRange[kfBA][1]=2.5; 
    TH2D * kfVsMh[Nkf];
    TH2D * kfVsPhPerp[Nkf];
    TH2D * kfVsX[Nkf];

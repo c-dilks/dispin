@@ -1,123 +1,98 @@
-// Stefan Diehl's Fiducial Volume Cuts
-// version: 04/16/2020
+/// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Fiducial cuts (July 23 2020)
+///
+/// --> So far optmized for the inbending configuration
+///     The outbending configuration is not fully optimized
+/// --> The cuts are not officially approved as the standard procedure by the collaboration
+///
 
-#include "FiducialCuts.h"
+/// /////////////////////////////////////////////////////////
+/// required vartiables
+///
 
-ClassImp(FiducialCuts)
+// select the field setting:
 
-// constructor; give it a particleType (see particleTypeEnum), which
-// will be needed in ApplyCuts()
-FiducialCuts::FiducialCuts(int particleType_) {
-
-  // set default torus setting to inbending
-  inbending=true; outbending=false;
-
-  // set particleType
-  particleType = particleType_;
-
-  // initialize public cut booleans
-  fiduCut = false;
-};
+bool inbending = true;
+bool outbending = false; 
 
 
-// apply the cuts; public booleans listed in header file will be set
-void FiducialCuts::ApplyCuts(int runnum_, int pid_) {
-
-  // use runnumber to determine torus setting
-  if(runnum_>=5032 && runnum_<=5419) {
-    inbending=true; outbending=false;
-  } else if(runnum_>=5422 && runnum_<=5666) {
-    inbending=false; outbending=true;
-  } else if(runnum_==11) { // MC
-    inbending=true; outbending=false;
-  } else {
-    fprintf(stderr,"ERROR: FiducialCuts does not know whether this run\n");
-    fprintf(stderr,"       is inbending or outbending; setting to inbending\n");
-    inbending=true; outbending=false;
-  };
-
-  // determine sector (requires part_DC_Traj_found to be true)
-  part_DC_sector[0] = this->determineSector(0);
 
 
-  // apply cuts, depending on the value of particleType
-  if(particleType == kElectron) {
-    for(int r=0; r<nReg; r++) {
-      if(part_DC_Traj_found[0]>0) {
-        fcutEle[r] = this->DC_fiducial_cut_XY(0, r+1, 11);
-      } else {
-        fcutEle[r] = false;
-      };
-    };
-    fiduCut = fcutEle[0] && fcutEle[1] && fcutEle[2];
-  }
-  else if(particleType == kHadron) {
-    for(int r=0; r<nReg; r++) {
-      if(part_DC_Traj_found[0]>0) {
-        fcutHad[r] = this->DC_fiducial_cut_theta_phi(0, r+1, pid_);
-      } else {
-        fcutHad[r] = false;
+void assign_particles(void){
+
+  Npart = vpart_px->size();
+
+  for(Int_t i = 0; i < Npart; i++){
+    if( i < BUFFER){
+      part_pid[i] = vpart_pid->at(i);      // <--- required for hadron cuts
+    }
+  } 
+
+  int Cal_Nentries = 0; int Traj_Nentries = 0; int TRK_Nentries = 0;
+
+  Cal_Nentries  = vCal_pindex->size();
+  TRK_Nentries  = vTRK_pindex->size();
+  Traj_Nentries = vTraj_pindex->size();
+
+
+  // Calorimeter bank (detector = 7  ---  layer:  PCAL = 1, ECin = 4, ECout = 7)
+
+  if(Cal_Nentries > 0){
+    for(int i = 0; i < Cal_Nentries; i++){
+      if(vCal_pindex->at(i) >= 0 && vCal_pindex->at(i) < BUFFER && vCal_layer->at(i) == 1){
+        part_Cal_PCAL_sector[vCal_pindex->at(i)] = vCal_sector->at(i); 
+        part_Cal_PCAL_x[vCal_pindex->at(i)] = vCal_x->at(i);
+        part_Cal_PCAL_y[vCal_pindex->at(i)] = vCal_y->at(i);
+        part_Cal_PCAL_z[vCal_pindex->at(i)] = vCal_z->at(i);
+        part_Cal_PCAL_lu[vCal_pindex->at(i)] = vCal_lu->at(i);
+        part_Cal_PCAL_lv[vCal_pindex->at(i)] = vCal_lv->at(i);
+        part_Cal_PCAL_lw[vCal_pindex->at(i)] = vCal_lw->at(i);
       }
-    };
-    fiduCut = fcutHad[0] && fcutHad[1] && fcutHad[2];
+    }
   }
-  else {
-    fprintf(stderr,"ERROR: FiducialCuts bad particleType\n");
-    fiduCut = false;
-    return;
-  };
-  
 
-  // OLD
-  //
-  // - electron
-  /*
-  if(particleType == kElectron) {
-    // -- cut 1.1
-    fcutEleEC = (part_Cal_PCAL_found[0]>0) ? 
-      this->EC_hit_position_fiducial_cut_homogeneous(0) : false;
-    for(int r=0; r<nReg; r++) {
-      if(part_DC_Traj_found[0]>0) {
-        // -- cut 2.1 // DISABLED
-        //fcutEleDC1[r] = this->DC_hit_position_counts_fiducial_cut(0,r+1);
-        fcutEleDC1[r] = true;
-        // -- cut 2.2
-        fcutEleDC2[r] = this->DC_fiducial_cut_chi2(0,r+1,11);
-      } else {
-        fcutEleDC1[r] = false;
-        fcutEleDC2[r] = false;
-      };
-    };
-    fiduCut[cutLevel] = fcutEleEC && 
-                        fcutEleDC1[0] && fcutEleDC1[1] && fcutEleDC1[2] && 
-                        fcutEleDC2[0] && fcutEleDC2[1] && fcutEleDC2[2];
+
+  // tracking banks  (detectors: DC = 6, BST = 2,  BMT = 1, FMT = 8) 
+
+  if(TRK_Nentries > 0){
+    for(int i = 0; i < TRK_Nentries; i++){
+      if(vTRK_pindex->at(i) < BUFFER && vTRK_detector->at(i) == 6){     // DC
+        part_DC_Track_chi2[vTRK_pindex->at(i)] = vTRK_chi2->at(i);
+        part_DC_Track_NDF[vTRK_pindex->at(i)] = vTRK_NDF->at(i);
+      }
+    }
   }
-  // - hadrons
-  else if(particleType == kHadron) {
-    for(int r=0; r<nReg; r++) {
-      // -- cut 2.2
-      fcutHadDC[r] = (part_DC_Traj_found[0]>0) ? 
-        this->DC_fiducial_cut_chi2(0,r+1,pid_) : false;
-    };
-    fiduCut[cutLevel] = fcutHadDC[0] && fcutHadDC[1] && fcutHadDC[2];
+
+
+  // trajectory crosses  (layers: 6 = DC region 1 start,  18 = DC region 2 center,  36 = DC region 3 end ) 
+
+  if(Traj_Nentries > 0){
+    for(int i = 0; i < Traj_Nentries; i++){
+      if(vTraj_pindex->at(i) >= 0 && vTraj_pindex->at(i) < BUFFER && vTraj_detID->at(i) == 6 && vTraj_layerID->at(i) == 6){    
+        part_DC_c1x[vTraj_pindex->at(i)] = vTraj_x->at(i);
+        part_DC_c1y[vTraj_pindex->at(i)] = vTraj_y->at(i);
+        part_DC_c1z[vTraj_pindex->at(i)] = vTraj_z->at(i);
+      }
+      if(vTraj_pindex->at(i) >= 0 && vTraj_pindex->at(i) < BUFFER && vTraj_detID->at(i) == 6 && vTraj_layerID->at(i) == 18){  
+        part_DC_c2x[vTraj_pindex->at(i)] = vTraj_x->at(i);
+        part_DC_c2y[vTraj_pindex->at(i)] = vTraj_y->at(i);
+        part_DC_c2z[vTraj_pindex->at(i)] = vTraj_z->at(i);
+      }
+      if(vTraj_pindex->at(i) >= 0 && vTraj_pindex->at(i) < BUFFER && vTraj_detID->at(i) == 6 && vTraj_layerID->at(i) == 36){  
+        part_DC_c3x[vTraj_pindex->at(i)] = vTraj_x->at(i);
+        part_DC_c3y[vTraj_pindex->at(i)] = vTraj_y->at(i);
+        part_DC_c3z[vTraj_pindex->at(i)] = vTraj_z->at(i);
+      }
+    }
   }
-  else {
-    fprintf(stderr,"ERROR: FiducialCuts bad particleType\n");
-    return;
-  };
-  */
+
+  for(int i = 0; i < BUFFER; ++i)
+  {
+    part_DC_sector[i] = determineSector(i);
+  }
 
 };
 
-
-
-////////////////////////////////
-////////////////////////////////
-//
-// BEGIN STEFAN'S METHODS
-//
-////////////////////////////////
-////////////////////////////////
 
 int determineSector(int i){
 
@@ -136,11 +111,11 @@ int determineSector(int i){
 
 
 /// use the following cut for inbending hadrons:
-/// j is the index of teh particle. Th variable part_pid is needed to assign the correct cut
+/// j is the index of teh particle. Th variable part_pid[j] is needed to assign the correct cut
 /// The inebdning / outbending flags (see top of thsi document) have to be set to assign the correct cut
 
 
-bool DC_fiducial_cut_theta_phi(int j, int region, int part_pid){
+bool DC_fiducial_cut_theta_phi(int j, int region){
 
   //fitted values
 
@@ -348,7 +323,7 @@ bool DC_fiducial_cut_theta_phi(int j, int region, int part_pid){
   int pid = 0;
 
 
-  switch (part_pid)
+  switch (part_pid[j])
   {
     case 11:
       pid = 0;
@@ -395,10 +370,10 @@ bool DC_fiducial_cut_theta_phi(int j, int region, int part_pid){
 
 
 /// use the following cut for inebnding electrons and all outbending particles
-/// j is the index of teh particle. Th variable part_pid is needed to assign the correct cut
+/// j is the index of teh particle. Th variable part_pid[j] is needed to assign the correct cut
 /// The inebdning / outbending flags (see top of thsi document) have to be set to assign the correct cut
 
-bool DC_fiducial_cut_XY(int j, int region, int part_pid)
+bool DC_fiducial_cut_XY(int j, int region)
 {
 
   //fitted values
@@ -546,7 +521,7 @@ bool DC_fiducial_cut_XY(int j, int region, int part_pid)
 
   int pid = 0;
 
-  switch (part_pid)
+  switch (part_pid[j])
   {
     case 11: 
       pid = 0; 
@@ -581,3 +556,5 @@ bool DC_fiducial_cut_XY(int j, int region, int part_pid)
   return ((Y > calc_min) && (Y < calc_max));
 
 }
+
+
