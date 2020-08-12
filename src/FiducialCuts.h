@@ -21,14 +21,10 @@
 class FiducialCuts : public TObject {
   public:
     
-    FiducialCuts(int particleType_);
+    FiducialCuts();
     ~FiducialCuts(){};
 
-    // enumerators
-    enum particleTypeEnum { kElectron, kHadron, nParticleType };
-
     // method which applies the cuts
-    // - needs particleType
     // - sets booleans listed below
     void ApplyCuts(int runnum_, int pid_);
     // - booleans (so far just one)
@@ -119,7 +115,6 @@ class FiducialCuts : public TObject {
 
   private:
     
-    int particleType;
     bool inbending, outbending;
     int part_DC_sector[1];
     const double Pival = 3.1415927;

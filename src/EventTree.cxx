@@ -38,7 +38,7 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
   chain->SetBranchAddress("eleSampFrac",&eleSampFrac);
   chain->SetBranchAddress("elePCALen",&elePCALen);
 
-  chain->SetBranchAddress("eleFiduCut",eleFiduCut);
+  chain->SetBranchAddress("eleFiduCut",&eleFiduCut);
   chain->SetBranchAddress("hadFiduCut",hadFiduCut);
 
   chain->SetBranchAddress("pairType",&pairType);
@@ -263,10 +263,7 @@ void EventTree::GetEvent(Int_t i) {
   cutVertex = CheckVertex();
 
   // fiducial cuts
-  whichLevel = FiducialCuts::cutLoose;
-  cutFiducial = eleFiduCut[whichLevel] && 
-                hadFiduCut[qA][whichLevel] &&
-                hadFiduCut[qB][whichLevel];
+  cutFiducial = eleFiduCut && hadFiduCut[qA] && hadFiduCut[qB];
 
   // PID refinement cuts
   cutElePID = TMath::Abs(eleChi2pid) < 5 &&

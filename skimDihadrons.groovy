@@ -335,8 +335,6 @@ def buildMCleaves = { par ->
 // closure to fill particle ntuple leaves
 def fillParticleLeaves = { br ->
   def pid = br.particle.pid()
-  //if(pid==11) // TODO for electrons, maybe set pid to something useful, 
-                // e.g. +1 for trigger elec, -1 for FT elec
   return [
     br.row,
     pid,

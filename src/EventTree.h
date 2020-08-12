@@ -93,8 +93,8 @@ class EventTree : public TObject
     Float_t elePCALen;
 
     // fiducial cuts
-    Bool_t eleFiduCut[FiducialCuts::nLevel];
-    Bool_t hadFiduCut[2][FiducialCuts::nLevel];
+    Bool_t eleFiduCut;
+    Bool_t hadFiduCut[2];
 
     // dihadron kinematics
     Float_t Mh,Zpair,PhiH,Mmiss,xF,alpha;

@@ -1,19 +1,15 @@
 // Stefan Diehl's Fiducial Volume Cuts
-// version: 04/16/2020
+// version: 7/23/2020
 
 #include "FiducialCuts.h"
 
 ClassImp(FiducialCuts)
 
-// constructor; give it a particleType (see particleTypeEnum), which
-// will be needed in ApplyCuts()
-FiducialCuts::FiducialCuts(int particleType_) {
+// constructor
+FiducialCuts::FiducialCuts() {
 
   // set default torus setting to inbending
   inbending=true; outbending=false;
-
-  // set particleType
-  particleType = particleType_;
 
   // initialize public cut booleans
   fiduCut = false;
@@ -40,18 +36,18 @@ void FiducialCuts::ApplyCuts(int runnum_, int pid_) {
   part_DC_sector[0] = this->determineSector(0);
 
 
-  // apply cuts, depending on the value of particleType
-  if(particleType == kElectron) {
+  // apply cuts, depending on PID
+  if(pid_==11) {
     for(int r=0; r<nReg; r++) {
       if(part_DC_Traj_found[0]>0) {
-        fcutEle[r] = this->DC_fiducial_cut_XY(0, r+1, 11);
+        fcutEle[r] = this->DC_fiducial_cut_XY(0, r+1, pid_);
       } else {
         fcutEle[r] = false;
       };
     };
     fiduCut = fcutEle[0] && fcutEle[1] && fcutEle[2];
   }
-  else if(particleType == kHadron) {
+  else if(pid_==211 || pid_==-211) {
     for(int r=0; r<nReg; r++) {
       if(part_DC_Traj_found[0]>0) {
         fcutHad[r] = this->DC_fiducial_cut_theta_phi(0, r+1, pid_);
@@ -62,7 +58,7 @@ void FiducialCuts::ApplyCuts(int runnum_, int pid_) {
     fiduCut = fcutHad[0] && fcutHad[1] && fcutHad[2];
   }
   else {
-    fprintf(stderr,"ERROR: FiducialCuts bad particleType\n");
+    fprintf(stderr,"ERROR: FiducialCuts not implemented PID %d\n",pid_);
     fiduCut = false;
     return;
   };
@@ -119,7 +115,7 @@ void FiducialCuts::ApplyCuts(int runnum_, int pid_) {
 ////////////////////////////////
 ////////////////////////////////
 
-int determineSector(int i){
+int FiducialCuts::determineSector(int i){
 
   double phi = 180 / Pival * atan2(part_DC_c2y[i] / sqrt(pow(part_DC_c2x[i], 2) + pow(part_DC_c2y[i], 2) + pow(part_DC_c2z[i], 2)), part_DC_c2x[i] / sqrt(pow(part_DC_c2x[i], 2) 
         + pow(part_DC_c2y[i], 2) + pow(part_DC_c2z[i], 2)));
@@ -140,7 +136,7 @@ int determineSector(int i){
 /// The inebdning / outbending flags (see top of thsi document) have to be set to assign the correct cut
 
 
-bool DC_fiducial_cut_theta_phi(int j, int region, int part_pid){
+bool FiducialCuts::DC_fiducial_cut_theta_phi(int j, int region, int part_pid){
 
   //fitted values
 
@@ -374,7 +370,7 @@ bool DC_fiducial_cut_theta_phi(int j, int region, int part_pid){
       pid = 5;
       break;
 
-      default;
+    default:
       return false;
       break;
   }
@@ -382,10 +378,10 @@ bool DC_fiducial_cut_theta_phi(int j, int region, int part_pid){
 
   --region;
 
-  double calc_phi_min = minparams[pid][part_DC_sector[j] - 1][region][0] + minparams[pid][part_DC_sector[j] - 1][region][1] * std::log(theta_DCr) 
+  double calc_phi_min = minparams[pid][part_DC_sector[j] - 1][region][0] + minparams[pid][part_DC_sector[j] - 1][region][1] * log(theta_DCr) 
     + minparams[pid][part_DC_sector[j] - 1][region][2] * theta_DCr + minparams[pid][part_DC_sector[j] - 1][region][3] * theta_DCr * theta_DCr;
 
-  double calc_phi_max = maxparams[pid][part_DC_sector[j] - 1][region][0] + maxparams[pid][part_DC_sector[j] - 1][region][1] * std::log(theta_DCr)
+  double calc_phi_max = maxparams[pid][part_DC_sector[j] - 1][region][0] + maxparams[pid][part_DC_sector[j] - 1][region][1] * log(theta_DCr)
     + maxparams[pid][part_DC_sector[j] - 1][region][2] * theta_DCr + maxparams[pid][part_DC_sector[j] - 1][region][3] * theta_DCr * theta_DCr;
 
   return ((phi_DCr > calc_phi_min) && (phi_DCr < calc_phi_max));
@@ -398,7 +394,7 @@ bool DC_fiducial_cut_theta_phi(int j, int region, int part_pid){
 /// j is the index of teh particle. Th variable part_pid is needed to assign the correct cut
 /// The inebdning / outbending flags (see top of thsi document) have to be set to assign the correct cut
 
-bool DC_fiducial_cut_XY(int j, int region, int part_pid)
+bool FiducialCuts::DC_fiducial_cut_XY(int j, int region, int part_pid)
 {
 
   //fitted values
@@ -510,36 +506,36 @@ bool DC_fiducial_cut_XY(int j, int region, int part_pid)
 
   if(part_DC_sector[j] == 2)
   {
-    const double X_new = X * std::cos(-60 * Pival / 180) - Y * std::sin(-60 * Pival / 180);
-    Y = X * std::sin(-60 * Pival / 180) + Y * std::cos(-60 * Pival / 180);
+    const double X_new = X * cos(-60 * Pival / 180) - Y * sin(-60 * Pival / 180);
+    Y = X * sin(-60 * Pival / 180) + Y * cos(-60 * Pival / 180);
     X = X_new;
   }
 
   if(part_DC_sector[j] == 3)
   {
-    const double X_new = X * std::cos(-120 * Pival / 180) - Y * std::sin(-120 * Pival / 180);
-    Y = X * std::sin(-120 * Pival / 180) + Y * std::cos(-120 * Pival / 180);
+    const double X_new = X * cos(-120 * Pival / 180) - Y * sin(-120 * Pival / 180);
+    Y = X * sin(-120 * Pival / 180) + Y * cos(-120 * Pival / 180);
     X = X_new;
   }
 
   if(part_DC_sector[j] == 4)
   {
-    const double X_new = X * std::cos(-180 * Pival / 180) - Y * std::sin(-180 * Pival / 180);
-    Y = X * std::sin(-180 * Pival / 180) + Y * std::cos(-180 * Pival / 180);
+    const double X_new = X * cos(-180 * Pival / 180) - Y * sin(-180 * Pival / 180);
+    Y = X * sin(-180 * Pival / 180) + Y * cos(-180 * Pival / 180);
     X = X_new;
   }
 
   if(part_DC_sector[j] == 5)
   {
-    const double X_new = X * std::cos(120 * Pival / 180) - Y * std::sin(120 * Pival / 180);
-    Y = X * std::sin(120 * Pival / 180) + Y * std::cos(120 * Pival / 180);
+    const double X_new = X * cos(120 * Pival / 180) - Y * sin(120 * Pival / 180);
+    Y = X * sin(120 * Pival / 180) + Y * cos(120 * Pival / 180);
     X = X_new;
   }
 
   if(part_DC_sector[j] == 6)
   {
-    const double X_new = X * std::cos(60 * Pival / 180) - Y * std::sin(60 * Pival / 180);
-    Y = X * std::sin(60 * Pival / 180) + Y * std::cos(60 * Pival / 180);
+    const double X_new = X * cos(60 * Pival / 180) - Y * sin(60 * Pival / 180);
+    Y = X * sin(60 * Pival / 180) + Y * cos(60 * Pival / 180);
     X = X_new;
   }
 

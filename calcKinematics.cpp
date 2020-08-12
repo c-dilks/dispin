@@ -64,15 +64,12 @@ int main(int argc, char** argv) {
   dih->useBreit = false; dihMC->useBreit = false;
   Trajectory * traj[nPar];
   Trajectory * trajMC[nPar];
+  FiducialCuts * fidu[nPar];
   for(int p=0; p<nPar; p++) {
     traj[p] = new Trajectory();
     trajMC[p] = new Trajectory();
+    fidu[p] = new FiducialCuts();
   };
-  FiducialCuts * fidu[nPar];
-  fidu[kEle] = new FiducialCuts(FiducialCuts::kElectron);
-  fidu[kHadA] = new FiducialCuts(FiducialCuts::kHadron);
-  fidu[kHadB] = new FiducialCuts(FiducialCuts::kHadron);
-
 
   // open diskim file
   diskimFile = new TFile(infileN,"READ");
@@ -234,7 +231,7 @@ int main(int argc, char** argv) {
   outrootTr->Branch("eleVertex",disEv->eleVertex,"eleVertex[3]/F");
   outrootTr->Branch("eleStatus",&(disEv->eleStatus),"eleStatus/I");
   outrootTr->Branch("eleChi2pid",&(disEv->eleChi2pid),"eleChi2pid/F");
-  outrootTr->Branch("eleFiduCut",fidu[kEle]->fiduCut,"eleFiduCut[3]/O");
+  outrootTr->Branch("eleFiduCut",&(fidu[kEle]->fiduCut),"eleFiduCut/O");
   outrootTr->Branch("eleSampFrac",&eleSampFrac,"eleSampFrac/F");
   outrootTr->Branch("elePCALen",&(fidu[kEle]->part_Cal_PCAL_energy[0]),"elePCALen/F");
   // - hadron branches
@@ -251,8 +248,8 @@ int main(int argc, char** argv) {
   outrootTr->Branch("hadStatus",dih->hadStatus,"hadStatus[2]/I");
   outrootTr->Branch("hadBeta",dih->hadBeta,"hadBeta[2]/F");
   outrootTr->Branch("hadChi2pid",dih->hadChi2pid,"hadChi2pid[2]/F");
-  Bool_t fiduCutHad[2][FiducialCuts::nLevel];
-  outrootTr->Branch("hadFiduCut",fiduCutHad,"hadFiduCut[2][3]/O");
+  Bool_t fiduCutHad[2];
+  outrootTr->Branch("hadFiduCut",fiduCutHad,"hadFiduCut[2]/O");
   // - dihadron branches
   outrootTr->Branch("Mh",&(dih->Mh),"Mh/F");
   outrootTr->Branch("Mmiss",&(dih->Mmiss),"Mmiss/F");
@@ -416,16 +413,12 @@ int main(int argc, char** argv) {
     //   - also ensures the hadrons' fiducial cuts are ordered properly
     if(CorrectOrder( traj[kHadA]->Idx, traj[kHadB]->Idx )) {
       dih->CalculateKinematics( traj[kHadA], traj[kHadB], disEv );
-      for(int l=0; l<FiducialCuts::nLevel; l++) {
-        fiduCutHad[qA][l] = fidu[kHadA]->fiduCut[l];
-        fiduCutHad[qB][l] = fidu[kHadB]->fiduCut[l];
-      };
+      fiduCutHad[qA] = fidu[kHadA]->fiduCut;
+      fiduCutHad[qB] = fidu[kHadB]->fiduCut;
     } else {
       dih->CalculateKinematics( traj[kHadB], traj[kHadA], disEv );
-      for(int l=0; l<FiducialCuts::nLevel; l++) {
-        fiduCutHad[qA][l] = fidu[kHadB]->fiduCut[l];
-        fiduCutHad[qB][l] = fidu[kHadA]->fiduCut[l];
-      };
+      fiduCutHad[qA] = fidu[kHadB]->fiduCut;
+      fiduCutHad[qB] = fidu[kHadA]->fiduCut;
     };
 
 
