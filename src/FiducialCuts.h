@@ -30,24 +30,24 @@ class FiducialCuts : public TObject {
     // - booleans (so far just one)
     Bool_t fiduCut;
 
-    // total EC energy (for sampling fraction)
-    Float_t GetECenergy() {
-      return part_Cal_PCAL_energy[0] +
-             part_Cal_ECIN_energy[0] +
-             part_Cal_ECOUT_energy[0];
-    };
-
     
+    /********************************************************************/
     // Stefan's methods (the integer argument is the particle number, 
     // just use 0; see below); these are called by ApplyCuts
+    /********************************************************************/
     int determineSector(int i);
+    /// EC hit position homogenous cut
+    /// This is the main cut for PCAL fiducial cut of electrons.
+    /// A cut is performed on v and w
+    /// Different versions are available: For SDIS I use the loose versions,
+    /// For cross sectiosn I would recommend the medium or tigth version.
+    bool EC_hit_position_fiducial_cut_homogeneous(int j);
+    /// Cut based on chi2/NDF, using polynomial border in the theta-phi plane.
     /// use the following cut for inbending hadrons:
-    /// j is the index of teh particle. Th variable part_pid is needed to assign the correct cut
-    /// The inebdning / outbending flags (see top of thsi document) have to be set to assign the correct cut
     bool DC_fiducial_cut_theta_phi(int j, int region, int part_pid);
-    /// use the following cut for inebnding electrons and all outbending particles
-    /// j is the index of teh particle. Th variable part_pid is needed to assign the correct cut
-    /// The inebdning / outbending flags (see top of thsi document) have to be set to assign the correct cut
+    /// Cut based on chi2/NDF, straight lines are used in the x-y hit plane.
+    /// use the following cut for inebnding electrons and all outbending
+    /// particles
     bool DC_fiducial_cut_XY(int j, int region, int part_pid);
 
 
@@ -119,8 +119,9 @@ class FiducialCuts : public TObject {
     int part_DC_sector[1];
     const double Pival = 3.1415927;
 
-    bool fcutEle[nReg];
-    bool fcutHad[nReg];
+    bool fcutElePCAL;
+    bool fcutEleDC[nReg];
+    bool fcutHadDC[nReg];
 
   
   ClassDef(FiducialCuts,1);

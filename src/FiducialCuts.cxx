@@ -38,71 +38,28 @@ void FiducialCuts::ApplyCuts(int runnum_, int pid_) {
 
   // apply cuts, depending on PID
   if(pid_==11) {
+    // PCAL cut on lv and lw
+    fcutElePCAL = this->EC_hit_position_fiducial_cut_homogeneous(0);
+    // DC cuts on chi2/NDF, using straight lines on xy hit plane
     for(int r=0; r<nReg; r++) {
-      if(part_DC_Traj_found[0]>0) {
-        fcutEle[r] = this->DC_fiducial_cut_XY(0, r+1, pid_);
-      } else {
-        fcutEle[r] = false;
-      };
+      fcutEleDC[r] = part_DC_Traj_found[0]>0 ?
+        this->DC_fiducial_cut_XY(0, r+1, pid_) : false;
     };
-    fiduCut = fcutEle[0] && fcutEle[1] && fcutEle[2];
+    fiduCut = fcutElePCAL && fcutEleDC[0] && fcutEleDC[1] && fcutEleDC[2];
   }
   else if(pid_==211 || pid_==-211) {
+    // DC cuts on chi2/NDF, using polynomial border in (theta,phi) plane
     for(int r=0; r<nReg; r++) {
-      if(part_DC_Traj_found[0]>0) {
-        fcutHad[r] = this->DC_fiducial_cut_theta_phi(0, r+1, pid_);
-      } else {
-        fcutHad[r] = false;
-      }
+      fcutHadDC[r] = part_DC_Traj_found[0]>0 ?
+        this->DC_fiducial_cut_theta_phi(0, r+1, pid_) : false;
     };
-    fiduCut = fcutHad[0] && fcutHad[1] && fcutHad[2];
+    fiduCut = fcutHadDC[0] && fcutHadDC[1] && fcutHadDC[2];
   }
   else {
     fprintf(stderr,"ERROR: FiducialCuts not implemented PID %d\n",pid_);
     fiduCut = false;
     return;
   };
-  
-
-  // OLD
-  //
-  // - electron
-  /*
-  if(particleType == kElectron) {
-    // -- cut 1.1
-    fcutEleEC = (part_Cal_PCAL_found[0]>0) ? 
-      this->EC_hit_position_fiducial_cut_homogeneous(0) : false;
-    for(int r=0; r<nReg; r++) {
-      if(part_DC_Traj_found[0]>0) {
-        // -- cut 2.1 // DISABLED
-        //fcutEleDC1[r] = this->DC_hit_position_counts_fiducial_cut(0,r+1);
-        fcutEleDC1[r] = true;
-        // -- cut 2.2
-        fcutEleDC2[r] = this->DC_fiducial_cut_chi2(0,r+1,11);
-      } else {
-        fcutEleDC1[r] = false;
-        fcutEleDC2[r] = false;
-      };
-    };
-    fiduCut[cutLevel] = fcutEleEC && 
-                        fcutEleDC1[0] && fcutEleDC1[1] && fcutEleDC1[2] && 
-                        fcutEleDC2[0] && fcutEleDC2[1] && fcutEleDC2[2];
-  }
-  // - hadrons
-  else if(particleType == kHadron) {
-    for(int r=0; r<nReg; r++) {
-      // -- cut 2.2
-      fcutHadDC[r] = (part_DC_Traj_found[0]>0) ? 
-        this->DC_fiducial_cut_chi2(0,r+1,pid_) : false;
-    };
-    fiduCut[cutLevel] = fcutHadDC[0] && fcutHadDC[1] && fcutHadDC[2];
-  }
-  else {
-    fprintf(stderr,"ERROR: FiducialCuts bad particleType\n");
-    return;
-  };
-  */
-
 };
 
 
@@ -130,12 +87,137 @@ int FiducialCuts::determineSector(int i){
   return 0;
 }
 
+/*****************************************************************/
+
+/// EC hit position homogenous cut
+/// This is the main cut for PCAL fiducial cut of electrons.
+/// A cut is performed on v and w
+/// Different versions are available: For SDIS I use the loose versions, For cross sectiosn I would recommend the medium or tigth version.
+bool FiducialCuts::EC_hit_position_fiducial_cut_homogeneous(int j){
+
+  ///////////////////////////
+  bool tight = false;
+  bool medium = false;
+  bool loose = true;
+  //////////////////////////
+
+// Cut using the natural directions of the scintillator bars/ fibers:
+
+  double u = part_Cal_PCAL_lu[j];
+  double v = part_Cal_PCAL_lv[j];
+  double w = part_Cal_PCAL_lw[j];
+   
+  /// v + w is going from the side to the back end of the PCAL, u is going from side to side
+  /// 1 scintillator bar is 4.5 cm wide. In the outer regions (back) double bars are used.
+  /// a cut is only applied on v and w
+
+  ///////////////////////////////////////////////////////////////////
+  /// inbending:
+  // 
+  double min_u_tight_inb[] = {19.0, 19.0, 19.0, 19.0, 19.0, 19.0};
+  double min_u_med_inb[]   = {14.0, 14.0, 14.0, 14.0, 14.0, 14.0};
+  double min_u_loose_inb[] = {9.0,  9.0,  9.0,  9.0,  9.0,  9.0 };
+  // 
+  double max_u_tight_inb[] = {398, 398, 398, 398, 398, 398}; 
+  double max_u_med_inb[]   = {408, 408, 408, 408, 408, 408}; 
+  double max_u_loose_inb[] = {420, 420, 420, 420, 420, 420}; 
+  // 
+  double min_v_tight_inb[] = {19.0, 19.0, 19.0, 19.0, 19.0, 19.0};
+  double min_v_med_inb[]   = {14.0, 14.0, 14.0, 14.0, 14.0, 14.0};
+  double min_v_loose_inb[] = {9.0,  9.0,  9.0,  9.0,  9.0,  9.0 };
+  //
+  double max_v_tight_inb[] = {400, 400, 400, 400, 400, 400};
+  double max_v_med_inb[]   = {400, 400, 400, 400, 400, 400};
+  double max_v_loose_inb[] = {400, 400, 400, 400, 400, 400};
+  //
+  double min_w_tight_inb[] = {19.0, 19.0, 19.0, 19.0, 19.0, 19.0};
+  double min_w_med_inb[]   = {14.0, 14.0, 14.0, 14.0, 14.0, 14.0};
+  double min_w_loose_inb[] = {9.0,  9.0,  9.0,  9.0,  9.0,  9.0 };
+  // 
+  double max_w_tight_inb[] = {400, 400, 400, 400, 400, 400};
+  double max_w_med_inb[]   = {400, 400, 400, 400, 400, 400};
+  double max_w_loose_inb[] = {400, 400, 400, 400, 400, 400};
+
+
+  ///////////////////////////////////////////////////////////////////////
+  /// outbending (not adjusted up to now, same as inbending!):
+  // 
+  double min_u_tight_out[] = {19.0, 19.0, 19.0, 19.0, 19.0, 19.0};
+  double min_u_med_out[]   = {14.0, 14.0, 14.0, 14.0, 14.0, 14.0};
+  double min_u_loose_out[] = {9.0,  9.0,  9.0,  9.0,  9.0,  9.0 };
+  // 
+  double max_u_tight_out[] = {398, 398, 398, 398, 398, 398}; 
+  double max_u_med_out[]   = {408, 408, 408, 408, 408, 408}; 
+  double max_u_loose_out[] = {420, 420, 420, 420, 420, 420}; 
+  // 
+  double min_v_tight_out[] = {19.0, 19.0, 19.0, 19.0, 19.0, 19.0};
+  double min_v_med_out[]   = {14.0, 14.0, 14.0, 14.0, 14.0, 14.0};
+  double min_v_loose_out[] = {9.0,  9.0,  9.0,  9.0,  9.0,  9.0 };
+  // 
+  double max_v_tight_out[] = {400, 400, 400, 400, 400, 400};
+  double max_v_med_out[]   = {400, 400, 400, 400, 400, 400};
+  double max_v_loose_out[] = {400, 400, 400, 400, 400, 400};
+  //
+  double min_w_tight_out[] = {19.0, 19.0, 19.0, 19.0, 19.0, 19.0};
+  double min_w_med_out[]   = {14.0, 14.0, 14.0, 14.0, 14.0, 14.0};
+  double min_w_loose_out[] = {9.0,  9.0,  9.0,  9.0,  9.0,  9.0 };
+  //
+  double max_w_tight_out[] = {400, 400, 400, 400, 400, 400};
+  double max_w_med_out[]   = {400, 400, 400, 400, 400, 400};
+  double max_w_loose_out[] = {400, 400, 400, 400, 400, 400};
+
+  //////////////////////////////////////////////////////////////
+
+  double min_u = 0; double max_u = 0; double min_v = 0; double max_v = 0; double min_w = 0; double max_w = 0;  
+
+  for(Int_t k = 0; k < 6; k++){  
+    if(part_Cal_PCAL_sector[j]-1 == k && inbending == true){
+      if(tight == true){
+        min_u = min_u_tight_inb[k]; max_u = max_u_tight_inb[k];
+        min_v = min_v_tight_inb[k]; max_v = max_v_tight_inb[k];
+        min_w = min_w_tight_inb[k]; max_w = max_w_tight_inb[k];
+      }
+      if(medium == true){
+        min_u = min_u_med_inb[k]; max_u = max_u_med_inb[k];
+        min_v = min_v_med_inb[k]; max_v = max_v_med_inb[k];
+        min_w = min_w_med_inb[k]; max_w = max_w_med_inb[k];
+      }
+      if(loose == true){
+        min_u = min_u_loose_inb[k]; max_u = max_u_loose_inb[k];
+        min_v = min_v_loose_inb[k]; max_v = max_v_loose_inb[k];
+        min_w = min_w_loose_inb[k]; max_w = max_w_loose_inb[k];
+      }
+    }
+    if(part_Cal_PCAL_sector[j]-1 == k && outbending == true){
+      if(tight == true){
+        min_u = min_u_tight_out[k]; max_u = max_u_tight_out[k];
+        min_v = min_v_tight_out[k]; max_v = max_v_tight_out[k];
+        min_w = min_w_tight_out[k]; max_w = max_w_tight_out[k];
+      }
+      if(medium == true){
+        min_u = min_u_med_out[k]; max_u = max_u_med_out[k];
+        min_v = min_v_med_out[k]; max_v = max_v_med_out[k];
+        min_w = min_w_med_out[k]; max_w = max_w_med_out[k];
+      }
+      if(loose == true){
+        min_u = min_u_loose_out[k]; max_u = max_u_loose_out[k];
+        min_v = min_v_loose_out[k]; max_v = max_v_loose_out[k];
+        min_w = min_w_loose_out[k]; max_w = max_w_loose_out[k];
+      }
+    }
+  }
+
+  if(v > min_v && v < max_v && w > min_w && w < max_w) return true;
+  else return false;
+}
+
+
+
+/*****************************************************************/
 
 /// use the following cut for inbending hadrons:
 /// j is the index of teh particle. Th variable part_pid is needed to assign the correct cut
 /// The inebdning / outbending flags (see top of thsi document) have to be set to assign the correct cut
-
-
 bool FiducialCuts::DC_fiducial_cut_theta_phi(int j, int region, int part_pid){
 
   //fitted values
@@ -390,6 +472,7 @@ bool FiducialCuts::DC_fiducial_cut_theta_phi(int j, int region, int part_pid){
 
 
 
+/*****************************************************************/
 /// use the following cut for inebnding electrons and all outbending particles
 /// j is the index of teh particle. Th variable part_pid is needed to assign the correct cut
 /// The inebdning / outbending flags (see top of thsi document) have to be set to assign the correct cut

@@ -90,7 +90,7 @@ class EventTree : public TObject
     Int_t eleStatus;
     Float_t eleChi2pid;
     Float_t eleSampFrac;
-    Float_t elePCALen;
+    Float_t elePCALen,eleECINen,eleECOUTen;
 
     // fiducial cuts
     Bool_t eleFiduCut;
@@ -195,7 +195,6 @@ class EventTree : public TObject
   private:
     TChain * chain;
     Int_t whichHad[2];
-    Int_t whichLevel;
 
     Dihadron * objDihadron;
     Dihadron * candDih;

@@ -35,8 +35,9 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
   chain->SetBranchAddress("eleVertex",eleVertex);
   chain->SetBranchAddress("eleStatus",&eleStatus);
   chain->SetBranchAddress("eleChi2pid",&eleChi2pid);
-  chain->SetBranchAddress("eleSampFrac",&eleSampFrac);
   chain->SetBranchAddress("elePCALen",&elePCALen);
+  chain->SetBranchAddress("eleECINen",&eleECINen);
+  chain->SetBranchAddress("eleECOUTen",&eleECOUTen);
 
   chain->SetBranchAddress("eleFiduCut",&eleFiduCut);
   chain->SetBranchAddress("hadFiduCut",hadFiduCut);
@@ -245,6 +246,12 @@ void EventTree::GetEvent(Int_t i) {
     gen_hadTheta[h] = MCrecMode ? Tools::EtaToTheta(gen_hadEta[h]) : UNDEF;
   };
 
+
+
+  /**************************************/
+  /* cut definitions                    */
+  /**************************************/
+
   // DIS cuts
   cutQ2 = Q2 > 1.0;
   cutW = W > 2.0;
@@ -254,10 +261,9 @@ void EventTree::GetEvent(Int_t i) {
   // dihadron cuts
   cutDihadron = 
     Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) &&
-    Zpair < 0.95 &&
+    Zpair < 0.95 && /* TODO still needed? */
     Mmiss > 1.5 &&
-    hadXF[qA] > 0 && hadXF[qB] > 0 &&
-    hadP[qA] > 1.25 && hadP[qB] > 1.25;
+    hadXF[qA] > 0 && hadXF[qB] > 0;
 
   // vertex cuts
   cutVertex = CheckVertex();
@@ -266,13 +272,21 @@ void EventTree::GetEvent(Int_t i) {
   cutFiducial = eleFiduCut && hadFiduCut[qA] && hadFiduCut[qB];
 
   // PID refinement cuts
-  cutElePID = TMath::Abs(eleChi2pid) < 5 &&
-              elePCALen > 0.07 &&
-              eleSampFrac > 0.17 &&
-              eleTheta>5 && eleTheta<35;
+  // -- electron
+  eleSampFrac = (elePCALen + eleECINen + eleECOUTen) / eleP;
+  cutElePID = 
+    eleTheta>5 && eleTheta<35 &&
+    eleP > 2 && /* redudant with y<0.8 cut */
+    elePCALen > 0.07 &&
+    /* TODO SF cut, with modified mean and sigma && */
+    /* TODO diagonal calorimeter SF cut on p>4.5 */
+    TMath::Abs(eleChi2pid) < 5; /* TODO still needed? */
+  // -- pions
   for(int h=0; h<2; h++) {
-    cutHadPID[h] = CheckHadChi2pid(h) &&
-                   hadTheta[h]>5 && hadTheta[h]<35;
+    cutHadPID[h] = 
+      hadTheta[h]>5 && hadTheta[h]<35 &&
+      hadP[qA] > 1.25 && hadP[qB] > 1.25 &&
+      CheckHadChi2pid(h);/* TODO double check this is correct */
   };
   cutPID = cutElePID && cutHadPID[qA] && cutHadPID[qB];
   

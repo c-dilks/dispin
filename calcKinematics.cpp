@@ -98,7 +98,6 @@ int main(int argc, char** argv) {
   Float_t evnumHi_float;
   Float_t helicity_float;
   Float_t runnum_float;
-  Float_t eleSampFrac;
   // - particle branch vars; array index corresponds to parEnum
   Float_t Row[nPar]; Float_t genRow[nPar];
   Float_t Pid[nPar]; Float_t genPid[nPar];
@@ -232,8 +231,9 @@ int main(int argc, char** argv) {
   outrootTr->Branch("eleStatus",&(disEv->eleStatus),"eleStatus/I");
   outrootTr->Branch("eleChi2pid",&(disEv->eleChi2pid),"eleChi2pid/F");
   outrootTr->Branch("eleFiduCut",&(fidu[kEle]->fiduCut),"eleFiduCut/O");
-  outrootTr->Branch("eleSampFrac",&eleSampFrac,"eleSampFrac/F");
   outrootTr->Branch("elePCALen",&(fidu[kEle]->part_Cal_PCAL_energy[0]),"elePCALen/F");
+  outrootTr->Branch("eleECINen",&(fidu[kEle]->part_Cal_ECIN_energy[0]),"eleECINen/F");
+  outrootTr->Branch("eleECOUTen",&(fidu[kEle]->part_Cal_ECOUT_energy[0]),"eleECOUTen/F");
   // - hadron branches
   outrootTr->Branch("pairType",&(dih->pairType),"pairType/I");
   outrootTr->Branch("hadRow",dih->hadRow,"hadRow[2]/I");
@@ -402,9 +402,6 @@ int main(int argc, char** argv) {
 
     // calculate DIS kinematics
     disEv->CalculateKinematics(traj[kEle]);
-
-    // compute sampling fraction for electron
-    eleSampFrac = fidu[kEle]->GetECenergy() / disEv->eleP;
 
 
     // calculate dihadron kinematics and obtain hadron fiducial cuts
