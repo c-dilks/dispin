@@ -23,13 +23,34 @@ int main(int argc, char** argv) {
    if(argc>1) infiles = TString(argv[1]);
    if(argc>2) whichPair = (Int_t)strtof(argv[2],NULL);
 
-   Double_t count=0;
+   Long_t nTotal=0;
+   Long_t nValid=0;
+   Long_t nCutDIS=0;
+   Long_t nCutDihadron=0;
+   Long_t nCutHelicity=0;
+   Long_t nCutFiducial=0;
+   Long_t nCutPID=0;
+   Long_t nCutVertex=0;
    
    EventTree * ev = new EventTree(infiles,whichPair);
    for(int i=0; i<ev->ENT; i++) {
      ev->GetEvent(i);
-     if(ev->Valid()) count+=1;
+     if(ev->pairType == 0x34) nTotal++;
+     if(ev->Valid()) nValid++;
+     if(ev->cutDIS) nCutDIS++;
+     if(ev->cutDihadron) nCutDihadron++;
+     if(ev->cutHelicity) nCutHelicity++;
+     if(ev->cutFiducial) nCutFiducial++;
+     if(ev->cutPID) nCutPID++;
+     if(ev->cutVertex) nCutVertex++;
    };
 
-   printf("count = %.0f\n",count);
+   printf("total number of pi+pi- pairs = %ld\n",nTotal);
+   printf("nValid = %ld\n",nValid);
+   Long_t nCutDIS=0;
+   Long_t nCutDihadron=0;
+   Long_t nCutHelicity=0;
+   Long_t nCutFiducial=0;
+   Long_t nCutPID=0;
+   Long_t nCutVertex=0;
 };

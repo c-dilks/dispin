@@ -42,6 +42,7 @@ class EventTree : public TObject
     Float_t Polarization();
     Float_t Rellum();
     Bool_t CheckVertex();
+    Bool_t CheckSampFrac();
     Bool_t CheckHadChi2pid(Int_t had);
 
     void PrintEventVerbose();
@@ -89,8 +90,8 @@ class EventTree : public TObject
     Float_t eleVertex[3];
     Int_t eleStatus;
     Float_t eleChi2pid;
-    Float_t eleSampFrac;
     Float_t elePCALen,eleECINen,eleECOUTen;
+    Int_t eleSector;
 
     // fiducial cuts
     Bool_t eleFiduCut;
@@ -191,6 +192,8 @@ class EventTree : public TObject
     Float_t gen_eleMatchDist;
     Float_t gen_hadMatchDist[2];
 
+    Float_t eleSampFrac;
+
     
   private:
     TChain * chain;
@@ -213,6 +216,7 @@ class EventTree : public TObject
     Float_t vzdiff[2];
 
     Bool_t vertexWarned;
+    Bool_t sfcutDiag, sfcutSigma;
 
   ClassDef(EventTree,1);
 };

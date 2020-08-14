@@ -33,7 +33,7 @@ void FiducialCuts::ApplyCuts(int runnum_, int pid_) {
   };
 
   // determine sector (requires part_DC_Traj_found to be true)
-  part_DC_sector[0] = this->determineSector(0);
+  part_DC_sector[0] = this->determineSectorDC(0);
 
 
   // apply cuts, depending on PID
@@ -63,6 +63,26 @@ void FiducialCuts::ApplyCuts(int runnum_, int pid_) {
 };
 
 
+int FiducialCuts::determineSectorEC(int i){
+  int retval;
+  bool warn;
+  // get sector number from whichever layers have Edep
+  if(part_Cal_PCAL_found[i]>0) retval = part_Cal_PCAL_sector[i];
+  if(part_Cal_ECIN_found[i]>0) retval = part_Cal_ECIN_sector[i];
+  if(part_Cal_ECOUT_found[i]>0) retval = part_Cal_ECOUT_sector[i];
+  // check that each layer with Edep>0 agrees on the sector number
+  if(retval>=1 && retval<=6) {
+    warn=false
+    if(part_Cal_PCAL_found[i]>0 && retval!=part_Cal_PCAL_sector[i]) warn=true;
+    if(part_Cal_ECIN_found[i]>0 && retval!=part_Cal_ECIN_sector[i]) warn=true;
+    if(part_Cal_ECOUT_found[i]>0 && retval!=part_Cal_ECOUT_sector[i]) warn=true;
+    if(warn) fprintf(stderr,
+      "WARNING: FiducialCuts::determineSectorEC: ill-determined EC sector\n");
+  } else retval = -10000;
+  return retval;
+};
+
+
 
 ////////////////////////////////
 ////////////////////////////////
@@ -72,7 +92,7 @@ void FiducialCuts::ApplyCuts(int runnum_, int pid_) {
 ////////////////////////////////
 ////////////////////////////////
 
-int FiducialCuts::determineSector(int i){
+int FiducialCuts::determineSectorDC(int i){
 
   double phi = 180 / Pival * atan2(part_DC_c2y[i] / sqrt(pow(part_DC_c2x[i], 2) + pow(part_DC_c2y[i], 2) + pow(part_DC_c2z[i], 2)), part_DC_c2x[i] / sqrt(pow(part_DC_c2x[i], 2) 
         + pow(part_DC_c2y[i], 2) + pow(part_DC_c2z[i], 2)));

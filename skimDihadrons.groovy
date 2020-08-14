@@ -503,7 +503,7 @@ while(reader.hasEvent()) {
     }
 
     // CUT: choose maximum energy electron branch (only needed if more than
-    //      one candidate DIS electron was found
+    //      one candidate DIS electron was found)
     eleDIS = eleTree.max{it.particle.e()}
     if(verbose) { println "----- eleDIS:"; println eleDIS.particle; }
 

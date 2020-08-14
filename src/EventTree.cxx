@@ -38,6 +38,7 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
   chain->SetBranchAddress("elePCALen",&elePCALen);
   chain->SetBranchAddress("eleECINen",&eleECINen);
   chain->SetBranchAddress("eleECOUTen",&eleECOUTen);
+  chain->SetBranchAddress("eleSector",&eleSector);
 
   chain->SetBranchAddress("eleFiduCut",&eleFiduCut);
   chain->SetBranchAddress("hadFiduCut",hadFiduCut);
@@ -253,40 +254,39 @@ void EventTree::GetEvent(Int_t i) {
   /**************************************/
 
   // DIS cuts
-  cutQ2 = Q2 > 1.0;
-  cutW = W > 2.0;
+  cutQ2 = Q2 > 1.0; /* legacy */
+  cutW = W > 2.0; /* legacy */
   cutY = y < 0.8;
   cutDIS = cutQ2 && cutW && cutY;
 
   // dihadron cuts
+  /* (note: PairSame ensures we have the correct channel, e.g., pi+pi-) */
   cutDihadron = 
     Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) &&
-    Zpair < 0.95 && /* TODO still needed? */
+    Zpair < 0.95 && /* legacy; redundant with Mx>1.5 */
     Mmiss > 1.5 &&
     hadXF[qA] > 0 && hadXF[qB] > 0;
 
   // vertex cuts
-  cutVertex = CheckVertex();
+  cutVertex = CheckVertex(); /* applies to electron and hadrons */
 
   // fiducial cuts
+  // - note: status is required to be in FD, as a prerequisite 
   cutFiducial = eleFiduCut && hadFiduCut[qA] && hadFiduCut[qB];
 
   // PID refinement cuts
   // -- electron
-  eleSampFrac = (elePCALen + eleECINen + eleECOUTen) / eleP;
   cutElePID = 
     eleTheta>5 && eleTheta<35 &&
-    eleP > 2 && /* redudant with y<0.8 cut */
+    eleP > 2 && /* legacy; redudant with y<0.8 cut */
     elePCALen > 0.07 &&
-    /* TODO SF cut, with modified mean and sigma && */
-    /* TODO diagonal calorimeter SF cut on p>4.5 */
-    TMath::Abs(eleChi2pid) < 5; /* TODO still needed? */
+    CheckSampFrac(); /* sampling fraction cuts (diagonal cut and (mu,std) cut) */
   // -- pions
   for(int h=0; h<2; h++) {
     cutHadPID[h] = 
       hadTheta[h]>5 && hadTheta[h]<35 &&
-      hadP[qA] > 1.25 && hadP[qB] > 1.25 &&
-      CheckHadChi2pid(h);/* TODO double check this is correct */
+      hadP[h] > 1.25 &&
+      CheckHadChi2pid(h); /* refined hadron chi2pid cut */
   };
   cutPID = cutElePID && cutHadPID[qA] && cutHadPID[qB];
   
@@ -381,32 +381,76 @@ Bool_t EventTree::CheckVertex() {
 };
 
 
+// sampling fraction (SF) cut, for electrons
+Bool_t EventTree::CheckSampFrac() {
+
+  // calorimeter diagonal cut, on PCAL and ECIN SF correlation
+  if(eleP<4.5) sfcutDiag=true; // only applies above HTCC threshold
+  else sfcutDiag = eleECINen/eleP > 0.2 - elePCALen/eleP; 
+
+  // compute SF
+  eleSampFrac = (elePCALen + eleECINen + eleECOUTen) / eleP;
+
+  // need defined EC sector to apply SF cut
+  if(eleSector>=1 && eleSector<=6) {
+
+    // parameters for SF mu(p) and sigma(p) functions
+    Double_t e_cal_sampl_mu[3][6] = {
+      {0.2531, 0.2550, 0.2514, 0.2494, 0.2528, 0.2521},
+      {-0.6502, -0.7472, -0.7674, -0.4913, -0.3988, -0.703},
+      {4.939, 5.350, 5.102, 6.440, 6.149, 4.957}
+    };
+    Double_t e_cal_sampl_sigma[3][6] = {
+      {0.002726, 0.004157, 0.005222, 0.005398, 0.008453, 0.006553}, 
+      {1.062, 0.859, 0.5564, 0.6576, 0.3242, 0.4423}, 
+      {-4.089, -3.318, -2.078, -2.565, -0.8223, -1.274}
+    };
+
+    // calculate mu(p)
+    Double_t mu =
+      e_cal_sampl_mu[0][eleSector-1] + 
+      (e_cal_sampl_mu[1][eleSector-1]/1000)*
+      TMath::Power(eleP-e_cal_sampl_mu[2][eleSector-1],2);
+    // calculate sigma(p)
+    Double_t sigma =
+      e_cal_sampl_sigma[0][eleSector-1] + e_cal_sampl_sigma[1][eleSector-1] / 
+      (10 * (eleP-e_cal_sampl_sigma[2][eleSector-1]));
+    // SF must be within 3.5 sigma of mean; here SF is from PCAL+ECAL+ECIN
+    sfcutSigma = TMath::Abs(eleSampFrac-mu) < 3.5*sigma;
+  } else {
+    sfcutSigma = false;
+  };
+
+  // return full SF cut result
+  return sfcutDiag && sfcutSigma;
+};
+
+
 // PID refinement cut for pions; the upper bound cut at high momentum
 // helps reduce kaon contamination
 Bool_t EventTree::CheckHadChi2pid(Int_t had) {
 
-  Float_t sigma=1; // n.b. Stefan uses 0.88 for pi+, and 0.93 for pi-
-  if(hadIdx[had]==kPip)      sigma=0.88;
-  else if(hadIdx[had]==kPim) sigma=0.93;
+  // corrected stddev of chi2pid
+  Float_t sigma;
+  switch(hadIdx[had]) {
+    case kPip: sigma=0.88; break;
+    case kPim: sigma=0.93; break;
+    default: sigma=1.0;
+  };
 
-  // lower bound
-  if(hadChi2pid[had]<=-3) return false;
+  // lower bound cut
+  if(hadChi2pid[had]<=-3*sigma) return false;
   
-  // upper bound (from Stefan) :
-
-  // - standard cut
-  ///*
+  // upper bound cut
+  ///* -- standard cut
   if(hadP[had]<2.44) return hadChi2pid[had] < 3*sigma; // 3-sigma cut at low p
   else {
-    // 1/2 distance cut at higher p
-    // (1/2 distance in beta between kaons and pions)
+    // 1/2 distance cut at higher p (1/2 distance in beta between kaons and pions)
     return hadChi2pid[had] < sigma * (0.00869 + 
       14.98587 * TMath::Exp(-hadP[had]/1.18236) + 1.81751 * exp(-hadP[had]/4.86394));
   };
   //*/
-  
-  // - strict cut
-  /*
+  /* -- strict cut
   if(hadP[had]<2.44) return hadChi2pid[had] < 3*sigma; // 3-sigma cut at low p
   else if(2.44<=hadP[had] && hadP[had]<4.6) {
     // 1/2 distance cut at mid p

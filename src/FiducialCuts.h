@@ -30,12 +30,14 @@ class FiducialCuts : public TObject {
     // - booleans (so far just one)
     Bool_t fiduCut;
 
+    int determineSectorEC(int i);
+
     
     /********************************************************************/
     // Stefan's methods (the integer argument is the particle number, 
     // just use 0; see below); these are called by ApplyCuts
     /********************************************************************/
-    int determineSector(int i);
+    int determineSectorDC(int i);
     /// EC hit position homogenous cut
     /// This is the main cut for PCAL fiducial cut of electrons.
     /// A cut is performed on v and w
