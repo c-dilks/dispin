@@ -234,6 +234,7 @@ int main(int argc, char** argv) {
   outrootTr->Branch("elePCALen",&(fidu[kEle]->part_Cal_PCAL_energy[0]),"elePCALen/F");
   outrootTr->Branch("eleECINen",&(fidu[kEle]->part_Cal_ECIN_energy[0]),"eleECINen/F");
   outrootTr->Branch("eleECOUTen",&(fidu[kEle]->part_Cal_ECOUT_energy[0]),"eleECOUTen/F");
+  Int_t eleSector;
   outrootTr->Branch("eleSector",&eleSector,"eleSector/I");
   // - hadron branches
   outrootTr->Branch("pairType",&(dih->pairType),"pairType/I");

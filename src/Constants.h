@@ -291,7 +291,7 @@ static void DecodePairType(Int_t w, Int_t & ha, Int_t & hb) {
 };
 // convert hadron indices to whichPair
 static Int_t EncodePairType(Int_t ha, Int_t hb) {
-  return (hb<<4) + ha;
+  return (ha<<4) + hb;
 };
 
 // return true if Idx pair (ia,ib) is in the proper order

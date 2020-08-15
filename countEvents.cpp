@@ -35,22 +35,24 @@ int main(int argc, char** argv) {
    EventTree * ev = new EventTree(infiles,whichPair);
    for(int i=0; i<ev->ENT; i++) {
      ev->GetEvent(i);
-     if(ev->pairType == 0x34) nTotal++;
-     if(ev->Valid()) nValid++;
-     if(ev->cutDIS) nCutDIS++;
-     if(ev->cutDihadron) nCutDihadron++;
-     if(ev->cutHelicity) nCutHelicity++;
-     if(ev->cutFiducial) nCutFiducial++;
-     if(ev->cutPID) nCutPID++;
-     if(ev->cutVertex) nCutVertex++;
+     if(ev->Valid()) nValid++; // full cut set
+     if(Tools::PairSame(ev->hadIdx[qA],ev->hadIdx[qB],kPip,kPim)) {
+       nTotal++;
+       if(ev->cutDIS) nCutDIS++;
+       if(ev->cutDihadron) nCutDihadron++;
+       if(ev->cutHelicity) nCutHelicity++;
+       if(ev->cutFiducial) nCutFiducial++;
+       if(ev->cutPID) nCutPID++;
+       if(ev->cutVertex) nCutVertex++;
+     };
    };
 
    printf("total number of pi+pi- pairs = %ld\n",nTotal);
-   printf("nValid = %ld\n",nValid);
-   Long_t nCutDIS=0;
-   Long_t nCutDihadron=0;
-   Long_t nCutHelicity=0;
-   Long_t nCutFiducial=0;
-   Long_t nCutPID=0;
-   Long_t nCutVertex=0;
+   printf("total number which satisfies all cuts = %ld\n",nValid);
+   printf("nCutDIS = %ld\n",nCutDIS);
+   printf("nCutDihadron = %ld\n",nCutDihadron);
+   printf("nCutHelicity = %ld\n",nCutHelicity);
+   printf("nCutFiducial = %ld\n",nCutFiducial);
+   printf("nCutPID = %ld\n",nCutPID);
+   printf("nCutVertex = %ld\n",nCutVertex);
 };

@@ -72,7 +72,7 @@ int FiducialCuts::determineSectorEC(int i){
   if(part_Cal_ECOUT_found[i]>0) retval = part_Cal_ECOUT_sector[i];
   // check that each layer with Edep>0 agrees on the sector number
   if(retval>=1 && retval<=6) {
-    warn=false
+    warn=false;
     if(part_Cal_PCAL_found[i]>0 && retval!=part_Cal_PCAL_sector[i]) warn=true;
     if(part_Cal_ECIN_found[i]>0 && retval!=part_Cal_ECIN_sector[i]) warn=true;
     if(part_Cal_ECOUT_found[i]>0 && retval!=part_Cal_ECOUT_sector[i]) warn=true;
