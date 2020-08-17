@@ -397,6 +397,10 @@ def NTleaves
 // event loop
 //----------------------
 def once = true
+def eventHasPipPim = false
+def cntEventHasPipPim = 0
+def cntPairPipPim = 0
+def cnt
 evCount = 0
 
 // open skim HIPO file
@@ -482,29 +486,19 @@ while(reader.hasEvent()) {
     //----------------------------------
     // find the DIS electron
     //----------------------------------
-    // CUT: select FD trigger electrons
-    eleTree = growParticleTree(pids,11).findAll { br ->
-      def status = br.status
-      def chi2pid = br.chi2pid
-      status<0 &&
-        ( Math.abs(status/1000).toInteger() & 0x2 || 
-          Math.abs(status/1000).toInteger() & 0x4 )
-    }
+    eleTree = growParticleTree(pids,11)
     //if(verbose) { println "----- eleTree:"; println eleTree; }
 
     // skip event if no electron found
     if(eleTree.size()==0) continue
 
-    // warn if more than one candidate DIS electron is found
-    if(eleTree.size()>1) {
-      System.err << 
-        "WARNING: found more than 1 trigger e- in event; " <<
-        " using highest-E one\n"
-    }
 
     // CUT: choose maximum energy electron branch (only needed if more than
     //      one candidate DIS electron was found)
     eleDIS = eleTree.max{it.particle.e()}
+    // CUT: electron must be in FD trigger
+    if( eleDIS.status <= -3000 || eleDIS.status > -2000) continue
+
     if(verbose) { println "----- eleDIS:"; println eleDIS.particle; }
 
 
@@ -515,6 +509,7 @@ while(reader.hasEvent()) {
     // first build a list of hadron trees; one list element = one PID
     //   each list element is a 'tree': a list of subtrees (branches), one for 
     //   for each particle with that PID
+    eventHasPipPim = false
     if(verbose) println "..... hadrons:"
     hadTreeList = hadPIDlist.collect{ growParticleTree(pids,it) }
     //if(verbose) { println "--- hadTreeList:"; println pPrint(hadTreeList); }
@@ -576,7 +571,7 @@ while(reader.hasEvent()) {
               mcHadA = mcgenSet[1]
               mcHadB = mcgenSet[2]
             }
-                  
+
 
             // fill ntuple (be sure order matches defined order)
             NTleaves = [
@@ -603,12 +598,18 @@ while(reader.hasEvent()) {
               println hadB.particle
             }
 
+            if( (hadA.particle.pid()==211 && hadB.particle.pid()==-211) ||
+                (hadA.particle.pid()==-211 && hadB.particle.pid()==211)) {
+              eventHasPipPim = true
+              cntPairPipPim++
+            }
+
           }
         }
       }
     }
 
-
+    if(eventHasPipPim) cntEventHasPipPim++
 
   } // end if event has specific banks
 
@@ -619,6 +620,9 @@ reader.close()
 // write out to diskim file
 NT.write()
 diskimFile.close()
+
+println "number of events with at least one pi+pi- pair: $cntEventHasPipPim"
+println "number of pi+p- pairs: $cntPairPipPim"
 
 
 // close reader
