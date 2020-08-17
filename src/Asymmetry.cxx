@@ -620,6 +620,15 @@ void Asymmetry::SetFitMode(Int_t fitMode) {
       this->FormuAppend(3,2,1);
       this->FormuAppend(3,2,-1);
       break;
+    case 42: // |m|<=2; candidate for publication
+      this->FormuAppend(3,0,0); // grey
+      this->FormuAppend(2,1,1); // red
+      this->FormuAppend(3,1,1); // blue
+      this->FormuAppend(3,1,-1); // purple
+      this->FormuAppend(2,2,2); // green
+      this->FormuAppend(3,2,2); // cyan
+      this->FormuAppend(3,2,-2); // yellow
+      break;
     case 110:
       this->FormuAppend(3,1,1);
       this->DenomAppend(2,2,0,0); // tw2 |2,0> UU,T
