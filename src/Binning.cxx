@@ -32,14 +32,27 @@ Binning::Binning(Int_t pairType_) {
   if(numKaons==0) {
 
     // -- M_h (dihadron invariant mass)
-    ///* // 7 quantile bins
+    ///* // adjusted 12-bin scheme
+    AddBinBound(vM,0.381);
+    AddBinBound(vM,0.462);
+    AddBinBound(vM,0.531);
+    AddBinBound(vM,0.606);
+    AddBinBound(vM,0.675);
+    AddBinBound(vM,0.737);
+    AddBinBound(vM,0.781);
+    AddBinBound(vM,0.831);
+    AddBinBound(vM,0.900);
+    AddBinBound(vM,0.981);
+    AddBinBound(vM,1.125);
+    //*/
+    /* // 7 quantile bins
     AddBinBound(vM,0.46);
     AddBinBound(vM,0.60);
     AddBinBound(vM,0.72);
     AddBinBound(vM,0.81);
     AddBinBound(vM,0.93);
     AddBinBound(vM,1.10);
-    //*/
+    */
     /* // 14 quantile bins
     AddBinBound(vM,0.38);
     AddBinBound(vM,0.44);
@@ -64,14 +77,27 @@ Binning::Binning(Int_t pairType_) {
     */
 
     // -- x (bjorken-x)
-    ///* // 7 quantile bins
+    ///* // adjusted 12-bin scheme
+    AddBinBound(vX,0.118);
+    AddBinBound(vX,0.135);
+    AddBinBound(vX,0.150);
+    AddBinBound(vX,0.165);
+    AddBinBound(vX,0.183);
+    AddBinBound(vX,0.200);
+    AddBinBound(vX,0.223);
+    AddBinBound(vX,0.248);
+    AddBinBound(vX,0.275);
+    AddBinBound(vX,0.315);
+    AddBinBound(vX,0.375);
+    //*/
+    /* // 7 quantile bins
     AddBinBound(vX,0.12);
     AddBinBound(vX,0.15);
     AddBinBound(vX,0.18);
     AddBinBound(vX,0.21);
     AddBinBound(vX,0.25);
     AddBinBound(vX,0.32);
-    //*/
+    */
     /* // 14 quantile bins
     AddBinBound(vX,0.11);
     AddBinBound(vX,0.13);
@@ -89,10 +115,23 @@ Binning::Binning(Int_t pairType_) {
     */
 
     // -- z (fragmentation fraction)
-    ///* // 3 quantile bins
+    ///* // adjusted 12-bin scheme
+    AddBinBound(vZ,0.408);
+    AddBinBound(vZ,0.445);
+    AddBinBound(vZ,0.473);
+    AddBinBound(vZ,0.500);
+    AddBinBound(vZ,0.528);
+    AddBinBound(vZ,0.555);
+    AddBinBound(vZ,0.580);
+    AddBinBound(vZ,0.605);
+    AddBinBound(vZ,0.638);
+    AddBinBound(vZ,0.675);
+    AddBinBound(vZ,0.720);
+    //*/
+    /* // 3 quantile bins
     AddBinBound(vZ,0.51);
     AddBinBound(vZ,0.61);
-    //*/
+    */
     /* // 7 quantile bins
     AddBinBound(vZ,0.43);
     AddBinBound(vZ,0.48);
@@ -118,11 +157,24 @@ Binning::Binning(Int_t pairType_) {
     */
 
     // -- PhPerp (transverse momentum of dihadron)
+    ///* // adjusted 12-bin scheme
+    AddBinBound(vPt,0.175);
+    AddBinBound(vPt,0.245);
+    AddBinBound(vPt,0.310);
+    AddBinBound(vPt,0.365);
+    AddBinBound(vPt,0.425);
+    AddBinBound(vPt,0.480);
+    AddBinBound(vPt,0.530);
+    AddBinBound(vPt,0.585);
+    AddBinBound(vPt,0.650);
+    AddBinBound(vPt,0.725);
+    AddBinBound(vPt,0.835);
+    //*/
     /*
     AddBinBound(vPt,0.37); // 3 quantile bins 
     AddBinBound(vPt,0.58);
     */
-    ///*
+    /*
     AddBinBound(vPt,0.16); // 14 quantile bins
     AddBinBound(vPt,0.23);
     AddBinBound(vPt,0.29);
@@ -136,7 +188,7 @@ Binning::Binning(Int_t pairType_) {
     AddBinBound(vPt,0.68);
     AddBinBound(vPt,0.75);
     AddBinBound(vPt,0.85);
-    //*/
+    */
 
     // -- Ph (magnitude of momentum sum of dihadron)
     AddBinBound(vPh,3.15); // 5 quantile bins 
@@ -145,8 +197,23 @@ Binning::Binning(Int_t pairType_) {
     AddBinBound(vPh,4.80);
 
     // -- Q^2
-    AddBinBound(vQ,2.37); // 3 quantile bins, inbending
+    ///* // adjusted 12-bin scheme
+    AddBinBound(vQ,1.600);
+    AddBinBound(vQ,1.800);
+    AddBinBound(vQ,1.980);
+    AddBinBound(vQ,2.160);
+    AddBinBound(vQ,2.340);
+    AddBinBound(vQ,2.560);
+    AddBinBound(vQ,2.820);
+    AddBinBound(vQ,3.160);
+    AddBinBound(vQ,3.560);
+    AddBinBound(vQ,4.080);
+    AddBinBound(vQ,4.860);
+    //*/
+    /* // 3 quantile bins, inbending only
+    AddBinBound(vQ,2.37);
     AddBinBound(vQ,3.35);
+    */
 
     // -- xF
     /*
