@@ -288,7 +288,7 @@ int PrintUsage() {
   printf("   \texample: -t3 -l1 -m1 will fit the sin(phiR) modulation\n");
   printf("   \tdefault = -t%d -l%d -m%d\n\n",oaTw,oaL,oaM);
 
-  printf(" -b\tdo single-amplitude fit in 2D azimuthal space (default is 1D)\n\n");
+  printf(" -b\tbin in 2D azimuthal space (for multi-amplitude chi2 minimization)\n\n");
 
   printf(" -h\t(for MC) - select which helicityMC to use\n\n");
 

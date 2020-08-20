@@ -5,26 +5,27 @@ setnum=$1
 
 case $setnum in
   1)
-    slurm.buildSpinroot.sh outroot.inbending -i1 # vs. x 
+    condor.buildSpinroot.sh outroot.inbending -i1 # vs. x 
     ;;
   2)
-    slurm.buildSpinroot.sh outroot.inbending -i2 # vs. Mh 
+    condor.buildSpinroot.sh outroot.inbending -i2 # vs. Mh 
     ;;
   3)
-    slurm.buildSpinroot.sh outroot.inbending -i3 # vs. z 
+    condor.buildSpinroot.sh outroot.inbending -i3 # vs. z 
     ;;
   4)
-    slurm.buildSpinroot.sh outroot.inbending -i42 # vs. PhPerp, for 2 Mh bins 
+    condor.buildSpinroot.sh outroot.inbending -i42 # vs. PhPerp, for 2 Mh bins 
     ;;
   *)
     echo "ERROR: unknown set_number"
     exit
     ;;
 esac
-exit
-   
+
+
 sleep 1
-waitForSlurm.sh
+#waitForSlurm.sh
+waitForCondor.sh
 
 sleep 1
 catSpinroot.exe

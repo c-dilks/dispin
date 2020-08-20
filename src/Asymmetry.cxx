@@ -691,7 +691,7 @@ void Asymmetry::SetFitMode(Int_t fitMode) {
 //    for this modulation bin
 void Asymmetry::SetAsymGrPoint(Int_t modBin_, Int_t modBin2_) {
 
-  average_rellum = 1; // TODO: actually calculate the average;
+  average_rellum = 1.000; // TODO: actually calculate the average;
                       // since this is not yet done, this fit method does not
                       // correct for the relative luminosity
   asymNumer = yL - (average_rellum * yR);
