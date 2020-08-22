@@ -53,7 +53,8 @@ class EventTree : public TObject
     DIS * GetDISObj();
     Float_t GetBreitRapidity(Int_t had);
 
-    Float_t GetKinematicFactor(Char_t kf);
+    //Float_t GetDepolarizationFactorApprox(Char_t kf);
+    Float_t GetDepolarizationFactor(Char_t kf);
 
     Bool_t debug;
     Long64_t ENT;
@@ -63,7 +64,7 @@ class EventTree : public TObject
     //   BRANCHES
     ///////////////////////////
     // DIS kinematics
-    Float_t W,Q2,Nu,x,y;
+    Float_t W,Q2,Nu,x,y,gamma,epsilon;
 
     // hadron kinematics
     Int_t pairType;
@@ -194,7 +195,6 @@ class EventTree : public TObject
 
     Float_t eleSampFrac;
 
-    
   private:
     TChain * chain;
     Int_t whichHad[2];
@@ -217,6 +217,7 @@ class EventTree : public TObject
 
     Bool_t vertexWarned;
     Bool_t sfcutDiag, sfcutSigma;
+    Float_t dfA;
 
   ClassDef(EventTree,1);
 };

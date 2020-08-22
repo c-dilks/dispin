@@ -80,6 +80,7 @@ class Binning : public TObject
     Int_t GetNbins(Int_t dim);
     TString GetIVname(Int_t dim);
     TString GetIVtitle(Int_t dim);
+    Int_t GetSchemeBin(Float_t iv_); // find bin containing iv value `iv_`
     // additional scheme methods
     Bool_t CheckDim(Int_t dim_);
     Int_t HashBinNum(Int_t bin0, Int_t bin1=-1, Int_t bin2=-1);

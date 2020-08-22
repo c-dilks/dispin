@@ -1,9 +1,9 @@
 // reads plots.root and draws the kinematic factor plots, with profiles on them
 
-void drawKinematicFactorPlots() {
+void drawDepolarizationFactorPlots(TString infileN = "plots.root") {
   gStyle->SetOptStat(0);
 
-  TFile * infile = new TFile("plots.root","READ");
+  TFile * infile = new TFile(infileN,"READ");
 
   enum KF_enum {kfA, kfB, kfC, kfV, kfW, kfWA, kfVA, kfCA, kfBA, Nkf};
   TString kfName[Nkf];
@@ -18,7 +18,8 @@ void drawKinematicFactorPlots() {
   kfName[kfCA] = "kfCA"; kfTitle[kfCA] = "C(y)/A(y)";
   kfName[kfBA] = "kfBA"; kfTitle[kfBA] = "B(y)/A(y)";
 
-  for(int k=0; k<Nkf; k++) kfName[k] = "/kinematicFactors/"+kfName[k];
+  TString kfNameFull[Nkf];
+  for(int k=0; k<Nkf; k++) kfNameFull[k] = "/depolarizationFactors/"+kfName[k];
 
   TH2D * kfVsMh[Nkf];
   TH2D * kfVsQ2[Nkf];
@@ -41,15 +42,15 @@ void drawKinematicFactorPlots() {
   TProfile * kfVsPhiHR_pf[Nkf];
 
   for(int k=0; k<Nkf; k++) {
-    kfVsMh[k] = (TH2D*) infile->Get(TString(kfName[k]+"vsMh"));
-    kfVsQ2[k] = (TH2D*) infile->Get(TString(kfName[k]+"vsQ2"));
-    kfVsMmiss[k] = (TH2D*) infile->Get(TString(kfName[k]+"vsMmiss"));
-    kfVsPhPerp[k] = (TH2D*) infile->Get(TString(kfName[k]+"vsPhPerp"));
-    kfVsX[k] = (TH2D*) infile->Get(TString(kfName[k]+"vsX"));
-    kfVsZpair[k] = (TH2D*) infile->Get(TString(kfName[k]+"vsZpair"));
-    kfVsPhiH[k] = (TH2D*) infile->Get(TString(kfName[k]+"vsPhiH"));
-    kfVsPhiR[k] = (TH2D*) infile->Get(TString(kfName[k]+"vsPhiR"));
-    kfVsPhiHR[k] = (TH2D*) infile->Get(TString(kfName[k]+"vsPhiHR"));
+    kfVsMh[k] = (TH2D*) infile->Get(TString(kfNameFull[k]+"vsMh"));
+    kfVsQ2[k] = (TH2D*) infile->Get(TString(kfNameFull[k]+"vsQ2"));
+    kfVsMmiss[k] = (TH2D*) infile->Get(TString(kfNameFull[k]+"vsMmiss"));
+    kfVsPhPerp[k] = (TH2D*) infile->Get(TString(kfNameFull[k]+"vsPhPerp"));
+    kfVsX[k] = (TH2D*) infile->Get(TString(kfNameFull[k]+"vsX"));
+    kfVsZpair[k] = (TH2D*) infile->Get(TString(kfNameFull[k]+"vsZpair"));
+    kfVsPhiH[k] = (TH2D*) infile->Get(TString(kfNameFull[k]+"vsPhiH"));
+    kfVsPhiR[k] = (TH2D*) infile->Get(TString(kfNameFull[k]+"vsPhiR"));
+    kfVsPhiHR[k] = (TH2D*) infile->Get(TString(kfNameFull[k]+"vsPhiHR"));
   };
 
   for(int k=0; k<Nkf; k++) {

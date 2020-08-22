@@ -292,17 +292,18 @@ int main(int argc, char** argv) {
    kfName[kfBA] = "kfBA"; kfTitle[kfBA] = "B(y)/A(y)";
    Float_t kfVal[Nkf];
    Float_t kfRange[Nkf][2];
+   ///*
+   kfRange[kfA][0]=0.4; kfRange[kfA][1]=0.7; 
+   kfRange[kfB][0]=0; kfRange[kfB][1]=0.7; 
+   kfRange[kfC][0]=0.2; kfRange[kfC][1]=0.6;
+   kfRange[kfV][0]=0.2; kfRange[kfV][1]=1.4; 
+   kfRange[kfW][0]=0.2; kfRange[kfW][1]=0.45;
+   kfRange[kfWA][0]=0.4; kfRange[kfWA][1]=0.8;
+   kfRange[kfVA][0]=0.8; kfRange[kfVA][1]=2;
+   kfRange[kfCA][0]=0.2; kfRange[kfCA][1]=1; 
+   kfRange[kfBA][0]=0.2; kfRange[kfBA][1]=1; 
+   //*/
    /*
-   kfRange[kfA][0]=0.5; kfRange[kfA][1]=1; 
-   kfRange[kfB][0]=0; kfRange[kfB][1]=1; 
-   kfRange[kfC][0]=0; kfRange[kfC][1]=0.5;
-   kfRange[kfV][0]=0; kfRange[kfV][1]=2; 
-   kfRange[kfW][0]=0; kfRange[kfW][1]=0.5;
-   kfRange[kfWA][0]=0.5; kfRange[kfWA][1]=1.5;
-   kfRange[kfVA][0]=0.5; kfRange[kfVA][1]=1.5;
-   kfRange[kfCA][0]=0.5; kfRange[kfCA][1]=1.5; 
-   kfRange[kfBA][0]=0; kfRange[kfBA][1]=2; 
-   */
    kfRange[kfA][0]=-1; kfRange[kfA][1]=2.5; 
    kfRange[kfB][0]=-1; kfRange[kfB][1]=2.5; 
    kfRange[kfC][0]=-1; kfRange[kfC][1]=2.5;
@@ -312,6 +313,7 @@ int main(int argc, char** argv) {
    kfRange[kfVA][0]=-1; kfRange[kfVA][1]=2.5;
    kfRange[kfCA][0]=-1; kfRange[kfCA][1]=2.5; 
    kfRange[kfBA][0]=-1; kfRange[kfBA][1]=2.5; 
+   */
    TH2D * kfVsMh[Nkf];
    TH2D * kfVsPhPerp[Nkf];
    TH2D * kfVsX[Nkf];
@@ -488,12 +490,11 @@ int main(int argc, char** argv) {
        PhiRvsAlpha->Fill(ev->alpha,ev->PhiR);
        PhiHRvsAlpha->Fill(ev->alpha,ev->PhiHR);
 
-      
-       kfVal[kfA] = ev->GetKinematicFactor('A');
-       kfVal[kfB] = ev->GetKinematicFactor('B');
-       kfVal[kfC] = ev->GetKinematicFactor('C');
-       kfVal[kfV] = ev->GetKinematicFactor('V');
-       kfVal[kfW] = ev->GetKinematicFactor('W');
+       kfVal[kfA] = ev->GetDepolarizationFactor('A');
+       kfVal[kfB] = ev->GetDepolarizationFactor('B');
+       kfVal[kfC] = ev->GetDepolarizationFactor('C');
+       kfVal[kfV] = ev->GetDepolarizationFactor('V');
+       kfVal[kfW] = ev->GetDepolarizationFactor('W');
        kfVal[kfWA] = kfVal[kfW] / kfVal[kfA];
        kfVal[kfVA] = kfVal[kfV] / kfVal[kfA];
        kfVal[kfCA] = kfVal[kfC] / kfVal[kfA];
@@ -632,8 +633,8 @@ int main(int argc, char** argv) {
    helicityDist->Write();
 
 
-   outfile->mkdir("kinematicFactors");
-   outfile->cd("kinematicFactors");
+   outfile->mkdir("depolarizationFactors");
+   outfile->cd("depolarizationFactors");
    for(int k=0; k<Nkf; k++) {
      kfVsMh[k]->Write();
      kfVsPhPerp[k]->Write();

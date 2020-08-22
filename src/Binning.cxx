@@ -316,6 +316,7 @@ void Binning::PrintBinBounds() {
 };
 
 
+// get bin associated with iv ivIdx_
 Int_t Binning::GetBin(Int_t ivIdx_, Float_t iv_) {
   if(ivIdx_<0 || ivIdx_>=nIV) {
     fprintf(stderr,"ERROR: bad Binning::GetBin call\n");
@@ -333,6 +334,12 @@ Int_t Binning::GetBin(Int_t ivIdx_, Float_t iv_) {
   fprintf(stderr,"ERROR bin not found for %s=%.2f\n",IVname[ivIdx_].Data(),iv_);
   return -1;
 };
+
+// get bin associated with current scheme, (ivVar[0])
+Int_t Binning::GetSchemeBin(Float_t iv_) {
+  return this->GetBin(ivVar[0],iv_);
+};
+
 
 
 TString Binning::GetBoundStr(Int_t bn, Int_t dim) {

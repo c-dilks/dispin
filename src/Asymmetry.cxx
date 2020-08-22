@@ -430,7 +430,7 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
   if(rellum<0) return false;
 
   // get kinematic factor
-  kf = EvalKinematicFactor(ev);
+  kf = EvalDepolarizationFactor(ev);
   if(kf<kfLB || kf>kfUB) return KickEvent("KF out of range",kf);
 
   // evaluate modValOA
@@ -926,12 +926,12 @@ Float_t Asymmetry::EvalWeight() {
 
 // if e(x) modulation, return W(y)/A(y)
 // if G1perp modulation, return C(y)/A(y)
-// see EventTree::GetKinematicFactor() for definitions
-Float_t Asymmetry::EvalKinematicFactor(EventTree * ev) {
+// see EventTree::GetDepolarizationFactor() for definitions
+Float_t Asymmetry::EvalDepolarizationFactor(EventTree * ev) {
   
-  kfA = ev->GetKinematicFactor('A');
-  kfC = ev->GetKinematicFactor('C');
-  kfW = ev->GetKinematicFactor('W');
+  kfA = ev->GetDepolarizationFactor('A');
+  kfC = ev->GetDepolarizationFactor('C');
+  kfW = ev->GetDepolarizationFactor('W');
 
   if(oaTw==3 && oaM==1) return kfW / kfA;
   else if(oaTw==2 && oaM==1) return kfC / kfA;
