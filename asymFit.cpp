@@ -244,8 +244,7 @@ int main(int argc, char** argv) {
 
       // instantiate chi2/ndf graphs
       grTitle = "#chi^{2}/NDF of " +
-        dihTitle + " A_{LU}[" + A->oaModulationTitle + "]_{l.f.} " + 
-        " vs. " + grTitleSuffix;
+        dihTitle + " A_{LU} vs. " + grTitleSuffix;
       grName = "chindf_" + grNameSuffix;
       chindfGrOA = new TGraphErrors();
       chindfGrOA->SetName(grName);

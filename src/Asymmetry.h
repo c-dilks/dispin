@@ -110,7 +110,7 @@ class Asymmetry : public TObject
     // - this value is the weighted average of the polarizations from
     //   pass1 inbending data, for before and after the Wien angle change
     // - this is *not* used by the MLM fit
-    static constexpr Float_t polOA = 0.87;
+    static constexpr Float_t polOA = 0.863;
 
 
 
