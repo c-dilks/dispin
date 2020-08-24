@@ -284,7 +284,7 @@ int main(int argc, char** argv) {
 
 
   // - MC branches
-  const Int_t nInject = 5;
+  const Int_t nInject = 6;
   Int_t helicityMC[nInject];
   TString helicityMCstr = Form("helicityMC[%d]/I",nInject);
   Float_t gen_eleMatchDist;
@@ -353,7 +353,8 @@ int main(int argc, char** argv) {
   enum modEnum {modH,modHR,modR,mod2HR,nMod};
   Modulation * modu[nMod];
   Double_t moduVal[nMod];
-  Float_t amp,asymInject;
+  Float_t amp,ampF,iv;
+  Float_t asymInject[nInject];
   TRandom * RNG;
   Bool_t proceed;
   Bool_t isMatch[nPar];
@@ -428,10 +429,10 @@ int main(int argc, char** argv) {
     // MC asymmetry injection: assignment of a helicity or weight,
     //                         according to the asymmetry you want
     // options: if dataStream==mcrec: using recon particles for outroot
-    //            if injectStream==injmatch
+    //            if injectStream==injgen
     //            - use matched gen particles for asym injection
     //            -> most realistic test, but accuracy relies on good matching
-    //            if injectStream==injrecon
+    //            if injectStream==injrec
     //            - use recon particles for asym injection
     //            -> only useful for testing fit algorithm
     //          if dataStream==mcgen: using gen particles for outroot
@@ -505,24 +506,27 @@ int main(int argc, char** argv) {
       if(evnum!=evnumTmp) {
         evnumTmp = evnum;
         if(proceed) {
+
+          // - constant asymmetry
+          amp = 0.04;
+          asymInject[0]=0;
+          asymInject[1] = amp*moduVal[modH];
+          asymInject[2] = amp*moduVal[modHR];
+          asymInject[3] = amp*moduVal[modR];
+          asymInject[4] = amp*moduVal[mod2HR];
+          // - Mh dependence
+          iv = dih->Mh;
+          asymInject[5] = amp*iv/(2*0.77) * moduVal[modR];
+          asymInject[5] += ( amp - amp*iv/(2*0.77) ) * moduVal[modH];
+          asymInject[5] += amp * TMath::Sin(PI*iv/0.77) * moduVal[modHR];
+
           for(int f=0; f<nInject; f++) {
-            amp = 0.1;
-            switch(f) {
-              case 0: asymInject=0; break;
-              case 1: asymInject = amp*moduVal[modH]; break;
-              case 2: asymInject = amp*moduVal[modHR]; break;
-              case 3: asymInject = amp*moduVal[modR]; break;
-              case 4: asymInject = amp*moduVal[mod2HR]; break;
-              default:
-                fprintf(stderr,"ERROR: asymInject unknown\n");
-                asymInject = 0;
-            };
             // polarization factor (cf EventTree::Polarization())
-            asymInject *= 0.86;
+            asymInject[f] *= 0.863;
             // generate random number within [0,1]
             rn = RNG->Uniform();
             // calculate injected helicity: 2=spin-, 3=spin+
-            helicityMC[f] = (rn<0.5*(1+asymInject)) ? 3 : 2;
+            helicityMC[f] = (rn<0.5*(1+asymInject[f])) ? 3 : 2;
           };
         }
         else { // if !proceed, helicity is undefined

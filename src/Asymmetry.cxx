@@ -236,24 +236,36 @@ Asymmetry::Asymmetry(Binning * binScheme, Int_t binNum) {
   // yieldDist
   yieldDist = new TH1D(
     TString("yieldDist"+binN),
-    TString("yield distribution :: "+binT),
+    TString("yield distribution "+binT),
     2,0,2
   );
 
-  // kfDist
-  kfLB = 0;
-  kfUB = 2;
-  kfDist = new TH1D(
-    TString("kfDist"+binN),
-    TString("K(y) distribution :: "+binT),
-    300,kfLB,kfUB);
+  // dpDist (depolarization factors)
+  dpLB = 0;
+  dpUB = 2.5;
+  dpName[dpA] = "dpA"; dpTitle[dpA] = "A(y)";
+  dpName[dpB] = "dpB"; dpTitle[dpB] = "B(y)";
+  dpName[dpC] = "dpC"; dpTitle[dpC] = "C(y)";
+  dpName[dpV] = "dpV"; dpTitle[dpV] = "V(y)";
+  dpName[dpW] = "dpW"; dpTitle[dpW] = "W(y)";
+  dpName[dpWA] = "dpWA"; dpTitle[dpWA] = "W(y)/A(y)";
+  dpName[dpVA] = "dpVA"; dpTitle[dpVA] = "V(y)/A(y)";
+  dpName[dpCA] = "dpCA"; dpTitle[dpCA] = "C(y)/A(y)";
+  dpName[dpBA] = "dpBA"; dpTitle[dpBA] = "B(y)/A(y)";
+  for(int dp=0; dp<Ndp; dp++) {
+    dpDist[dp] = new TH1D(
+      TString(dpName[dp]+"dist"+binN),
+      TString(dpTitle[dp]+" distribution "+binT),
+      300,dpLB,dpUB);
+    dpIdx[dp] = -1; // (initialize dpIdx)
+  };
 
   // denomDist
   denomLB = -3;
   denomUB = 3;
   denomDist = new TH1D(
     TString("denomDist"+binN),
-    TString("d#sigma_{UU} distribution :: "+binT),
+    TString("d#sigma_{UU} distribution "+binT),
     300,denomLB,denomUB);
 
 
@@ -429,9 +441,21 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
   rellum = ev->Rellum();
   if(rellum<0) return false;
 
-  // get kinematic factor
-  kf = EvalDepolarizationFactor(ev);
-  if(kf<kfLB || kf>kfUB) return KickEvent("KF out of range",kf);
+  // get depolarization factors
+  dpVal[dpA] = ev->GetDepolarizationFactor('A');
+  dpVal[dpB] = ev->GetDepolarizationFactor('B');
+  dpVal[dpC] = ev->GetDepolarizationFactor('C');
+  dpVal[dpV] = ev->GetDepolarizationFactor('V');
+  dpVal[dpW] = ev->GetDepolarizationFactor('W');
+  dpVal[dpWA] = ev->GetDepolarizationFactor('W')/dpVal[dpA];
+  dpVal[dpVA] = ev->GetDepolarizationFactor('V')/dpVal[dpA];
+  dpVal[dpCA] = ev->GetDepolarizationFactor('C')/dpVal[dpA];
+  dpVal[dpBA] = ev->GetDepolarizationFactor('B')/dpVal[dpA];
+  for(int dp=0; dp<Ndp; dp++) {
+    if(dpVal[dp]<dpLB || dpVal[dp]>dpUB) {
+      return KickEvent("depol. factor out of range",dpVal[dp]);
+    };
+  };
 
   // evaluate modValOA
   if(gridDim==1) modValOA = moduOA->Evaluate(PhiR, PhiH, theta);
@@ -439,7 +463,6 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
 
   // set weight (returns 1, unless weighting for G1perp)
   weight = EvalWeight();
-  // weight *= kf; // weight events with kinematic factor
 
   // set RooFit vars
   rfPhiH->setVal(PhiH);
@@ -488,7 +511,7 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
   if(whichDim==1 && gridDim==1) IVvsModDist->Fill(modValOA,iv[0],weight);
 
   yieldDist->Fill(spinn);
-  kfDist->Fill(kf);
+  for(int dp=0; dp<Ndp; dp++) dpDist[dp]->Fill(dpVal[dp]);
   
   // increment event counter
   nEvents++;
@@ -874,6 +897,11 @@ void Asymmetry::FormuAppend(Int_t TW, Int_t L, Int_t M,
 
   rfA[nAmpUsed]->SetTitle(modu[nAmpUsed]->AsymmetryTitle());
 
+  if(polarization==Modulation::kLU) {
+    if(TW==2)      dpIdx[nAmpUsed] = dpCA;
+    else if(TW==3) dpIdx[nAmpUsed] = dpWA;
+  };
+
   nAmpUsed++;
 
 };
@@ -924,20 +952,18 @@ Float_t Asymmetry::EvalWeight() {
 };
 
 
-// if e(x) modulation, return W(y)/A(y)
-// if G1perp modulation, return C(y)/A(y)
-// see EventTree::GetDepolarizationFactor() for definitions
-Float_t Asymmetry::EvalDepolarizationFactor(EventTree * ev) {
-  
-  kfA = ev->GetDepolarizationFactor('A');
-  kfC = ev->GetDepolarizationFactor('C');
-  kfW = ev->GetDepolarizationFactor('W');
-
-  if(oaTw==3 && oaM==1) return kfW / kfA;
-  else if(oaTw==2 && oaM==1) return kfC / kfA;
-  else return 1;
-
+// get mean depolarization factor (if applicable)
+// - defult: return 1
+Float_t Asymmetry::MeanDepolarization(Int_t amp) {
+  if(amp<0 || amp>=nAmpUsed) {
+    fprintf(stderr,"ERROR: Asymmetry::MeanDepolarization amp out of bounds\n");
+    return 1;
+  };
+  if(dpIdx[amp]==-1) return 1;
+  else return dpDist[dpIdx[amp]]->GetMean();
 };
+
+
 
  
 void Asymmetry::ResetVars() {
@@ -952,9 +978,6 @@ void Asymmetry::ResetVars() {
   xF = UNDEF;
   theta = UNDEF;
   spinn = UNDEF;
-  kfA = UNDEF;
-  kfC = UNDEF;
-  kfW = UNDEF;
   for(int d=0; d<3; d++) iv[d]=UNDEF;
 };
 
@@ -1015,7 +1038,9 @@ void Asymmetry::StreamData(TFile * tf) {
   };
 
   objName = appName + yieldDist->GetName(); yieldDist->Write(objName);
-  objName = appName + kfDist->GetName(); kfDist->Write(objName);
+  for(int dp=0; dp<Ndp; dp++) {
+    objName = appName + dpDist[dp]->GetName(); dpDist[dp]->Write(objName);
+  };
 
   objName = appName + rfData->GetName(); rfData->Write(objName);
 
@@ -1078,8 +1103,10 @@ void Asymmetry::AppendData(TFile * tf) {
   objName = appName + yieldDist->GetName();
   yieldDist->Add((TH1D*) tf->Get(objName));
 
-  objName = appName + kfDist->GetName();
-  kfDist->Add((TH1D*) tf->Get(objName));
+  for(int dp=0; dp<Ndp; dp++) {
+    objName = appName + dpDist[dp]->GetName();
+    dpDist[dp]->Add((TH1D*) tf->Get(objName));
+  };
 
   objName = appName + rfData->GetName();
   appRooDataSet = (RooDataSet*) tf->Get(objName);

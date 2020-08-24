@@ -111,6 +111,10 @@ int main(int argc, char** argv) {
   TString asymFileN = Form("%s/asym_%d%s.root",
     spinrootDir.Data(),fitMode,DparamStr.Data());
   TFile * catFile = new TFile(TString(spinrootDir+"/cat.root"),"READ");
+  TString tableFileN = Form("%s/table_%d.dat",
+    spinrootDir.Data(),fitMode);
+  gSystem->RedirectOutput(tableFileN,"w");
+  gSystem->RedirectOutput(0);
 
 
   // instantiate Binning and Asymmetry, and extract them from catFile
@@ -284,11 +288,15 @@ int main(int argc, char** argv) {
   Float_t asymErrorMA[Asymmetry::nAmp];
   Float_t asymErrorMAhi[Asymmetry::nAmp];
   Float_t asymErrorMAlo[Asymmetry::nAmp];
-  Float_t meanKF;
+  Float_t dpMean[Asymmetry::nAmp];
   Float_t kinValue,kinError;
   Float_t chisq,ndf;
+  Tools::PrintTitleBox("FINAL ASYMMETRY RESULTS");
+  Tools::PrintSeparator(60,"=");
+  printf("-- columns: amp asym + asymErrHi - asymErrLo    <depolFac>\n");
   for(Int_t bn : BS->binVec) {
     A = asymMap.at(bn);
+    A->PrintSettings();
 
     if( ( A->gridDim==1 && A->fitFunc!=NULL) || 
         ( A->gridDim==2 && A->fitFunc2!=NULL) ) {
@@ -324,16 +332,18 @@ int main(int argc, char** argv) {
             asymErrorMA[aa] = A->fitFunc2->GetParError(aa);
             asymErrorMAhi[aa] = asymErrorMA[aa];
             asymErrorMAlo[aa] = asymErrorMA[aa];
-        }
+        };
+        // divide out mean depolarization ratio
+        dpMean[aa] = A->MeanDepolarization(aa);
+        asymValueMA[aa] /= dpMean[aa]; // TODO: implement for one-amp too
+        asymErrorMA[aa] /= dpMean[aa];
+        asymErrorMAhi[aa] /= dpMean[aa];
+        asymErrorMAlo[aa] /= dpMean[aa];
+        // print asymmetry result
+        printf("\t\t%d %s%.5f + %.5f - %.5f    %.3f\n",
+          aa,asymValueMA[aa]>=0?" ":"",
+          asymValueMA[aa],asymErrorMAhi[aa],asymErrorMAlo[aa],dpMean[aa]);
       };
-
-
-      // divide out mean kinematic factor
-      /*
-      meanKF = A->kfDist->GetMean();
-      asymValueOA /= meanKF;
-      for(int aa=0; aa<N_AMP; aa++) asymValueMA[aa] /= meanKF;
-      */
 
 
       // IV value and uncertainty
@@ -382,9 +392,26 @@ int main(int argc, char** argv) {
       rellumGr->SetPoint(A->B[0],kinValue,A->rellum);
       rellumGr->SetPointError(A->B[0],0,A->rellumErr);
 
+      // print data table
+      /* columns:
+       *   bin number
+       *   amplitude number
+       *   <independent variable> (horizontal position of point)
+       *   asymmetry (vertical position of point)
+       *   asymmetry statistical uncertainty (parabolic error)
+       *   <depolarization ratio>
+       */
+        gSystem->RedirectOutput(tableFileN);
+        for(int aa=0; aa<N_AMP; aa++) {
+          printf("%d %d %f %f %f %f\n",
+            bn,aa,kinValue,asymValueMA[aa],asymErrorMA[aa],dpMean[aa]);
+        };
+        gSystem->RedirectOutput(0);
+
     };
 
   };
+  Tools::PrintSeparator(60,"=");
 
 
   // -- instantiate canvases
@@ -736,10 +763,11 @@ int main(int argc, char** argv) {
   else modFullDist2->Write();
 
   // -- asymmetries and kindep graphs
+  printf("--- write %s\n",tableFileN.Data());
   printf("--- write kinematic-dependent asymmetries\n");
   for(Int_t bn : BS->binVec) {
     A = asymMap.at(bn);
-    A->PrintSettings();
+    //A->PrintSettings();
 
     // first write out the asymmetry vs. modulation graphs
     if(A->gridDim==1) A->asymGr->Write();

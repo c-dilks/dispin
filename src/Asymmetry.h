@@ -79,8 +79,7 @@ class Asymmetry : public TObject
     Bool_t AddEvent(EventTree * ev);
     Float_t EvalModulation();
     Float_t EvalWeight();
-    Float_t EvalDepolarizationFactor(EventTree * ev);
-    Int_t SpinState(Int_t spin_);
+    Float_t MeanDepolarization(Int_t amp);
     Bool_t KickEvent(TString reason,Float_t badValue);
 
     void ResetVars();
@@ -128,8 +127,6 @@ class Asymmetry : public TObject
     Int_t spinn;
     Float_t pol;
     
-    Float_t kfA,kfC,kfW;
-
 
     // number of bins
     static const Int_t iv1Bins = 100; // number of bins for ivDist1 plots
@@ -140,7 +137,6 @@ class Asymmetry : public TObject
 
     Float_t modMin,modMax,aziMax;
     Float_t weight;
-    Float_t kf;
 
 
     // "iv dist": finely-binned IV distribution (for each whichDim)
@@ -172,8 +168,10 @@ class Asymmetry : public TObject
     // yield dist (for computing rellum)
     TH1D * yieldDist;
 
-    // kf dist (for computing <K(y)>)
-    TH1D * kfDist;
+    // dp dist (for computing <K(y)>, mean depolarization ratio)
+    enum DP_enum {dpA, dpB, dpC, dpV, dpW, dpWA, dpVA, dpCA, dpBA, Ndp};
+    TH1D * dpDist[Ndp];
+    Float_t dpVal[Ndp];
 
     // denom dist (for studying sigma_UU partial waves systematic; this
     // distribution is only used externally)
@@ -275,7 +273,10 @@ class Asymmetry : public TObject
 
 
     Int_t nThreads;
-    Float_t kfUB,kfLB;
+    Float_t dpUB,dpLB;
+    TString dpName[Ndp];
+    TString dpTitle[Ndp];
+    Int_t dpIdx[nAmp]; // which dp associated with the amplitude
 
 
 
