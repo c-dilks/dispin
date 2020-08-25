@@ -335,9 +335,27 @@ Int_t Binning::GetBin(Int_t ivIdx_, Float_t iv_) {
   return -1;
 };
 
-// get bin associated with current scheme, (ivVar[0])
-Int_t Binning::GetSchemeBin(Float_t iv_) {
-  return this->GetBin(ivVar[0],iv_);
+// get bin associated with current event from Event tree, within
+// current binning scheme
+Int_t Binning::FindBin(EventTree * ev) {
+  Float_t ivVal[3] = {-1000,-1000,-1000};
+  Int_t ivBin[3] = {-1,-1,-1};
+  for(int d=0; d<dimensions; d++) {
+    switch(ivVar[d]) {
+      case vM: ivVal[d] = ev->Mh; break;
+      case vX: ivVal[d] = ev->x; break;
+      case vZ: ivVal[d] = ev->Zpair; break;
+      case vPt: ivVal[d] = ev->PhPerp; break;
+      case vPh: ivVal[d] = ev->Ph; break;
+      case vQ: ivVal[d] = ev->Q2; break;
+      case vXF: ivVal[d] = ev->xF; break;
+      default: 
+                         fprintf(stderr,"ERROR: bad ivVar\n");
+                         return -1;
+    };
+    ivBin[d] = this->GetBin(ivVar[d],ivVal[d]);
+  };
+  return this->HashBinNum(ivBin[0],ivBin[1],ivBin[2]);
 };
 
 
@@ -459,6 +477,20 @@ Bool_t Binning::SetScheme(Int_t ivType) {
 // scheme accessors
 Int_t Binning::GetNbins(Int_t dim) {
   return CheckDim(dim) ? nBins[ivVar[dim]] : -1;
+};
+Int_t Binning::GetNbinsTotal() {
+  switch(dimensions) {
+    case 1:
+      return GetNbins(0);
+      break;
+    case 2:
+      return GetNbins(0) * GetNbins(1);
+      break;
+    case 3:
+      return GetNbins(0) * GetNbins(1) * GetNbins(2);
+      break;
+  };
+  return -1;
 };
 TString Binning::GetIVname(Int_t dim) {
   return CheckDim(dim) ? IVname[ivVar[dim]] : "unknown";

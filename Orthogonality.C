@@ -10,21 +10,24 @@ void Draw3d(TH3D * dd, Int_t whichProj);
 // 1 = uniform across all variables
 // 2+ = see switch statement
 
-void Orthogonality(Int_t weightSetting=0, TString infileN="ortho.root") {
+void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
+  TString infileN="ortho.root", Bool_t printLatex=false) {
 
   
   // OPTIONS
   ///////////////////
-  Bool_t enableLegendre = 1;
-  Int_t polarizationSetting = Modulation::kLU;
+  Int_t polarizationSetting = Modulation::kUU;
   Int_t LMAX = 2;
   Bool_t useModulationTitle = true; // if true, print functions instaed of kets
   ///////////////////
 
+  Bool_t enableLegendre = 0;
+  if(polarizationSetting==Modulation::kUU) enableLegendre = true;
 
   // open data hist
   TFile * infile = new TFile(infileN,"READ");
-  TH3D * dataDist = (TH3D*) infile->Get("d3");
+  TString dataDistN = Form("d3_bin%d",binNum);
+  TH3D * dataDist = (TH3D*) infile->Get(dataDistN);
   dataDist->SetTitle("data distribution");
 
   int f,g,h,r,t;
@@ -86,41 +89,41 @@ void Orthogonality(Int_t weightSetting=0, TString infileN="ortho.root") {
   Modulation * modu;
   TObjArray * moduArr = new TObjArray();
   // F_LU modulations
-  ///*
-  for(l=0; l<=LMAX; l++) {
-    for(m=0; m<=l; m++) {
-      for(twist=2; twist<=3; twist++) {
-        if(!enableLegendre && l<LMAX) continue;
-        if((twist==2 && m>0) || twist==3) {
-          moduArr->AddLast(new Modulation(twist,l,m,0,enableLegendre,polarizationSetting));
-          if(twist==3 && m>0) { // negative m states
-            moduArr->AddLast(new Modulation(twist,l,-m,0,enableLegendre,polarizationSetting));
-          };
-        } 
+  if(polarizationSetting == Modulation::kLU) {
+    for(l=0; l<=LMAX; l++) {
+      for(m=0; m<=l; m++) {
+        for(twist=2; twist<=3; twist++) {
+          if(!enableLegendre && l<LMAX) continue;
+          if((twist==2 && m>0) || twist==3) {
+            moduArr->AddLast(new Modulation(twist,l,m,0,enableLegendre,polarizationSetting));
+            if(twist==3 && m>0) { // negative m states
+              moduArr->AddLast(new Modulation(twist,l,-m,0,enableLegendre,polarizationSetting));
+            };
+          } 
+        };
       };
     };
-  };
-  //*/
+  }
   // F_UU modulations
-  /*
-  Int_t levMax;
-  for(l=0; l<=LMAX; l++) {
-    for(m=0; m<=l; m++) {
-      for(twist=2; twist<=3; twist++) {
-        levMax = twist==2 ? 1:0;
-        for(lev=0; lev<=levMax; lev++) {
-          if(!enableLegendre && l<LMAX) continue;
-          if((twist==2 && lev==0 && m>=0) || (twist==2 && lev==1) || twist==3) {
-            moduArr->AddLast(new Modulation(twist,l,m,lev,enableLegendre,polarizationSetting));
-            if(((twist==2 && lev==1) || twist==3) && m>0) { // negative m states
-              moduArr->AddLast(new Modulation(twist,l,-m,lev,enableLegendre,polarizationSetting));
+  else if(polarizationSetting == Modulation::kUU) {
+    Int_t levMax;
+    for(l=0; l<=LMAX; l++) {
+      for(m=0; m<=l; m++) {
+        for(twist=2; twist<=3; twist++) {
+          levMax = twist==2 ? 1:0;
+          for(lev=0; lev<=levMax; lev++) {
+            if(!enableLegendre && l<LMAX) continue;
+            if((twist==2 && lev==0 && m>=0) || (twist==2 && lev==1) || twist==3) {
+              moduArr->AddLast(new Modulation(twist,l,m,lev,enableLegendre,polarizationSetting));
+              if(((twist==2 && lev==1) || twist==3) && m>0) { // negative m states
+                moduArr->AddLast(new Modulation(twist,l,-m,lev,enableLegendre,polarizationSetting));
+              };
             };
           };
         };
       };
     };
   };
-  */
   Int_t NMODi = moduArr->GetEntries();
   const Int_t NMOD = NMODi;
 
@@ -128,12 +131,15 @@ void Orthogonality(Int_t weightSetting=0, TString infileN="ortho.root") {
   // |<fg>| matrix
   TH2D * orthMatrix = new TH2D("orthMatrix","<fg> matrix",NMOD,0,NMOD,NMOD,0,NMOD);
   TString funcT[NMOD];
+  TString funcTex[NMOD];
   for(f=0; f<NMOD; f++) { 
     modu = (Modulation*) moduArr->At(f);
     //if(useModulationTitle) funcT[f] = modu->ModulationTitle();
     //else funcT[f] = modu->StateTitle();
-    funcT[f] = modu->ModulationTitle();
-    funcT[f] += " -- " + modu->StateTitle();
+    //funcT[f] = modu->ModulationTitle();
+    //funcT[f] += " -- " + modu->StateTitle();
+    funcT[f] = modu->StateTitle();
+    funcTex[f] = modu->StateTitle();
     printf("%s\n",funcT[f].Data());
     orthMatrix->GetXaxis()->SetBinLabel(f+1,funcT[f]);
     orthMatrix->GetYaxis()->SetBinLabel(f+1,funcT[f]);
@@ -230,25 +236,29 @@ void Orthogonality(Int_t weightSetting=0, TString infileN="ortho.root") {
 
   // draw
   gStyle->SetOptStat(0);
-  gStyle->SetPalette(kBird);
   gStyle->SetPaintTextFormat(".3f");
   TCanvas * matCanv = new TCanvas("matCanv","matCanv",1000,1000);
   orthMatrix->SetMinimum(-1);
   orthMatrix->SetMaximum(1);
   orthMatrix->GetXaxis()->SetLabelSize(0.03);
   orthMatrix->GetYaxis()->SetLabelSize(0.03);
-  //orthMatrix->Draw("colztext");
-  orthMatrix->Draw("boxtext");
-  if(polarizationSetting==Modulation::kUU) orthMatrix->GetXaxis()->SetRangeUser(0,1);
+  if(polarizationSetting==Modulation::kUU) {
+    gStyle->SetPalette(kBird);
+    orthMatrix->Draw("colztext");
+    orthMatrix->GetXaxis()->SetRangeUser(0,1);
+  }
+  else {
+    orthMatrix->Draw("boxtext");
+  };
 
 
 
 
   // EXTRA PLOTS
-  TCanvas * dataCanv = new TCanvas("dataCanv","dataCanv",800,800);
-  dataCanv->Divide(1,2);
+  TCanvas * dataCanv = new TCanvas("dataCanv","dataCanv",1200,800);
+  //dataCanv->Divide(1,2);
   dataCanv->cd(1); Draw3d(dataDist,1);
-  dataCanv->cd(2); Draw3d(dataDist,2);
+  //dataCanv->cd(2); Draw3d(dataDist,2);
 
   /*
   TCanvas * modCanv = new TCanvas("modCanv","modCanv",800,800);
@@ -275,7 +285,36 @@ void Orthogonality(Int_t weightSetting=0, TString infileN="ortho.root") {
   };
   printf("};\n\n");
 
-
+  // print matrix for latex
+  TString bra,ket;
+  printf("\\begin{table}\n");
+  printf("\\begin{center}\n");
+  TString fmtStr="|c||"; for(f=0; f<NMOD; f++) fmtStr+="c|";
+  printf("\\begin{tabular}{%s}\n",fmtStr.Data());
+  printf("\\hline\n");
+  printf("~");
+  // - print header
+  for(f=0; f<NMOD; f++) {
+    funcTex[f] = funcTex[f].ReplaceAll("|L,","|\\ell,");
+    ket = funcTex[f];
+    ket = ket.ReplaceAll(">","\\rangle");
+    printf("&$%s$",ket.Data());
+  };
+  printf("\\\\\\hline\\hline\n");
+  // - print rows
+  for(f=0; f<NMOD; f++) {
+    bra = funcTex[f];
+    bra = bra.ReplaceAll("|","\\langle");
+    bra = bra.ReplaceAll(">","|");
+    printf("$%s$",bra.Data());
+    // - print columns
+    for(g=0; g<NMOD; g++)
+      printf("&$%.3f$",orthMatrix->GetBinContent(f+1,g+1));
+    printf("\\\\\\hline\n");
+  };
+  printf("\\end{tabular}\n");
+  printf("\\end{center}\n");
+  printf("\\end{table}\n");
 };
 
 void Draw3d(TH3D * dd, Int_t whichProj) {
