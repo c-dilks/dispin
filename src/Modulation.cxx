@@ -251,6 +251,7 @@ TString Modulation::PolarizationTitle() {
       };
       break;
   };
+  return "unknown";
 };
 
 TString Modulation::StateTitle() {

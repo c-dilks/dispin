@@ -276,7 +276,6 @@ int main(int argc, char** argv) {
   outrootTr->Branch("PhiRp_g",&(dih->PhiRp_g),"PhiRp_g/F"); // via eq. 9 in 1408.5721
   // - event-level branches
   Int_t runnum,evnum,evnumLo,evnumHi;
-  Int_t evnumTmp = -10000;
   Int_t helicity;
   outrootTr->Branch("runnum",&runnum,"runnum/I");
   outrootTr->Branch("evnum",&evnum,"evnum/I");
@@ -501,37 +500,32 @@ int main(int argc, char** argv) {
       };
 
       // calculate injected asymmetry values and assign helicities
-      // - N.B. only allow the helicity to change if the event number 
-      //   changed, so that helicities are assigned event-by-event
-      if(evnum!=evnumTmp) {
-        evnumTmp = evnum;
-        if(proceed) {
+      if(proceed) {
 
-          // - constant asymmetry
-          amp = 0.04;
-          asymInject[0]=0;
-          asymInject[1] = amp*moduVal[modH];
-          asymInject[2] = amp*moduVal[modHR];
-          asymInject[3] = amp*moduVal[modR];
-          asymInject[4] = amp*moduVal[mod2HR];
-          // - Mh dependence
-          iv = dih->Mh;
-          asymInject[5] = amp*iv/(2*0.77) * moduVal[modR];
-          asymInject[5] += ( amp - amp*iv/(2*0.77) ) * moduVal[modH];
-          asymInject[5] += amp * TMath::Sin(PI*iv/0.77) * moduVal[modHR];
+        // - constant asymmetry
+        amp = 0.04;
+        asymInject[0]=0;
+        asymInject[1] = amp*moduVal[modH];
+        asymInject[2] = amp*moduVal[modHR];
+        asymInject[3] = amp*moduVal[modR];
+        asymInject[4] = amp*moduVal[mod2HR];
+        // - Mh dependence
+        iv = dih->Mh;
+        asymInject[5] = amp*iv/(2*0.77) * moduVal[modR];
+        asymInject[5] += ( amp - amp*iv/(2*0.77) ) * moduVal[modH];
+        asymInject[5] += amp * TMath::Sin(PI*iv/0.77) * moduVal[modHR];
 
-          for(int f=0; f<nInject; f++) {
-            // polarization factor (cf EventTree::Polarization())
-            asymInject[f] *= 0.863;
-            // generate random number within [0,1]
-            rn = RNG->Uniform();
-            // calculate injected helicity: 2=spin-, 3=spin+
-            helicityMC[f] = (rn<0.5*(1+asymInject[f])) ? 3 : 2;
-          };
-        }
-        else { // if !proceed, helicity is undefined
-          for(int f=0; f<nInject; f++) helicityMC[f] = 0;
+        for(int f=0; f<nInject; f++) {
+          // polarization factor (cf EventTree::Polarization())
+          asymInject[f] *= 0.863;
+          // generate random number within [0,1]
+          rn = RNG->Uniform();
+          // calculate injected helicity: 2=spin-, 3=spin+
+          helicityMC[f] = (rn<0.5*(1+asymInject[f])) ? 3 : 2;
         };
+      }
+      else { // if !proceed, helicity is undefined
+        for(int f=0; f<nInject; f++) helicityMC[f] = 0;
       };
 
     };
