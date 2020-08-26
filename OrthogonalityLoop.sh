@@ -8,6 +8,6 @@
 
 for iv in x m z; do
   for b in {0..11}; do
-    root -b -q Orthogonality.C'('$b',0,"'ortho.m.root'",true)'
+    root -b -q Orthogonality.C'('$b',0,"'ortho.${iv}.root'",true)'
   done
 done

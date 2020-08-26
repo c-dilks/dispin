@@ -403,7 +403,7 @@ int main(int argc, char** argv) {
        */
         gSystem->RedirectOutput(tableFileN);
         for(int aa=0; aa<N_AMP; aa++) {
-          printf("%d %d %f %f %f %f\n",
+          printf("0x%x %d %f %f %f %f\n",
             bn,aa,kinValue,asymValueMA[aa],asymErrorMA[aa],dpMean[aa]);
         };
         gSystem->RedirectOutput(0);

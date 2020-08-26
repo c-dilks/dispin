@@ -1,7 +1,7 @@
 // compare asymmetries from two different asym*.root files
 
-void CompareAsyms(TString infile0name="spinroot/asym_42.root",
-                  TString infile1name="spinroot/asym_42_R.root") {
+void CompareAsyms(TString infile0name="spinroot_final_4/asym_42_chi2.root",
+                  TString infile1name="spinroot_final_4/asym_42_mlm.root") {
 
   // read asymmetry graphs
   TFile * infile[2];
@@ -51,12 +51,17 @@ void CompareAsyms(TString infile0name="spinroot/asym_42.root",
 
   TObjArrayIter nextGr(asymArr);
   TString grT;
-  TCanvas * canv;
+  Int_t nrow = 1+(asymArr->GetEntries()-1)/4;
+  TCanvas * canv = new TCanvas("canv","canv",4*300,nrow*300);
+  canv->Divide(4,nrow);
+  Int_t p=0;
   while(TGraphAsymmErrors * gr = (TGraphAsymmErrors*) nextGr()) {
-    canv = new TCanvas();
-    canv->SetGrid(1,1);
+    canv->cd(++p);
+    if(p==8) { canv->cd(++p); }; // hack to re-align multidim plots
+    canv->GetPad(p)->SetGrid(1,1);
     grT = gr->GetTitle();
     grT = "difference for " + grT;
+    gr->GetYaxis()->SetRangeUser(-0.03,0.03);
     gr->SetTitle(grT);
     gr->SetMarkerColor(kBlack);
     gr->SetLineColor(kBlack);
@@ -64,4 +69,3 @@ void CompareAsyms(TString infile0name="spinroot/asym_42.root",
     //gr->GetYaxis()->SetRangeUser(-1e-3,1e-3);
   };
 };
-    

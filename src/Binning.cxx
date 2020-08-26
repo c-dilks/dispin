@@ -115,7 +115,7 @@ Binning::Binning(Int_t pairType_) {
     */
 
     // -- z (fragmentation fraction)
-    ///* // adjusted 12-bin scheme
+    /* // adjusted 12-bin scheme
     AddBinBound(vZ,0.408);
     AddBinBound(vZ,0.445);
     AddBinBound(vZ,0.473);
@@ -127,6 +127,13 @@ Binning::Binning(Int_t pairType_) {
     AddBinBound(vZ,0.638);
     AddBinBound(vZ,0.675);
     AddBinBound(vZ,0.720);
+    */
+    ///* // adjusted 6-bin scheme
+    AddBinBound(vZ,0.445);
+    AddBinBound(vZ,0.500);
+    AddBinBound(vZ,0.555);
+    AddBinBound(vZ,0.605);
+    AddBinBound(vZ,0.675);
     //*/
     /* // 3 quantile bins
     AddBinBound(vZ,0.51);
@@ -157,7 +164,7 @@ Binning::Binning(Int_t pairType_) {
     */
 
     // -- PhPerp (transverse momentum of dihadron)
-    ///* // adjusted 12-bin scheme
+    /* // adjusted 12-bin scheme
     AddBinBound(vPt,0.175);
     AddBinBound(vPt,0.245);
     AddBinBound(vPt,0.310);
@@ -169,6 +176,13 @@ Binning::Binning(Int_t pairType_) {
     AddBinBound(vPt,0.650);
     AddBinBound(vPt,0.725);
     AddBinBound(vPt,0.835);
+    */
+    ///* // adjusted 6-bin scheme
+    AddBinBound(vPt,0.245);
+    AddBinBound(vPt,0.365);
+    AddBinBound(vPt,0.480);
+    AddBinBound(vPt,0.585);
+    AddBinBound(vPt,0.725);
     //*/
     /*
     AddBinBound(vPt,0.37); // 3 quantile bins 
@@ -417,6 +431,21 @@ Bool_t Binning::SetScheme(Int_t ivType) {
       return false;
   };
 
+
+  // override 2D binning scheme for final asymmetry production
+  ///////////////////////////////////////
+  if(dimensions==2 && ivVar[1]==vM) {
+    printf("\nOVERRIDE 2D Binning scheme to have M above and below 0.63\n\n");
+    nBins[vM] = -1;
+    bound[vM].clear();
+    AddBinBound(vM,minIV[vM]);
+    AddBinBound(vM,0.63);
+    AddBinBound(vM,maxIV[vM]);
+    PrintBinBounds();
+  };
+  ///////////////////////////////////////
+
+
   // check IV enumerators
   for(int d=0; d<dimensions; d++) {
     if(!(ivVar[d]>=0 && ivVar[d]<nIV)) {
@@ -425,6 +454,7 @@ Bool_t Binning::SetScheme(Int_t ivType) {
       return false;
     };
   };
+
 
   
   // print which IVs will be analyzed
@@ -507,11 +537,11 @@ Bool_t Binning::CheckDim(Int_t dim_) {
   };
 };
 
-// 3-tuple of bin numbers -> single 3-digit bin number
+// 3-tuple of bin numbers -> single 3-digit hexadecimal bin number
 Int_t Binning::HashBinNum(Int_t bin0, Int_t bin1, Int_t bin2) {
   Int_t retval = bin0;
-  if(bin1>=0) retval += 10 * bin1;
-  if(bin2>=0) retval += 100 * bin2;
+  if(bin1>=0) retval += (bin1<<4);
+  if(bin2>=0) retval += (bin2<<8);
   return retval;
 };
 
