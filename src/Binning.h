@@ -24,9 +24,10 @@
 #include "TGraphErrors.h"
 #include "TLine.h"
 
-// dihbsa
+// dispin
 #include "Constants.h"
 #include "Tools.h"
+#include "EventTree.h"
 
 
 class Binning : public TObject
@@ -78,9 +79,11 @@ class Binning : public TObject
 
     // scheme accessors, which return things according to the current binning scheme
     Int_t GetNbins(Int_t dim);
+    Int_t GetNbinsTotal();
     TString GetIVname(Int_t dim);
     TString GetIVtitle(Int_t dim);
-    Int_t GetSchemeBin(Float_t iv_); // find bin containing iv value `iv_`
+    // bin finding
+    Int_t FindBin(EventTree * ev); // returns bin number associated with iv values
     // additional scheme methods
     Bool_t CheckDim(Int_t dim_);
     Int_t HashBinNum(Int_t bin0, Int_t bin1=-1, Int_t bin2=-1);

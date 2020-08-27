@@ -22,14 +22,12 @@
 TString inputData;
 Int_t pairType;
 Int_t ivType;
-int Ntmp;
-int b;
 Binning * BS;
 EventTree * ev;
 
 int PrintUsage();
 void SetDefaultArgs();
-void PrintMeans(TString title, TH1D ** dist);
+void PrintMeans(TString title, std::map<Int_t,TH1D*> mapdist);
 
 int main(int argc, char** argv) {
 
@@ -90,33 +88,42 @@ int main(int argc, char** argv) {
   
   // define histograms
   TFile * outfile = new TFile("tables.root","RECREATE");
-  Ntmp = BS->GetNbins(0);
-  const int N = Ntmp;
-  TH1D * distMh[N];
-  TH1D * distX[N];
-  TH1D * distZ[N];
-  TH1D * distQ2[N];
-  TH1D * distY[N];
-  TH1D * distPhPerp[N];
-  TH1D * distDepolA[N];
-  TH1D * distDepolC[N];
-  TH1D * distDepolW[N];
-  TH1D * distDepolCA[N];
-  TH1D * distDepolWA[N];
+  TH1D * distMh; std::map<Int_t,TH1D*> mapdistMh;
+  TH1D * distX; std::map<Int_t,TH1D*> mapdistX;
+  TH1D * distZ; std::map<Int_t,TH1D*> mapdistZ;
+  TH1D * distQ2; std::map<Int_t,TH1D*> mapdistQ2;
+  TH1D * distY; std::map<Int_t,TH1D*> mapdistY;
+  TH1D * distPhPerp; std::map<Int_t,TH1D*> mapdistPhPerp;
+  TH1D * distDepolA; std::map<Int_t,TH1D*> mapdistDepolA;
+  TH1D * distDepolC; std::map<Int_t,TH1D*> mapdistDepolC;
+  TH1D * distDepolW; std::map<Int_t,TH1D*> mapdistDepolW;
+  TH1D * distDepolCA; std::map<Int_t,TH1D*> mapdistDepolCA;
+  TH1D * distDepolWA; std::map<Int_t,TH1D*> mapdistDepolWA;
   TString bStr;
-  for(b=0; b<N; b++) {
+  for(Int_t b : BS->binVec) {
     bStr = Form("Bin%d",b);
-    distMh[b] = new TH1D(TString("distMh"+bStr),TString("Mh for "+bStr),100,0,3);
-    distX[b] = new TH1D(TString("distX"+bStr),TString("X for "+ bStr),100,0,1);
-    distZ[b] = new TH1D(TString("distZ"+bStr),TString("Z for "+ bStr),100,0,1);
-    distQ2[b] = new TH1D(TString("distQ2"+bStr),TString("Q2 for "+bStr),100,0,12);
-    distY[b] = new TH1D(TString("distY"+bStr),TString("Y for "+ bStr),100,0,1);
-    distPhPerp[b] = new TH1D(TString("distPhPerp"+bStr),TString("PhPerp for "+bStr),100,0,5);
-    distDepolA[b] = new TH1D(TString("distDepolA"+bStr),TString("DepolA for "+bStr),1000,-1,2.5);
-    distDepolC[b] = new TH1D(TString("distDepolC"+bStr),TString("DepolC for "+bStr),1000,-1,2.5);
-    distDepolW[b] = new TH1D(TString("distDepolW"+bStr),TString("DepolW for "+bStr),1000,-1,2.5);
-    distDepolCA[b] = new TH1D(TString("distDepolCA"+bStr),TString("DepolCA for "+bStr),1000,-1,2.5);
-    distDepolWA[b] = new TH1D(TString("distDepolWA"+bStr),TString("DepolWA for "+bStr),1000,-1,2.5);
+    distMh = new TH1D(TString("distMh"+bStr),TString("Mh for "+bStr),100,0,3);
+    distX = new TH1D(TString("distX"+bStr),TString("X for "+ bStr),100,0,1);
+    distZ = new TH1D(TString("distZ"+bStr),TString("Z for "+ bStr),100,0,1);
+    distQ2 = new TH1D(TString("distQ2"+bStr),TString("Q2 for "+bStr),100,0,12);
+    distY = new TH1D(TString("distY"+bStr),TString("Y for "+ bStr),100,0,1);
+    distPhPerp = new TH1D(TString("distPhPerp"+bStr),TString("PhPerp for "+bStr),100,0,5);
+    distDepolA = new TH1D(TString("distDepolA"+bStr),TString("DepolA for "+bStr),1000,-1,2.5);
+    distDepolC = new TH1D(TString("distDepolC"+bStr),TString("DepolC for "+bStr),1000,-1,2.5);
+    distDepolW = new TH1D(TString("distDepolW"+bStr),TString("DepolW for "+bStr),1000,-1,2.5);
+    distDepolCA = new TH1D(TString("distDepolCA"+bStr),TString("DepolCA for "+bStr),1000,-1,2.5);
+    distDepolWA = new TH1D(TString("distDepolWA"+bStr),TString("DepolWA for "+bStr),1000,-1,2.5);
+    mapdistMh.insert(std::pair<Int_t,TH1D*>(b,distMh));
+    mapdistX.insert(std::pair<Int_t,TH1D*>(b,distX));
+    mapdistZ.insert(std::pair<Int_t,TH1D*>(b,distZ));
+    mapdistQ2.insert(std::pair<Int_t,TH1D*>(b,distQ2));
+    mapdistY.insert(std::pair<Int_t,TH1D*>(b,distY));
+    mapdistPhPerp.insert(std::pair<Int_t,TH1D*>(b,distPhPerp));
+    mapdistDepolA.insert(std::pair<Int_t,TH1D*>(b,distDepolA));
+    mapdistDepolC.insert(std::pair<Int_t,TH1D*>(b,distDepolC));
+    mapdistDepolW.insert(std::pair<Int_t,TH1D*>(b,distDepolW));
+    mapdistDepolCA.insert(std::pair<Int_t,TH1D*>(b,distDepolCA));
+    mapdistDepolWA.insert(std::pair<Int_t,TH1D*>(b,distDepolWA));
   };
 
 
@@ -132,65 +139,51 @@ int main(int argc, char** argv) {
     ev->GetEvent(i);
     if(ev->Valid()) {
 
-      // set iv variable
-      switch(BS->ivVar[0]) {
-        case Binning::vM: iv = ev->Mh; break;
-        case Binning::vX: iv = ev->x; break;
-        case Binning::vZ: iv = ev->Zpair; break;
-        case Binning::vPt: iv = ev->PhPerp; break;
-        case Binning::vPh: iv = ev->Ph; break;
-        case Binning::vQ: iv = ev->Q2; break;
-        case Binning::vXF: iv = ev->xF; break;
-        default: 
-         fprintf(stderr,"ERROR: bad iv\n");
-         return false;
-      };
-
       // get bin number
-      bn = BS->GetSchemeBin(iv);
+      bn = BS->FindBin(ev);
 
       // fill histograms
-      distMh[bn]->Fill(ev->Mh);
-      distX[bn]->Fill(ev->x);
-      distZ[bn]->Fill(ev->Zpair);
-      distQ2[bn]->Fill(ev->Q2);
-      distY[bn]->Fill(ev->y);
-      distPhPerp[bn]->Fill(ev->PhPerp);
-      distDepolA[bn]->Fill(ev->GetDepolarizationFactor('A'));
-      distDepolC[bn]->Fill(ev->GetDepolarizationFactor('C'));
-      distDepolW[bn]->Fill(ev->GetDepolarizationFactor('W'));
-      distDepolCA[bn]->Fill(ev->GetDepolarizationFactor('C')/ev->GetDepolarizationFactor('A'));
-      distDepolWA[bn]->Fill(ev->GetDepolarizationFactor('W')/ev->GetDepolarizationFactor('A'));
+      mapdistMh.at(bn)->Fill(ev->Mh);
+      mapdistX.at(bn)->Fill(ev->x);
+      mapdistZ.at(bn)->Fill(ev->Zpair);
+      mapdistQ2.at(bn)->Fill(ev->Q2);
+      mapdistY.at(bn)->Fill(ev->y);
+      mapdistPhPerp.at(bn)->Fill(ev->PhPerp);
+      mapdistDepolA.at(bn)->Fill(ev->GetDepolarizationFactor('A'));
+      mapdistDepolC.at(bn)->Fill(ev->GetDepolarizationFactor('C'));
+      mapdistDepolW.at(bn)->Fill(ev->GetDepolarizationFactor('W'));
+      mapdistDepolCA.at(bn)->Fill(ev->GetDepolarizationFactor('C')/ev->GetDepolarizationFactor('A'));
+      mapdistDepolWA.at(bn)->Fill(ev->GetDepolarizationFactor('W')/ev->GetDepolarizationFactor('A'));
     };
   };
 
   // print means for cross check
-  PrintMeans("x",distX);
-  PrintMeans("z",distZ);
-  PrintMeans("Mpipi",distMh);
-  PrintMeans("Q2",distQ2);
-  PrintMeans("y",distY);
-  PrintMeans("pHT",distPhPerp);
-  PrintMeans("A(y,eps)",distDepolA);
-  PrintMeans("C(y,eps)",distDepolC);
-  PrintMeans("W(y,eps)",distDepolW);
-  PrintMeans("C/A(y,eps)",distDepolCA);
-  PrintMeans("W/A(y,eps)",distDepolWA);
+  PrintMeans("x",mapdistX);
+  PrintMeans("z",mapdistZ);
+  PrintMeans("Mpipi",mapdistMh);
+  PrintMeans("Q2",mapdistQ2);
+  PrintMeans("y",mapdistY);
+  PrintMeans("pHT",mapdistPhPerp);
+  PrintMeans("A(y,eps)",mapdistDepolA);
+  PrintMeans("C(y,eps)",mapdistDepolC);
+  PrintMeans("W(y,eps)",mapdistDepolW);
+  PrintMeans("C/A(y,eps)",mapdistDepolCA);
+  PrintMeans("W/A(y,eps)",mapdistDepolWA);
 
     
   // write histograms
-  for(b=0; b<N; b++) {
-    distMh[b]->Write();
-    distX[b]->Write();
-    distZ[b]->Write();
-    distQ2[b]->Write();
-    distY[b]->Write();
-    distPhPerp[b]->Write();
-    distDepolA[b]->Write();
-    distDepolC[b]->Write();
-    distDepolW[b]->Write();
-    distDepolCA[b]->Write();
-    distDepolWA[b]->Write();
+  for(Int_t b : BS->binVec) {
+    mapdistMh.at(b)->Write();
+    mapdistX.at(b)->Write();
+    mapdistZ.at(b)->Write();
+    mapdistQ2.at(b)->Write();
+    mapdistY.at(b)->Write();
+    mapdistPhPerp.at(b)->Write();
+    mapdistDepolA.at(b)->Write();
+    mapdistDepolC.at(b)->Write();
+    mapdistDepolW.at(b)->Write();
+    mapdistDepolCA.at(b)->Write();
+    mapdistDepolWA.at(b)->Write();
   };
 
 };
@@ -198,10 +191,14 @@ int main(int argc, char** argv) {
 
 ///////////////////////////////////////////
 
-void PrintMeans(TString title, TH1D ** dist) {
+void PrintMeans(TString title, std::map<Int_t,TH1D*> mapdist) {
   TString printStr = title + ": {";
-  for(b=0; b<Ntmp; b++) {
-    printStr = Form("%s%s%.3f",printStr.Data(),b>0?", ":"",dist[b]->GetMean());
+  for(Int_t b : BS->binVec) {
+    printStr = Form("%s%s%.3f",
+      printStr.Data(),
+      b>0?", ":"",
+      mapdist.at(b)->GetMean()
+    );
   };
   printStr += "}";
   printf("%s\n",printStr.Data());
