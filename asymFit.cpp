@@ -335,10 +335,12 @@ int main(int argc, char** argv) {
         };
         // divide out mean depolarization ratio
         dpMean[aa] = A->MeanDepolarization(aa);
+        /*
         asymValueMA[aa] /= dpMean[aa]; // TODO: implement for one-amp too
         asymErrorMA[aa] /= dpMean[aa];
         asymErrorMAhi[aa] /= dpMean[aa];
         asymErrorMAlo[aa] /= dpMean[aa];
+        */
         // print asymmetry result
         printf("\t\t%d %s%.5f + %.5f - %.5f    %.3f\n",
           aa,asymValueMA[aa]>=0?" ":"",
@@ -622,7 +624,7 @@ int main(int argc, char** argv) {
         multiGrCanv->cd(aa+1);
         multiGrCanv->GetPad(aa+1)->SetGrid(0,1);
         kindepGrMA[aa] = kindepMAmap[aa].at(bn);
-        kindepGrMA[aa]->Draw("LAPE");
+        kindepGrMA[aa]->Draw("APE");
         legText = A->modu[aa]->StateTitle();
         legText += ": ";
         legText += A->modu[aa]->ModulationTitle();
@@ -633,7 +635,7 @@ int main(int argc, char** argv) {
         kindepGrOA = kindepOAmap.at(bn);
         multiGrCanv->cd(N_AMP+1);
         multiGrCanv->GetPad(N_AMP+1)->SetGrid(0,1);
-        kindepGrOA->Draw("LAPE");
+        kindepGrOA->Draw("APE");
         legText = A->oaModulationTitle;
         legText += " one-amp result";
         multiLeg->AddEntry(kindepGrOA,legText,"PLE");
@@ -1020,53 +1022,64 @@ TGraphAsymmErrors * ShiftGraph(TGraphAsymmErrors * gr, Int_t nShift) {
   switch(nShift) {
     case 1:
       retGr->SetLineColor(N_AMP==1?kGray+3:kGray+1); 
+      retGr->SetMarkerColor(N_AMP==1?kGray+3:kGray+1); 
       //retGr->SetLineStyle(2);
       retGr->SetMarkerStyle(kFullCircle);
       break;
     case 2:
       retGr->SetLineColor(kRed); 
+      retGr->SetMarkerColor(kRed); 
       //retGr->SetLineStyle(1);
       retGr->SetMarkerStyle(kFullCircle);
       break;
     case 3:
       retGr->SetLineColor(kAzure+1);
+      retGr->SetMarkerColor(kAzure+1);
       //retGr->SetLineStyle(3);
       retGr->SetMarkerStyle(kFullCircle);
       break;
     case 4:
       retGr->SetLineColor(kViolet+1);
+      retGr->SetMarkerColor(kViolet+1);
       retGr->SetMarkerStyle(kFullCircle);
       break;
     case 5:
       retGr->SetLineColor(kGreen+1);
+      retGr->SetMarkerColor(kGreen+1);
       retGr->SetMarkerStyle(kFullCircle);
       break;
     case 6:
       retGr->SetLineColor(kCyan);
+      retGr->SetMarkerColor(kCyan);
       retGr->SetMarkerStyle(kFullCircle);
       break;
     case 7:
       retGr->SetLineColor(kOrange);
+      retGr->SetMarkerColor(kOrange);
       retGr->SetMarkerStyle(kFullCircle);
       break;
     case 8:
       retGr->SetLineColor(kOrange-7);
+      retGr->SetMarkerColor(kOrange-7);
       retGr->SetMarkerStyle(kFullCircle);
       break;
     default: retGr->SetLineColor(kGray);
+             retGr->SetMarkerColor(kGray);
   };
 
+  //retGr->SetLineColor(kBlack); // override color scheme
+  //retGr->SetMarkerColor(kBlack); // override color scheme
 
   retGr->SetMarkerColor(kBlack);
   retGr->SetLineWidth(2);
-  retGr->SetMarkerSize(1.3);
+  retGr->SetMarkerSize(1);
 
   gr->SetLineColor(retGr->GetLineColor());
   gr->SetLineStyle(retGr->GetLineStyle());
   gr->SetMarkerStyle(retGr->GetMarkerStyle());
   gr->SetMarkerColor(kBlack);
   gr->SetLineWidth(2);
-  gr->SetMarkerSize(1.3);
+  gr->SetMarkerSize(1);
 
   return retGr;
 };
