@@ -1,8 +1,8 @@
 // prints columns [phiR,phiH,asym,err] from the TGraph2DErrors in asym*.root
 
-void PrintAsymGr(TString varname="X", Int_t binnum=0) {
+void PrintAsymGr(TString varname="X", Int_t binnum=5) {
 
-  TFile * infile = new TFile("spinroot/asym_42.root","READ");
+  TFile * infile = new TFile("spinroot/asym_42_chi2.root","READ");
   TString plotname = Form("asym_%s%d",varname.Data(),binnum);
   TGraph2DErrors * g = (TGraph2DErrors*) infile->Get(plotname);
 

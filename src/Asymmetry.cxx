@@ -652,6 +652,9 @@ void Asymmetry::SetFitMode(Int_t fitMode) {
       this->FormuAppend(3,2,2); // cyan
       this->FormuAppend(3,2,-2); // yellow
       break;
+    case 43: // test single-amp chi2
+      this->FormuAppend(3,1,1);
+      break;
     case 110:
       this->FormuAppend(3,1,1);
       this->DenomAppend(2,2,0,0); // tw2 |2,0> UU,T

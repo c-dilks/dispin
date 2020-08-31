@@ -63,13 +63,13 @@ int main(int argc, char** argv) {
 
 
    // DIS kinematics
-   TH1D * WDist = new TH1D("WDist","W distribution (w/o W cut);W",NBINS,0,6);
+   TH1D * WDist = new TH1D("WDist","W distribution;W",NBINS,0,6);
    TH1D * XDist = new TH1D("XDist","x distribution;x",NBINS,0,1);
    TH1D * Q2Dist = new TH1D("Q2Dist","Q^{2} distribution;Q^{2}",NBINS,0,12);
-   TH2D * Q2vsW = new TH2D("Q2vsW","Q^{2} vs. W (w/o W cut);W;Q^{2}",
+   TH2D * Q2vsW = new TH2D("Q2vsW","Q^{2} vs. W;W;Q^{2}",
                                    NBINS,0,6,NBINS,0,12);
    TH2D * Q2vsX = new TH2D("Q2vsX","Q^{2} vs. x;x;Q^{2}",NBINS,0,1,NBINS,0,12);
-   TH1D * YDist = new TH1D("YDist","y distribution (w/o y cut);y",NBINS,0,1);
+   TH1D * YDist = new TH1D("YDist","y distribution;y",NBINS,0,1);
    
    // electron kinematics
    TH1D * eleEDist = new TH1D("eleEDist","e^{-} E distribution",NBINS,0,12);
@@ -371,27 +371,13 @@ int main(int argc, char** argv) {
 
      ev->GetEvent(i);
 
-
-     // fill DIS kinematic plots
-     // ------------------------
-     if(ev->cutDihadron) {
-
-       //ev->PrintEvent();
-
-       if(ev->cutQ2 && ev->cutY) {
-         WDist->Fill(ev->W);
-         Q2vsW->Fill(ev->W,ev->Q2);
-       };
-
-       if(ev->cutQ2 && ev->cutW) {
-         YDist->Fill(ev->y);
-       };
-     };
-
-
      // fill dihadron kinematics plots
      // ------------------------------
      if(ev->Valid()) {
+
+       WDist->Fill(ev->W);
+       Q2vsW->Fill(ev->W,ev->Q2);
+       YDist->Fill(ev->y);
 
        eleEDist->Fill(ev->eleE);
        elePtDist->Fill(ev->elePt);

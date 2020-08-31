@@ -140,6 +140,7 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
     //funcT[f] += " -- " + modu->StateTitle();
     funcT[f] = modu->StateTitle();
     funcTex[f] = modu->StateTitle();
+    //funcTex[f] = modu->ModulationTitle();
     printf("%s\n",funcT[f].Data());
     orthMatrix->GetXaxis()->SetBinLabel(f+1,funcT[f]);
     orthMatrix->GetYaxis()->SetBinLabel(f+1,funcT[f]);
@@ -287,34 +288,60 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
 
   // print matrix for latex
   TString bra,ket;
-  printf("\\begin{table}\n");
-  printf("\\begin{center}\n");
-  TString fmtStr="|c||"; for(f=0; f<NMOD; f++) fmtStr+="c|";
-  printf("\\begin{tabular}{%s}\n",fmtStr.Data());
-  printf("\\hline\n");
-  printf("~");
-  // - print header
-  for(f=0; f<NMOD; f++) {
-    funcTex[f] = funcTex[f].ReplaceAll("|L,","|\\ell,");
-    ket = funcTex[f];
-    ket = ket.ReplaceAll(">","\\rangle");
-    printf("&$%s$",ket.Data());
+  TString texname = infileN;
+  TString polstr;
+  if(polarizationSetting==Modulation::kLU) polstr="LU";
+  else if(polarizationSetting==Modulation::kUU) polstr="UU";
+  texname.ReplaceAll(".root","");
+  texname = Form("%s.%d.tex",texname.Data(),binNum);
+  if(printLatex) {
+    gSystem->RedirectOutput(texname,"w");
+    if(polarizationSetting==Modulation::kLU) printf("\\begin{table}\n");
+    else if(polarizationSetting==Modulation::kUU) printf("\\begin{sidewaystable}\n");
+    printf("\\begin{center}\n");
+    TString fmtStr="|c||"; for(f=0; f<NMOD; f++) fmtStr+="c|";
+    if(polarizationSetting==Modulation::kUU) printf("\\resizebox{\\textwidth}{!}{\n");
+    printf("\\begin{tabular}{%s}\n",fmtStr.Data());
+    printf("\\hline\n");
+    printf("~");
+    // - print header
+    for(f=0; f<NMOD; f++) {
+      funcTex[f] = funcTex[f].ReplaceAll("|L,","|\\ell,");
+      /*
+      funcTex[f] = funcTex[f].ReplaceAll("sin","\\sin");
+      funcTex[f] = funcTex[f].ReplaceAll("cos","\\cos");
+      funcTex[f] = funcTex[f].ReplaceAll("#phiH","\\phih");
+      funcTex[f] = funcTex[f].ReplaceAll("#phiR","\\phir");
+      funcTex[f] = funcTex[f].ReplaceAll("#theta","\\theta");
+      funcTex[f] = funcTex[f].ReplaceAll("(","\\left(");
+      funcTex[f] = funcTex[f].ReplaceAll(")","\\right)");
+      funcTex[f] = funcTex[f].ReplaceAll("*","");
+      */
+      ket = funcTex[f];
+      ket = ket.ReplaceAll(">","\\rangle");
+      printf("&\\rotatebox{90}{$%s$}",ket.Data());
+    };
+    printf("\\\\\\hline\\hline\n");
+    // - print rows
+    for(f=0; f<NMOD; f++) {
+      bra = funcTex[f];
+      bra = bra.ReplaceAll("|","\\langle");
+      bra = bra.ReplaceAll(">","|");
+      printf("$%s$",bra.Data());
+      // - print columns
+      for(g=0; g<NMOD; g++)
+        printf("&$%.3f$",orthMatrix->GetBinContent(f+1,g+1));
+      printf("\\\\\\hline\n");
+    };
+    printf("\\end{tabular}\n");
+    if(polarizationSetting==Modulation::kUU) printf("}\n");
+    printf("\\caption{$d\\sigma_{%s}$ modulation orthogonality matrix for BINCAP.}\n",polstr.Data());
+    printf("\\label{orthoMatrix_BINLAB}\n");
+    printf("\\end{center}\n");
+    if(polarizationSetting==Modulation::kLU) printf("\\end{table}\n");
+    else if(polarizationSetting==Modulation::kUU) printf("\\end{sidewaystable}\n");
+    gSystem->RedirectOutput(0);
   };
-  printf("\\\\\\hline\\hline\n");
-  // - print rows
-  for(f=0; f<NMOD; f++) {
-    bra = funcTex[f];
-    bra = bra.ReplaceAll("|","\\langle");
-    bra = bra.ReplaceAll(">","|");
-    printf("$%s$",bra.Data());
-    // - print columns
-    for(g=0; g<NMOD; g++)
-      printf("&$%.3f$",orthMatrix->GetBinContent(f+1,g+1));
-    printf("\\\\\\hline\n");
-  };
-  printf("\\end{tabular}\n");
-  printf("\\end{center}\n");
-  printf("\\end{table}\n");
 };
 
 void Draw3d(TH3D * dd, Int_t whichProj) {
