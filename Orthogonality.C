@@ -336,7 +336,8 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
     printf("\\end{tabular}\n");
     if(polarizationSetting==Modulation::kUU) printf("}\n");
     printf("\\caption{$d\\sigma_{%s}$ modulation orthogonality matrix for BINCAP.}\n",polstr.Data());
-    printf("\\label{orthoMatrix_BINLAB}\n");
+    if(polarizationSetting==Modulation::kLU) printf("\\label{orthoMatrixLU_BINLAB}\n");
+    else if(polarizationSetting==Modulation::kUU) printf("\\label{orthoMatrixUU_BINLAB}\n");
     printf("\\end{center}\n");
     if(polarizationSetting==Modulation::kLU) printf("\\end{table}\n");
     else if(polarizationSetting==Modulation::kUU) printf("\\end{sidewaystable}\n");
