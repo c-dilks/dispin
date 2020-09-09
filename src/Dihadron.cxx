@@ -227,7 +227,8 @@ void Dihadron::ComputeAngles() {
   // -- in perp-frame, via rejection
   pR_Perp = Tools::Reject(pR,pQ);
 
-  // -- by projection operator (eq. 9 in 1408.5721)
+  // -- by projection operator (eq. 9 in 1408.5721, and eq. 8 
+  // where "xi" here denotes their "zeta_h")
   xi = 2 * vecR.Dot(disVecTarget) / ( vecPh.Dot(disVecTarget) );
   ratio = (xi*Mh*Mh - (hadM[qA]*hadM[qA]-hadM[qB]*hadM[qB])) / ( (disEv->Q2) * zpair );
   vecR_T_byProj = vecR - (xi/2.0)*vecPh + (disEv->x) * ratio * disVecTarget;
