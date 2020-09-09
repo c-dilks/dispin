@@ -151,6 +151,9 @@ class Asymmetry : public TObject
     TH2D * aziDist2[nSpin]; // for 2d modulations
     TString aziName[nSpin];
     TString aziTitle[nSpin];
+    TH2D * aziDistCorrTest2[nSpin]; // for testing asymmetry correlations
+    TString aziCorrTestName[nSpin];
+    TString aziCorrTestTitle[nSpin];
 
     // "finely-binnd azimuthal modulation dist" filled for all spins, used for getting
     // mean value of azimuthal modulation 
@@ -231,7 +234,7 @@ class Asymmetry : public TObject
     RooRealVar *rfWeight;
     RooRealVar *rfPol, *rfRellum;
 
-    static const Int_t nAmp = 12;
+    static const Int_t nAmp = 15;
     Int_t nAmpUsed;
     TString rfAname[nAmp];
     RooRealVar *rfA[nAmp];

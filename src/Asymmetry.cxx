@@ -217,16 +217,25 @@ Asymmetry::Asymmetry(Binning * binScheme, Int_t binNum) {
     aziTitle[s] = Form("%s binned distribution :: %s %s",
       oaModulationTitle.Data(),SpinTitle(s).Data(),binT.Data()
     );
+    aziCorrTestName[s] = Form("aziDistCorrTest_%s%s",SpinName(s).Data(),binN.Data());
+    aziCorrTestTitle[s] = Form("sin(#phi_{h}-#phi_{R}) vs sin(#phi_{R}) binned distribution :: %s %s",
+      SpinTitle(s).Data(),binT.Data()
+    );
     if(gridDim==1) {
       aziTitle[s] += ";" + oaModulationTitle;
       aziDist[s] = new TH1D(aziName[s],aziTitle[s],nModBins,modMin,modMax);
       //nop
       aziDist2[s] = new TH2D(TString("nop_"+aziName[s]),TString("nop_"+aziName[s]),
         1,0,1,1,0,1);
+      aziDistCorrTest2[s] = new TH2D(TString("nop_"+aziCorrTestName[s]),TString("nop_"+aziCorrTestName[s]),
+        1,0,1,1,0,1);
     } else {
       aziTitle[s] += ";#phi_{R};#phi_{h}"; // PhiR is horizontal, PhiH is vertical
+      aziCorrTestTitle[s] += ";sin(#phi_{R});sin(#phi_{h}-#phi_{R})";
       aziDist2[s] = new TH2D(aziName[s],aziTitle[s],
         nModBins2,modMin,modMax,nModBins2,modMin,modMax);
+      aziDistCorrTest2[s] = new TH2D(aziCorrTestName[s],aziCorrTestTitle[s],
+        nModBins2,-1,1,nModBins2,-1,1);
       //nop
       aziDist[s] = new TH1D(TString("nop_"+aziName[s]),TString("nop_"+aziName[s]),
         1,0,1);
@@ -491,6 +500,7 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
   } 
   else {
     aziDist2[spinn]->Fill(PhiR,PhiH,weight);
+    aziDistCorrTest2[spinn]->Fill(TMath::Sin(PhiR),TMath::Sin(PhiH-PhiR),weight);
     modbinR = aziDist2[sP]->GetXaxis()->FindBin(PhiR);
     modbinH = aziDist2[sP]->GetYaxis()->FindBin(PhiH);
     if(modbinR>=1 && modbinR<=nModBins2 && modbinH>=1 && modbinH<=nModBins2) {
@@ -654,6 +664,33 @@ void Asymmetry::SetFitMode(Int_t fitMode) {
       break;
     case 43: // test single-amp chi2
       this->FormuAppend(3,1,1);
+      break;
+    case 44: // test going up to |m|<3
+      this->FormuAppend(3,0,0);
+      this->FormuAppend(2,1,1);
+      this->FormuAppend(3,1,1);
+      this->FormuAppend(3,1,-1);
+      this->FormuAppend(2,2,2);
+      this->FormuAppend(3,2,2);
+      this->FormuAppend(3,2,-2);
+      this->FormuAppend(2,3,3);
+      this->FormuAppend(3,3,3);
+      this->FormuAppend(3,3,-3);
+      break;
+    case 45: // test going up to |m|<4
+      this->FormuAppend(3,0,0);
+      this->FormuAppend(2,1,1);
+      this->FormuAppend(3,1,1);
+      this->FormuAppend(3,1,-1);
+      this->FormuAppend(2,2,2);
+      this->FormuAppend(3,2,2);
+      this->FormuAppend(3,2,-2);
+      this->FormuAppend(2,3,3);
+      this->FormuAppend(3,3,3);
+      this->FormuAppend(3,3,-3);
+      this->FormuAppend(2,4,4);
+      this->FormuAppend(3,4,4);
+      this->FormuAppend(3,4,-4);
       break;
     case 110:
       this->FormuAppend(3,1,1);
@@ -1038,6 +1075,9 @@ void Asymmetry::StreamData(TFile * tf) {
     for(int s=0; s<nSpin; s++) {
       objName = appName + aziDist2[s]->GetName(); aziDist2[s]->Write(objName);
     };
+    for(int s=0; s<nSpin; s++) {
+      objName = appName + aziDistCorrTest2[s]->GetName(); aziDistCorrTest2[s]->Write(objName);
+    };
   };
 
   objName = appName + yieldDist->GetName(); yieldDist->Write(objName);
@@ -1100,6 +1140,10 @@ void Asymmetry::AppendData(TFile * tf) {
     for(int s=0; s<nSpin; s++) {
       objName = appName + aziDist2[s]->GetName();
       aziDist2[s]->Add((TH2D*) tf->Get(objName));
+    };
+    for(int s=0; s<nSpin; s++) {
+      objName = appName + aziDistCorrTest2[s]->GetName();
+      aziDistCorrTest2[s]->Add((TH2D*) tf->Get(objName));
     };
   };
 

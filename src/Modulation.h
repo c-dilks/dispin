@@ -41,7 +41,7 @@ class Modulation : public TObject
     TString GetBaseString() { return baseStr; };
 
     Int_t polarization;
-    static const Int_t LMAX = 2;
+    static const Int_t LMAX = 4;
 
 
   private:

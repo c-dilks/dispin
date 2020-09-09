@@ -1063,8 +1063,9 @@ TGraphAsymmErrors * ShiftGraph(TGraphAsymmErrors * gr, Int_t nShift) {
       retGr->SetMarkerColor(kOrange-7);
       retGr->SetMarkerStyle(kFullCircle);
       break;
-    default: retGr->SetLineColor(kGray);
-             retGr->SetMarkerColor(kGray);
+    default: retGr->SetLineColor(kBlack);
+             retGr->SetMarkerColor(kBlack);
+             retGr->SetMarkerStyle(kFullCircle);
   };
 
   //retGr->SetLineColor(kBlack); // override color scheme
