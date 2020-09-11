@@ -92,6 +92,7 @@ int main(int argc, char** argv) {
    TH2D * hadPCorr = new TH2D("hadPCorr",corrTitle("p"),NBINS,0,10,NBINS,0,10);
    TH2D * hadPtCorr = new TH2D("hadPtCorr",corrTitle("p_{T}"),NBINS,0,4,NBINS,0,4);
    TH2D * hadEtaCorr = new TH2D("hadEtaCorr",corrTitle("#eta"),NBINS,0,5,NBINS,0,5);
+   TH2D * hadThetaCorr = new TH2D("hadThetaCorr",corrTitle("#theta"),NBINS,0,40,NBINS,0,40);
    TH2D * hadPhiCorr = new TH2D("hadPhiCorr",corrTitle("#phi"),
                                              NBINS,-PIe,PIe,NBINS,-PIe,PIe);
    TH2D * hadZCorr = new TH2D("hadZCorr",corrTitle("z"),NBINS,0,1,NBINS,0,1);
@@ -105,6 +106,7 @@ int main(int argc, char** argv) {
    TH1D * hadPDist[2];
    TH1D * hadPtDist[2];
    TH1D * hadEtaDist[2];
+   TH1D * hadThetaDist[2];
    TH1D * hadPhiDist[2];
    TH1D * hadZDist[2];
    TH1D * hadXFDist[2];
@@ -122,6 +124,8 @@ int main(int argc, char** argv) {
        NBINS,0,4);
      hadEtaDist[h] = new TH1D(TString(hadName[h]+"hadEtaDist"),distTitle("#eta"),
        NBINS,0,5);
+     hadThetaDist[h] = new TH1D(TString(hadName[h]+"hadThetaDist"),distTitle("#theta"),
+       NBINS,0,40);
      hadPhiDist[h] = new TH1D(TString(hadName[h]+"hadPhiDist"),distTitle("#phi"),
        NBINS,-PIe,PIe);
      hadZDist[h] = new TH1D(TString(hadName[h]+"hadZDist"),distTitle("z"),
@@ -399,6 +403,7 @@ int main(int argc, char** argv) {
        hadPCorr->Fill(ev->hadP[qB],ev->hadP[qA]);
        hadPtCorr->Fill(ev->hadPt[qB],ev->hadPt[qA]);
        hadEtaCorr->Fill(ev->hadEta[qB],ev->hadEta[qA]);
+       hadThetaCorr->Fill(ev->hadTheta[qB],ev->hadTheta[qA]);
        hadPhiCorr->Fill(ev->hadPhi[qB],ev->hadPhi[qA]);
        hadZCorr->Fill(ev->Z[qB],ev->Z[qA]);
        hadXFCorr->Fill(ev->hadXF[qB],ev->hadXF[qA]);
@@ -409,6 +414,7 @@ int main(int argc, char** argv) {
          hadPDist[h]->Fill(ev->hadP[h]);
          hadPtDist[h]->Fill(ev->hadPt[h]);
          hadEtaDist[h]->Fill(ev->hadEta[h]);
+         hadThetaDist[h]->Fill(ev->hadTheta[h]);
          hadPhiDist[h]->Fill(ev->hadPhi[h]);
          hadZDist[h]->Fill(ev->Z[h]);
          hadXFDist[h]->Fill(ev->hadXF[h]);
@@ -529,6 +535,7 @@ int main(int argc, char** argv) {
    TCanvas * hadPCanv = new TCanvas("hadPCanv","hadPCanv",1000,800);
    TCanvas * hadPtCanv = new TCanvas("hadPtCanv","hadPtCanv",1000,800);
    TCanvas * hadEtaCanv = new TCanvas("hadEtaCanv","hadEtaCanv",1000,800);
+   TCanvas * hadThetaCanv = new TCanvas("hadThetaCanv","hadThetaCanv",1000,800);
    TCanvas * hadPhiCanv = new TCanvas("hadPhiCanv","hadPhiCanv",1000,800);
    TCanvas * hadZCanv = new TCanvas("hadZCanv","hadZCanv",1000,800);
    TCanvas * hadXFCanv = new TCanvas("hadXFCanv","hadXFCanv",1000,800);
@@ -541,6 +548,7 @@ int main(int argc, char** argv) {
    HadronCompareCanv(hadPCanv, hadPDist, hadPCorr);
    HadronCompareCanv(hadPtCanv, hadPtDist, hadPtCorr);
    HadronCompareCanv(hadEtaCanv, hadEtaDist, hadEtaCorr);
+   HadronCompareCanv(hadThetaCanv, hadThetaDist, hadThetaCorr);
    HadronCompareCanv(hadPhiCanv, hadPhiDist, hadPhiCorr);
    HadronCompareCanv(hadZCanv, hadZDist, hadZCorr);
    HadronCompareCanv(hadXFCanv, hadXFDist, hadXFCorr);
@@ -553,6 +561,7 @@ int main(int argc, char** argv) {
    hadPCanv->Write();
    hadPtCanv->Write();
    hadEtaCanv->Write();
+   hadThetaCanv->Write();
    hadPhiCanv->Write();
    hadZCanv->Write();
    hadXFCanv->Write();
