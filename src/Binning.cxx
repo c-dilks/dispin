@@ -185,6 +185,9 @@ Binning::Binning(Int_t pairType_) {
     AddBinBound(vPt,0.725);
     //*/
     /*
+    AddBinBound(vPt,0.5); // 2 quantile bins
+    */
+    /*
     AddBinBound(vPt,0.37); // 3 quantile bins 
     AddBinBound(vPt,0.58);
     */
