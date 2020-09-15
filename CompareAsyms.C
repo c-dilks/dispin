@@ -13,6 +13,9 @@ void CompareAsyms(TString infile0name="spinroot_final_4/asym_42_chi2.root",
   TObjArray * asymArr = new TObjArray();
   TGraphAsymmErrors * gr[2];
 
+  TH1D * diffDist = new TH1D("diffDist","difference distribution",
+    100,-0.03,0.03);
+
   Double_t x[2];
   Double_t y[2];
   Double_t ex[2];
@@ -37,6 +40,8 @@ void CompareAsyms(TString infile0name="spinroot_final_4/asym_42_chi2.root",
         xx = x[0];
         yy = y[0]-y[1];
         exx = ex[0];
+
+        diffDist->Fill(yy);
 
         // correlated error (assumes dataset in infile[0] is a subset or
         // equal to the dataset in infile[1], or vice versa)
@@ -68,4 +73,8 @@ void CompareAsyms(TString infile0name="spinroot_final_4/asym_42_chi2.root",
     gr->Draw("APE");
     //gr->GetYaxis()->SetRangeUser(-1e-3,1e-3);
   };
+
+  TCanvas * canv2 = new TCanvas("canv2","canv2",800,800);
+  diffDist->SetFillColor(kBlack);
+  diffDist->Draw();
 };
