@@ -283,7 +283,7 @@ int main(int argc, char** argv) {
 
 
   // - MC branches
-  const Int_t nInject = 6;
+  const Int_t nInject = 7;
   Int_t helicityMC[nInject];
   TString helicityMCstr = Form("helicityMC[%d]/I",nInject);
   Float_t gen_eleMatchDist;
@@ -357,6 +357,7 @@ int main(int argc, char** argv) {
   TRandom * RNG;
   Bool_t proceed;
   Bool_t isMatch[nPar];
+  Float_t injPhiH, injPhiR, injTheta;
   Float_t rn;
   if(useMC) {
     modu[modH] =   new Modulation(3,0,0,0,false,Modulation::kLU);
@@ -489,13 +490,20 @@ int main(int argc, char** argv) {
         // calculate modulations; depends on injectStream
         // if !proceed, moduVal is not needed
         for(int m=0; m<nMod; m++) {
-          if(dataStream=="mcrec" && injectStream=="injgen")
-            moduVal[m] = modu[m]->Evaluate(dihMC->PhiRp,dihMC->PhiH,dihMC->theta);
-          else if(dataStream=="mcrec" && injectStream=="injrec")
-            moduVal[m] = modu[m]->Evaluate(dih->PhiRp,dih->PhiH,dih->theta);
-          else if(dataStream=="mcgen") {
-            moduVal[m] = modu[m]->Evaluate(dih->PhiRp,dih->PhiH,dih->theta);
+          if(dataStream=="mcrec" && injectStream=="injgen") {
+            injPhiR = dihMC->PhiRp;
+            injPhiH = dihMC->PhiH;
+            injTheta = dihMC->theta;
+          } else if(dataStream=="mcrec" && injectStream=="injrec") {
+            injPhiR = dih->PhiRp;
+            injPhiH = dih->PhiH;
+            injTheta = dih->theta;
+          } else if(dataStream=="mcgen") {
+            injPhiR = dih->PhiRp;
+            injPhiH = dih->PhiH;
+            injTheta = dih->theta;
           };
+          moduVal[m] = modu[m]->Evaluate(injPhiR,injPhiH,injTheta);
         };
       };
 
@@ -509,18 +517,19 @@ int main(int argc, char** argv) {
         asymInject[2] = amp*moduVal[modHR];
         asymInject[3] = amp*moduVal[modR];
         asymInject[4] = amp*moduVal[mod2HR];
-        // - Mh dependence
+        // - mimic physics Mh dependence
         iv = dih->Mh;
         asymInject[5] = amp*iv/(2*0.77) * moduVal[modR];
         asymInject[5] += ( amp - amp*iv/(2*0.77) ) * moduVal[modH];
         asymInject[5] += amp * TMath::Sin(PI*iv/0.77) * moduVal[modHR];
+        // - test inclusion of F_UU modulations
+        asymInject[6] = asymInject[5] / (1+0.2*TMath::Cos(injPhiH));
+        
 
+        // calculate injected helicity: 2=spin-, 3=spin+
         for(int f=0; f<nInject; f++) {
-          // polarization factor (cf EventTree::Polarization())
-          asymInject[f] *= 0.863;
-          // generate random number within [0,1]
-          rn = RNG->Uniform();
-          // calculate injected helicity: 2=spin-, 3=spin+
+          asymInject[f] *= 0.863; // polarization (cf EventTree::Polarization())
+          rn = RNG->Uniform(); // generate random number within [0,1]
           helicityMC[f] = (rn<0.5*(1+asymInject[f])) ? 3 : 2;
         };
       }

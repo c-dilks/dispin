@@ -32,4 +32,4 @@ elif [ "$datastream" = "mcgen" ]; then
   calcKinematics.exe $diskimfile $datastream
 fi
 sleep 1
-rm -v $diskimfile
+#rm -v $diskimfile
