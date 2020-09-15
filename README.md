@@ -1,6 +1,8 @@
 # dispin
 dihadron spin asymmetry analysis
 
+**NOTE** documentation under construction
+
 # Dependencies
 
 ## coatjava
@@ -47,5 +49,29 @@ dihadron spin asymmetry analysis
 # Usage
 - first call `source env.sh`
 - create or link `diskim` and `outroot` directories
-
-
+- produce `outroot` files
+  - run `runDiskim.sh` on skim files
+    - arguments: `skimFile dataStream`
+      - set `datastream` to `mcrec` to analyze MC
+    - use slurm or condor wrapper
+    - runs `skimDihadrons.groovy` followed by `calcKinematics.cpp`
+      - output of `skimDihadrons.groovy` are `diskim/*.root`, used as 
+        input to `calcKinematics.cpp`
+      - output of `calcKinematics.cpp` are `outroot/*.root`
+      - intermediate files `diskim/*.root` are automatically deleted
+- diagnostics
+  - `diagnostics.cpp`
+  - `countEvents.cpp`
+  - `BuildOrtho.cpp` and `Orthogonality.C`
+  - `kinVsRun.cpp`
+  - `drawDepolarizationFactorPlots.C`
+  - `MCmatch.cpp`
+- spin asymmetry analysis
+  - `buildSpinroot.cpp` (use condor or slurm wrapper)
+  - `catSpinroot.cpp`
+  - `asymFit.cpp`
+  - post processing
+    - `CompareAsyms.C`
+    - `PrintAsymGr.C`
+    - `TabulateAsym.C`
+    - `TabulateBinMeans.C`
