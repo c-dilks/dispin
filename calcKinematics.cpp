@@ -283,7 +283,7 @@ int main(int argc, char** argv) {
 
 
   // - MC branches
-  const Int_t nInject = 7;
+  const Int_t nInject = 15;
   Int_t helicityMC[nInject];
   TString helicityMCstr = Form("helicityMC[%d]/I",nInject);
   Float_t gen_eleMatchDist;
@@ -519,17 +519,28 @@ int main(int argc, char** argv) {
         asymInject[4] = amp*moduVal[mod2HR];
         // - mimic physics Mh dependence
         iv = dih->Mh;
-        asymInject[5] = amp*iv/(2*0.77) * moduVal[modR];
-        asymInject[5] += ( amp - amp*iv/(2*0.77) ) * moduVal[modH];
-        asymInject[5] += amp * TMath::Sin(PI*iv/0.77) * moduVal[modHR];
+        asymInject[5] = amp*iv/(2*0.77) * moduVal[modR]; // linear, pos. slope
+        asymInject[5] += ( amp - amp*iv/(2*0.77) ) * moduVal[modH]; // linear, neg. slope
+        asymInject[5] += amp * TMath::Sin(PI*iv/0.77) * moduVal[modHR]; // sign change
         // - test inclusion of F_UU modulations
+        // --- effect on mimic
         asymInject[6] = asymInject[5] / (1+0.2*TMath::Cos(injPhiH));
+        asymInject[7] = asymInject[5] / (1+0.2*TMath::Cos(injPhiR));
+        asymInject[8] = asymInject[5] / (1+0.2*TMath::Cos(injPhiH-injPhiR));
+        asymInject[9] = asymInject[5] / (1+0.2*TMath::Cos(injPhiH)+0.2*TMath::Cos(injPhiR)+0.2*TMath::Cos(injPhiH-injPhiR));
+        // --- effect on 100% asym
+        asymInject[10] = 1 / (1+0.2*TMath::Cos(injPhiH)); // 100% asym
+        // --- effect on single asym amps
+        asymInject[11] = asymInject[1] / (1+0.2*TMath::Cos(injPhiH));
+        asymInject[12] = asymInject[2] / (1+0.2*TMath::Cos(injPhiH));
+        asymInject[13] = asymInject[3] / (1+0.2*TMath::Cos(injPhiH));
+        asymInject[14] = asymInject[4] / (1+0.2*TMath::Cos(injPhiH));
         
 
         // calculate injected helicity: 2=spin-, 3=spin+
+        rn = RNG->Uniform(); // generate random number within [0,1]
         for(int f=0; f<nInject; f++) {
           asymInject[f] *= 0.863; // polarization (cf EventTree::Polarization())
-          rn = RNG->Uniform(); // generate random number within [0,1]
           helicityMC[f] = (rn<0.5*(1+asymInject[f])) ? 3 : 2;
         };
       }
