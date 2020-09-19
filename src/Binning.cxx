@@ -32,6 +32,9 @@ Binning::Binning(Int_t pairType_) {
   if(numKaons==0) {
 
     // -- M_h (dihadron invariant mass)
+    /* // below VM resonances vs. above
+    AddBinBound(vM,0.63);
+    */
     ///* // adjusted 12-bin scheme
     AddBinBound(vM,0.381);
     AddBinBound(vM,0.462);

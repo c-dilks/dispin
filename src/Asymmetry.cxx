@@ -7,8 +7,8 @@ Asymmetry::Asymmetry(Binning * binScheme, Int_t binNum) {
 
   // OPTIONS ////////////
   debug = true;
-  extendMLM = false; // if true, MLM fit will be extended; WARNING: might not be
-                     // implemented correctly! Use with CAUTION!
+  extendMLM = true; // if true, MLM fit will be extended
+  yieldLimit = 1e6; // upper bound for extended MLM's yield parameter
   ///////////////////////
 
 
@@ -346,8 +346,8 @@ Asymmetry::Asymmetry(Binning * binScheme, Int_t binNum) {
 
 
   // - yield factor (proportional to actual yield, for extended fit only)
-  rfYield[sP] = new RooRealVar("rfYieldP","YP",0,1e10);
-  rfYield[sM] = new RooRealVar("rfYieldM","YM",0,1e10);
+  rfYield[sP] = new RooRealVar("rfYieldP","YP",0,yieldLimit);
+  rfYield[sM] = new RooRealVar("rfYieldM","YM",0,yieldLimit);
 
 
   // - data sets for each spin
@@ -839,9 +839,9 @@ void Asymmetry::FitAsymMLM() {
       rfPdfFormu[s],
       *rfParams[s]
     );
-    rfPdfExtended[s] = new RooExtendPdf(
-      TString("rfPdf" + SpinName(s)),
-      TString("rfPdf " + SpinTitle(s)),
+    rfExtPdf[s] = new RooExtendPdf(
+      TString("rfExtModel" + SpinName(s)),
+      TString("rfExtModel " + SpinTitle(s)),
       *rfPdf[s],
       *rfYield[s]
     );
@@ -851,7 +851,7 @@ void Asymmetry::FitAsymMLM() {
   // build simultanous PDF 
   rfSimPdf = new RooSimultaneous("rfSimPdf","rfSimPdf",*rfSpinCateg);
   for(int s=0; s<nSpin; s++) {
-    if(extendMLM) rfSimPdf->addPdf(*rfPdfExtended[s],rfSpinName[s]);
+    if(extendMLM) rfSimPdf->addPdf(*rfExtPdf[s],rfSpinName[s]);
     else          rfSimPdf->addPdf(*rfPdf[s],rfSpinName[s]);
   };
 
@@ -878,13 +878,15 @@ void Asymmetry::FitAsymMLM() {
   if(extendMLM) {
     rfSimPdf->fitTo(*rfData,
       RooFit::Extended(kTRUE),
+      RooFit::NumCPU(nThreads),
+      RooFit::Minos(kTRUE),
       RooFit::Save(kTRUE)
     );
   } else {
     rfSimPdf->fitTo(*rfData, 
       RooFit::NumCPU(nThreads),
       RooFit::Minos(kTRUE),
-      RooFit::Save()
+      RooFit::Save(kTRUE)
     );
   }
 

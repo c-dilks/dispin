@@ -96,6 +96,7 @@ class Asymmetry : public TObject
     Bool_t successIVmode;
     Bool_t debug;
     Bool_t extendMLM;
+    Double_t yieldLimit;
 
     Binning * BS;
 
@@ -216,7 +217,7 @@ class Asymmetry : public TObject
     // RooFit variables
     RooDataSet * rfData;
     RooGenericPdf * rfPdf[2];
-    RooExtendPdf * rfPdfExtended[2];
+    RooExtendPdf * rfExtPdf[2];
     RooSimultaneous * rfSimPdf;
     RooCategory * rfSpinCateg;
     //RooFitResult * rfResult;
