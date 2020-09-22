@@ -24,6 +24,7 @@
 #include "Dihadron.h"
 #include "Diphoton.h"
 #include "Modulation.h"
+#include "EventTree.h"
 
 
 enum parEnum {kEle,kHadA,kHadB,nPar};
@@ -283,9 +284,8 @@ int main(int argc, char** argv) {
 
 
   // - MC branches
-  const Int_t nInject = 15;
-  Int_t helicityMC[nInject];
-  TString helicityMCstr = Form("helicityMC[%d]/I",nInject);
+  Int_t helicityMC[EventTree::NhelicityMC];
+  TString helicityMCstr = Form("helicityMC[%d]/I",EventTree::NhelicityMC);
   Float_t gen_eleMatchDist;
   Float_t gen_hadMatchDist[2];
   Bool_t gen_eleIsMatch;
@@ -353,7 +353,7 @@ int main(int argc, char** argv) {
   Modulation * modu[nMod];
   Double_t moduVal[nMod];
   Float_t amp,ampF,iv;
-  Float_t asymInject[nInject];
+  Float_t asymInject[EventTree::NhelicityMC];
   TRandom * RNG;
   Bool_t proceed;
   Bool_t isMatch[nPar];
@@ -530,22 +530,32 @@ int main(int argc, char** argv) {
         asymInject[9] = asymInject[5] / (1+0.2*TMath::Cos(injPhiH)+0.2*TMath::Cos(injPhiR)+0.2*TMath::Cos(injPhiH-injPhiR));
         // --- effect on 100% asym
         asymInject[10] = 1 / (1+0.2*TMath::Cos(injPhiH)); // 100% asym
-        // --- effect on single asym amps
+        // --- effect on single asym amps, 20% cosPhiH
         asymInject[11] = asymInject[1] / (1+0.2*TMath::Cos(injPhiH));
         asymInject[12] = asymInject[2] / (1+0.2*TMath::Cos(injPhiH));
         asymInject[13] = asymInject[3] / (1+0.2*TMath::Cos(injPhiH));
         asymInject[14] = asymInject[4] / (1+0.2*TMath::Cos(injPhiH));
+        // --- effect on single asym amps, 10% cosPhiH
+        asymInject[15] = asymInject[1] / (1+0.1*TMath::Cos(injPhiH));
+        asymInject[16] = asymInject[2] / (1+0.1*TMath::Cos(injPhiH));
+        asymInject[17] = asymInject[3] / (1+0.1*TMath::Cos(injPhiH));
+        asymInject[18] = asymInject[4] / (1+0.1*TMath::Cos(injPhiH));
+        // --- effect from 20% |2,0>_UU,T
+        asymInject[19] = asymInject[1] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(injTheta),2)-1));
+        asymInject[20] = asymInject[2] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(injTheta),2)-1));
+        asymInject[21] = asymInject[3] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(injTheta),2)-1));
+        asymInject[22] = asymInject[4] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(injTheta),2)-1));
         
 
         // calculate injected helicity: 2=spin-, 3=spin+
         rn = RNG->Uniform(); // generate random number within [0,1]
-        for(int f=0; f<nInject; f++) {
+        for(int f=0; f<EventTree::NhelicityMC; f++) {
           asymInject[f] *= 0.863; // polarization (cf EventTree::Polarization())
           helicityMC[f] = (rn<0.5*(1+asymInject[f])) ? 3 : 2;
         };
       }
       else { // if !proceed, helicity is undefined
-        for(int f=0; f<nInject; f++) helicityMC[f] = 0;
+        for(int f=0; f<EventTree::NhelicityMC; f++) helicityMC[f] = 0;
       };
 
     };

@@ -333,12 +333,14 @@ int main(int argc, char** argv) {
             asymErrorMAhi[aa] = asymErrorMA[aa];
             asymErrorMAlo[aa] = asymErrorMA[aa];
         };
+
         // divide out mean depolarization ratio
         dpMean[aa] = A->MeanDepolarization(aa);
         asymValueMA[aa] /= dpMean[aa]; // TODO: implement for one-amp too
         asymErrorMA[aa] /= dpMean[aa];
         asymErrorMAhi[aa] /= dpMean[aa];
         asymErrorMAlo[aa] /= dpMean[aa];
+
         // print asymmetry result
         printf("\t\t%d %s%.5f + %.5f - %.5f    %.3f\n",
           aa,asymValueMA[aa]>=0?" ":"",
