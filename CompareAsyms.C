@@ -1,10 +1,11 @@
 // compare asymmetries from two different asym*.root files
 
 void CompareAsyms(TString infile0name="spinroot_final_4/asym_42_chi2.root",
-                  TString infile1name="spinroot_final_4/asym_42_mlm.root") {
+                  TString infile1name="spinroot_final_4/asym_42_mlm.root",
+                  Bool_t predictShift=false) {
 
   /// OPTIONS /////////////////
-  Float_t diffMax = 0.03; // scale for difference plots
+  Float_t diffMax = 0.01; // scale for difference plots
   /////////////////////////////
 
 
@@ -150,4 +151,45 @@ void CompareAsyms(TString infile0name="spinroot_final_4/asym_42_chi2.root",
   TCanvas * canv2 = new TCanvas("diffDistCanv","diffDistCanv",800,800);
   diffDist->SetFillColor(kBlack);
   diffDist->Draw();
+
+
+  // draw shift prediction points (computed in Orthogonality.C)
+  TTree * shiftTr = new TTree();
+  Int_t binnum,ampnum;
+  Double_t pred,iv,nop;
+  TGraphAsymmErrors * predGr;
+  TMultiGraph * predMulti;
+  TCanvas * predCanv;
+  if(predictShift) {
+    predCanv = new TCanvas("predGrCanv","predGrCanv",4*300,nrow*300);
+    predCanv->Divide(4,nrow);
+    shiftTr->ReadFile("prediction.dat","binnum/I:ampnum/I:pred/D");
+    shiftTr->SetBranchAddress("binnum",&binnum);
+    shiftTr->SetBranchAddress("ampnum",&ampnum);
+    shiftTr->SetBranchAddress("pred",&pred);
+    for(int i=0; i<nAmp; i++) {
+      pad = i+1;
+      if(pad>=8) pad = i+2; // (to re-align multidim plots)
+      predGr = new TGraphAsymmErrors();
+      predGr->SetMarkerStyle(41);
+      predGr->SetMarkerColor(kViolet+1);
+      predGr->SetMarkerSize(1.5);
+      for(int j=0; j<shiftTr->GetEntries(); j++) {
+        shiftTr->GetEntry(j);
+        if(ampnum==i) {
+          ((TGraphAsymmErrors*)(grArr[0]->At(i)))->GetPoint(binnum,iv,nop);
+          predGr->SetPoint(binnum,iv,pred);
+        };
+      };
+      predMulti = new TMultiGraph();
+      diffGr = (TGraphAsymmErrors*) diffGrArr->At(i);
+      predMulti->SetTitle(diffGr->GetTitle());
+      predMulti->Add(diffGr);
+      predMulti->Add(predGr);
+      predCanv->cd(pad);
+      predMulti->GetYaxis()->SetRangeUser(-diffMax,diffMax);
+      predMulti->Draw("APE");
+    };
+  };
+
 };

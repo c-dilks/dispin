@@ -16,13 +16,13 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
   
   // OPTIONS
   ///////////////////
-  Int_t polarizationSetting = Modulation::kUU;
+  Int_t polarizationSetting = Modulation::kLU;
+  Bool_t enableLegendre = 0;
   Int_t LMAX = 2;
-  Bool_t useModulationTitle = true; // if true, print functions instaed of kets
+  Bool_t useModulationTitle = false; // if true, print functions instaed of kets
   ///////////////////
 
-  Bool_t enableLegendre = 0;
-  if(polarizationSetting==Modulation::kUU) enableLegendre = true;
+  //if(polarizationSetting==Modulation::kUU) enableLegendre = true;
 
   // open data hist
   TFile * infile = new TFile(infileN,"READ");
@@ -136,9 +136,9 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
     modu = (Modulation*) moduArr->At(f);
     //if(useModulationTitle) funcT[f] = modu->ModulationTitle();
     //else funcT[f] = modu->StateTitle();
-    //funcT[f] = modu->ModulationTitle();
+    funcT[f] = modu->ModulationTitle();
     //funcT[f] += " -- " + modu->StateTitle();
-    funcT[f] = modu->StateTitle();
+    //funcT[f] = modu->StateTitle();
     funcTex[f] = modu->StateTitle();
     //funcTex[f] = modu->ModulationTitle();
     printf("%s\n",funcT[f].Data());
@@ -192,8 +192,44 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
             theta = intDist[f][g]->GetZaxis()->GetBinCenter(t);
 
             dataWeight = dataDist->GetBinContent(r,h,t);
+            //dataWeight *= 1/(1-0.5*(3*TMath::Power(TMath::Cos(theta),2)-1)); // +++
+
             modValF = moduF->Evaluate(phiR,phiH,theta);
             modValG = moduG->Evaluate(phiR,phiH,theta);
+
+            // +++
+            //if(f==6) modValF = 1.0/(1+0.2*TMath::Cos(phiH));
+            //if(g==6) modValG = 1.0/(1+0.2*TMath::Cos(phiH));
+            //if(f==6) modValF = TMath::Sin(phiH-phiR)*TMath::Cos(phiH)/(1+0.2*TMath::Cos(phiH));
+            //if(g==6) modValG = TMath::Sin(phiH-phiR)*TMath::Cos(phiH)/(1+0.2*TMath::Cos(phiH));
+            //if(f==6) modValF = TMath::Sin(phiR)*TMath::Cos(phiH)/(1+0.2*TMath::Cos(phiH)); // close!
+            //if(g==6) modValG = TMath::Sin(phiR)*TMath::Cos(phiH)/(1+0.2*TMath::Cos(phiH));
+            //if(f==6) modValF = TMath::Cos(phiH);
+            //if(g==6) modValG = TMath::Cos(phiH);
+            //if(f==6) modValF = TMath::Sin(phiR)/(1+0.2*TMath::Cos(phiH));
+            //if(g==6) modValG = TMath::Sin(phiR)/(1+0.2*TMath::Cos(phiH));
+            //if(f==6) modValF = 1.0/(1+0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+            //if(g==6) modValG = 1.0/(1+0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+            //if(f==6) modValF *= TMath::Sin(phiH)/(1+0.2*TMath::Cos(phiH));
+            //if(g==6) modValG *= TMath::Sin(phiH)/(1+0.2*TMath::Cos(phiH));
+            //if(f==6) modValF /= 1+0.2*TMath::Cos(phiH);
+            //if(g==6) modValG /= 1+0.2*TMath::Cos(phiH);
+            //if(f==6) modValF = 1;
+            //if(g==6) modValG = 1;
+            //if(f==6||g==6) { modValF = 1.0/(1+TMath::Cos(phiH)); modValG = 1.0; };
+            //if(f==6&&g==6) { modValF = TMath::Sin(phiH-phiR); modValG = 1.0; };
+            //if(f==6) modValF = 1.0/(1+0.2*TMath::Cos(phiH));
+            //if(g==6) modValG = 1.0/(1+0.2*TMath::Cos(phiH));
+            //if(f==6) modValF = TMath::Sin(phiH-phiR)/(1+0.2*TMath::Cos(phiH));
+            //if(g==6) modValG = TMath::Sin(phiH-phiR)/(1+0.2*TMath::Cos(phiH));
+            //if(f==6) modValF = TMath::Sin(phiH-phiR)/((1+0.2*TMath::Cos(phiH))*(1+0.2*TMath::Cos(phiH)));
+            //if(g==6) modValG = TMath::Sin(phiH-phiR)/((1+0.2*TMath::Cos(phiH))*(1+0.2*TMath::Cos(phiH)));
+            //if(f==6) modValF = 0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1) / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+            //if(g==6) modValG = 0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1) / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+            //if(f==6) modValF = 0.2*TMath::Cos(phiH) / (1+0.2*TMath::Cos(phiH));
+            //if(g==6) modValG = 0.2*TMath::Cos(phiH);
+            //if(f==0) modValF = 1;
+            //if(g==0) modValG = 1;
             
             product = dataWeight * modValF * modValG;
 
@@ -238,6 +274,12 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
   // draw
   gStyle->SetOptStat(0);
   gStyle->SetPaintTextFormat(".3f");
+
+  TCanvas * dataCanv = new TCanvas("dataCanv","dataCanv",1200,800);
+  //dataCanv->Divide(1,2);
+  dataCanv->cd(1); Draw3d(dataDist,1);
+  //dataCanv->cd(2); Draw3d(dataDist,2);
+
   TCanvas * matCanv = new TCanvas("matCanv","matCanv",1000,1000);
   orthMatrix->SetMinimum(-1);
   orthMatrix->SetMaximum(1);
@@ -251,16 +293,12 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
   else {
     orthMatrix->Draw("boxtext");
   };
+  matCanv->Print("matCanv.png","png");
 
 
 
 
   // EXTRA PLOTS
-  TCanvas * dataCanv = new TCanvas("dataCanv","dataCanv",1200,800);
-  //dataCanv->Divide(1,2);
-  dataCanv->cd(1); Draw3d(dataDist,1);
-  //dataCanv->cd(2); Draw3d(dataDist,2);
-
   /*
   TCanvas * modCanv = new TCanvas("modCanv","modCanv",800,800);
   modCanv->Divide(5,2*((NMOD+5)/5));
@@ -275,6 +313,22 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
   */
 
 
+  // print predicted asymmetry shifts
+  Float_t pred;
+  for(f=0; f<NMOD; f++) {
+    pred = 0.04 * 0.2 * orthMatrix->GetBinContent(f+1,6+1);
+    //pred = 0.04 * orthMatrix->GetBinContent(f+1,3+1)/(1+0.2*orthMatrix->GetBinContent(5+1,6+1));
+    //pred = 0.04 * (orthMatrix->GetBinContent(f+1,6+1) + orthMatrix->GetBinContent(f+1,3));
+    //pred = 0.04 * ( orthMatrix->GetBinContent(f+1,5+1) + orthMatrix->GetBinContent(f+1,6+1));
+    //pred = orthMatrix->GetBinContent(f+1,3);
+    //pred = 0.04 * (orthMatrix->GetBinContent(f+1,3)-orthMatrix->GetBinContent(f+1,6+1));
+    //pred = 0.04 * orthMatrix->GetBinContent(f+1,6+1) * orthMatrix->GetBinContent(f+1,5+1);
+    gSystem->RedirectOutput("prediction.dat",binNum==0&&f==0?"w":"a");
+    printf("%d %d %f\n",binNum,f,pred);
+    gSystem->RedirectOutput(0);
+  };
+
+
 
   // print <fg> matrix (mathematica syntax)
   printf("A={\n");
@@ -285,6 +339,7 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
     printf("}%s\n",f+1==NMOD?"":",");
   };
   printf("};\n\n");
+
 
   // print matrix for latex
   TString bra,ket;

@@ -582,9 +582,9 @@ void Asymmetry::FitAsymGraph() {
   // fit asymmetry
   if(gridDim==1) {
     fitFunc->FixParameter(0,0); // fix fit offset to 0
-    asymGr->Fit(fitFunc,"Q","",modMin,modMax);
+    asymGr->Fit(fitFunc,"","",modMin,modMax);
   } else {
-    asymGr2->Fit(fitFunc2,"Q","");
+    asymGr2->Fit(fitFunc2,"","");
   };
 
 };
@@ -653,7 +653,7 @@ void Asymmetry::SetFitMode(Int_t fitMode) {
       this->FormuAppend(3,2,1);
       this->FormuAppend(3,2,-1);
       break;
-    case 42: // |m|<=2; candidate for publication
+    case 42: // |m|<=2; full set of expected LU amplitudes
       this->FormuAppend(3,0,0); // grey
       this->FormuAppend(2,1,1); // red
       this->FormuAppend(3,1,1); // blue
@@ -727,6 +727,26 @@ void Asymmetry::SetFitMode(Int_t fitMode) {
       this->DenomAppend(3,1,1,0);
       this->DenomAppend(2,2,0,0); // tw2 |2,0> UU,T
       this->DenomAppend(3,2,0,0);
+      break;
+    case 420: // |m|<=2 (case 42), with denominator
+      this->FormuAppend(3,0,0);
+      this->FormuAppend(2,1,1);
+      this->FormuAppend(3,1,1);
+      this->FormuAppend(3,1,-1);
+      this->FormuAppend(2,2,2);
+      this->FormuAppend(3,2,2);
+      this->FormuAppend(3,2,-2);
+      this->DenomAppend(3,0,0,0); // cos(phiH)
+      break;
+    case 421: // |m|<=2 (case 42), with denominator
+      this->FormuAppend(3,0,0);
+      this->FormuAppend(2,1,1);
+      this->FormuAppend(3,1,1);
+      this->FormuAppend(3,1,-1);
+      this->FormuAppend(2,2,2);
+      this->FormuAppend(3,2,2);
+      this->FormuAppend(3,2,-2);
+      this->DenomAppend(3,1,1,0); // cos(phiR)
       break;
     case 1000:
       this->FormuAppend(2,1,1,0,Modulation::kLL); // double-spin asym
@@ -964,8 +984,10 @@ void Asymmetry::DenomAppend(Int_t TW, Int_t L, Int_t M, Int_t lev) {
 
   denomFormu += "D"+TString::Itoa(nDparamUsed,10)+"*"+moduD[nDparamUsed]->FormuRF();
   rfD[nDparamUsed]->SetTitle(TString("D"+moduD[nDparamUsed]->StateTitle()));
-  rfD[nDparamUsed]->setVal(DparamVal[nDparamUsed]);
-  rfD[nDparamUsed]->setConstant(kTRUE);
+
+  // set D parameter to DparamVal
+  //rfD[nDparamUsed]->setVal(DparamVal[nDparamUsed]);
+  //rfD[nDparamUsed]->setConstant(kTRUE);
 
   nDparamUsed++;
 
