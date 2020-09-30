@@ -93,7 +93,7 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
   // MC branches
   if(chain->GetBranch("gen_hadMatchDist")) {
     MCrecMode = true;
-    chain->SetBranchAddress("helicityMC",helicityMC);
+    chain->SetBranchAddress("helicityMC2",helicityMC); // use helicity from injectHelicityMC.exe
     chain->SetBranchAddress("gen_W",&gen_W);
     chain->SetBranchAddress("gen_Q2",&gen_Q2);
     chain->SetBranchAddress("gen_Nu",&gen_Nu);

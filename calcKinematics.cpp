@@ -352,7 +352,7 @@ int main(int argc, char** argv) {
   enum modEnum {modH,modHR,modR,mod2HR,nMod};
   Modulation * modu[nMod];
   Double_t moduVal[nMod];
-  Float_t amp,ampF,iv;
+  Float_t amp,iv;
   Float_t asymInject[EventTree::NhelicityMC];
   TRandom * RNG;
   Bool_t proceed;

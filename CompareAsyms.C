@@ -187,6 +187,7 @@ void CompareAsyms(TString infile0name="spinroot_final_4/asym_42_chi2.root",
       predMulti->Add(diffGr);
       predMulti->Add(predGr);
       predCanv->cd(pad);
+      predCanv->GetPad(pad)->SetGrid(1,1);
       predMulti->GetYaxis()->SetRangeUser(-diffMax,diffMax);
       predMulti->Draw("APE");
     };

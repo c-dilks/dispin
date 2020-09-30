@@ -149,9 +149,8 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
 
   // calculate <fg>
   TH3D * intDist[NMOD][NMOD];
-  //TH2D * modDist_hr[NMOD];
-  //TH1D * modDist_t[NMOD];
-  //TString modDistN,modDistT;
+  TH1D * modDist[NMOD];
+  TString modDistN,modDistT;
   Float_t phiH,phiR,theta;
   Double_t dataWeight,modValF,modValG,product,integral;
   TString intDistN,intDistT;
@@ -169,17 +168,12 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
       intDistT = "f: " + funcT[f] + ",  g: " + funcT[g];
       intDist[f][g] = new TH3D(intDistN,intDistT,
         nbinsR,minR,maxR, nbinsH,minH,maxH, nbinsT,minT,maxT);
-      /*
       if(f==g) {
-        modDistN = Form("modDist_hr_f%d",f);
-        modDistT = funcT[f] + 
-          " -- #Phi(#phi_{h},#phi_{R}) -- #phi_{h} vs. #phi_{R};#phi_{R};#phi_{h}";
-        modDist_hr[f] = new TH2D(modDistN,modDistT,nbinsR,minR,maxR, nbinsH,minH,maxH);
-        modDistN = Form("modDist_t_f%d",f);
-        modDistT = funcT[f] + " -- P(cos#theta) -- #theta;#theta";
-        modDist_t[f] = new TH1D(modDistN,modDistT,nbinsT,minT,maxT);
+        modDistN = Form("modDist_f%d",f);
+        modDistT = funcT[f] + " distribution;" + funcT[f];
+        modDist[f] = new TH1D(modDistN,modDistT,5000,-1.3,1.3);
+        modDist[f]->SetFillColor(kRed);
       };
-      */
 
 
       // loop over bins
@@ -208,8 +202,8 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
             //if(g==6) modValG = TMath::Cos(phiH);
             //if(f==6) modValF = TMath::Sin(phiR)/(1+0.2*TMath::Cos(phiH));
             //if(g==6) modValG = TMath::Sin(phiR)/(1+0.2*TMath::Cos(phiH));
-            //if(f==6) modValF = 1.0/(1+0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-            //if(g==6) modValG = 1.0/(1+0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+            //if(f==6) modValF = 1.0/(1+0.0*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+            //if(g==6) modValG = 1.0/(1+0.0*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
             //if(f==6) modValF *= TMath::Sin(phiH)/(1+0.2*TMath::Cos(phiH));
             //if(g==6) modValG *= TMath::Sin(phiH)/(1+0.2*TMath::Cos(phiH));
             //if(f==6) modValF /= 1+0.2*TMath::Cos(phiH);
@@ -228,21 +222,17 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
             //if(g==6) modValG = 0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1) / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
             //if(f==6) modValF = 0.2*TMath::Cos(phiH) / (1+0.2*TMath::Cos(phiH));
             //if(g==6) modValG = 0.2*TMath::Cos(phiH);
-            //if(f==0) modValF = 1;
-            //if(g==0) modValG = 1;
+            if(f==5) modValF = 1;
+            if(g==5) modValG = 1;
+            //if(f==6) modValF = 0.5*(3*TMath::Power(TMath::Cos(theta),2)-1);
+            //if(g==6) modValG = 0.5*(3*TMath::Power(TMath::Cos(theta),2)-1);
+            if(f==6) modValF = 1.0/(0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+            if(g==6) modValG = 1.0/(0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
             
             product = dataWeight * modValF * modValG;
 
             intDist[f][g]->SetBinContent(r,h,t,product);
-
-            /*
-            if(r==1&&h==1) {
-              if(f==g) modDist_t[f]->SetBinContent(t,legF);
-            };
-            if(t==1) {
-              if(f==g) modDist_hr[f]->SetBinContent(r,h,aziF);
-            };
-            */
+            if(f==g) modDist[f]->Fill(modValF,dataWeight);
           };
         };
       };
@@ -300,15 +290,18 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
 
   // EXTRA PLOTS
   /*
-  TCanvas * modCanv = new TCanvas("modCanv","modCanv",800,800);
-  modCanv->Divide(5,2*((NMOD+5)/5));
+  Int_t ncol = 4;
+  Int_t nrow = ((NMOD+ncol)/ncol);
+  TCanvas * intCanvHR = new TCanvas("intCanvHR","intCanvHR",nrow*400,ncol*600);
+  TCanvas * intCanvT = new TCanvas("intCanvT","intCanvT",nrow*400,ncol*600);
+  TCanvas * modCanv = new TCanvas("modCanv","modCanv",nrow*400,ncol*600);
+  intCanvHR->Divide(ncol,nrow);
+  intCanvT->Divide(ncol,nrow);
+  modCanv->Divide(ncol,nrow);
   for(f=0; f<NMOD; f++) {
-    //intDist[1][1]->Draw();
-    modCanv->cd(5*(f/5)+f+1); modDist_hr[f]->Draw("colz");
-    modCanv->cd(5*(f/5)+5+f+1); modDist_t[f]->Draw();
-    //modCanv->cd(f+1); Draw3d(intDist[f][f],1);
-    //modCanv->cd(f+1); intDist[f][f]->Draw();
-    //modCanv->cd(NMOD+f+1); Draw3d(intDist[f][f],2);
+    intCanvHR->cd(f+1); Draw3d(intDist[f][f],1);
+    intCanvT->cd(f+1); Draw3d(intDist[f][f],2);
+    modCanv->cd(f+1); modDist[f]->Draw("HIST");
   };
   */
 
@@ -316,7 +309,9 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
   // print predicted asymmetry shifts
   Float_t pred;
   for(f=0; f<NMOD; f++) {
-    pred = 0.04 * 0.2 * orthMatrix->GetBinContent(f+1,6+1);
+    // +++
+    //pred = 0.04 * orthMatrix->GetBinContent(f+1,6+1);
+    pred = f==0 ? 0.04 * 0.2 * (orthMatrix->GetBinContent(5+1,6+1)) : 0;
     //pred = 0.04 * orthMatrix->GetBinContent(f+1,3+1)/(1+0.2*orthMatrix->GetBinContent(5+1,6+1));
     //pred = 0.04 * (orthMatrix->GetBinContent(f+1,6+1) + orthMatrix->GetBinContent(f+1,3));
     //pred = 0.04 * ( orthMatrix->GetBinContent(f+1,5+1) + orthMatrix->GetBinContent(f+1,6+1));
