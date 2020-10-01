@@ -155,6 +155,36 @@ int main(int argc, char** argv) {
     asymInject[40] = asymInject[2] / (1-0.1*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
     asymInject[41] = asymInject[3] / (1-0.1*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
     asymInject[42] = asymInject[4] / (1-0.1*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    // --- 20%, but scale the numerator x2
+    asymInject[43] = 2*asymInject[1] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    asymInject[44] = 2*asymInject[2] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    asymInject[45] = 2*asymInject[3] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    asymInject[46] = 2*asymInject[4] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    // --- 20%, but scale the numerator x4
+    asymInject[47] = 4*asymInject[1] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    asymInject[48] = 4*asymInject[2] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    asymInject[49] = 4*asymInject[3] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    asymInject[50] = 4*asymInject[4] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    // --- 80%
+    asymInject[51] = asymInject[1] / (1+0.8*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    asymInject[52] = asymInject[2] / (1+0.8*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    asymInject[53] = asymInject[3] / (1+0.8*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    asymInject[54] = asymInject[4] / (1+0.8*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    // --- -20%
+    asymInject[55] = asymInject[1] / (1-0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    asymInject[56] = asymInject[2] / (1-0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    asymInject[57] = asymInject[3] / (1-0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    asymInject[58] = asymInject[4] / (1-0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    // --- -40%
+    asymInject[59] = asymInject[1] / (1-0.4*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    asymInject[60] = asymInject[2] / (1-0.4*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    asymInject[61] = asymInject[3] / (1-0.4*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    asymInject[62] = asymInject[4] / (1-0.4*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    // --- -80%
+    asymInject[63] = asymInject[1] / (1-0.8*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    asymInject[64] = asymInject[2] / (1-0.8*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    asymInject[65] = asymInject[3] / (1-0.8*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    asymInject[66] = asymInject[4] / (1-0.8*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
 
 
     // calculate injected helicity: 2=spin-, 3=spin+
