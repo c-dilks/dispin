@@ -6,7 +6,7 @@ if [ $# -ne 1 ]; then
 fi
 h=$1
 
-slurm.buildSpinroot.sh outroot.mcrec.injgen -b -i2 -h$h
+slurm.buildSpinroot.sh mcroot -b -i2 -h$h
 sleep 1
 waitForSlurm.sh
 sleep 1
