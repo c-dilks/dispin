@@ -166,6 +166,31 @@ int main(int argc, char** argv) {
     // --- 20%, but scale the numerator x -2
     asymInject[44] = -2*asymInject[1];
     asymInject[45] = -2*asymInject[1] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    // --- 20%, but scale the numerator x8 // --------------------------------------
+    asymInject[46] = 8*asymInject[1];
+    asymInject[47] = 8*asymInject[1] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    // --- 20%, but scale the numerator x -4
+    asymInject[48] = -4*asymInject[1];
+    asymInject[49] = -4*asymInject[1] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    // --- 20%, but scale the numerator x -8
+    asymInject[50] = -8*asymInject[1];
+    asymInject[51] = -8*asymInject[1] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    // --- 10%, scale A x 4 // ------------------------------------
+    asymInject[52] = 4*asymInject[1] / (1+0.1*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    // --- 20%, scale A x 4
+    asymInject[53] = 4*asymInject[1] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    // --- 40%, scale A x 4
+    asymInject[54] = 4*asymInject[1] / (1+0.4*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    // --- 80%, scale A x 4
+    asymInject[55] = 4*asymInject[1] / (1+0.8*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    // --- -10%, scale A x 4
+    asymInject[56] = 4*asymInject[1] / (1-0.1*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    // --- -20%, scale A x 4
+    asymInject[57] = 4*asymInject[1] / (1-0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    // --- -40%, scale A x 4
+    asymInject[58] = 4*asymInject[1] / (1-0.4*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+    // --- -80%, scale A x 4
+    asymInject[59] = 4*asymInject[1] / (1-0.8*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
 
 
     // calculate injected helicity: 2=spin-, 3=spin+

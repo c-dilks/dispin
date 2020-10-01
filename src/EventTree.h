@@ -111,7 +111,7 @@ class EventTree : public TObject
     // event-level branches
     Int_t evnum,runnum;
     Int_t helicity;
-    static const Int_t NhelicityMC = 46;
+    static const Int_t NhelicityMC = 60;
     Int_t helicityMC[NhelicityMC];
 
     // PhiR 
