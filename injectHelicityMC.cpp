@@ -72,6 +72,7 @@ int main(int argc, char** argv) {
   Double_t moduVal[nMod];
   Float_t amp = 0.04; // injected amplitude
   Float_t asymInject[EventTree::NhelicityMC];
+  Float_t denomInject;
   TRandom * RNG;
   Float_t rn;
   modu[modH] =   new Modulation(3,0,0,0,false,Modulation::kLU);
@@ -135,62 +136,79 @@ int main(int argc, char** argv) {
     asymInject[24] = asymInject[2] / (1-0.1*TMath::Cos(phiH));
     asymInject[25] = asymInject[3] / (1-0.1*TMath::Cos(phiH));
     asymInject[26] = asymInject[4] / (1-0.1*TMath::Cos(phiH));
-    // --- effect from 20% |2,0>_UU,T
-    asymInject[27] = asymInject[1] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-    asymInject[28] = asymInject[2] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-    asymInject[29] = asymInject[3] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-    asymInject[30] = asymInject[4] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-    // --- 10%
-    asymInject[31] = asymInject[1] / (1+0.1*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-    // --- 40%
-    asymInject[32] = asymInject[1] / (1+0.4*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-    // --- 80%
-    asymInject[33] = asymInject[1] / (1+0.8*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-    // --- -10%
-    asymInject[34] = asymInject[1] / (1-0.1*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-    // --- -20%
-    asymInject[35] = asymInject[1] / (1-0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-    // --- -40%
-    asymInject[36] = asymInject[1] / (1-0.4*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-    // --- -80%
-    asymInject[37] = asymInject[1] / (1-0.8*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-    // --- 20%, but scale the numerator x2
-    asymInject[38] = 2*asymInject[1];
-    asymInject[39] = 2*asymInject[1] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-    // --- 20%, but scale the numerator x4
-    asymInject[40] = 4*asymInject[1];
-    asymInject[41] = 4*asymInject[1] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-    // --- 20%, but scale the numerator x -1
-    asymInject[42] = -1*asymInject[1];
-    asymInject[43] = -1*asymInject[1] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-    // --- 20%, but scale the numerator x -2
-    asymInject[44] = -2*asymInject[1];
-    asymInject[45] = -2*asymInject[1] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-    // --- 20%, but scale the numerator x8 // --------------------------------------
-    asymInject[46] = 8*asymInject[1];
-    asymInject[47] = 8*asymInject[1] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-    // --- 20%, but scale the numerator x -4
-    asymInject[48] = -4*asymInject[1];
-    asymInject[49] = -4*asymInject[1] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-    // --- 20%, but scale the numerator x -8
-    asymInject[50] = -8*asymInject[1];
-    asymInject[51] = -8*asymInject[1] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-    // --- 10%, scale A x 4 // ------------------------------------
-    asymInject[52] = 4*asymInject[1] / (1+0.1*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-    // --- 20%, scale A x 4
-    asymInject[53] = 4*asymInject[1] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-    // --- 40%, scale A x 4
-    asymInject[54] = 4*asymInject[1] / (1+0.4*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-    // --- 80%, scale A x 4
-    asymInject[55] = 4*asymInject[1] / (1+0.8*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-    // --- -10%, scale A x 4
-    asymInject[56] = 4*asymInject[1] / (1-0.1*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-    // --- -20%, scale A x 4
-    asymInject[57] = 4*asymInject[1] / (1-0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-    // --- -40%, scale A x 4
-    asymInject[58] = 4*asymInject[1] / (1-0.4*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-    // --- -80%, scale A x 4
-    asymInject[59] = 4*asymInject[1] / (1-0.8*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+
+    // ------------------------------------------theta
+    //denomInject = 0.5*(3*TMath::Power(TMath::Cos(theta),2)-1);
+    denomInject = TMath::Sin(theta);
+
+    // --- effect on numerators
+    asymInject[27] = asymInject[1] / (1+0.2*denomInject);
+    asymInject[28] = asymInject[2] / (1+0.2*denomInject);
+    asymInject[29] = asymInject[3] / (1+0.2*denomInject);
+    asymInject[30] = asymInject[4] / (1+0.2*denomInject);
+
+
+    // fix B=0.2, vary A
+    // 0.04
+    asymInject[31] = 1*asymInject[1];
+    asymInject[32] = 1*asymInject[1] / (1+0.2*denomInject);
+    // 0.08
+    asymInject[33] = 2*asymInject[1];
+    asymInject[34] = 2*asymInject[1] / (1+0.2*denomInject);
+    // 0.16
+    asymInject[35] = 4*asymInject[1];
+    asymInject[36] = 4*asymInject[1] / (1+0.2*denomInject);
+    // 0.32
+    asymInject[37] = 8*asymInject[1];
+    asymInject[38] = 8*asymInject[1] / (1+0.2*denomInject);
+    // -0.04
+    asymInject[39] = -1*asymInject[1];
+    asymInject[40] = -1*asymInject[1] / (1+0.2*denomInject);
+    // -0.08
+    asymInject[41] = -2*asymInject[1];
+    asymInject[42] = -2*asymInject[1] / (1+0.2*denomInject);
+    // -0.16
+    asymInject[43] = -4*asymInject[1];
+    asymInject[44] = -4*asymInject[1] / (1+0.2*denomInject);
+    // -0.32
+    asymInject[45] = -8*asymInject[1];
+    asymInject[46] = -8*asymInject[1] / (1+0.2*denomInject);
+
+    // fix A = amp, vary B
+    asymInject[47] = asymInject[1] / 
+                     (1+0.1*denomInject);
+    asymInject[48] = asymInject[1] /
+                     (1+0.2*denomInject);
+    asymInject[49] = asymInject[1] /
+                     (1+0.4*denomInject);
+    asymInject[50] = asymInject[1] /
+                     (1+0.8*denomInject);
+    asymInject[51] = asymInject[1] /
+                     (1-0.1*denomInject);
+    asymInject[52] = asymInject[1] /
+                     (1-0.2*denomInject);
+    asymInject[53] = asymInject[1] /
+                     (1-0.4*denomInject);
+    asymInject[54] = asymInject[1] /
+                     (1-0.8*denomInject);
+
+    // fix A = 4*amp, vary B
+    asymInject[55] = 4*asymInject[1] / 
+                     (1+0.1*denomInject);
+    asymInject[56] = 4*asymInject[1] /
+                     (1+0.2*denomInject);
+    asymInject[57] = 4*asymInject[1] /
+                     (1+0.4*denomInject);
+    asymInject[58] = 4*asymInject[1] /
+                     (1+0.8*denomInject);
+    asymInject[59] = 4*asymInject[1] /
+                     (1-0.1*denomInject);
+    asymInject[60] = 4*asymInject[1] /
+                     (1-0.2*denomInject);
+    asymInject[61] = 4*asymInject[1] /
+                     (1-0.4*denomInject);
+    asymInject[62] = 4*asymInject[1] /
+                     (1-0.8*denomInject);
 
 
     // calculate injected helicity: 2=spin-, 3=spin+
