@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
   Double_t moduVal[nMod];
   Float_t amp = 0.04; // injected amplitude
   Float_t asymInject[EventTree::NhelicityMC];
-  Float_t denomInject;
+  Float_t numerInject,denomInject,denomInject2;
   TRandom * RNG;
   Float_t rn;
   modu[modH] =   new Modulation(3,0,0,0,false,Modulation::kLU);
@@ -138,77 +138,85 @@ int main(int argc, char** argv) {
     asymInject[26] = asymInject[4] / (1-0.1*TMath::Cos(phiH));
 
     // ------------------------------------------theta
-    //denomInject = 0.5*(3*TMath::Power(TMath::Cos(theta),2)-1);
-    denomInject = TMath::Sin(theta);
+    /***/
+    //numerInject = asymInject[1];
+    numerInject = 0.06*moduVal[modH]+0.08*moduVal[modHR];
+    /***/
+    denomInject = 0.5*(3*TMath::Power(TMath::Cos(theta),2)-1);
+    //denomInject = TMath::Sin(theta);
+    /***/
+    //denomInject2 = TMath::Sin(theta);
+    denomInject2 = 0;
+    /***/
 
     // --- effect on numerators
-    asymInject[27] = asymInject[1] / (1+0.2*denomInject);
-    asymInject[28] = asymInject[2] / (1+0.2*denomInject);
-    asymInject[29] = asymInject[3] / (1+0.2*denomInject);
-    asymInject[30] = asymInject[4] / (1+0.2*denomInject);
+    asymInject[27] = asymInject[1] / (1+0.2*denomInject+0.2*denomInject2);
+    asymInject[28] = asymInject[2] / (1+0.2*denomInject+0.2*denomInject2);
+    asymInject[29] = asymInject[3] / (1+0.2*denomInject+0.2*denomInject2);
+    asymInject[30] = asymInject[4] / (1+0.2*denomInject+0.2*denomInject2);
 
 
     // fix B=0.2, vary A
     // 0.04
-    asymInject[31] = 1*asymInject[1];
-    asymInject[32] = 1*asymInject[1] / (1+0.2*denomInject);
+    asymInject[31] = 1*numerInject;
+    asymInject[32] = 1*numerInject / (1+0.2*denomInject+0.2*denomInject2);
     // 0.08
-    asymInject[33] = 2*asymInject[1];
-    asymInject[34] = 2*asymInject[1] / (1+0.2*denomInject);
+    asymInject[33] = 2*numerInject;
+    asymInject[34] = 2*numerInject / (1+0.2*denomInject+0.2*denomInject2);
     // 0.16
-    asymInject[35] = 4*asymInject[1];
-    asymInject[36] = 4*asymInject[1] / (1+0.2*denomInject);
+    asymInject[35] = 4*numerInject;
+    asymInject[36] = 4*numerInject / (1+0.2*denomInject+0.2*denomInject2);
     // 0.32
-    asymInject[37] = 8*asymInject[1];
-    asymInject[38] = 8*asymInject[1] / (1+0.2*denomInject);
+    asymInject[37] = 8*numerInject;
+    asymInject[38] = 8*numerInject / (1+0.2*denomInject+0.2*denomInject2);
     // -0.04
-    asymInject[39] = -1*asymInject[1];
-    asymInject[40] = -1*asymInject[1] / (1+0.2*denomInject);
+    asymInject[39] = -1*numerInject;
+    asymInject[40] = -1*numerInject / (1+0.2*denomInject+0.2*denomInject2);
     // -0.08
-    asymInject[41] = -2*asymInject[1];
-    asymInject[42] = -2*asymInject[1] / (1+0.2*denomInject);
+    asymInject[41] = -2*numerInject;
+    asymInject[42] = -2*numerInject / (1+0.2*denomInject+0.2*denomInject2);
     // -0.16
-    asymInject[43] = -4*asymInject[1];
-    asymInject[44] = -4*asymInject[1] / (1+0.2*denomInject);
+    asymInject[43] = -4*numerInject;
+    asymInject[44] = -4*numerInject / (1+0.2*denomInject+0.2*denomInject2);
     // -0.32
-    asymInject[45] = -8*asymInject[1];
-    asymInject[46] = -8*asymInject[1] / (1+0.2*denomInject);
+    asymInject[45] = -8*numerInject;
+    asymInject[46] = -8*numerInject / (1+0.2*denomInject+0.2*denomInject2);
 
     // fix A = amp, vary B
-    asymInject[47] = asymInject[1] / 
-                     (1+0.1*denomInject);
-    asymInject[48] = asymInject[1] /
-                     (1+0.2*denomInject);
-    asymInject[49] = asymInject[1] /
-                     (1+0.4*denomInject);
-    asymInject[50] = asymInject[1] /
-                     (1+0.8*denomInject);
-    asymInject[51] = asymInject[1] /
-                     (1-0.1*denomInject);
-    asymInject[52] = asymInject[1] /
-                     (1-0.2*denomInject);
-    asymInject[53] = asymInject[1] /
-                     (1-0.4*denomInject);
-    asymInject[54] = asymInject[1] /
-                     (1-0.8*denomInject);
+    asymInject[47] = numerInject / 
+                     (1+0.1*denomInject+0.2*denomInject2);
+    asymInject[48] = numerInject /
+                     (1+0.2*denomInject+0.2*denomInject2);
+    asymInject[49] = numerInject /
+                     (1+0.4*denomInject+0.2*denomInject2);
+    asymInject[50] = numerInject /
+                     (1+0.8*denomInject+0.2*denomInject2);
+    asymInject[51] = numerInject /
+                     (1-0.1*denomInject+0.2*denomInject2);
+    asymInject[52] = numerInject /
+                     (1-0.2*denomInject+0.2*denomInject2);
+    asymInject[53] = numerInject /
+                     (1-0.4*denomInject+0.2*denomInject2);
+    asymInject[54] = numerInject /
+                     (1-0.8*denomInject+0.2*denomInject2);
 
     // fix A = 4*amp, vary B
-    asymInject[55] = 4*asymInject[1] / 
-                     (1+0.1*denomInject);
-    asymInject[56] = 4*asymInject[1] /
-                     (1+0.2*denomInject);
-    asymInject[57] = 4*asymInject[1] /
-                     (1+0.4*denomInject);
-    asymInject[58] = 4*asymInject[1] /
-                     (1+0.8*denomInject);
-    asymInject[59] = 4*asymInject[1] /
-                     (1-0.1*denomInject);
-    asymInject[60] = 4*asymInject[1] /
-                     (1-0.2*denomInject);
-    asymInject[61] = 4*asymInject[1] /
-                     (1-0.4*denomInject);
-    asymInject[62] = 4*asymInject[1] /
-                     (1-0.8*denomInject);
+    asymInject[55] = 4*numerInject / 
+                     (1+0.1*denomInject+0.2*denomInject2);
+    asymInject[56] = 4*numerInject /
+                     (1+0.2*denomInject+0.2*denomInject2);
+    asymInject[57] = 4*numerInject /
+                     (1+0.4*denomInject+0.2*denomInject2);
+    asymInject[58] = 4*numerInject /
+                     (1+0.8*denomInject+0.2*denomInject2);
+    asymInject[59] = 4*numerInject /
+                     (1-0.1*denomInject+0.2*denomInject2);
+    asymInject[60] = 4*numerInject /
+                     (1-0.2*denomInject+0.2*denomInject2);
+    asymInject[61] = 4*numerInject /
+                     (1-0.4*denomInject+0.2*denomInject2);
+    asymInject[62] = 4*numerInject /
+                     (1-0.8*denomInject+0.2*denomInject2);
 
 
     // calculate injected helicity: 2=spin-, 3=spin+
