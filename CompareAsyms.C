@@ -134,6 +134,12 @@ void CompareAsyms(TString infile0name="spinroot_final_4/asym_42_chi2.root",
     diffGr->SetMarkerColor(kBlack);
     diffGr->SetLineColor(kBlack);
     diffGr->Draw("APE");
+    if(i==1) {
+      diffGr->Fit("pol0");
+      printf("%f); g->SetPointError(i++,0,%f);\n",
+        diffGr->GetFunction("pol0")->GetParameter(0),
+        diffGr->GetFunction("pol0")->GetParError(0));
+    };
 
     // draw ratGr
     ratCanv->cd(pad);
@@ -154,7 +160,7 @@ void CompareAsyms(TString infile0name="spinroot_final_4/asym_42_chi2.root",
 
 
   // draw shift prediction points (computed in Orthogonality.C)
-  TTree * shiftTr = new TTree();
+  TTree * predTr = new TTree();
   Int_t binnum,ampnum;
   Double_t pred,iv,nop;
   TGraphAsymmErrors * predGr;
@@ -163,10 +169,10 @@ void CompareAsyms(TString infile0name="spinroot_final_4/asym_42_chi2.root",
   if(predictShift) {
     predCanv = new TCanvas("predGrCanv","predGrCanv",4*300,nrow*300);
     predCanv->Divide(4,nrow);
-    shiftTr->ReadFile("prediction.dat","binnum/I:ampnum/I:pred/D");
-    shiftTr->SetBranchAddress("binnum",&binnum);
-    shiftTr->SetBranchAddress("ampnum",&ampnum);
-    shiftTr->SetBranchAddress("pred",&pred);
+    predTr->ReadFile("prediction.dat","binnum/I:ampnum/I:pred/D");
+    predTr->SetBranchAddress("binnum",&binnum);
+    predTr->SetBranchAddress("ampnum",&ampnum);
+    predTr->SetBranchAddress("pred",&pred);
     for(int i=0; i<nAmp; i++) {
       pad = i+1;
       if(pad>=8) pad = i+2; // (to re-align multidim plots)
@@ -174,8 +180,8 @@ void CompareAsyms(TString infile0name="spinroot_final_4/asym_42_chi2.root",
       predGr->SetMarkerStyle(41);
       predGr->SetMarkerColor(kViolet+1);
       predGr->SetMarkerSize(1.5);
-      for(int j=0; j<shiftTr->GetEntries(); j++) {
-        shiftTr->GetEntry(j);
+      for(int j=0; j<predTr->GetEntries(); j++) {
+        predTr->GetEntry(j);
         if(ampnum==i) {
           ((TGraphAsymmErrors*)(grArr[0]->At(i)))->GetPoint(binnum,iv,nop);
           predGr->SetPoint(binnum,iv,pred);

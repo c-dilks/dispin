@@ -80,6 +80,8 @@ int main(int argc, char** argv) {
   modu[modR] =   new Modulation(3,1,1,0,false,Modulation::kLU);
   modu[mod2HR] = new Modulation(3,1,-1,0,false,Modulation::kLU);
   RNG = new TRandomMixMax(14972); // seed
+  Int_t ii;
+  Bool_t once = true;
 
 
 
@@ -139,8 +141,8 @@ int main(int argc, char** argv) {
 
     // ------------------------------------------theta
     /***/
-    //numerInject = asymInject[1];
-    numerInject = 0.06*moduVal[modH]+0.08*moduVal[modHR];
+    numerInject = moduVal[modH];
+    //numerInject = 0.06*moduVal[modH]+0.08*moduVal[modHR];
     /***/
     denomInject = 0.5*(3*TMath::Power(TMath::Cos(theta),2)-1);
     //denomInject = TMath::Sin(theta);
@@ -149,7 +151,23 @@ int main(int argc, char** argv) {
     denomInject2 = 0;
     /***/
 
+
+    // generalized injection over grid of (A,B)
+    ii=27;
+    for(float AA=-0.21; AA<=0.21; AA+=0.03) {
+      for(float BB=-0.5; BB<=0.5; BB+=0.1) {
+        asymInject[ii] = AA*numerInject / (1+BB*denomInject);
+        if(once) printf("ii AA BB: %d %f %f\n",ii,AA,BB);
+        ii++;
+      };
+    };
+    once = false;
+    // max ii=180
+
+
+
     // --- effect on numerators
+    /*
     asymInject[27] = asymInject[1] / (1+0.2*denomInject+0.2*denomInject2);
     asymInject[28] = asymInject[2] / (1+0.2*denomInject+0.2*denomInject2);
     asymInject[29] = asymInject[3] / (1+0.2*denomInject+0.2*denomInject2);
@@ -225,6 +243,7 @@ int main(int argc, char** argv) {
       asymInject[f] *= 0.863; // polarization (cf EventTree::Polarization())
       helicityMC[f] = (rn<0.5*(1+asymInject[f])) ? 3 : 2;
     };
+    */
 
     outTr->Fill();
   };

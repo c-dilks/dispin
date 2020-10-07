@@ -224,10 +224,12 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
             //if(g==6) modValG = 0.2*TMath::Cos(phiH);
             if(f==5) modValF = 1;
             if(g==5) modValG = 1;
+            if(f==6) modValF = TMath::Sin(theta);
+            if(g==6) modValG = TMath::Sin(theta);
             //if(f==6) modValF = 0.5*(3*TMath::Power(TMath::Cos(theta),2)-1);
             //if(g==6) modValG = 0.5*(3*TMath::Power(TMath::Cos(theta),2)-1);
-            if(f==6) modValF = 1.0/(0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-            if(g==6) modValG = 1.0/(0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+            //if(f==6) modValF = 1.0/(0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
+            //if(g==6) modValG = 1.0/(0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
             
             product = dataWeight * modValF * modValG;
 
@@ -308,10 +310,12 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
 
   // print predicted asymmetry shifts
   Float_t pred;
+  Float_t means[12] = {-0.339, -0.414, -0.419, -0.426, -0.426, -0.430, -0.432, -0.428, -0.426, -0.421, -0.411, -0.407};
   for(f=0; f<NMOD; f++) {
     // +++
+    pred = 0.04 * 0.2 * means[binNum] / (1+0.2*means[binNum]);
     //pred = 0.04 * orthMatrix->GetBinContent(f+1,6+1);
-    pred = f==0 ? 0.04 * 0.2 * (orthMatrix->GetBinContent(5+1,6+1)) : 0;
+    //pred = f==0 ? (orthMatrix->GetBinContent(5+1,6+1)) : 0;
     //pred = 0.04 * orthMatrix->GetBinContent(f+1,3+1)/(1+0.2*orthMatrix->GetBinContent(5+1,6+1));
     //pred = 0.04 * (orthMatrix->GetBinContent(f+1,6+1) + orthMatrix->GetBinContent(f+1,3));
     //pred = 0.04 * ( orthMatrix->GetBinContent(f+1,5+1) + orthMatrix->GetBinContent(f+1,6+1));

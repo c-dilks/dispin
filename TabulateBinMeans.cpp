@@ -15,6 +15,7 @@
 #include "TObjArray.h"
 
 // dispin
+#include "Tools.h"
 #include "Constants.h"
 #include "Binning.h"
 #include "EventTree.h"
@@ -99,6 +100,12 @@ int main(int argc, char** argv) {
   TH1D * distDepolW; std::map<Int_t,TH1D*> mapdistDepolW;
   TH1D * distDepolCA; std::map<Int_t,TH1D*> mapdistDepolCA;
   TH1D * distDepolWA; std::map<Int_t,TH1D*> mapdistDepolWA;
+  TH1D * distP0; std::map<Int_t,TH1D*> mapdistP0;
+  TH1D * distP1; std::map<Int_t,TH1D*> mapdistP1;
+  TH1D * distF; std::map<Int_t,TH1D*> mapdistF;
+  TH1D * distG; std::map<Int_t,TH1D*> mapdistG;
+  TH1D * distFG; std::map<Int_t,TH1D*> mapdistFG;
+  TH1D * distFGH; std::map<Int_t,TH1D*> mapdistFGH;
   TString bStr;
   for(Int_t b : BS->binVec) {
     bStr = Form("Bin%d",b);
@@ -113,6 +120,12 @@ int main(int argc, char** argv) {
     distDepolW = new TH1D(TString("distDepolW"+bStr),TString("DepolW for "+bStr),1000,-1,2.5);
     distDepolCA = new TH1D(TString("distDepolCA"+bStr),TString("DepolCA for "+bStr),1000,-1,2.5);
     distDepolWA = new TH1D(TString("distDepolWA"+bStr),TString("DepolWA for "+bStr),1000,-1,2.5);
+    distP0 = new TH1D(TString("distP0"+bStr),TString("P_{2,0}(cos#theta) for "+bStr),1000,-0.6,1.1);
+    distP1 = new TH1D(TString("distP1"+bStr),TString("sin#theta for "+bStr),1000,-1.1,1.1);
+    distF = new TH1D(TString("distF"+bStr),TString("F for "+bStr),1000,-1.1,1.1);
+    distG = new TH1D(TString("distG"+bStr),TString("G for "+bStr),1000,-1.1,1.1);
+    distFG = new TH1D(TString("distFG"+bStr),TString("FG for "+bStr),1000,-1.1,1.1);
+    distFGH = new TH1D(TString("distFGH"+bStr),TString("FGH for "+bStr),1000,-1.1,1.1);
     mapdistMh.insert(std::pair<Int_t,TH1D*>(b,distMh));
     mapdistX.insert(std::pair<Int_t,TH1D*>(b,distX));
     mapdistZ.insert(std::pair<Int_t,TH1D*>(b,distZ));
@@ -124,6 +137,12 @@ int main(int argc, char** argv) {
     mapdistDepolW.insert(std::pair<Int_t,TH1D*>(b,distDepolW));
     mapdistDepolCA.insert(std::pair<Int_t,TH1D*>(b,distDepolCA));
     mapdistDepolWA.insert(std::pair<Int_t,TH1D*>(b,distDepolWA));
+    mapdistP0.insert(std::pair<Int_t,TH1D*>(b,distP0));
+    mapdistP1.insert(std::pair<Int_t,TH1D*>(b,distP1));
+    mapdistF.insert(std::pair<Int_t,TH1D*>(b,distF));
+    mapdistG.insert(std::pair<Int_t,TH1D*>(b,distG));
+    mapdistFG.insert(std::pair<Int_t,TH1D*>(b,distFG));
+    mapdistFGH.insert(std::pair<Int_t,TH1D*>(b,distFGH));
   };
 
 
@@ -154,6 +173,16 @@ int main(int argc, char** argv) {
       mapdistDepolW.at(bn)->Fill(ev->GetDepolarizationFactor('W'));
       mapdistDepolCA.at(bn)->Fill(ev->GetDepolarizationFactor('C')/ev->GetDepolarizationFactor('A'));
       mapdistDepolWA.at(bn)->Fill(ev->GetDepolarizationFactor('W')/ev->GetDepolarizationFactor('A'));
+      mapdistP0.at(bn)->Fill(0.5*(3*TMath::Power(TMath::Cos(ev->theta),2)-1));
+      mapdistP1.at(bn)->Fill(TMath::Sin(ev->theta));
+      mapdistF.at(bn)->Fill(TMath::Sin(ev->PhiH));
+      mapdistG.at(bn)->Fill(TMath::Sin(ev->PhiR));
+      mapdistFG.at(bn)->Fill(TMath::Sin(2*ev->PhiH-ev->PhiR)*TMath::Sin(ev->PhiH));
+      mapdistFGH.at(bn)->Fill(
+        TMath::Sin(ev->PhiH-ev->PhiR) *
+        TMath::Sin(ev->PhiH-ev->PhiR) *
+        TMath::Cos(ev->PhiH)
+      );
     };
   };
 
@@ -169,6 +198,12 @@ int main(int argc, char** argv) {
   PrintMeans("W(y,eps)",mapdistDepolW);
   PrintMeans("C/A(y,eps)",mapdistDepolCA);
   PrintMeans("W/A(y,eps)",mapdistDepolWA);
+  PrintMeans("P_{2,0}(cos#theta)",mapdistP0);
+  PrintMeans("sin#theta",mapdistP1);
+  PrintMeans("F",mapdistF);
+  PrintMeans("G",mapdistG);
+  PrintMeans("FG",mapdistFG);
+  PrintMeans("FGH",mapdistFGH);
 
     
   // write histograms
@@ -184,6 +219,12 @@ int main(int argc, char** argv) {
     mapdistDepolW.at(b)->Write();
     mapdistDepolCA.at(b)->Write();
     mapdistDepolWA.at(b)->Write();
+    mapdistP0.at(b)->Write();
+    mapdistP1.at(b)->Write();
+    mapdistF.at(b)->Write();
+    mapdistG.at(b)->Write();
+    mapdistFG.at(b)->Write();
+    mapdistFGH.at(b)->Write();
   };
 
 };
@@ -193,7 +234,15 @@ int main(int argc, char** argv) {
 
 void PrintMeans(TString title, std::map<Int_t,TH1D*> mapdist) {
   TString printStr = title + ": {";
+  TH1D * totDist;
+  TH1D * zeroDist;
   for(Int_t b : BS->binVec) {
+    if(b==0) {
+      zeroDist = mapdist.at(b);
+      totDist = (TH1D*)zeroDist->Clone(TString("tot_"+TString(zeroDist->GetName())));
+    } else {
+      totDist->Add(mapdist.at(b));
+    };
     printStr = Form("%s%s%.3f",
       printStr.Data(),
       b>0?", ":"",
@@ -202,6 +251,11 @@ void PrintMeans(TString title, std::map<Int_t,TH1D*> mapdist) {
   };
   printStr += "}";
   printf("%s\n",printStr.Data());
+  totDist->Write();
+
+  // calculate total mean and RMS:
+  printf("  mean = %f\n",totDist->GetMean());
+  printf("  RMS  = %f\n",Tools::CalculateRMS(totDist));
 };
 
 // set default arguments

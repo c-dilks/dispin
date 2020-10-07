@@ -248,6 +248,8 @@ int main(int argc, char** argv) {
 
    TH1D * cosThetaDist = new TH1D("cosThetaDist",
      "cos(#theta) distribution;cos(#theta)",NBINS,-1.1,1.1);
+   TH1D * p20dist = new TH1D("p20dist",
+     "P_{2,0}(cos#theta)",NBINS,-0.6,1.1);
 
 
    // PhiH and PhiR vs. other variables
@@ -455,6 +457,7 @@ int main(int argc, char** argv) {
        sinThetaDist->Fill(TMath::Sin(ev->theta));
        sinThetaCosThetaDist->Fill(TMath::Sin(ev->theta)*TMath::Cos(ev->theta));
        cosThetaDist->Fill(TMath::Cos(ev->theta));
+       p20dist->Fill(0.5*(3*TMath::Power(TMath::Cos(ev->theta),2)-1));
 
        thetaVsPhiH->Fill(ev->PhiH,ev->theta);
        thetaVsPhiR->Fill(ev->PhiR,ev->theta);
@@ -599,6 +602,7 @@ int main(int argc, char** argv) {
    thetaDist->Write();
    sinThetaDist->Write();
    cosThetaDist->Write();
+   p20dist->Write();
    sinThetaCosThetaDist->Write();
 
    thetaVsPhiH->Write();

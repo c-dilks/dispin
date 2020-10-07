@@ -6,6 +6,6 @@ if [ $# -ne 2 ]; then
   exit
 fi
 
-file1=spinroot_injCHI/spinroot_inj_${1}/asym_42.root
-file2=spinroot_injCHI/spinroot_inj_${2}/asym_42.root
-root -l CompareAsyms.C'("'$file1'","'$file2'",1)'
+file1=spinroot_inj_${1}/asym_42.root
+file2=spinroot_inj_${2}/asym_42.root
+root -l CompareAsyms.C'("'$file1'","'$file2'",0)'

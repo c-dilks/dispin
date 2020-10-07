@@ -75,6 +75,21 @@ class Tools {
       return UNDEF;
     };
 
+    // calculate RMS of a histogram
+    static Double_t CalculateRMS(TH1 * h) {
+      Double_t bc,bv;
+      Double_t numer,denom;
+      numer=denom=0;
+      for(int bn=1; bn<=h->GetNbinsX(); bn++ ) {
+        bc = h->GetBinContent(bn);
+        bv = h->GetBinCenter(bn);
+        numer += bc*bv*bv;
+        denom += bc;
+      };
+      return TMath::Sqrt(numer/denom);
+    };
+
+
     
     // get angle between two vectors
     static Float_t AngleSubtend(TVector3 vA, TVector3 vB) {
