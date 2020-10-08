@@ -175,7 +175,7 @@ int main(int argc, char** argv) {
       mapdistDepolWA.at(bn)->Fill(ev->GetDepolarizationFactor('W')/ev->GetDepolarizationFactor('A'));
       mapdistP0.at(bn)->Fill(0.5*(3*TMath::Power(TMath::Cos(ev->theta),2)-1));
       mapdistP1.at(bn)->Fill(TMath::Sin(ev->theta));
-      mapdistF.at(bn)->Fill(TMath::Sin(ev->PhiH));
+      mapdistF.at(bn)->Fill(TMath::Cos(ev->PhiH));
       mapdistG.at(bn)->Fill(TMath::Sin(ev->PhiR));
       mapdistFG.at(bn)->Fill(TMath::Sin(2*ev->PhiH-ev->PhiR)*TMath::Sin(ev->PhiH));
       mapdistFGH.at(bn)->Fill(

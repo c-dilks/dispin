@@ -16,7 +16,7 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
   
   // OPTIONS
   ///////////////////
-  Int_t polarizationSetting = Modulation::kLU;
+  Int_t polarizationSetting = Modulation::kUU;
   Bool_t enableLegendre = 0;
   Int_t LMAX = 2;
   Bool_t useModulationTitle = false; // if true, print functions instaed of kets
@@ -137,7 +137,7 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
     //if(useModulationTitle) funcT[f] = modu->ModulationTitle();
     //else funcT[f] = modu->StateTitle();
     funcT[f] = modu->ModulationTitle();
-    //funcT[f] += " -- " + modu->StateTitle();
+    funcT[f] += " -- " + modu->StateTitle();
     //funcT[f] = modu->StateTitle();
     funcTex[f] = modu->StateTitle();
     //funcTex[f] = modu->ModulationTitle();
@@ -222,10 +222,10 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
             //if(g==6) modValG = 0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1) / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
             //if(f==6) modValF = 0.2*TMath::Cos(phiH) / (1+0.2*TMath::Cos(phiH));
             //if(g==6) modValG = 0.2*TMath::Cos(phiH);
-            if(f==5) modValF = 1;
-            if(g==5) modValG = 1;
-            if(f==6) modValF = TMath::Sin(theta);
-            if(g==6) modValG = TMath::Sin(theta);
+            //if(f==5) modValF = 1;
+            //if(g==5) modValG = 1;
+            //if(f==6) modValF = TMath::Sin(theta);
+            //if(g==6) modValG = TMath::Sin(theta);
             //if(f==6) modValF = 0.5*(3*TMath::Power(TMath::Cos(theta),2)-1);
             //if(g==6) modValG = 0.5*(3*TMath::Power(TMath::Cos(theta),2)-1);
             //if(f==6) modValF = 1.0/(0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));

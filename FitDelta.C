@@ -17,6 +17,7 @@ class Injection : public TObject {
     float A,B;
     int idxComp;
     TFile * infile;
+    TString infileN;
     Double_t x,y,ex,ey;
     TGraphAsymmErrors * asymGr;
     // - constructor
@@ -25,7 +26,8 @@ class Injection : public TObject {
       A = A_;
       B = B_;
       idxComp = -1;
-      TString infileN = Form("spinroot_inj_%d/asym_42.root",idx);
+      //infileN = Form("spinroot_injAhB20/spinroot_inj_%d/asym_42.root",idx);
+      infileN = Form("spinroot_injArBh/spinroot_inj_%d/asym_42.root",idx);
       infile = new TFile(infileN,"READ");
     };
     // - get asymmetry for given amplitude and bin number
@@ -123,8 +125,29 @@ void FitDelta(Int_t amp=0, Int_t binnum=0) {
   deltaGr->SetMarkerColor(kBlack);
   deltaGr->SetMarkerStyle(kFullCircle);
   deltaGr->Draw("P");
-  TF2 * func = new TF2("func","x*y*[0]/(1+y*[0])",-1,1,-1,1);
-  //TF2 * func = new TF2("func","x*y*[0]/(1+y*[1])",-1,1,-1,1);
+  //TF2 * func = new TF2("func","x*y*[0]/(1+y*[0])",-1,1,-1,1);
+  TF2 * func = new TF2("func","x*y*[0]/(1+y*[1])",-1,1,-1,1);
+  //TF2 * func = new TF2("func","x*y*[0]",-1,1,-1,1);
+  //TF2 * func = new TF2("func","(x*y*[0]+[2])/(1+y*[1])",-1,1,-1,1);//28
+  //TF2 * func = new TF2("func","(x*y*[0])/(1+y*[1])+x*[2]+y*[3]",-1,1,-1,1);
+
+  /*
+  switch(binnum) { // fix to <cosPhiH>
+    case 0: func->FixParameter(1,-0.640); break;
+    case 1: func->FixParameter(1,-0.611); break;
+    case 2: func->FixParameter(1,-0.593); break;
+    case 3: func->FixParameter(1,-0.542); break;
+    case 4: func->FixParameter(1,-0.480); break;
+    case 5: func->FixParameter(1,-0.382); break;
+    case 6: func->FixParameter(1,-0.313); break;
+    case 7: func->FixParameter(1,-0.279); break;
+    case 8: func->FixParameter(1,-0.229); break;
+    case 9: func->FixParameter(1,-0.157); break;
+    case 10: func->FixParameter(1,-0.096); break;
+    case 11: func->FixParameter(1,-0.031); break;
+  };
+  */
+
   deltaGr->Fit(func,"","");
   func->Draw("surfsame");
   cout << "chi2/ndf = " << func->GetChisquare()/func->GetNDF() << endl;
