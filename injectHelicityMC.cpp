@@ -141,11 +141,12 @@ int main(int argc, char** argv) {
 
     // ------------------------------------------theta
     /***/
-    numerInject = moduVal[modH];
+    numerInject = moduVal[modR];
     //numerInject = 0.06*moduVal[modH]+0.08*moduVal[modHR];
     /***/
-    denomInject = 0.5*(3*TMath::Power(TMath::Cos(theta),2)-1);
+    //denomInject = 0.5*(3*TMath::Power(TMath::Cos(theta),2)-1);
     //denomInject = TMath::Sin(theta);
+    denomInject = TMath::Cos(phiH);
     /***/
     //denomInject2 = TMath::Sin(theta);
     denomInject2 = 0;
@@ -235,6 +236,7 @@ int main(int argc, char** argv) {
                      (1-0.4*denomInject+0.2*denomInject2);
     asymInject[62] = 4*numerInject /
                      (1-0.8*denomInject+0.2*denomInject2);
+    */
 
 
     // calculate injected helicity: 2=spin-, 3=spin+
@@ -243,7 +245,6 @@ int main(int argc, char** argv) {
       asymInject[f] *= 0.863; // polarization (cf EventTree::Polarization())
       helicityMC[f] = (rn<0.5*(1+asymInject[f])) ? 3 : 2;
     };
-    */
 
     outTr->Fill();
   };
