@@ -82,9 +82,11 @@ class Binning : public TObject
     Int_t GetNbinsTotal();
     TString GetIVname(Int_t dim);
     TString GetIVtitle(Int_t dim);
-    // bin finding
-    Int_t FindBin(EventTree * ev); // returns bin number associated with iv values
     // additional scheme methods
+    // - bin finding
+    Int_t FindBin(EventTree * ev);
+    Int_t FindBin(Float_t iv0, Float_t iv1=0, Float_t iv2=0);
+    // -misc
     Bool_t CheckDim(Int_t dim_);
     Int_t HashBinNum(Int_t bin0, Int_t bin1=-1, Int_t bin2=-1);
     Int_t UnhashBinNum(Int_t bn, Int_t dim);

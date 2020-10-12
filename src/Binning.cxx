@@ -378,6 +378,17 @@ Int_t Binning::FindBin(EventTree * ev) {
   return this->HashBinNum(ivBin[0],ivBin[1],ivBin[2]);
 };
 
+// get bin associated with specified values, using current binning scheme
+Int_t Binning::FindBin(Float_t iv0, Float_t iv1, Float_t iv2) {
+  Float_t ivVal[3] = {iv0,iv1,iv2};
+  Int_t ivBin[3] = {-1,-1,-1};
+  for(int d=0; d<dimensions; d++) {
+    ivBin[d] = this->GetBin(ivVar[d],ivVal[d]);
+  };
+  return this->HashBinNum(ivBin[0],ivBin[1],ivBin[2]);
+}
+
+
 
 
 TString Binning::GetBoundStr(Int_t bn, Int_t dim) {

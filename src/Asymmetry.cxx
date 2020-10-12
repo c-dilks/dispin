@@ -7,7 +7,7 @@ Asymmetry::Asymmetry(Binning * binScheme, Int_t binNum) {
 
   // OPTIONS ////////////
   debug = true;
-  extendMLM = true; // if true, MLM fit will be extended
+  extendMLM = false; // if true, MLM fit will be extended
   yieldLimit = 1e6; // upper bound for extended MLM's yield parameter
   ///////////////////////
 

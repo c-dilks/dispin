@@ -742,6 +742,7 @@ int main(int argc, char** argv) {
 
   // write output to asymFile
   TFile * asymFile = new TFile(asymFileN,"RECREATE");
+  BS->Write("BS");
   // -- Asymmetry objects
   /*
   asymFile->cd();

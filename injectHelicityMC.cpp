@@ -18,16 +18,19 @@
 #include "Constants.h"
 #include "EventTree.h"
 #include "Modulation.h"
+#include "Binning.h"
 
 TFile * inFile;
 TFile * outFile;
 TTree * inTr;
 TTree * outTr;
+TTree * asymTr;
+Binning * BS;
 
 
 int main(int argc, char** argv) {
 
-  // ARGUMENTS
+  // ARGUMENTS ///////////////////////////////////
   TString infileN;
   TString outdirN;
   if(argc<=2) {
@@ -36,16 +39,44 @@ int main(int argc, char** argv) {
   };
   infileN = TString(argv[1]);
   outdirN = TString(argv[2]);
+  ///////////////////////////////////////////////
+
+
+  // OPTIONS FOR LATTICE STUDY ///////////////////
+  // - settings for lattice estimate of shift on LU amps from nonzero
+  //   UU amps; here we control how to read the physics asymmetries
+  //
+  Bool_t injectLattice = true; // enable lattice estimate
+  //
+  Float_t latticeMax = 0.2; // maximum amplitude (lattice size)
+  Int_t latticePoints = 3; // number of amplitudes (within +-latticeMax)
+  //
+  const Int_t nUUmods = 3; // number of UU modulations
+  // - setup for injection of measuered physics asym
+  BS = new Binning(EncodePairType(kPip,kPim)); // pi+pi-
+  BS->SetScheme(2); // ivType from `buildSpinroot.exe -i`
+  TString asymTable = "spinroot_final_2/table_42_mlm.dat";
+  TString iv0str = "gen_Mh"; // which vars to read
+  TString iv1str = "";
+  TString iv2str = "";
+  ///////////////////////////////////////////////
 
   // open input outroot file
   inFile = new TFile(infileN,"READ");
   inTr = (TTree*) inFile->Get("tree");
   Float_t phiH,phiR,theta;
   Float_t Mh;
+  Float_t iv0,iv1,iv2;
   inTr->SetBranchAddress("gen_PhiH",&phiH);
   inTr->SetBranchAddress("gen_PhiRp",&phiR);
   inTr->SetBranchAddress("gen_theta",&theta);
-  inTr->SetBranchAddress("gen_Mh",&Mh);
+  if(!injectLattice) inTr->SetBranchAddress("gen_Mh",&Mh);
+  else {
+    iv0=iv1=iv2=0;
+    if(iv0str!="") inTr->SetBranchAddress(iv0str,&iv0);
+    if(iv1str!="") inTr->SetBranchAddress(iv1str,&iv1);
+    if(iv2str!="") inTr->SetBranchAddress(iv2str,&iv2);
+  };
 
 
   // create output outroot file
@@ -84,6 +115,38 @@ int main(int argc, char** argv) {
   Bool_t once = true;
 
 
+  // lattice estimate: read asymmetry measurement data
+  Int_t binnum,ampnum;
+  Float_t asymval;
+  Int_t binnumBS;
+  Float_t st,lb,ub;
+  Modulation * moduLatLU[7];
+  Modulation * moduLatUU[nUUmods];
+  Float_t bb[nUUmods];
+  if(injectLattice) {
+    asymTr = new TTree();
+    asymTr->ReadFile(asymTable,"binnum/I:ampnum/I:kinval/F:asymval/F:asymerr/F:dpmean/F");
+    asymTr->SetBranchAddress("binnum",&binnum);
+    asymTr->SetBranchAddress("ampnum",&ampnum);
+    asymTr->SetBranchAddress("asymval",&asymval);
+    // LU modulations
+    moduLatLU[0] = new Modulation(3,0,0,0,false,Modulation::kLU);
+    moduLatLU[1] = new Modulation(2,1,1,0,false,Modulation::kLU);
+    moduLatLU[2] = new Modulation(3,1,1,0,false,Modulation::kLU);
+    moduLatLU[3] = new Modulation(3,1,-1,0,false,Modulation::kLU);
+    moduLatLU[4] = new Modulation(2,2,2,0,false,Modulation::kLU);
+    moduLatLU[5] = new Modulation(3,2,2,0,false,Modulation::kLU);
+    moduLatLU[6] = new Modulation(3,2,-2,0,false,Modulation::kLU);
+    // UU modulations
+    moduLatUU[0] = new Modulation(3,0,0,0,false,Modulation::kUU); // cosPhiH
+    moduLatUU[1] = new Modulation(2,1,1,0,false,Modulation::kUU); // cos(PhiH-PhiR)
+    moduLatUU[2] = new Modulation(3,1,1,0,false,Modulation::kUU); // cosPhiR
+    // other
+    st = 2*latticeMax/(latticePoints-1); // step size
+    lb = -latticeMax; // minimum UU amp
+    ub = latticeMax + 1e-5; // maximum UU amp (+small offset for float loop ranges)
+  };
+
 
   // event loop
   Long64_t ENT = inTr->GetEntries();
@@ -94,164 +157,213 @@ int main(int argc, char** argv) {
     for(int h=0; h<EventTree::NhelicityMC; h++) helicityMC[h]=0;
 
 
-    // calculate modulations, generated values of phi and theta
-    for(int m=0; m<nMod; m++) {
-      moduVal[m] = modu[m]->Evaluate(phiR,phiH,theta);
-    };
-
-
-    // - constant asymmetry
-    asymInject[0]=0;
-    asymInject[1] = amp*moduVal[modH];
-    asymInject[2] = amp*moduVal[modHR];
-    asymInject[3] = amp*moduVal[modR];
-    asymInject[4] = amp*moduVal[mod2HR];
-    // - mimic physics Mh dependence
-    asymInject[5] = amp*Mh/(2*0.77) * moduVal[modR]; // linear, pos. slope
-    asymInject[5] += ( amp - amp*Mh/(2*0.77) ) * moduVal[modH]; // linear, neg. slope
-    asymInject[5] += amp * TMath::Sin(PI*Mh/0.77) * moduVal[modHR]; // sign change
-    // - test inclusion of F_UU modulations
-    // --- effect on mimic
-    asymInject[6] = asymInject[5] / (1+0.2*TMath::Cos(phiH));
-    asymInject[7] = asymInject[5] / (1+0.2*TMath::Cos(phiR));
-    asymInject[8] = asymInject[5] / (1+0.2*TMath::Cos(phiH-phiR));
-    asymInject[9] = asymInject[5] / (1+0.2*TMath::Cos(phiH)+0.2*TMath::Cos(phiR)+0.2*TMath::Cos(phiH-phiR));
-    // --- effect on 100% asym
-    asymInject[10] = 1 / (1+0.2*TMath::Cos(phiH)); // 100% asym
-    // --- effect on single asym amps, 20% cosPhiH
-    asymInject[11] = asymInject[1] / (1+0.2*TMath::Cos(phiH));
-    asymInject[12] = asymInject[2] / (1+0.2*TMath::Cos(phiH));
-    asymInject[13] = asymInject[3] / (1+0.2*TMath::Cos(phiH));
-    asymInject[14] = asymInject[4] / (1+0.2*TMath::Cos(phiH));
-    // --- 10%
-    asymInject[15] = asymInject[1] / (1+0.1*TMath::Cos(phiH));
-    asymInject[16] = asymInject[2] / (1+0.1*TMath::Cos(phiH));
-    asymInject[17] = asymInject[3] / (1+0.1*TMath::Cos(phiH));
-    asymInject[18] = asymInject[4] / (1+0.1*TMath::Cos(phiH));
-    // --- 40%
-    asymInject[19] = asymInject[1] / (1+0.4*TMath::Cos(phiH));
-    asymInject[20] = asymInject[2] / (1+0.4*TMath::Cos(phiH));
-    asymInject[21] = asymInject[3] / (1+0.4*TMath::Cos(phiH));
-    asymInject[22] = asymInject[4] / (1+0.4*TMath::Cos(phiH));
-    // --- -10%
-    asymInject[23] = asymInject[1] / (1-0.1*TMath::Cos(phiH));
-    asymInject[24] = asymInject[2] / (1-0.1*TMath::Cos(phiH));
-    asymInject[25] = asymInject[3] / (1-0.1*TMath::Cos(phiH));
-    asymInject[26] = asymInject[4] / (1-0.1*TMath::Cos(phiH));
-
-    // ------------------------------------------theta
-    /***/
-    numerInject = moduVal[modR];
-    //numerInject = 0.06*moduVal[modH]+0.08*moduVal[modHR];
-    /***/
-    //denomInject = 0.5*(3*TMath::Power(TMath::Cos(theta),2)-1);
-    //denomInject = TMath::Sin(theta);
-    //denomInject = TMath::Cos(phiH);
-    denomInject = TMath::Cos(phiH+phiR);
-    /***/
-    //denomInject2 = TMath::Sin(theta);
-    denomInject2 = 0;
-    /***/
-
-
-    // generalized injection over grid of (A,B)
-    /*
-    ii=27;
-    for(float AA=-0.21; AA<=0.21; AA+=0.03) {
-      for(float BB=-0.5; BB<=0.5; BB+=0.1) {
-        asymInject[ii] = AA*numerInject / (1+BB*denomInject);
-        if(once) printf("ii AA BB: %d %f %f\n",ii,AA,BB);
-        ii++;
+    // lattice estimate
+    if(injectLattice) {
+      
+      // get physics asymmetry
+      binnumBS = BS->FindBin(iv0,iv1,iv2);
+      numerInject = 0;
+      for(int r=0; r<asymTr->GetEntries(); r++) {
+        asymTr->GetEntry(r);
+        if(binnum==binnumBS) {
+          numerInject += asymval * moduLatLU[ampnum]->Evaluate(phiR,phiH,theta);
+        };
       };
-    };
-    once = false;
-    // max ii=180
-    */
 
-    // smaller grid
-    ii=27;
-    for(float AA=-0.04; AA<=0.041; AA+=0.04) {
-      for(float BB=-0.4; BB<=0.41; BB+=0.2) {
-        asymInject[ii] = AA*numerInject / (1+BB*denomInject);
-        if(once) printf("ii AA BB: %d %f %f\n",ii,AA,BB);
-        ii++;
+      // construct the lattice
+      // - loop over points with a cartesian product
+      // - calculate denominator
+      // - calculate full asymmetry to inject
+      ii=0;
+      for(bb[0]=lb; bb[0]<ub; bb[0]+=st) {
+        for(bb[1]=lb; bb[1]<ub; bb[1]+=st) {
+          for(bb[2]=lb; bb[2]<ub; bb[2]+=st) {
+            // denom = 1 + sum_i{B_i*g_i(phi)}
+            denomInject = 1;
+            for(int u=0; u<nUUmods; u++) {
+              denomInject += bb[u] * moduLatLU[u]->Evaluate(phiR,phiH,theta);
+            }
+            // asymmetry to inject
+            asymInject[ii] = numerInject / denomInject;
+            // print out UU amplitude values
+            if(once) {
+              printf("ii B_i: %d",ii);
+              for(int u=0; u<nUUmods; u++) printf(" %f",bb[u]);
+              printf("\n");
+            };
+            ii++;
+          };
+        };
       };
+      once = false;
+      // number of injections = (num UU amps)^(num UU modulations) 
+      // = latticePoints^nUUmods
+      // = 27   // must match EventTree::NhelicityMC
+    } 
+    
+    else {
+      // sandbox for injection studies     
+
+
+      // calculate modulations, generated values of phi and theta
+      for(int m=0; m<nMod; m++) {
+        moduVal[m] = modu[m]->Evaluate(phiR,phiH,theta);
+      };
+
+
+      // - constant asymmetry
+      asymInject[0]=0;
+      asymInject[1] = amp*moduVal[modH];
+      asymInject[2] = amp*moduVal[modHR];
+      asymInject[3] = amp*moduVal[modR];
+      asymInject[4] = amp*moduVal[mod2HR];
+      // - mimic physics Mh dependence
+      asymInject[5] = amp*Mh/(2*0.77) * moduVal[modR]; // linear, pos. slope
+      asymInject[5] += ( amp - amp*Mh/(2*0.77) ) * moduVal[modH]; // linear, neg. slope
+      asymInject[5] += amp * TMath::Sin(PI*Mh/0.77) * moduVal[modHR]; // sign change
+      // - test inclusion of F_UU modulations
+      // --- effect on mimic
+      asymInject[6] = asymInject[5] / (1+0.2*TMath::Cos(phiH));
+      asymInject[7] = asymInject[5] / (1+0.2*TMath::Cos(phiR));
+      asymInject[8] = asymInject[5] / (1+0.2*TMath::Cos(phiH-phiR));
+      asymInject[9] = asymInject[5] / (1+0.2*TMath::Cos(phiH)+0.2*TMath::Cos(phiR)+0.2*TMath::Cos(phiH-phiR));
+      // --- effect on 100% asym
+      asymInject[10] = 1 / (1+0.2*TMath::Cos(phiH)); // 100% asym
+      // --- effect on single asym amps, 20% cosPhiH
+      asymInject[11] = asymInject[1] / (1+0.2*TMath::Cos(phiH));
+      asymInject[12] = asymInject[2] / (1+0.2*TMath::Cos(phiH));
+      asymInject[13] = asymInject[3] / (1+0.2*TMath::Cos(phiH));
+      asymInject[14] = asymInject[4] / (1+0.2*TMath::Cos(phiH));
+      // --- 10%
+      asymInject[15] = asymInject[1] / (1+0.1*TMath::Cos(phiH));
+      asymInject[16] = asymInject[2] / (1+0.1*TMath::Cos(phiH));
+      asymInject[17] = asymInject[3] / (1+0.1*TMath::Cos(phiH));
+      asymInject[18] = asymInject[4] / (1+0.1*TMath::Cos(phiH));
+      // --- 40%
+      asymInject[19] = asymInject[1] / (1+0.4*TMath::Cos(phiH));
+      asymInject[20] = asymInject[2] / (1+0.4*TMath::Cos(phiH));
+      asymInject[21] = asymInject[3] / (1+0.4*TMath::Cos(phiH));
+      asymInject[22] = asymInject[4] / (1+0.4*TMath::Cos(phiH));
+      // --- -10%
+      asymInject[23] = asymInject[1] / (1-0.1*TMath::Cos(phiH));
+      asymInject[24] = asymInject[2] / (1-0.1*TMath::Cos(phiH));
+      asymInject[25] = asymInject[3] / (1-0.1*TMath::Cos(phiH));
+      asymInject[26] = asymInject[4] / (1-0.1*TMath::Cos(phiH));
+
+      // ------------------------------------------theta
+      /***/
+      numerInject = moduVal[modR];
+      //numerInject = 0.06*moduVal[modH]+0.08*moduVal[modHR];
+      /***/
+      //denomInject = 0.5*(3*TMath::Power(TMath::Cos(theta),2)-1);
+      //denomInject = TMath::Sin(theta);
+      //denomInject = TMath::Cos(phiH);
+      denomInject = TMath::Cos(phiH+phiR);
+      /***/
+      //denomInject2 = TMath::Sin(theta);
+      denomInject2 = 0;
+      /***/
+
+
+      // generalized injection over grid of (A,B)
+      /*
+      ii=27;
+      for(float AA=-0.21; AA<=0.21; AA+=0.03) {
+        for(float BB=-0.5; BB<=0.5; BB+=0.1) {
+          asymInject[ii] = AA*numerInject / (1+BB*denomInject);
+          if(once) printf("ii AA BB: %d %f %f\n",ii,AA,BB);
+          ii++;
+        };
+      };
+      once = false;
+      // max ii=180
+      */
+
+      // smaller grid
+      ii=27;
+      for(float AA=-0.04; AA<=0.041; AA+=0.04) {
+        for(float BB=-0.4; BB<=0.41; BB+=0.2) {
+          asymInject[ii] = AA*numerInject / (1+BB*denomInject);
+          if(once) printf("ii AA BB: %d %f %f\n",ii,AA,BB);
+          ii++;
+        };
+      };
+      once = false;
+      // max ii=41
+
+
+
+      // --- effect on numerators
+      /*
+      asymInject[27] = asymInject[1] / (1+0.2*denomInject+0.2*denomInject2);
+      asymInject[28] = asymInject[2] / (1+0.2*denomInject+0.2*denomInject2);
+      asymInject[29] = asymInject[3] / (1+0.2*denomInject+0.2*denomInject2);
+      asymInject[30] = asymInject[4] / (1+0.2*denomInject+0.2*denomInject2);
+
+
+      // fix B=0.2, vary A
+      // 0.04
+      asymInject[31] = 1*numerInject;
+      asymInject[32] = 1*numerInject / (1+0.2*denomInject+0.2*denomInject2);
+      // 0.08
+      asymInject[33] = 2*numerInject;
+      asymInject[34] = 2*numerInject / (1+0.2*denomInject+0.2*denomInject2);
+      // 0.16
+      asymInject[35] = 4*numerInject;
+      asymInject[36] = 4*numerInject / (1+0.2*denomInject+0.2*denomInject2);
+      // 0.32
+      asymInject[37] = 8*numerInject;
+      asymInject[38] = 8*numerInject / (1+0.2*denomInject+0.2*denomInject2);
+      // -0.04
+      asymInject[39] = -1*numerInject;
+      asymInject[40] = -1*numerInject / (1+0.2*denomInject+0.2*denomInject2);
+      // -0.08
+      asymInject[41] = -2*numerInject;
+      asymInject[42] = -2*numerInject / (1+0.2*denomInject+0.2*denomInject2);
+      // -0.16
+      asymInject[43] = -4*numerInject;
+      asymInject[44] = -4*numerInject / (1+0.2*denomInject+0.2*denomInject2);
+      // -0.32
+      asymInject[45] = -8*numerInject;
+      asymInject[46] = -8*numerInject / (1+0.2*denomInject+0.2*denomInject2);
+
+      // fix A = amp, vary B
+      asymInject[47] = numerInject / 
+                       (1+0.1*denomInject+0.2*denomInject2);
+      asymInject[48] = numerInject /
+                       (1+0.2*denomInject+0.2*denomInject2);
+      asymInject[49] = numerInject /
+                       (1+0.4*denomInject+0.2*denomInject2);
+      asymInject[50] = numerInject /
+                       (1+0.8*denomInject+0.2*denomInject2);
+      asymInject[51] = numerInject /
+                       (1-0.1*denomInject+0.2*denomInject2);
+      asymInject[52] = numerInject /
+                       (1-0.2*denomInject+0.2*denomInject2);
+      asymInject[53] = numerInject /
+                       (1-0.4*denomInject+0.2*denomInject2);
+      asymInject[54] = numerInject /
+                       (1-0.8*denomInject+0.2*denomInject2);
+
+      // fix A = 4*amp, vary B
+      asymInject[55] = 4*numerInject / 
+                       (1+0.1*denomInject+0.2*denomInject2);
+      asymInject[56] = 4*numerInject /
+                       (1+0.2*denomInject+0.2*denomInject2);
+      asymInject[57] = 4*numerInject /
+                       (1+0.4*denomInject+0.2*denomInject2);
+      asymInject[58] = 4*numerInject /
+                       (1+0.8*denomInject+0.2*denomInject2);
+      asymInject[59] = 4*numerInject /
+                       (1-0.1*denomInject+0.2*denomInject2);
+      asymInject[60] = 4*numerInject /
+                       (1-0.2*denomInject+0.2*denomInject2);
+      asymInject[61] = 4*numerInject /
+                       (1-0.4*denomInject+0.2*denomInject2);
+      asymInject[62] = 4*numerInject /
+                       (1-0.8*denomInject+0.2*denomInject2);
+      */
     };
-    once = false;
-    // max ii=41
-
-
-
-    // --- effect on numerators
-    /*
-    asymInject[27] = asymInject[1] / (1+0.2*denomInject+0.2*denomInject2);
-    asymInject[28] = asymInject[2] / (1+0.2*denomInject+0.2*denomInject2);
-    asymInject[29] = asymInject[3] / (1+0.2*denomInject+0.2*denomInject2);
-    asymInject[30] = asymInject[4] / (1+0.2*denomInject+0.2*denomInject2);
-
-
-    // fix B=0.2, vary A
-    // 0.04
-    asymInject[31] = 1*numerInject;
-    asymInject[32] = 1*numerInject / (1+0.2*denomInject+0.2*denomInject2);
-    // 0.08
-    asymInject[33] = 2*numerInject;
-    asymInject[34] = 2*numerInject / (1+0.2*denomInject+0.2*denomInject2);
-    // 0.16
-    asymInject[35] = 4*numerInject;
-    asymInject[36] = 4*numerInject / (1+0.2*denomInject+0.2*denomInject2);
-    // 0.32
-    asymInject[37] = 8*numerInject;
-    asymInject[38] = 8*numerInject / (1+0.2*denomInject+0.2*denomInject2);
-    // -0.04
-    asymInject[39] = -1*numerInject;
-    asymInject[40] = -1*numerInject / (1+0.2*denomInject+0.2*denomInject2);
-    // -0.08
-    asymInject[41] = -2*numerInject;
-    asymInject[42] = -2*numerInject / (1+0.2*denomInject+0.2*denomInject2);
-    // -0.16
-    asymInject[43] = -4*numerInject;
-    asymInject[44] = -4*numerInject / (1+0.2*denomInject+0.2*denomInject2);
-    // -0.32
-    asymInject[45] = -8*numerInject;
-    asymInject[46] = -8*numerInject / (1+0.2*denomInject+0.2*denomInject2);
-
-    // fix A = amp, vary B
-    asymInject[47] = numerInject / 
-                     (1+0.1*denomInject+0.2*denomInject2);
-    asymInject[48] = numerInject /
-                     (1+0.2*denomInject+0.2*denomInject2);
-    asymInject[49] = numerInject /
-                     (1+0.4*denomInject+0.2*denomInject2);
-    asymInject[50] = numerInject /
-                     (1+0.8*denomInject+0.2*denomInject2);
-    asymInject[51] = numerInject /
-                     (1-0.1*denomInject+0.2*denomInject2);
-    asymInject[52] = numerInject /
-                     (1-0.2*denomInject+0.2*denomInject2);
-    asymInject[53] = numerInject /
-                     (1-0.4*denomInject+0.2*denomInject2);
-    asymInject[54] = numerInject /
-                     (1-0.8*denomInject+0.2*denomInject2);
-
-    // fix A = 4*amp, vary B
-    asymInject[55] = 4*numerInject / 
-                     (1+0.1*denomInject+0.2*denomInject2);
-    asymInject[56] = 4*numerInject /
-                     (1+0.2*denomInject+0.2*denomInject2);
-    asymInject[57] = 4*numerInject /
-                     (1+0.4*denomInject+0.2*denomInject2);
-    asymInject[58] = 4*numerInject /
-                     (1+0.8*denomInject+0.2*denomInject2);
-    asymInject[59] = 4*numerInject /
-                     (1-0.1*denomInject+0.2*denomInject2);
-    asymInject[60] = 4*numerInject /
-                     (1-0.2*denomInject+0.2*denomInject2);
-    asymInject[61] = 4*numerInject /
-                     (1-0.4*denomInject+0.2*denomInject2);
-    asymInject[62] = 4*numerInject /
-                     (1-0.8*denomInject+0.2*denomInject2);
-    */
 
 
     // calculate injected helicity: 2=spin-, 3=spin+
