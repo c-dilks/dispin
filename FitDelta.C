@@ -26,8 +26,8 @@ class Injection : public TObject {
       A = A_;
       B = B_;
       idxComp = -1;
-      //infileN = Form("spinroot_injAhB20/spinroot_inj_%d/asym_42.root",idx);
-      infileN = Form("spinroot_injArBh/spinroot_inj_%d/asym_42.root",idx);
+      infileN = Form("spinroot_injAhB20/spinroot_inj_%d/asym_42.root",idx);
+      //infileN = Form("spinroot_injArBh/spinroot_inj_%d/asym_42.root",idx);
       infile = new TFile(infileN,"READ");
     };
     // - get asymmetry for given amplitude and bin number
@@ -60,9 +60,19 @@ void FitDelta(Int_t amp=0, Int_t binnum=0) {
   // generate TObjArray of `Injection` objects, to store injection index,
   // A, B, etc.
   // - this table is obtained from injectHelicityMC.cpp
+  /*
   int ii=27;
   for(float AA=-0.21; AA<=0.21; AA+=0.03) {
     for(float BB=-0.5; BB<=0.5; BB+=0.1) {
+      Grid->AddLast(new Injection(ii,AA,BB));
+      ii++;
+    };
+  };
+  */
+  // smaller grid
+  ii=27;
+  for(float AA=-0.04; AA<=0.041; AA+=0.04) {
+    for(float BB=-0.4; BB<=0.41; BB+=0.2) {
       Grid->AddLast(new Injection(ii,AA,BB));
       ii++;
     };

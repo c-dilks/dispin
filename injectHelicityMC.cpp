@@ -154,6 +154,7 @@ int main(int argc, char** argv) {
 
 
     // generalized injection over grid of (A,B)
+    /*
     ii=27;
     for(float AA=-0.21; AA<=0.21; AA+=0.03) {
       for(float BB=-0.5; BB<=0.5; BB+=0.1) {
@@ -164,6 +165,19 @@ int main(int argc, char** argv) {
     };
     once = false;
     // max ii=180
+    */
+
+    // smaller grid
+    ii=27;
+    for(float AA=-0.04; AA<=0.041; AA+=0.04) {
+      for(float BB=-0.4; BB<=0.41; BB+=0.2) {
+        asymInject[ii] = AA*numerInject / (1+BB*denomInject);
+        if(once) printf("ii AA BB: %d %f %f\n",ii,AA,BB);
+        ii++;
+      };
+    };
+    once = false;
+    // max ii=41
 
 
 
