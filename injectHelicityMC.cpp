@@ -146,7 +146,8 @@ int main(int argc, char** argv) {
     /***/
     //denomInject = 0.5*(3*TMath::Power(TMath::Cos(theta),2)-1);
     //denomInject = TMath::Sin(theta);
-    denomInject = TMath::Cos(phiH);
+    //denomInject = TMath::Cos(phiH);
+    denomInject = TMath::Cos(phiH+phiR);
     /***/
     //denomInject2 = TMath::Sin(theta);
     denomInject2 = 0;
