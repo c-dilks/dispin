@@ -30,7 +30,8 @@ class Injection : public TObject {
       //infileN = Form("spinroot_injArBh/spinroot_inj_%d/asym_42.root",idx);
       //infileN = Form("spinroot_injArBh_smallgrid/spinroot_inj_%d/asym_42.root",idx);
       //infileN = Form("spinroot_injArBhplusr/spinroot_inj_%d/asym_42.root",idx);
-      infileN = Form("spinroot_injArBr/spinroot_inj_%d/asym_42.root",idx);
+      //infileN = Form("spinroot_injArBr/spinroot_inj_%d/asym_42.root",idx);
+      infileN = Form("spinroot_injArB2h/spinroot_inj_%d/asym_42.root",idx);
       infile = new TFile(infileN,"READ");
     };
     // - get asymmetry for given amplitude and bin number

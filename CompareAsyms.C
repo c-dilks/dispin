@@ -1,11 +1,21 @@
 // compare asymmetries from two different asym*.root files
+// - infile0name and infile1name are the asym*.root files to compare
+// - predictShift: draw attempts of prediction of asymmetry difference
+// - newTitle: change title of asymmetry difference plots
+// - pngName: if newTitle!="", will print PNG of difference plots with
+//            the specified name
+
+R__LOAD_LIBRARY(DiSpin)
+#include "Binning.h"
 
 void CompareAsyms(TString infile0name="spinroot_final_4/asym_42_chi2.root",
                   TString infile1name="spinroot_final_4/asym_42_mlm.root",
-                  Bool_t predictShift=false) {
+                  Bool_t predictShift=false,
+                  TString newTitle="",
+                  TString pngName="diff.png") {
 
   /// OPTIONS /////////////////
-  Float_t diffMax = 0.01; // scale for difference plots
+  Float_t diffMax = 0.02; // scale for difference plots
   /////////////////////////////
 
 
@@ -29,6 +39,14 @@ void CompareAsyms(TString infile0name="spinroot_final_4/asym_42_chi2.root",
   TGraphAsymmErrors * ratGr;
   TObjArray * diffGrArr = new TObjArray();
   TObjArray * ratGrArr = new TObjArray();
+
+  TFile * distFile;
+  if(newTitle!="") {
+    TString distFileName = pngName;
+    distFileName.ReplaceAll("png","root");
+    distFile = new TFile(distFileName,"RECREATE");
+  };
+    
 
   Double_t x[2];
   Double_t y[2];
@@ -128,18 +146,21 @@ void CompareAsyms(TString infile0name="spinroot_final_4/asym_42_chi2.root",
     diffCanv->GetPad(pad)->SetGrid(1,1);
     diffGr = (TGraphAsymmErrors*) diffGrArr->At(i);
     diffGr->GetYaxis()->SetRangeUser(-diffMax,diffMax);
-    diffGr->SetTitle(TString("difference for "+grT));
+    if(newTitle=="") diffGr->SetTitle(TString("difference for "+grT));
+    else diffGr->SetTitle(TString(newTitle+" "+grT));
     diffGr->SetMarkerStyle(kFullCircle);
     diffGr->SetLineWidth(2);
     diffGr->SetMarkerColor(kBlack);
     diffGr->SetLineColor(kBlack);
     diffGr->Draw("APE");
+    /*
     if(i==1) {
       diffGr->Fit("pol0");
       printf("%f); g->SetPointError(i++,0,%f);\n",
         diffGr->GetFunction("pol0")->GetParameter(0),
         diffGr->GetFunction("pol0")->GetParError(0));
     };
+    */
 
     // draw ratGr
     ratCanv->cd(pad);
@@ -153,10 +174,16 @@ void CompareAsyms(TString infile0name="spinroot_final_4/asym_42_chi2.root",
     ratGr->SetLineColor(kBlack);
     ratGr->Draw("APE");
   };
+  if(newTitle!="") diffCanv->Print(pngName,"png");
 
   TCanvas * canv2 = new TCanvas("diffDistCanv","diffDistCanv",800,800);
   diffDist->SetFillColor(kBlack);
   diffDist->Draw();
+  if(newTitle!="") {
+    distFile->cd();
+    diffDist->Write();
+  };
+
 
 
   // draw shift prediction points (computed in Orthogonality.C)
