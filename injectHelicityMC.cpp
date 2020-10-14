@@ -13,6 +13,7 @@
 #include "TRandom.h"
 #include "TRandomGen.h"
 #include "TRegexp.h"
+#include "TObjArray.h"
 
 // dispin
 #include "Constants.h"
@@ -48,10 +49,10 @@ int main(int argc, char** argv) {
   //
   Bool_t injectLattice = true; // enable lattice estimate
   //
-  Float_t latticeMax = 0.2; // maximum amplitude (lattice size)
-  Int_t latticePoints = 3; // number of amplitudes (within +-latticeMax)
+  Float_t latticeMax = 0.3; // maximum amplitude (lattice size)
+  Int_t latticePoints = 7; // number of amplitudes (within +-latticeMax)
   //
-  const Int_t nUUmods = 3; // number of UU modulations
+  const Int_t nUUmods = 3; // number of UU modulations for lattice
   // - setup for injection of measuered physics asym
   BS = new Binning(EncodePairType(kPip,kPim)); // pi+pi-
   BS->SetScheme(2); // ivType from `buildSpinroot.exe -i`
@@ -113,20 +114,25 @@ int main(int argc, char** argv) {
   RNG = new TRandomMixMax(14972); // seed
   Int_t ii;
   Bool_t once = true;
+  Bool_t success;
 
 
   // lattice estimate: read asymmetry measurement data
   Int_t binnum,ampnum;
   Float_t asymval;
+  Char_t binnumStr[32];
   Int_t binnumBS;
   Float_t st,lb,ub;
   Modulation * moduLatLU[7];
   Modulation * moduLatUU[nUUmods];
+  TObjArray * moduUUarr;
+  Int_t levMax;
   Float_t bb[nUUmods];
+  Bool_t enableLegendre = false; // theta-dependence for moduUUarr
   if(injectLattice) {
     asymTr = new TTree();
-    asymTr->ReadFile(asymTable,"binnum/I:ampnum/I:kinval/F:asymval/F:asymerr/F:dpmean/F");
-    asymTr->SetBranchAddress("binnum",&binnum);
+    asymTr->ReadFile(asymTable,"binnumStr/C:ampnum/I:kinval/F:asymval/F:asymerr/F:dpmean/F");
+    asymTr->SetBranchAddress("binnumStr",binnumStr);
     asymTr->SetBranchAddress("ampnum",&ampnum);
     asymTr->SetBranchAddress("asymval",&asymval);
     // LU modulations
@@ -145,12 +151,33 @@ int main(int argc, char** argv) {
     st = 2*latticeMax/(latticePoints-1); // step size
     lb = -latticeMax; // minimum UU amp
     ub = latticeMax + 1e-5; // maximum UU amp (+small offset for float loop ranges)
+    // moduUUarr: list of all UU modulations (used for 1D lattices)
+    moduUUarr = new TObjArray();
+    for(int l=0; l<=2; l++) {
+      for(int m=0; m<=l; m++) {
+        for(int twist=2; twist<=3; twist++) {
+          levMax = twist==2 ? 1:0;
+          for(int lev=0; lev<=levMax; lev++) {
+            if(!enableLegendre && l<2) continue;
+            if(twist==2 && lev==0 && m==0) continue; // skip constant term
+            if((twist==2 && lev==0 && m>=0) || (twist==2 && lev==1) || twist==3) {
+              moduUUarr->AddLast(new Modulation(twist,l,m,lev,enableLegendre,Modulation::kUU));
+              if(((twist==2 && lev==1) || twist==3) && m>0) { // negative m states
+                moduUUarr->AddLast(new Modulation(twist,l,-m,lev,enableLegendre,Modulation::kUU));
+              };
+            };
+          };
+        };
+      };
+    };
   };
+
+
 
 
   // event loop
   Long64_t ENT = inTr->GetEntries();
-  //ENT = 100; // limiter
+  //ENT = 1000; // limiter
   for(Long64_t i=0; i<ENT; i++) {
     if(i%10000==0) printf("[+] %.2f%%\n",100*(float)i/((float)ENT));
     inTr->GetEntry(i);
@@ -161,44 +188,76 @@ int main(int argc, char** argv) {
     if(injectLattice) {
       
       // get physics asymmetry
-      binnumBS = BS->FindBin(iv0,iv1,iv2);
-      numerInject = 0;
-      for(int r=0; r<asymTr->GetEntries(); r++) {
-        asymTr->GetEntry(r);
-        if(binnum==binnumBS) {
-          numerInject += asymval * moduLatLU[ampnum]->Evaluate(phiR,phiH,theta);
+      if(iv0>UNDEF && iv1>UNDEF && iv2>UNDEF) {
+        binnumBS = BS->FindBin(iv0,iv1,iv2);
+        numerInject = 0;
+        for(int r=0; r<asymTr->GetEntries(); r++) {
+          asymTr->GetEntry(r);
+          sscanf(binnumStr,"%x",&binnum);
+          //printf("binnumStr=%s binnum=%d\n",binnumStr,binnum);
+          if(binnum==binnumBS) {
+            numerInject += asymval * moduLatLU[ampnum]->Evaluate(phiR,phiH,theta);
+          };
         };
-      };
 
-      // construct the lattice
-      // - loop over points with a cartesian product
-      // - calculate denominator
-      // - calculate full asymmetry to inject
-      ii=0;
-      for(bb[0]=lb; bb[0]<ub; bb[0]+=st) {
-        for(bb[1]=lb; bb[1]<ub; bb[1]+=st) {
-          for(bb[2]=lb; bb[2]<ub; bb[2]+=st) {
-            // denom = 1 + sum_i{B_i*g_i(phi)}
-            denomInject = 1;
-            for(int u=0; u<nUUmods; u++) {
-              denomInject += bb[u] * moduLatLU[u]->Evaluate(phiR,phiH,theta);
-            }
-            // asymmetry to inject
+        /*
+        // construct the lattice
+        // - loop over points with a cartesian product
+        // - calculate denominator
+        // - calculate full asymmetry to inject
+        ii=0;
+        for(bb[0]=lb; bb[0]<ub; bb[0]+=st) {
+          for(bb[1]=lb; bb[1]<ub; bb[1]+=st) {
+            for(bb[2]=lb; bb[2]<ub; bb[2]+=st) {
+              // denom = 1 + sum_i{B_i*g_i(phi)}
+              denomInject = 1;
+              for(int u=0; u<nUUmods; u++) {
+                denomInject += bb[u] * moduLatLU[u]->Evaluate(phiR,phiH,theta);
+              }
+              // asymmetry to inject
+              asymInject[ii] = numerInject / denomInject;
+              // print out UU amplitude values
+              if(once) {
+                printf("ii B_i: %d",ii);
+                for(int u=0; u<nUUmods; u++) printf(" %f",bb[u]);
+                printf("\n");
+              };
+              ii++;
+            };
+          };
+        };
+        once = false;
+        // number of injections = (num UU amps)^(num UU modulations) 
+        // = latticePoints^nUUmods
+        // = 27   // must match EventTree::NhelicityMC
+        */
+
+        // 1D lattice: one lattice for each UU modulation in moduUUarr
+        ii=0;
+        asymInject[ii] = numerInject;
+        if(once) printf("ii moduUU B: %d 0 0\n",ii);
+        ii++;
+        TObjArrayIter nxt(moduUUarr);
+        while(Modulation * moduUU = (Modulation*)nxt()) {
+          for(float bbb=lb; bbb<ub; bbb+=st) {
+            if(fabs(bbb)<1e-4) continue; // skip B=0 cases
+            denomInject = 1 + bbb * moduUU->Evaluate(phiR,phiH,theta);
             asymInject[ii] = numerInject / denomInject;
-            // print out UU amplitude values
             if(once) {
-              printf("ii B_i: %d",ii);
-              for(int u=0; u<nUUmods; u++) printf(" %f",bb[u]);
-              printf("\n");
+              printf("ii moduUU B: %d %s %f\n",
+                ii,(moduUU->ModulationTitle()).Data(),bbb);
             };
             ii++;
           };
         };
+        once = false;
+        // number of injections: 73
+
+        success = true;
+      }
+      else {
+        success = false;
       };
-      once = false;
-      // number of injections = (num UU amps)^(num UU modulations) 
-      // = latticePoints^nUUmods
-      // = 27   // must match EventTree::NhelicityMC
     } 
     
     else {
@@ -363,6 +422,8 @@ int main(int argc, char** argv) {
       asymInject[62] = 4*numerInject /
                        (1-0.8*denomInject+0.2*denomInject2);
       */
+
+      success = true;
     };
 
 
@@ -370,7 +431,10 @@ int main(int argc, char** argv) {
     rn = RNG->Uniform(); // generate random number within [0,1]
     for(int f=0; f<EventTree::NhelicityMC; f++) {
       asymInject[f] *= 0.863; // polarization (cf EventTree::Polarization())
-      helicityMC[f] = (rn<0.5*(1+asymInject[f])) ? 3 : 2;
+      if(success)
+        helicityMC[f] = (rn<0.5*(1+asymInject[f])) ? 3 : 2;
+      else
+        helicityMC[f] = 0; // undefined
     };
 
     outTr->Fill();
