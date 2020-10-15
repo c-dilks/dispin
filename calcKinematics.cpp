@@ -13,8 +13,6 @@
 #include "TRegexp.h"
 #include "TObjArray.h"
 #include "TLorentzVector.h"
-#include "TRandom.h"
-#include "TRandomGen.h"
 
 // dispin
 #include "Constants.h"
@@ -284,14 +282,12 @@ int main(int argc, char** argv) {
 
 
   // - MC branches
-  Int_t helicityMC[EventTree::NhelicityMC];
-  TString helicityMCstr = Form("helicityMC[%d]/I",EventTree::NhelicityMC);
   Float_t gen_eleMatchDist;
   Float_t gen_hadMatchDist[2];
   Bool_t gen_eleIsMatch;
   Bool_t gen_hadIsMatch[2];
+  Bool_t isMatch[nPar];
   if(useMC) {
-    outrootTr->Branch("helicityMC",helicityMC,helicityMCstr);
     // MC matching generated branches
     if(dataStream=="mcrec") {
       // - generated DIS kinematics branches
@@ -347,25 +343,6 @@ int main(int argc, char** argv) {
     };
   };
 
-
-  // instantiate modulations for MC
-  enum modEnum {modH,modHR,modR,mod2HR,nMod};
-  Modulation * modu[nMod];
-  Double_t moduVal[nMod];
-  Float_t amp,iv;
-  Float_t asymInject[EventTree::NhelicityMC];
-  TRandom * RNG;
-  Bool_t proceed;
-  Bool_t isMatch[nPar];
-  Float_t injPhiH, injPhiR, injTheta;
-  Float_t rn;
-  if(useMC) {
-    modu[modH] =   new Modulation(3,0,0,0,false,Modulation::kLU);
-    modu[modHR] =  new Modulation(2,1,1,0,false,Modulation::kLU);
-    modu[modR] =   new Modulation(3,1,1,0,false,Modulation::kLU);
-    modu[mod2HR] = new Modulation(3,1,-1,0,false,Modulation::kLU);
-    RNG = new TRandomMixMax(14972);
-  };
 
 
   //-----------------------------------
@@ -426,23 +403,10 @@ int main(int argc, char** argv) {
     eleSector = fidu[kEle]->determineSectorEC(0);
 
 
-    // MC asymmetry injection: assignment of a helicity or weight,
-    //                         according to the asymmetry you want
-    // options: if dataStream==mcrec: using recon particles for outroot
-    //            if injectStream==injgen
-    //            - use matched gen particles for asym injection
-    //            -> most realistic test, but accuracy relies on good matching
-    //            if injectStream==injrec
-    //            - use recon particles for asym injection
-    //            -> only useful for testing fit algorithm
-    //          if dataStream==mcgen: using gen particles for outroot
-    //            injectStream value not used
-    //            - use gen particles for asym injection
-    //            -> only useful for testing fit algorithm
+    // MC information
     if(useMC) {
 
       // compute DIS and dihadron kinematics from generated, matched set
-      proceed = true;
       if(dataStream=="mcrec") {
         // reset branch vars
         disEvMC->ResetVars();
@@ -460,7 +424,6 @@ int main(int argc, char** argv) {
           trajMC[p]->Momentum.SetPxPyPzE(genPx[p],genPy[p],genPz[p],genE[p]);
           trajMC[p]->Vertex.SetXYZ(genVx[p],genVy[p],genVz[p]);
           isMatch[p] = trajMC[p]->Row>=0; // true if valid match
-          if(injectStream=="injgen" && !isMatch[p]) proceed=false;
         };
         // calculate kinematics
         if(isMatch[kEle]) {
@@ -482,84 +445,7 @@ int main(int argc, char** argv) {
           };
         };
       };
-
-      // note: proceed is true unless injectStream==injgen and any recon
-      // particle (electron or either hadron) was not matched to a gen particle
-
-      if(proceed) {
-        // calculate modulations; depends on injectStream
-        // if !proceed, moduVal is not needed
-        for(int m=0; m<nMod; m++) {
-          if(dataStream=="mcrec" && injectStream=="injgen") {
-            injPhiR = dihMC->PhiRp;
-            injPhiH = dihMC->PhiH;
-            injTheta = dihMC->theta;
-          } else if(dataStream=="mcrec" && injectStream=="injrec") {
-            injPhiR = dih->PhiRp;
-            injPhiH = dih->PhiH;
-            injTheta = dih->theta;
-          } else if(dataStream=="mcgen") {
-            injPhiR = dih->PhiRp;
-            injPhiH = dih->PhiH;
-            injTheta = dih->theta;
-          };
-          moduVal[m] = modu[m]->Evaluate(injPhiR,injPhiH,injTheta);
-        };
-      };
-
-      // calculate injected asymmetry values and assign helicities
-      if(proceed) {
-
-        // - constant asymmetry
-        amp = 0.04;
-        asymInject[0]=0;
-        asymInject[1] = amp*moduVal[modH];
-        asymInject[2] = amp*moduVal[modHR];
-        asymInject[3] = amp*moduVal[modR];
-        asymInject[4] = amp*moduVal[mod2HR];
-        // - mimic physics Mh dependence
-        iv = dih->Mh;
-        asymInject[5] = amp*iv/(2*0.77) * moduVal[modR]; // linear, pos. slope
-        asymInject[5] += ( amp - amp*iv/(2*0.77) ) * moduVal[modH]; // linear, neg. slope
-        asymInject[5] += amp * TMath::Sin(PI*iv/0.77) * moduVal[modHR]; // sign change
-        // - test inclusion of F_UU modulations
-        // --- effect on mimic
-        asymInject[6] = asymInject[5] / (1+0.2*TMath::Cos(injPhiH));
-        asymInject[7] = asymInject[5] / (1+0.2*TMath::Cos(injPhiR));
-        asymInject[8] = asymInject[5] / (1+0.2*TMath::Cos(injPhiH-injPhiR));
-        asymInject[9] = asymInject[5] / (1+0.2*TMath::Cos(injPhiH)+0.2*TMath::Cos(injPhiR)+0.2*TMath::Cos(injPhiH-injPhiR));
-        // --- effect on 100% asym
-        asymInject[10] = 1 / (1+0.2*TMath::Cos(injPhiH)); // 100% asym
-        // --- effect on single asym amps, 20% cosPhiH
-        asymInject[11] = asymInject[1] / (1+0.2*TMath::Cos(injPhiH));
-        asymInject[12] = asymInject[2] / (1+0.2*TMath::Cos(injPhiH));
-        asymInject[13] = asymInject[3] / (1+0.2*TMath::Cos(injPhiH));
-        asymInject[14] = asymInject[4] / (1+0.2*TMath::Cos(injPhiH));
-        // --- effect on single asym amps, 10% cosPhiH
-        asymInject[15] = asymInject[1] / (1+0.1*TMath::Cos(injPhiH));
-        asymInject[16] = asymInject[2] / (1+0.1*TMath::Cos(injPhiH));
-        asymInject[17] = asymInject[3] / (1+0.1*TMath::Cos(injPhiH));
-        asymInject[18] = asymInject[4] / (1+0.1*TMath::Cos(injPhiH));
-        // --- effect from 20% |2,0>_UU,T
-        asymInject[19] = asymInject[1] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(injTheta),2)-1));
-        asymInject[20] = asymInject[2] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(injTheta),2)-1));
-        asymInject[21] = asymInject[3] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(injTheta),2)-1));
-        asymInject[22] = asymInject[4] / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(injTheta),2)-1));
-        
-
-        // calculate injected helicity: 2=spin-, 3=spin+
-        rn = RNG->Uniform(); // generate random number within [0,1]
-        for(int f=0; f<EventTree::NhelicityMC; f++) {
-          asymInject[f] *= 0.863; // polarization (cf EventTree::Polarization())
-          helicityMC[f] = (rn<0.5*(1+asymInject[f])) ? 3 : 2;
-        };
-      }
-      else { // if !proceed, helicity is undefined
-        for(int f=0; f<EventTree::NhelicityMC; f++) helicityMC[f] = 0;
-      };
-
-    };
-    /////////////////////////// end MC asymmetry injection
+    }; // end MC info
 
 
     // fill the outroot tree

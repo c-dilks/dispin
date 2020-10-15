@@ -68,9 +68,13 @@ int main(int argc, char** argv) {
   Float_t phiH,phiR,theta;
   Float_t Mh;
   Float_t iv0,iv1,iv2;
+  Bool_t eleIsMatch;
+  Bool_t hadIsMatch[2];
   inTr->SetBranchAddress("gen_PhiH",&phiH);
   inTr->SetBranchAddress("gen_PhiRp",&phiR);
   inTr->SetBranchAddress("gen_theta",&theta);
+  inTr->SetBranchAddress("gen_eleIsMatch",&eleIsMatch);
+  inTr->SetBranchAddress("gen_hadIsMatch",hadIsMatch);
   if(!injectLattice) inTr->SetBranchAddress("gen_Mh",&Mh);
   else {
     iv0=iv1=iv2=0;
@@ -92,8 +96,7 @@ int main(int argc, char** argv) {
   // clone the tree, and create new helicityMC branch
   outTr = inTr->CloneTree(0);
   Int_t helicityMC[EventTree::NhelicityMC];
-  TString brN = "helicityMC2"; // for now, append "2" to the new branch,
-                               // since it's difficult to replace old branch
+  TString brN = "helicityMC";
   TString brF = Form("%s[%d]/I",brN.Data(),EventTree::NhelicityMC);
   outTr->Branch(brN,helicityMC,brF);
 
@@ -424,6 +427,13 @@ int main(int argc, char** argv) {
       */
 
       success = true;
+    };
+
+
+    // if matching criteria not satisfied, set helicity
+    // as undefined 
+    if(!eleIsMatch || !hadIsMatch[0] || !hadIsMatch[1]) {
+      success = false;
     };
 
 
