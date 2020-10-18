@@ -291,6 +291,7 @@ int main(int argc, char** argv) {
   Float_t dpMean[Asymmetry::nAmp];
   Float_t kinValue,kinError;
   Float_t chisq,ndf;
+  Bool_t fitFunc_defined;
   Tools::PrintTitleBox("FINAL ASYMMETRY RESULTS");
   Tools::PrintSeparator(60,"=");
   printf("-- columns: amp asym + asymErrHi - asymErrLo    <depolFac>\n");
@@ -298,74 +299,86 @@ int main(int argc, char** argv) {
     A = asymMap.at(bn);
     A->PrintSettings();
 
-    if( ( A->gridDim==1 && A->fitFunc!=NULL) || 
-        ( A->gridDim==2 && A->fitFunc2!=NULL) ) {
+    // check if fitFunc is defined (may not be defined
+    // in the case of theta-dependent fit)
+    fitFunc_defined = fitAlgo != 0 && 
+    (
+      ( A->gridDim==1 && A->fitFunc!=NULL) || 
+      ( A->gridDim==2 && A->fitFunc2!=NULL)
+    );
 
-      // linear fit result (one-amp only!)
-      if(A->gridDim==1) {
-        asymValueOA = A->fitFunc->GetParameter(1);
-        asymErrorOA = A->fitFunc->GetParError(1);
-      } else {
-        asymValueOA = 0; // not used
-        asymErrorOA = 0; // not used
-      };
+    // linear fit result (one-amp only!)
+    if(fitFunc_defined && A->gridDim==1) {
+      asymValueOA = A->fitFunc->GetParameter(1);
+      asymErrorOA = A->fitFunc->GetParError(1);
+    } else {
+      asymValueOA = 0; // not used
+      asymErrorOA = 0; // not used
+    };
 
-      // multi-amplitude fit result
-      for(int aa=0; aa<N_AMP; aa++) {
-        switch(fitAlgo) {
-          case 0:
-            asymValueMA[aa] = A->rfA[aa]->getVal();
-            asymErrorMA[aa] = A->rfA[aa]->getError(); // HESSE (parabolic)
-            // MINOS errors (asymmetric)
-            // note: if MINOS was not used, `hi` and `lo` will be HESSE errors
-            asymErrorMAhi[aa] = TMath::Abs(A->rfA[aa]->getErrorHi());
-            asymErrorMAlo[aa] = TMath::Abs(A->rfA[aa]->getErrorLo());
-            break;
-          case 1:
-            asymValueMA[aa] = 0; // not used
-            asymErrorMA[aa] = 0;
-            asymErrorMAhi[aa] = 0;
-            asymErrorMAlo[aa] = 0;
-            break;
-          case 2:
-            asymValueMA[aa] = A->fitFunc2->GetParameter(aa);
-            asymErrorMA[aa] = A->fitFunc2->GetParError(aa);
-            asymErrorMAhi[aa] = asymErrorMA[aa];
-            asymErrorMAlo[aa] = asymErrorMA[aa];
-        };
-
-        // divide out mean depolarization ratio
-        dpMean[aa] = A->MeanDepolarization(aa);
-        asymValueMA[aa] /= dpMean[aa]; // TODO: implement for one-amp too
-        asymErrorMA[aa] /= dpMean[aa];
-        asymErrorMAhi[aa] /= dpMean[aa];
-        asymErrorMAlo[aa] /= dpMean[aa];
-
-        // print asymmetry result
-        printf("\t\t%d %s%.5f + %.5f - %.5f    %.3f\n",
-          aa,asymValueMA[aa]>=0?" ":"",
-          asymValueMA[aa],asymErrorMAhi[aa],asymErrorMAlo[aa],dpMean[aa]);
-      };
-
-
-      // IV value and uncertainty
-      switch(BS->dimensions) {
+    // multi-amplitude fit result
+    for(int aa=0; aa<N_AMP; aa++) {
+      switch(fitAlgo) {
+        case 0:
+          asymValueMA[aa] = A->rfA[aa]->getVal();
+          asymErrorMA[aa] = A->rfA[aa]->getError(); // HESSE (parabolic)
+          // MINOS errors (asymmetric)
+          // note: if MINOS was not used, `hi` and `lo` will be HESSE errors
+          asymErrorMAhi[aa] = TMath::Abs(A->rfA[aa]->getErrorHi());
+          asymErrorMAlo[aa] = TMath::Abs(A->rfA[aa]->getErrorLo());
+          break;
         case 1:
-          kinValue = A->ivDist1->GetMean();
-          kinError = A->ivDist1->GetRMS();
+          asymValueMA[aa] = 0; // not used
+          asymErrorMA[aa] = 0;
+          asymErrorMAhi[aa] = 0;
+          asymErrorMAlo[aa] = 0;
           break;
         case 2:
-          kinValue = A->ivDist2->GetMean(1);
-          kinError = A->ivDist2->GetRMS(1);
-          break;
-        case 3:
-          kinValue = A->ivDist3->GetMean(1);
-          kinError = A->ivDist3->GetRMS(1);
+          if(fitFunc_defined) {
+            asymValueMA[aa] = A->fitFunc2->GetParameter(aa);
+            asymErrorMA[aa] = A->fitFunc2->GetParError(aa);
+          } else {
+            asymValueMA[aa] = 0;
+            asymErrorMA[aa] = 0;
+          };
+          asymErrorMAhi[aa] = asymErrorMA[aa];
+          asymErrorMAlo[aa] = asymErrorMA[aa];
           break;
       };
-      kinError = 0; // OVERRIDE (since this should be a systematic uncertainty)
 
-      // chi2 and ndf
+      // divide out mean depolarization ratio
+      dpMean[aa] = A->MeanDepolarization(aa);
+      asymValueMA[aa] /= dpMean[aa]; // TODO: implement for one-amp too
+      asymErrorMA[aa] /= dpMean[aa];
+      asymErrorMAhi[aa] /= dpMean[aa];
+      asymErrorMAlo[aa] /= dpMean[aa];
+
+      // print asymmetry result
+      printf("\t\t%d %s%.5f + %.5f - %.5f    %.3f\n",
+        aa,asymValueMA[aa]>=0?" ":"",
+        asymValueMA[aa],asymErrorMAhi[aa],asymErrorMAlo[aa],dpMean[aa]);
+    };
+
+
+    // IV value and uncertainty
+    switch(BS->dimensions) {
+      case 1:
+        kinValue = A->ivDist1->GetMean();
+        kinError = A->ivDist1->GetRMS();
+        break;
+      case 2:
+        kinValue = A->ivDist2->GetMean(1);
+        kinError = A->ivDist2->GetRMS(1);
+        break;
+      case 3:
+        kinValue = A->ivDist3->GetMean(1);
+        kinError = A->ivDist3->GetRMS(1);
+        break;
+    };
+    kinError = 0; // OVERRIDE (since this should be a systematic uncertainty)
+
+    // chi2 and ndf
+    if(fitFunc_defined) {
       if(A->gridDim==1) {
         chisq = A->fitFunc->GetChisquare();
         ndf = A->fitFunc->GetNDF();
@@ -373,46 +386,49 @@ int main(int argc, char** argv) {
         chisq = A->fitFunc2->GetChisquare();
         ndf = A->fitFunc2->GetNDF();
       };
-      chisqDist->Fill(chisq);
+    } else {
+      chisq = 0; // not used
+      ndf = 1; // not used
+    };
+    chisqDist->Fill(chisq);
 
-      // set graph points
-      kindepGrOA = kindepOAmap.at(bn);
-      kindepGrOA->SetPoint(A->B[0],kinValue,asymValueOA);
-      kindepGrOA->SetPointError(A->B[0],kinError,asymErrorOA);
+    // set graph points
+    kindepGrOA = kindepOAmap.at(bn);
+    kindepGrOA->SetPoint(A->B[0],kinValue,asymValueOA);
+    kindepGrOA->SetPointError(A->B[0],kinError,asymErrorOA);
 
-      for(int aa=0; aa<N_AMP; aa++) {
-        kindepGrMA[aa] = kindepMAmap[aa].at(bn);
-        kindepGrMA[aa]->SetPoint(A->B[0],kinValue,asymValueMA[aa]);
-        kindepGrMA[aa]->SetPointError(A->B[0],
-          kinError,kinError,asymErrorMAlo[aa],asymErrorMAhi[aa]);
-      };
-
-      chindfGrOA = chindfOAmap.at(bn);
-      chindfGrOA->SetPoint(A->B[0],kinValue,chisq/ndf);
-
-      rellumGr = rellumMap.at(bn);
-      rellumGr->SetPoint(A->B[0],kinValue,A->rellum);
-      rellumGr->SetPointError(A->B[0],0,A->rellumErr);
-
-      // print data table
-      /* columns:
-       *   bin number
-       *   amplitude number
-       *   <independent variable> (horizontal position of point)
-       *   asymmetry (vertical position of point)
-       *   asymmetry statistical uncertainty (parabolic error)
-       *   <depolarization ratio>
-       */
-        gSystem->RedirectOutput(tableFileN);
-        for(int aa=0; aa<N_AMP; aa++) {
-          printf("0x%x %d %f %f %f %f\n",
-            bn,aa,kinValue,asymValueMA[aa],asymErrorMA[aa],dpMean[aa]);
-        };
-        gSystem->RedirectOutput(0);
-
+    for(int aa=0; aa<N_AMP; aa++) {
+      kindepGrMA[aa] = kindepMAmap[aa].at(bn);
+      kindepGrMA[aa]->SetPoint(A->B[0],kinValue,asymValueMA[aa]);
+      kindepGrMA[aa]->SetPointError(A->B[0],
+        kinError,kinError,asymErrorMAlo[aa],asymErrorMAhi[aa]);
     };
 
+    chindfGrOA = chindfOAmap.at(bn);
+    chindfGrOA->SetPoint(A->B[0],kinValue,chisq/ndf);
+
+    rellumGr = rellumMap.at(bn);
+    rellumGr->SetPoint(A->B[0],kinValue,A->rellum);
+    rellumGr->SetPointError(A->B[0],0,A->rellumErr);
+
+    // print data table
+    /* columns:
+     *   bin number
+     *   amplitude number
+     *   <independent variable> (horizontal position of point)
+     *   asymmetry (vertical position of point)
+     *   asymmetry statistical uncertainty (parabolic error)
+     *   <depolarization ratio>
+     */
+    gSystem->RedirectOutput(tableFileN);
+    for(int aa=0; aa<N_AMP; aa++) {
+      printf("0x%x %d %f %f %f %f\n",
+        bn,aa,kinValue,asymValueMA[aa],asymErrorMA[aa],dpMean[aa]);
+    };
+    gSystem->RedirectOutput(0);
+
   };
+
   Tools::PrintSeparator(60,"=");
 
 

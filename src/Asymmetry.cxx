@@ -573,7 +573,7 @@ void Asymmetry::FitAsymGraph() {
       fitFunc2 = new TF2(fitFuncName,fitFunc2formu,modMin,modMax,modMin,modMax);
     }
     else {
-      fprintf(stderr,"ERROR: cannot perform FitAsymGraph with enablePW==true\n");
+      fprintf(stderr,"WARNING: cannot perform chi2 minimization fit with enablePW==true\n");
       return;
     };
   };
@@ -652,6 +652,21 @@ void Asymmetry::SetFitMode(Int_t fitMode) {
       this->FormuAppend(2,2,1);
       this->FormuAppend(3,2,1);
       this->FormuAppend(3,2,-1);
+      break;
+    case 9: // all partial waves up to L=2
+      enablePW = true;
+      this->FormuAppend(3,0,0);
+      this->FormuAppend(3,1,0);
+      this->FormuAppend(2,1,1);
+      this->FormuAppend(3,1,1);
+      this->FormuAppend(3,1,-1);
+      this->FormuAppend(3,2,0);
+      this->FormuAppend(2,2,1);
+      this->FormuAppend(3,2,1);
+      this->FormuAppend(3,2,-1);
+      this->FormuAppend(2,2,2);
+      this->FormuAppend(3,2,2);
+      this->FormuAppend(3,2,-2);
       break;
     case 42: // |m|<=2; full set of expected LU amplitudes
       this->FormuAppend(3,0,0); // grey

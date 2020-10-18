@@ -1,6 +1,9 @@
 // tabulate asymmetry amplitudes, uncertainty, and IV plotting position
 // e.g. the bin mean)
 
+R__LOAD_LIBRARY(DiSpin)
+#include "Binning.h"
+
 void TabulateAsym(TString infileN="spinroot/asym_42.root") {
 
   // read asymmetry graphs

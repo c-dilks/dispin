@@ -16,8 +16,8 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
   
   // OPTIONS
   ///////////////////
-  Int_t polarizationSetting = Modulation::kUU;
-  Bool_t enableLegendre = 0;
+  Int_t polarizationSetting = Modulation::kLU;
+  Bool_t enableLegendre = 1;
   Int_t LMAX = 2;
   Bool_t useModulationTitle = false; // if true, print functions instaed of kets
   ///////////////////
@@ -186,7 +186,6 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
             theta = intDist[f][g]->GetZaxis()->GetBinCenter(t);
 
             dataWeight = dataDist->GetBinContent(r,h,t);
-            //dataWeight *= 1/(1-0.5*(3*TMath::Power(TMath::Cos(theta),2)-1)); // +++
 
             modValF = moduF->Evaluate(phiR,phiH,theta);
             modValG = moduG->Evaluate(phiR,phiH,theta);
@@ -194,42 +193,8 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
             // +++
             //if(f==6) modValF = 1.0/(1+0.2*TMath::Cos(phiH));
             //if(g==6) modValG = 1.0/(1+0.2*TMath::Cos(phiH));
-            //if(f==6) modValF = TMath::Sin(phiH-phiR)*TMath::Cos(phiH)/(1+0.2*TMath::Cos(phiH));
-            //if(g==6) modValG = TMath::Sin(phiH-phiR)*TMath::Cos(phiH)/(1+0.2*TMath::Cos(phiH));
-            //if(f==6) modValF = TMath::Sin(phiR)*TMath::Cos(phiH)/(1+0.2*TMath::Cos(phiH)); // close!
-            //if(g==6) modValG = TMath::Sin(phiR)*TMath::Cos(phiH)/(1+0.2*TMath::Cos(phiH));
-            //if(f==6) modValF = TMath::Cos(phiH);
-            //if(g==6) modValG = TMath::Cos(phiH);
-            //if(f==6) modValF = TMath::Sin(phiR)/(1+0.2*TMath::Cos(phiH));
-            //if(g==6) modValG = TMath::Sin(phiR)/(1+0.2*TMath::Cos(phiH));
-            //if(f==6) modValF = 1.0/(1+0.0*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-            //if(g==6) modValG = 1.0/(1+0.0*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-            //if(f==6) modValF *= TMath::Sin(phiH)/(1+0.2*TMath::Cos(phiH));
-            //if(g==6) modValG *= TMath::Sin(phiH)/(1+0.2*TMath::Cos(phiH));
-            //if(f==6) modValF /= 1+0.2*TMath::Cos(phiH);
-            //if(g==6) modValG /= 1+0.2*TMath::Cos(phiH);
             //if(f==6) modValF = 1;
             //if(g==6) modValG = 1;
-            //if(f==6||g==6) { modValF = 1.0/(1+TMath::Cos(phiH)); modValG = 1.0; };
-            //if(f==6&&g==6) { modValF = TMath::Sin(phiH-phiR); modValG = 1.0; };
-            //if(f==6) modValF = 1.0/(1+0.2*TMath::Cos(phiH));
-            //if(g==6) modValG = 1.0/(1+0.2*TMath::Cos(phiH));
-            //if(f==6) modValF = TMath::Sin(phiH-phiR)/(1+0.2*TMath::Cos(phiH));
-            //if(g==6) modValG = TMath::Sin(phiH-phiR)/(1+0.2*TMath::Cos(phiH));
-            //if(f==6) modValF = TMath::Sin(phiH-phiR)/((1+0.2*TMath::Cos(phiH))*(1+0.2*TMath::Cos(phiH)));
-            //if(g==6) modValG = TMath::Sin(phiH-phiR)/((1+0.2*TMath::Cos(phiH))*(1+0.2*TMath::Cos(phiH)));
-            //if(f==6) modValF = 0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1) / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-            //if(g==6) modValG = 0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1) / (1+0.2*0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-            //if(f==6) modValF = 0.2*TMath::Cos(phiH) / (1+0.2*TMath::Cos(phiH));
-            //if(g==6) modValG = 0.2*TMath::Cos(phiH);
-            //if(f==5) modValF = 1;
-            //if(g==5) modValG = 1;
-            //if(f==6) modValF = TMath::Sin(theta);
-            //if(g==6) modValG = TMath::Sin(theta);
-            //if(f==6) modValF = 0.5*(3*TMath::Power(TMath::Cos(theta),2)-1);
-            //if(g==6) modValG = 0.5*(3*TMath::Power(TMath::Cos(theta),2)-1);
-            //if(f==6) modValF = 1.0/(0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
-            //if(g==6) modValG = 1.0/(0.5*(3*TMath::Power(TMath::Cos(theta),2)-1));
             
             product = dataWeight * modValF * modValG;
 
@@ -309,6 +274,7 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
 
 
   // print predicted asymmetry shifts
+  /*
   Float_t pred;
   Float_t means[12] = {-0.339, -0.414, -0.419, -0.426, -0.426, -0.430, -0.432, -0.428, -0.426, -0.421, -0.411, -0.407};
   for(f=0; f<NMOD; f++) {
@@ -326,6 +292,7 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
     printf("%d %d %f\n",binNum,f,pred);
     gSystem->RedirectOutput(0);
   };
+  */
 
 
 
