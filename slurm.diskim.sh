@@ -38,7 +38,6 @@ done
 # write job descriptor
 slurm=job.${jobsuffix}.slurm
 > $slurm
-rm -vf /farm_out/`whoami`/dispin_diskim*
 
 function app { echo "$1" >> $slurm; }
 
@@ -49,7 +48,7 @@ app "#SBATCH --account=clas12"
 app "#SBATCH --partition=production"
 
 app "#SBATCH --mem-per-cpu=2000"
-app "#SBATCH --time=6:00:00"
+app "#SBATCH --time=12:00:00"
 
 app "#SBATCH --array=1-$(cat $joblist | wc -l)"
 app "#SBATCH --ntasks=1"

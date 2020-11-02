@@ -7,8 +7,8 @@ fi
 h=$1
 
 slurm.buildSpinroot.sh mcroot -b -i2 -h$h
-sleep 1
-waitForSlurm.sh
+sleep 5
+waitForSlurm.sh dispin
 sleep 1
 catSpinroot.exe
 sleep 1
