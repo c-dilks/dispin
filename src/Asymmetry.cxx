@@ -653,7 +653,7 @@ void Asymmetry::SetFitMode(Int_t fitMode) {
       this->FormuAppend(3,2,1);
       this->FormuAppend(3,2,-1);
       break;
-    case 9: // all partial waves up to L=2
+    case 9: // all partial waves up to L=2 (for DNP2020)
       enablePW = true;
       this->FormuAppend(3,0,0);
       this->FormuAppend(3,1,0);

@@ -8,8 +8,8 @@
 R__LOAD_LIBRARY(DiSpin)
 #include "Binning.h"
 
-void CompareAsyms(TString infile0name="spinroot_final_4/asym_42_chi2.root",
-                  TString infile1name="spinroot_final_4/asym_42_mlm.root",
+void CompareAsyms(TString infile0name="spinroot_pw_2/asym_9_mlm.root",
+                  TString infile1name="spinroot_final_2/asym_42_mlm.root",
                   Bool_t predictShift=false,
                   TString newTitle="",
                   TString pngName="diff.png") {
