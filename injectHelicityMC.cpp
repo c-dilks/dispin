@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
   // - settings for lattice estimate of shift on LU amps from nonzero
   //   UU amps; here we control how to read the physics asymmetries
   //
-  Bool_t injectLattice = true; // enable lattice estimate
+  Bool_t injectLattice = false; // enable lattice estimate
   //
   Float_t latticeMax = 0.3; // maximum amplitude (lattice size)
   Int_t latticePoints = 7; // number of amplitudes (within +-latticeMax)
@@ -283,6 +283,29 @@ int main(int argc, char** argv) {
       asymInject[5] = amp*Mh/(2*0.77) * moduVal[modR]; // linear, pos. slope
       asymInject[5] += ( amp - amp*Mh/(2*0.77) ) * moduVal[modH]; // linear, neg. slope
       asymInject[5] += amp * TMath::Sin(PI*Mh/0.77) * moduVal[modHR]; // sign change
+
+      // - test sp and pp linear independence for m=1 modulations
+      // -- A_sp = `amp` (coefficient of P_11=sin(theta))
+      // -- A_pp is varied (coefficient of P_21=sin(2theta))
+      // --- twist 2:
+      asymInject[6] =  ( amp*TMath::Sin(theta) + 0.04*TMath::Sin(2*theta) ) * moduVal[modHR];
+      asymInject[7] =  ( amp*TMath::Sin(theta) + 0.02*TMath::Sin(2*theta) ) * moduVal[modHR];
+      asymInject[8] =  ( amp*TMath::Sin(theta) ) * moduVal[modHR];
+      asymInject[9] =  ( amp*TMath::Sin(theta) - 0.02*TMath::Sin(2*theta) ) * moduVal[modHR];
+      asymInject[10] = ( amp*TMath::Sin(theta) - 0.04*TMath::Sin(2*theta) ) * moduVal[modHR];
+      // --- twist 3:
+      asymInject[11] = ( amp*TMath::Sin(theta) + 0.04*TMath::Sin(2*theta) ) * moduVal[modR];
+      asymInject[12] = ( amp*TMath::Sin(theta) + 0.02*TMath::Sin(2*theta) ) * moduVal[modR];
+      asymInject[13] = ( amp*TMath::Sin(theta) ) * moduVal[modR];
+      asymInject[14] = ( amp*TMath::Sin(theta) - 0.02*TMath::Sin(2*theta) ) * moduVal[modR];
+      asymInject[15] = ( amp*TMath::Sin(theta) - 0.04*TMath::Sin(2*theta) ) * moduVal[modR];
+      // number of injections: 16
+      
+
+
+
+
+      /*
       // - test inclusion of F_UU modulations
       // --- effect on mimic
       asymInject[6] = asymInject[5] / (1+0.2*TMath::Cos(phiH));
@@ -311,6 +334,7 @@ int main(int argc, char** argv) {
       asymInject[24] = asymInject[2] / (1-0.1*TMath::Cos(phiH));
       asymInject[25] = asymInject[3] / (1-0.1*TMath::Cos(phiH));
       asymInject[26] = asymInject[4] / (1-0.1*TMath::Cos(phiH));
+      */
 
       // ------------------------------------------theta
       /***/
@@ -342,6 +366,7 @@ int main(int argc, char** argv) {
       */
 
       // smaller grid
+      /*
       ii=27;
       for(float AA=-0.04; AA<=0.041; AA+=0.04) {
         for(float BB=-0.4; BB<=0.41; BB+=0.2) {
@@ -351,6 +376,7 @@ int main(int argc, char** argv) {
         };
       };
       once = false;
+      */
       // max ii=41
 
 

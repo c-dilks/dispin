@@ -763,6 +763,30 @@ void Asymmetry::SetFitMode(Int_t fitMode) {
       this->FormuAppend(3,2,-2);
       this->DenomAppend(3,1,1,0); // cos(phiR)
       break;
+    case 500: // twist-2 1-amp A_sp
+      this->FormuAppend(2,1,1);
+      break;
+    case 501: // twist-2 1-amp A_sp, with theta-dep
+      enablePW = true;
+      this->FormuAppend(2,1,1);
+      break;
+    case 502: // twist-2 2-amp A_sp & A_pp, with theta-dep
+      enablePW = true;
+      this->FormuAppend(2,1,1);
+      this->FormuAppend(2,2,1);
+      break;
+    case 600: // twist-3 1-amp A_sp
+      this->FormuAppend(3,1,1);
+      break;
+    case 601: // twist-3 1-amp A_sp, with theta-dep
+      enablePW = true;
+      this->FormuAppend(3,1,1);
+      break;
+    case 602: // twist-3 2-amp A_sp & A_pp, with theta-dep
+      enablePW = true;
+      this->FormuAppend(3,1,1);
+      this->FormuAppend(3,2,1);
+      break;
     case 1000:
       this->FormuAppend(2,1,1,0,Modulation::kLL); // double-spin asym
       this->FormuAppend(3,1,1,0,Modulation::kLL);
