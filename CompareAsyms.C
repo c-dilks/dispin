@@ -118,6 +118,7 @@ void CompareAsyms(TString infile0name="spinroot_pw_2/asym_9_mlm.root",
   diffCanv->Divide(4,nrow);
   ratCanv->Divide(4,nrow);
   Int_t pad;
+  TString diffGrN;
   for(int i=0; i<nAmp; i++) {
     pad = i+1;
     if(pad>=8) pad = i+2; // (to re-align multidim plots)
@@ -153,6 +154,9 @@ void CompareAsyms(TString infile0name="spinroot_pw_2/asym_9_mlm.root",
     diffGr->SetMarkerColor(kBlack);
     diffGr->SetLineColor(kBlack);
     diffGr->Draw("APE");
+    distFile->cd();
+    diffGrN = Form("diffGr_%d",i);
+    diffGr->Write(diffGrN);
     /*
     if(i==1) {
       diffGr->Fit("pol0");
