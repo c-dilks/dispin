@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
   // - settings for lattice estimate of shift on LU amps from nonzero
   //   UU amps; here we control how to read the physics asymmetries
   //
-  Bool_t injectLattice = false; // enable lattice estimate
+  Bool_t injectLattice = true; // enable lattice estimate
   //
   Float_t latticeMax = 0.3; // maximum amplitude (lattice size)
   Int_t latticePoints = 7; // number of amplitudes (within +-latticeMax)

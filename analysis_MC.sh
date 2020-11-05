@@ -18,13 +18,13 @@ echo "fitmode = $fitmode"
 echo "outdir = $outdir"
 echo ""
 
-slurm.buildSpinroot.sh mcroot -b -i2 -h$h
+slurm.buildSpinroot.sh mcroot -b -i1 -h$h
 sleep 5
 waitForSlurm.sh dispin
 sleep 1
 catSpinroot.exe
 sleep 1
-asymFit.exe $fitmode 0 | tee spinroot/fitOutput.txt
+asymFit.exe $fitmode 2 | tee spinroot/fitOutput.txt
 
 mkdir -p ${outdir}
 rm -r ${outdir}

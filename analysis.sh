@@ -24,7 +24,7 @@ esac
 
 
 sleep 1
-#waitForSlurm.sh
+#waitForSlurm.sh dispin
 waitForCondor.sh
 
 sleep 1
