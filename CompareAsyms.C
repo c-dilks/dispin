@@ -62,6 +62,12 @@ void CompareAsyms(TString infile0name="spinroot_pw_2/asym_9_mlm.root",
     // read asymmetry graph
     if(keyname.Contains(TRegexp("^kindepMA")) &&
            !keyname.Contains("Canv")) {
+
+      // filters for multi-dimensional binning
+      //if(!keyname.Contains("bin_M0")) continue;
+      //if(!keyname.Contains("bin_M1")) continue;
+
+
       gr[0] = (TGraphAsymmErrors*) key->ReadObj();
       gr[1] = (TGraphAsymmErrors*) infile[1]->Get(keyname);
       diffGr = new TGraphAsymmErrors();

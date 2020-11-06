@@ -7,7 +7,7 @@
 
 void Lattice1D() {
 
-  TString injDir = "spinroot_delta";
+  TString injDir = "spinroot_delta_4";
   TString listFile = "moduUUlist.txt";
 
   TTree * tr = new TTree();

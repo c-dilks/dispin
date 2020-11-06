@@ -248,6 +248,7 @@ void PrintMeans(TString title, std::map<Int_t,TH1D*> mapdist) {
       b>0?", ":"",
       mapdist.at(b)->GetMean()
     );
+    //if(title.Contains("2,0")) printf("%d & %.3f\n",b,mapdist.at(b)->GetMean()); // for latex
   };
   printStr += "}";
   printf("%s\n",printStr.Data());

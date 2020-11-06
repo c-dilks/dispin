@@ -1,10 +1,11 @@
 // procedure:
 // - perform MC injection and fit
-// - run Lattice1D.C, with desired B CUT
-// - move all the difference_*.root files to the subdirectory `deltaset`
+// - run Lattice1D.C, with desired B CUT, and desired injDir
+// - move all the resulting difference_*.root files to the subdirectory `deltaset`
 // - execute this script
+//   - it's possible to specify an alternative directory instead of `deltaset`
 
-void LatticeAnalysis() {
+void LatticeAnalysis(TString infileDir = "deltaset") {
 
   /// OPTIONS /////////////////
   Float_t deltaMax = 0.01; // scale for delta plots
@@ -12,7 +13,6 @@ void LatticeAnalysis() {
 
 
   // get list of difference*.root files
-  TString infileDir = "deltaset";
   TString infileN;
   std::vector<TString> infileList;
   TSystemDirectory * sysDir = new TSystemDirectory(infileDir,infileDir);
@@ -30,7 +30,7 @@ void LatticeAnalysis() {
     };
   };
 
-  TFile * outfile = new TFile("deltaset/delta.root","RECREATE");
+  TFile * outfile = new TFile(TString(infileDir+"/delta.root"),"RECREATE");
 
   TFile * infile;
   TGraphAsymmErrors * diffGr;
@@ -50,7 +50,7 @@ void LatticeAnalysis() {
     xmin = diffGr->GetXaxis()->GetXmin();
     xmax = diffGr->GetXaxis()->GetXmax();
     deltaDist[a] = new TH2D(deltaDistN,deltaDistT,
-      50, xmin, xmax, 50, -deltaMax, deltaMax);
+      40, xmin, xmax, 30, -deltaMax, deltaMax);
   };
 
   Double_t x,y;
@@ -74,18 +74,22 @@ void LatticeAnalysis() {
     deltaProfT = deltaDist[a]->GetTitle();
     deltaProfT(TRegexp("#delta distribution")) = "average #delta";
     deltaProf[a]->SetTitle(deltaProfT);
-    deltaProf[a]->SetLineWidth(3);
-    deltaProf[a]->SetLineColor(kRed);
+    deltaProf[a]->SetLineWidth(4);
+    deltaProf[a]->SetLineColor(kBlack);
+    //deltaProf[a]->Fit("pol0");
   };
 
   gStyle->SetOptStat(0);
-  TCanvas * deltaProfCanv = new TCanvas("deltaProfCanv","deltaProfCanv",1600,1200);
+  //gStyle->SetOptFit(1);
+  TCanvas * deltaProfCanv = new TCanvas("deltaProfCanv","deltaProfCanv",2000,1000);
   deltaProfCanv->Divide(4,2);
   for(int a=0; a<N_AMP; a++) {
     deltaProfCanv->cd(a+1);
     deltaProfCanv->GetPad(a+1)->SetGrid(1,1);
     deltaProf[a]->GetYaxis()->SetRangeUser(-deltaMax,deltaMax);
     //deltaProf[a]->Draw();
+    deltaDist[a]->SetLineWidth(2);
+    deltaDist[a]->SetLineColor(kRed);
     deltaDist[a]->Draw("box");
     deltaProf[a]->Draw("same");
   };
@@ -95,4 +99,9 @@ void LatticeAnalysis() {
   deltaProfCanv->Write();
   for(int a=0; a<N_AMP; a++) deltaDist[a]->Write();
   for(int a=0; a<N_AMP; a++) deltaProf[a]->Write();
+
+  TString pngname = infileDir;
+  pngname(TRegexp("^deltaset")) = "deltaProf";
+  pngname += ".png";
+  deltaProfCanv->Print(pngname,"png");
 };
