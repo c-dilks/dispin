@@ -51,7 +51,6 @@ class EventTree : public TObject
 
     Dihadron * GetDihadronObj();
     DIS * GetDISObj();
-    Float_t GetBreitRapidity(Int_t had);
 
     //Float_t GetDepolarizationFactorApprox(Char_t kf);
     Float_t GetDepolarizationFactor(Char_t kf);
@@ -77,6 +76,8 @@ class EventTree : public TObject
     Float_t hadTheta[2];
     Float_t hadPhi[2];
     Float_t hadXF[2];
+    Float_t hadYH[2];
+    Float_t hadPperp[2];
     Float_t hadVertex[2][3];
     Int_t hadStatus[2];
     Float_t hadChi2pid[2];
@@ -128,7 +129,7 @@ class EventTree : public TObject
     ///////////////////////////
     //   EventCuts
     ///////////////////////////
-    Bool_t cutQ2,cutW,cutY,cutDIS;
+    Bool_t cutQ2,cutW,cutY,cutDIS,cutDSIDIS;
     Bool_t cutDihadron;
     Bool_t cutHelicity;
     Bool_t cutVertex;

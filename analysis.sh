@@ -5,16 +5,16 @@ setnum=$1
 
 case $setnum in
   1)
-    condor.buildSpinroot.sh outroot.inbending -b -i1 # vs. x 
+    condor.buildSpinroot.sh outroot -b -i1 # vs. x 
     ;;
   2)
-    condor.buildSpinroot.sh outroot.inbending -b -i2 # vs. Mh 
+    condor.buildSpinroot.sh outroot -b -i2 # vs. Mh 
     ;;
   3)
-    condor.buildSpinroot.sh outroot.inbending -b -i32 # vs. z , for 2 Mh bins
+    condor.buildSpinroot.sh outroot -b -i32 # vs. z , for 2 Mh bins
     ;;
   4)
-    condor.buildSpinroot.sh outroot.inbending -b -i42 # vs. PhPerp, for 2 Mh bins 
+    condor.buildSpinroot.sh outroot -b -i42 # vs. PhPerp, for 2 Mh bins 
     ;;
   *)
     echo "ERROR: unknown set_number"
@@ -31,7 +31,7 @@ sleep 1
 catSpinroot.exe
 
 sleep 1
-fitmode=42 # |m|<=2
+fitmode=888 # |m|<=2
 
 # chi2 fit
 asymFit.exe $fitmode 2 | tee spinroot/fitOutput_chi2.txt
