@@ -98,6 +98,8 @@ int main(int argc, char** argv) {
    TH2D * hadZCorr = new TH2D("hadZCorr",corrTitle("z"),NBINS,0,1,NBINS,0,1);
    TH2D * hadXFCorr = new TH2D("hadXFCorr",corrTitle("x_{F}"),
      NBINS,-1,1,NBINS,-1,1);
+   TH2D * hadYHCorr = new TH2D("hadYHCorr",corrTitle("y_{h}"),
+     NBINS,-4,4,NBINS,-4,4);
    TH2D * hadVzCorr = new TH2D("hadVzCorr",corrTitle("V_{z}"),
      NBINS,-20,20,NBINS,-20,20);
    
@@ -110,6 +112,7 @@ int main(int argc, char** argv) {
    TH1D * hadPhiDist[2];
    TH1D * hadZDist[2];
    TH1D * hadXFDist[2];
+   TH1D * hadYHDist[2];
    TH1D * hadVzDist[2];
    TH2D * hadVxyDist[2];
    TH2D * hadEtaVsPhi[2];
@@ -132,6 +135,8 @@ int main(int argc, char** argv) {
        NBINS,0,1);
      hadXFDist[h] = new TH1D(TString(hadName[h]+"hadXFDist"),distTitle("x_{F}"),
        NBINS,-1,1);
+     hadYHDist[h] = new TH1D(TString(hadName[h]+"hadYHDist"),distTitle("y_{h}"),
+       NBINS,-4,4);
      hadVzDist[h] = new TH1D(TString(hadName[h]+"hadVzDist"),
        distTitle("V_{z}"),
        NBINS,-20,20);
@@ -229,6 +234,7 @@ int main(int argc, char** argv) {
    TH2D * thetaVsZ[2];
    TH2D * thetaVsHadP[2];
    TH2D * YHvsXF[2];
+   TH2D * hadPperpVsYH[2];
    for(int h=0; h<2; h++) {
      thetaVsZ[h] = new TH2D(TString("thetaVsZ_"+hadName[h]),
        TString("#theta vs. "+hadTitle[h]+" z;z;#theta"),
@@ -239,6 +245,9 @@ int main(int argc, char** argv) {
      YHvsXF[h] = new TH2D(TString("YHvsXF_"+hadName[h]),
        TString(hadTitle[h]+" y_{h} vs. x_{F};x_{F};y_{h}"),
        NBINS,-1,1,NBINS,-4,4);
+     hadPperpVsYH[h] = new TH2D(TString("hadPperpVsYH_"+hadName[h]),
+       TString(hadTitle[h]+"p_{perp} vs. y_{h};y_{h};p_{perp}"),
+       NBINS,-4,4,NBINS,0,2);
    };
    
    TH1D * sinThetaDist = new TH1D("sinThetaDist",
@@ -409,6 +418,7 @@ int main(int argc, char** argv) {
        hadPhiCorr->Fill(ev->hadPhi[qB],ev->hadPhi[qA]);
        hadZCorr->Fill(ev->Z[qB],ev->Z[qA]);
        hadXFCorr->Fill(ev->hadXF[qB],ev->hadXF[qA]);
+       hadYHCorr->Fill(ev->hadYH[qB],ev->hadYH[qA]);
        hadVzCorr->Fill(ev->hadVertex[qB][eZ],ev->hadVertex[qA][eZ]);
 
        for(int h=0; h<2; h++) {
@@ -420,6 +430,7 @@ int main(int argc, char** argv) {
          hadPhiDist[h]->Fill(ev->hadPhi[h]);
          hadZDist[h]->Fill(ev->Z[h]);
          hadXFDist[h]->Fill(ev->hadXF[h]);
+         hadYHDist[h]->Fill(ev->hadYH[h]);
          hadVzDist[h]->Fill(ev->hadVertex[h][eZ]);
          hadVxyDist[h]->Fill(ev->hadVertex[h][eX],ev->hadVertex[h][eY]);
 
@@ -471,7 +482,8 @@ int main(int argc, char** argv) {
        for(int h=0; h<2; h++) {
          thetaVsZ[h]->Fill(ev->Z[h],ev->theta);
          thetaVsHadP[h]->Fill(ev->hadP[h],ev->theta);
-         YHvsXF[h]->Fill(ev->hadXF[h],ev->GetBreitRapidity(h));
+         YHvsXF[h]->Fill(ev->hadXF[h],ev->hadYH[h]);
+         hadPperpVsYH[h]->Fill(ev->hadYH[h],ev->hadPperp[h]);
          xFvsZ[h]->Fill(ev->Z[h],ev->hadXF[h]);
        };
 
@@ -514,6 +526,9 @@ int main(int argc, char** argv) {
 
    }; // eo event loop
 
+   for(int h=0; h<2; h++) xFvsZ[h]->Write();
+   for(int h=0; h<2; h++) YHvsXF[h]->Write();
+   for(int h=0; h<2; h++) hadPperpVsYH[h]->Write();
 
    WDist->Write();
    XDist->Write();
@@ -542,6 +557,7 @@ int main(int argc, char** argv) {
    TCanvas * hadPhiCanv = new TCanvas("hadPhiCanv","hadPhiCanv",1000,800);
    TCanvas * hadZCanv = new TCanvas("hadZCanv","hadZCanv",1000,800);
    TCanvas * hadXFCanv = new TCanvas("hadXFCanv","hadXFCanv",1000,800);
+   TCanvas * hadYHCanv = new TCanvas("hadYHCanv","hadYHCanv",1000,800);
    TCanvas * hadVzCanv = new TCanvas("hadVzCanv","hadVzCanv",1000,800);
    TCanvas * hadEtaVsPhiCanv = new TCanvas("hadEtaVsPhiCanv","hadEtaVsPhiCanv",1000,800);
    TCanvas * hadEVsPhiCanv = new TCanvas("hadEVsPhiCanv","hadEVsPhiCanv",1000,800);
@@ -555,6 +571,7 @@ int main(int argc, char** argv) {
    HadronCompareCanv(hadPhiCanv, hadPhiDist, hadPhiCorr);
    HadronCompareCanv(hadZCanv, hadZDist, hadZCorr);
    HadronCompareCanv(hadXFCanv, hadXFDist, hadXFCorr);
+   HadronCompareCanv(hadYHCanv, hadYHDist, hadYHCorr);
    HadronCompareCanv(hadVzCanv, hadVzDist, hadVzCorr);
    Hadron2dCanv(hadEtaVsPhiCanv, hadEtaVsPhi[qA], hadEtaVsPhi[qB]);
    Hadron2dCanv(hadEVsPhiCanv, hadEVsPhi[qA], hadEVsPhi[qB]);
@@ -568,6 +585,7 @@ int main(int argc, char** argv) {
    hadPhiCanv->Write();
    hadZCanv->Write();
    hadXFCanv->Write();
+   hadYHCanv->Write();
    hadEtaVsPhiCanv->Write();
    hadEVsPhiCanv->Write();
    hadPtVsPhiCanv->Write();
@@ -613,8 +631,6 @@ int main(int argc, char** argv) {
    thetaVsX->Write();
    thetaVsZpair->Write();
    thetaVsZeta->Write();
-   for(int h=0; h<2; h++) xFvsZ[h]->Write();
-   for(int h=0; h<2; h++) YHvsXF[h]->Write();
    for(int h=0; h<2; h++) thetaVsZ[h]->Write();
    thetaVsPh->Write();
    for(int h=0; h<2; h++) thetaVsHadP[h]->Write();

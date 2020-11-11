@@ -223,7 +223,16 @@ void EventTree::GetEvent(Int_t i) {
   chain->GetEntry(i);
 
   // set preferred PhiR angle
-  PhiR = PhiRp; // preferred definition by Bacchetta (see Dihadron.cxx)
+  //PhiR = PhiRp; // preferred definition by Bacchetta (see Dihadron.cxx)
+  // DSIDIS MODULATION ANGLE - replaces PhiR in the code, so we don't have
+  //                           to define a new angle variable
+  this->GetDihadronObj(); // sets objDihadron
+  PhiR = Tools::AdjAngle(
+    objDihadron->GetSingleHadronPhiH(qA) - 
+    objDihadron->GetSingleHadronPhiH(qB)
+  );
+
+
   PhiHR = Tools::AdjAngle( PhiH - PhiR );
 
   // adjust range to 0-2pi (for cross-checking with Timothy)
@@ -254,6 +263,17 @@ void EventTree::GetEvent(Int_t i) {
     ( 1 - y + y*y/2 + TMath::Power(gamma*y,2)/4 );
 
 
+  // compute Breit frame rapidity for hadrons
+  for(int h=0; h<2; h++) {
+    hadMom[h].SetPtEtaPhiE(hadPt[h],hadEta[h],hadPhi[h],hadE[h]);
+    hadMom[h].Boost(this->GetDISObj()->BreitBoost);
+    hadYH[h] = -1 * hadMom[h].Rapidity(); // flip sign
+  };
+
+  // compute hadron Pperp
+  for(int h=0; h<2; h++) hadPperp[h] = objDihadron->hadPperp[h];
+
+
 
   /**************************************/
   /* cut definitions                    */
@@ -265,13 +285,17 @@ void EventTree::GetEvent(Int_t i) {
   cutY = y < 0.8;
   cutDIS = cutQ2 && cutW && cutY;
 
+  // DSIDIS cuts
+  //cutDSIDIS = true;
+  cutDSIDIS = hadYH[qA] < -0.2 &&
+              hadYH[qB] > 0.2;
+
   // dihadron cuts
   /* (note: PairSame ensures we have the correct channel, e.g., pi+pi-) */
   cutDihadron = 
     Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) &&
     Zpair < 0.95 && /* legacy; redundant with Mx>1.5 */
-    Mmiss > 1.5 &&
-    hadXF[qA] > 0 && hadXF[qB] > 0;
+    Mmiss > 1.5;
 
   // vertex cuts
   cutVertex = CheckVertex(); /* applies to electron and hadrons */
@@ -307,7 +331,7 @@ void EventTree::GetEvent(Int_t i) {
 // MAIN ANALYSIS CUT
 Bool_t EventTree::Valid() {
   return cutDIS && cutDihadron && cutHelicity && 
-         cutFiducial && cutPID && cutVertex;
+         cutFiducial && cutPID && cutVertex && cutDSIDIS;
 };
 /////////////////////////////////////////////////////////
 
@@ -595,16 +619,6 @@ DIS * EventTree::GetDISObj() {
   objDIS->CalculateKinematics(trEle);
   return objDIS;
 };
-
-
-// return Breit frame rapidity for hadron had (qA or qB)
-Float_t EventTree::GetBreitRapidity(Int_t had) {
-  if(had!=qA && had!=qB) return UNDEF;
-  hadMom[had].SetPtEtaPhiE(hadPt[had],hadEta[had],hadPhi[had],hadE[had]);
-  hadMom[had].Boost(this->GetDISObj()->BreitBoost);
-  return hadMom[had].Rapidity();
-};
-
 
 
 

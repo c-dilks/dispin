@@ -343,7 +343,7 @@ int main(int argc, char** argv) {
 
           deltaPhiRVsRT->Fill(ev->RT,deltaPhiR);
           deltaPhiHVsPhPerp->Fill(ev->PhPerp,deltaPhiH);
-          YHvsXF->Fill(ev->hadXF[qA],ev->GetBreitRapidity(qA)); // pi+
+          YHvsXF->Fill(ev->hadXF[qA],ev->hadYH[qA]); // pi+
 
           deltaMhVsMh->Fill(ev->Mh,deltaMh);
           deltaXVsX->Fill(ev->x,deltaX);

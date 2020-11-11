@@ -787,6 +787,9 @@ void Asymmetry::SetFitMode(Int_t fitMode) {
       this->FormuAppend(3,1,1);
       this->FormuAppend(3,2,1);
       break;
+    case 888: // DSIDIS (phiR must be replaced by phi1-phi2)
+      this->FormuAppend(3,1,1); // sin(phi1-phi2)
+      break;
     case 1000:
       this->FormuAppend(2,1,1,0,Modulation::kLL); // double-spin asym
       this->FormuAppend(3,1,1,0,Modulation::kLL);

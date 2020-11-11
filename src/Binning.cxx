@@ -35,7 +35,7 @@ Binning::Binning(Int_t pairType_) {
     /* // below VM resonances vs. above
     AddBinBound(vM,0.63);
     */
-    ///* // adjusted 12-bin scheme
+    /* // adjusted 12-bin scheme
     AddBinBound(vM,0.381);
     AddBinBound(vM,0.462);
     AddBinBound(vM,0.531);
@@ -47,15 +47,15 @@ Binning::Binning(Int_t pairType_) {
     AddBinBound(vM,0.900);
     AddBinBound(vM,0.981);
     AddBinBound(vM,1.125);
-    //*/
-    /* // 7 quantile bins
+    */
+    ///* // 7 quantile bins
     AddBinBound(vM,0.46);
     AddBinBound(vM,0.60);
     AddBinBound(vM,0.72);
     AddBinBound(vM,0.81);
     AddBinBound(vM,0.93);
     AddBinBound(vM,1.10);
-    */
+    //*/
     /* // 14 quantile bins
     AddBinBound(vM,0.38);
     AddBinBound(vM,0.44);
@@ -80,7 +80,7 @@ Binning::Binning(Int_t pairType_) {
     */
 
     // -- x (bjorken-x)
-    ///* // adjusted 12-bin scheme
+    /* // adjusted 12-bin scheme
     AddBinBound(vX,0.118);
     AddBinBound(vX,0.135);
     AddBinBound(vX,0.150);
@@ -92,15 +92,15 @@ Binning::Binning(Int_t pairType_) {
     AddBinBound(vX,0.275);
     AddBinBound(vX,0.315);
     AddBinBound(vX,0.375);
-    //*/
-    /* // 7 quantile bins
+    */
+    ///* // 7 quantile bins
     AddBinBound(vX,0.12);
     AddBinBound(vX,0.15);
     AddBinBound(vX,0.18);
     AddBinBound(vX,0.21);
     AddBinBound(vX,0.25);
     AddBinBound(vX,0.32);
-    */
+    //*/
     /* // 14 quantile bins
     AddBinBound(vX,0.11);
     AddBinBound(vX,0.13);
@@ -131,17 +131,17 @@ Binning::Binning(Int_t pairType_) {
     AddBinBound(vZ,0.675);
     AddBinBound(vZ,0.720);
     */
-    ///* // adjusted 6-bin scheme
+    /* // adjusted 6-bin scheme
     AddBinBound(vZ,0.445);
     AddBinBound(vZ,0.500);
     AddBinBound(vZ,0.555);
     AddBinBound(vZ,0.605);
     AddBinBound(vZ,0.675);
-    //*/
-    /* // 3 quantile bins
+    */
+    ///* // 3 quantile bins
     AddBinBound(vZ,0.51);
     AddBinBound(vZ,0.61);
-    */
+    //*/
     /* // 7 quantile bins
     AddBinBound(vZ,0.43);
     AddBinBound(vZ,0.48);
@@ -180,20 +180,20 @@ Binning::Binning(Int_t pairType_) {
     AddBinBound(vPt,0.725);
     AddBinBound(vPt,0.835);
     */
-    ///* // adjusted 6-bin scheme
+    /* // adjusted 6-bin scheme
     AddBinBound(vPt,0.245);
     AddBinBound(vPt,0.365);
     AddBinBound(vPt,0.480);
     AddBinBound(vPt,0.585);
     AddBinBound(vPt,0.725);
-    //*/
+    */
     /*
     AddBinBound(vPt,0.5); // 2 quantile bins
     */
-    /*
+    ///*
     AddBinBound(vPt,0.37); // 3 quantile bins 
     AddBinBound(vPt,0.58);
-    */
+    //*/
     /*
     AddBinBound(vPt,0.16); // 14 quantile bins
     AddBinBound(vPt,0.23);
