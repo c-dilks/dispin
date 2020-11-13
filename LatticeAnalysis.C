@@ -46,7 +46,6 @@ void LatticeAnalysis(TString infileDir = "deltaset") {
     deltaDistN = Form("deltaDist_%d",a);
     deltaDistT = diffGr->GetTitle();
     deltaDistT(TRegexp("delta\\[.*\\]")) = "delta distribution";
-    cout << deltaDistT << endl;
     xmin = diffGr->GetXaxis()->GetXmin();
     xmax = diffGr->GetXaxis()->GetXmax();
     deltaDist[a] = new TH2D(deltaDistN,deltaDistT,
@@ -68,12 +67,31 @@ void LatticeAnalysis(TString infileDir = "deltaset") {
   };
 
   TProfile * deltaProf[N_AMP];
-  TString deltaProfT;
+  TString deltaProfT,deltaProfTX;
   for(int a=0; a<N_AMP; a++) {
-    deltaProf[a] = deltaDist[a]->ProfileX();
+    deltaProf[a] = deltaDist[a]->ProfileX("_pfx",1,-1,"s");
     deltaProfT = deltaDist[a]->GetTitle();
+    deltaProfTX = deltaProfT;
     deltaProfT(TRegexp("#delta distribution")) = "average #delta";
-    deltaProf[a]->SetTitle(deltaProfT);
+    deltaProfT(TRegexp("#pi.*A_")) = "A_";
+    deltaProfT(TRegexp("{perp}")) = "{ }^{#perp} ";
+    deltaProfT(TRegexp(" ::")) = ", with";
+    cout << deltaProfT << endl;
+    deltaDist[a]->SetTitle(deltaProfT);
+
+    deltaProfTX(TRegexp("^.*vs. ")) = "";
+    deltaProfTX(TRegexp("::.*$")) = "";
+    deltaProfTX(TRegexp("{perp}")) = "{ }^{#perp}";
+    deltaDist[a]->GetXaxis()->SetTitle(deltaProfTX);
+    deltaDist[a]->GetYaxis()->SetTitle("#delta");
+    deltaDist[a]->GetYaxis()->CenterTitle();
+    deltaDist[a]->GetYaxis()->SetTitleOffset(1.1);
+    deltaDist[a]->GetXaxis()->SetTitleOffset(1.0);
+    deltaDist[a]->GetXaxis()->SetLabelSize(0.05);
+    deltaDist[a]->GetYaxis()->SetLabelSize(0.05);
+    deltaDist[a]->GetXaxis()->SetTitleSize(0.05);
+    deltaDist[a]->GetYaxis()->SetTitleSize(0.05);
+
     deltaProf[a]->SetLineWidth(4);
     deltaProf[a]->SetLineColor(kBlack);
     //deltaProf[a]->Fit("pol0");
@@ -81,8 +99,8 @@ void LatticeAnalysis(TString infileDir = "deltaset") {
 
   gStyle->SetOptStat(0);
   //gStyle->SetOptFit(1);
-  TCanvas * deltaProfCanv = new TCanvas("deltaProfCanv","deltaProfCanv",2000,1000);
-  deltaProfCanv->Divide(4,2);
+  TCanvas * deltaProfCanv = new TCanvas("deltaProfCanv","deltaProfCanv",2000,1300);
+  deltaProfCanv->Divide(3,3);
   for(int a=0; a<N_AMP; a++) {
     deltaProfCanv->cd(a+1);
     deltaProfCanv->GetPad(a+1)->SetGrid(1,1);
