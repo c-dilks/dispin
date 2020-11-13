@@ -17,7 +17,7 @@ class Modulation : public TObject
 {
   public:
 
-    enum polarization_enum { kLU, kUU, kLL, kUT, nPOL };
+    enum polarization_enum { kLU, kUU, kLL, kUT, kDSIDIS, nPOL };
 
     Modulation(Int_t tw_, Int_t l_, Int_t m_,
                Int_t level_ = 0,

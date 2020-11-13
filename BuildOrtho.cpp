@@ -107,7 +107,7 @@ int main(int argc, char** argv) {
       new TH2D(d2n,d2n,NBINS,-PI,PI,NBINS,-PI,PI)
     ));
     d3.insert(std::pair<Int_t,TH3D*>(b,
-      new TH3D(d3n,d3n,NBINS,-PI,PI,NBINS,-PI,PI,NBINS,0,PI)
+      new TH3D(d3n,d3n,NBINS,-PI,PI,NBINS,-PI,PI,NBINS,-PI,PI)
     ));
   };
 
@@ -122,7 +122,7 @@ int main(int argc, char** argv) {
       pR = Tools::AdjAngle(ev->PhiR); // shift to [-pi,+pi]
       bn = BS->FindBin(ev);
       d2.at(bn)->Fill(pR,pH);
-      d3.at(bn)->Fill(pR,pH,ev->theta);
+      d3.at(bn)->Fill(pR,pH,ev->PhiD);
     };
   };
 

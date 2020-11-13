@@ -124,6 +124,10 @@ class EventTree : public TObject
 
     Float_t PhiHR; // PhiH-PhiR
 
+    // DSIDIS angles
+    Float_t hadPhiH[2];
+    Float_t PhiD; // hadPhiH[qA] - hadPhiH[qB]
+
 
 
     ///////////////////////////

@@ -223,17 +223,10 @@ void EventTree::GetEvent(Int_t i) {
   chain->GetEntry(i);
 
   // set preferred PhiR angle
-  //PhiR = PhiRp; // preferred definition by Bacchetta (see Dihadron.cxx)
-  // DSIDIS MODULATION ANGLE - replaces PhiR in the code, so we don't have
-  //                           to define a new angle variable
-  this->GetDihadronObj(); // sets objDihadron
-  PhiR = Tools::AdjAngle(
-    objDihadron->GetSingleHadronPhiH(qA) - 
-    objDihadron->GetSingleHadronPhiH(qB)
-  );
-
+  PhiR = PhiRp; // preferred definition by Bacchetta (see Dihadron.cxx)
 
   PhiHR = Tools::AdjAngle( PhiH - PhiR );
+
 
   // adjust range to 0-2pi (for cross-checking with Timothy)
   /*
@@ -241,6 +234,16 @@ void EventTree::GetEvent(Int_t i) {
   PhiH = Tools::AdjAngleTwoPi(PhiH);
   PhiHR = Tools::AdjAngleTwoPi(PhiHR);
   */
+
+
+  // DSIDIS angles
+  this->GetDihadronObj(); // sets objDihadron
+  for(int h=0; h<2; h++) {
+    hadPhiH[h] = objDihadron->GetSingleHadronPhiH(h);
+  };
+  PhiD = Tools::AdjAngle(hadPhiH[qA]-hadPhiH[qB]);
+
+
 
   // theta symmetrization tests
   //theta = fabs( fabs(theta-PI/2.0) - PI/2.0 ); // HERMES symmetrization
@@ -287,8 +290,12 @@ void EventTree::GetEvent(Int_t i) {
 
   // DSIDIS cuts
   //cutDSIDIS = true;
-  cutDSIDIS = hadYH[qA] < -0.2 &&
-              hadYH[qB] > 0.2;
+  //cutDSIDIS = hadYH[qA] < -0.2 && hadYH[qB] > 0.2; // NP
+  cutDSIDIS = hadYH[qA] < -0.0 && hadYH[qB] > 0.0; // NP
+  //cutDSIDIS = hadYH[qA] > -0.0 && hadYH[qB] < 0.0; // PN
+  //cutDSIDIS = hadYH[qA] < -0.2 && hadYH[qB] < -0.2; // NN
+  //cutDSIDIS = hadYH[qA] > 0.2 && hadYH[qB] < -0.2; // test PN
+  //cutDSIDIS = hadYH[qA] > 0.2 && hadYH[qB] > 0.2; // test PP
 
   // dihadron cuts
   /* (note: PairSame ensures we have the correct channel, e.g., pi+pi-) */
