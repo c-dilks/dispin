@@ -114,6 +114,9 @@ Modulation::Modulation(Int_t tw_, Int_t l_, Int_t m_,
       default: aziStr = "0";
     };
   }
+  else if(polarization==kDSIDIS) {
+    aziStr = "sin(phiD)";
+  }
   else aziStr = "0";
 
 
@@ -186,8 +189,8 @@ Double_t Modulation::Evaluate(Float_t phiR, Float_t phiH, Float_t theta) {
 
 // build formula string for TF3
 TString Modulation::Formu() {
-  if(polarization==kUT) {
-    return "1"; // need 4D function for UT // TODO
+  if(polarization==kUT || polarization==kDSIDIS) {
+    return "1"; // need 4D function // TODO
   };
   formuStr = baseStr;
   Tools::GlobalRegexp(formuStr,TRegexp("sin"),"TMath::Sin");
@@ -209,6 +212,7 @@ TString Modulation::FormuRF() {
   Tools::GlobalRegexp(formuStr,TRegexp("phiH"),"rfPhiH");
   Tools::GlobalRegexp(formuStr,TRegexp("phiR"),"rfPhiR");
   Tools::GlobalRegexp(formuStr,TRegexp("phiS"),"rfPhiS");
+  Tools::GlobalRegexp(formuStr,TRegexp("phiD"),"rfPhiD");
   Tools::GlobalRegexp(formuStr,TRegexp("theta"),"rfTheta");
   return formuStr;
 };
@@ -218,6 +222,7 @@ TString Modulation::FormuRF() {
 TString Modulation::ModulationTitle() {
   TString retstr = baseStr;
   retstr.ReplaceAll("phi","#phi");
+  retstr.ReplaceAll("phiD","Delta#phi");
   retstr.ReplaceAll("theta","#theta");
   return retstr;
 };
@@ -250,6 +255,9 @@ TString Modulation::PolarizationTitle() {
         else return "unknown";
       };
       break;
+    case kDSIDIS:
+      return "LU";
+      break;
   };
   return "unknown";
 };
@@ -259,6 +267,7 @@ TString Modulation::StateTitle() {
   TString retstr,lStr;
   TString polStr = this->PolarizationTitle();
 
+  if(polarization==kDSIDIS) return "DSIDIS";
   if(tw==0) return "const";
 
   lStr = enablePW ? Form("%d",l) : "L";
