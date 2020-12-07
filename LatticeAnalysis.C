@@ -76,21 +76,24 @@ void LatticeAnalysis(TString infileDir = "deltaset") {
     deltaProfT(TRegexp("#pi.*A_")) = "A_";
     deltaProfT(TRegexp("{perp}")) = "{ }^{#perp} ";
     deltaProfT(TRegexp(" ::")) = ", with";
+    if(deltaProfT.Contains("with")) deltaProfT += " GeV";
     cout << deltaProfT << endl;
     deltaDist[a]->SetTitle(deltaProfT);
 
     deltaProfTX(TRegexp("^.*vs. ")) = "";
     deltaProfTX(TRegexp("::.*$")) = "";
     deltaProfTX(TRegexp("{perp}")) = "{ }^{#perp}";
+    if(deltaProfTX.Contains("M") ||
+       deltaProfTX.Contains("perp")) deltaProfTX += " [GeV]";
     deltaDist[a]->GetXaxis()->SetTitle(deltaProfTX);
     deltaDist[a]->GetYaxis()->SetTitle("#delta");
     deltaDist[a]->GetYaxis()->CenterTitle();
     deltaDist[a]->GetYaxis()->SetTitleOffset(1.1);
-    deltaDist[a]->GetXaxis()->SetTitleOffset(1.0);
-    deltaDist[a]->GetXaxis()->SetLabelSize(0.05);
-    deltaDist[a]->GetYaxis()->SetLabelSize(0.05);
-    deltaDist[a]->GetXaxis()->SetTitleSize(0.05);
-    deltaDist[a]->GetYaxis()->SetTitleSize(0.05);
+    deltaDist[a]->GetXaxis()->SetTitleOffset(1.1);
+    deltaDist[a]->GetXaxis()->SetLabelSize(0.06);
+    deltaDist[a]->GetYaxis()->SetLabelSize(0.06);
+    deltaDist[a]->GetXaxis()->SetTitleSize(0.06);
+    deltaDist[a]->GetYaxis()->SetTitleSize(0.06);
 
     deltaProf[a]->SetLineWidth(4);
     deltaProf[a]->SetLineColor(kBlack);
@@ -99,11 +102,13 @@ void LatticeAnalysis(TString infileDir = "deltaset") {
 
   gStyle->SetOptStat(0);
   //gStyle->SetOptFit(1);
-  TCanvas * deltaProfCanv = new TCanvas("deltaProfCanv","deltaProfCanv",2000,1300);
-  deltaProfCanv->Divide(3,3);
+  TCanvas * deltaProfCanv = new TCanvas("deltaProfCanv","deltaProfCanv",2*1200,4*600);
+  deltaProfCanv->Divide(2,4);
   for(int a=0; a<N_AMP; a++) {
     deltaProfCanv->cd(a+1);
     deltaProfCanv->GetPad(a+1)->SetGrid(1,1);
+    deltaProfCanv->GetPad(a+1)->SetBottomMargin(0.15);
+    deltaProfCanv->GetPad(a+1)->SetLeftMargin(0.15);
     deltaProf[a]->GetYaxis()->SetRangeUser(-deltaMax,deltaMax);
     //deltaProf[a]->Draw();
     deltaDist[a]->SetLineWidth(2);
