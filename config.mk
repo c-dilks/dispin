@@ -27,8 +27,8 @@ LIBS += -lMinuit -lRooFitCore -lRooFit
 #LIBS += -L$(HIPO)/lib -lhipo4
 
 # clas12root
-DEPS += -I$(CLAS12ROOT)/hipo4 -I$(CLAS12ROOT)/Clas12Banks -I$(CLAS12ROOT)/Clas12Root
-LIBS += -L$(CLAS12ROOT)/lib -lClas12Banks -lClas12Root -lHipo4 -llz4
+#DEPS += -I$(CLAS12ROOT)/hipo4 -I$(CLAS12ROOT)/Clas12Banks -I$(CLAS12ROOT)/Clas12Root
+#LIBS += -L$(CLAS12ROOT)/lib -lClas12Banks -lClas12Root -lHipo4 -llz4
 
 
 # DiSpin shared object name and source directory

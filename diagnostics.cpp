@@ -11,6 +11,7 @@
 #include "TRegexp.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TH3.h"
 #include "TCanvas.h"
 #include "TGraph.h"
 
@@ -247,6 +248,9 @@ int main(int argc, char** argv) {
    TH2D * thetaVsZ[2];
    TH2D * thetaVsHadP[2];
    TH2D * YHvsXF[2];
+   TH2D * YHvsMh[2];
+   TH2D * XFvsMh[2];
+   TH2D * PperpvsMh[2];
    TH2D * hadPperpVsYH[2];
    for(int h=0; h<2; h++) {
      thetaVsZ[h] = new TH2D(TString("thetaVsZ_"+hadName[h]),
@@ -258,10 +262,28 @@ int main(int argc, char** argv) {
      YHvsXF[h] = new TH2D(TString("YHvsXF_"+hadName[h]),
        TString(hadTitle[h]+" y_{h} vs. x_{F};x_{F};y_{h}"),
        NBINS,-1,1,NBINS,-4,4);
+     YHvsMh[h] = new TH2D(TString("YHvsMh_"+hadName[h]),
+       TString(hadTitle[h]+" y_{h} vs. M_{h};M_{h};y_{h}"),
+       2*NBINS,0,3,NBINS,-4,4);
+     XFvsMh[h] = new TH2D(TString("XFvsMh_"+hadName[h]),
+       TString(hadTitle[h]+" x_{F} vs. M_{h};M_{h};x_{F}"),
+       2*NBINS,0,3,NBINS,-1,1);
+     PperpvsMh[h] = new TH2D(TString("PperpvsMh_"+hadName[h]),
+       TString(hadTitle[h]+" p_{perp} vs. M_{h};M_{h};p_{perp}"),
+       2*NBINS,0,3,NBINS,0,2);
      hadPperpVsYH[h] = new TH2D(TString("hadPperpVsYH_"+hadName[h]),
        TString(hadTitle[h]+"p_{perp} vs. y_{h};y_{h};p_{perp}"),
        NBINS,-4,4,NBINS,0,2);
    };
+
+
+   TH3D * MhVsYHcorr = new TH3D("MhVsYHcorr",
+     TString("M_{h} vs. y_{h} correlation;y_{h}("+hadTitle[qA]+");y_{h}("+hadTitle[qB]+");M_{h}"),
+     70,-4,4,
+     70,-4,4,
+     50,0,2
+   );
+
    
    TH1D * sinThetaDist = new TH1D("sinThetaDist",
      "sin(#theta) distribution;sin(#theta)",NBINS,-1.1,1.1);
@@ -504,9 +526,14 @@ int main(int argc, char** argv) {
          thetaVsZ[h]->Fill(ev->Z[h],ev->theta);
          thetaVsHadP[h]->Fill(ev->hadP[h],ev->theta);
          YHvsXF[h]->Fill(ev->hadXF[h],ev->hadYH[h]);
+         YHvsMh[h]->Fill(ev->Mh,ev->hadYH[h]);
+         XFvsMh[h]->Fill(ev->Mh,ev->hadXF[h]);
+         PperpvsMh[h]->Fill(ev->Mh,ev->hadPperp[h]);
          hadPperpVsYH[h]->Fill(ev->hadYH[h],ev->hadPperp[h]);
          xFvsZ[h]->Fill(ev->Z[h],ev->hadXF[h]);
        };
+
+       MhVsYHcorr->Fill(ev->hadYH[qA],ev->hadYH[qB],ev->Mh);
 
        PhiHvsMh->Fill(ev->Mh,ev->PhiH);
        PhiHvsX->Fill(ev->x,ev->PhiH);
@@ -549,7 +576,11 @@ int main(int argc, char** argv) {
 
    for(int h=0; h<2; h++) xFvsZ[h]->Write();
    for(int h=0; h<2; h++) YHvsXF[h]->Write();
+   for(int h=0; h<2; h++) YHvsMh[h]->Write();
+   for(int h=0; h<2; h++) XFvsMh[h]->Write();
+   for(int h=0; h<2; h++) PperpvsMh[h]->Write();
    for(int h=0; h<2; h++) hadPperpVsYH[h]->Write();
+   MhVsYHcorr->Write();
    DeltaPhiVsPhiR->Write();
    SinDeltaPhiVsPhiR->Write();
    DeltaPhiVsPhiHR2->Write();

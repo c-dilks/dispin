@@ -115,7 +115,12 @@ Modulation::Modulation(Int_t tw_, Int_t l_, Int_t m_,
     };
   }
   else if(polarization==kDSIDIS) {
-    aziStr = "sin(phiD)";
+    if(tw==2) {
+      if(lev==0)      aziStr = "sin(phiD)";
+      else if(lev==1) aziStr = "sin(2*phiD)";
+      else aziStr = "0";
+    }
+    else aziStr = "0";
   }
   else aziStr = "0";
 

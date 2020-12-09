@@ -793,7 +793,7 @@ void Asymmetry::SetFitMode(Int_t fitMode) {
       break;
     case 888: // DSIDIS
       enablePW = false;
-      this->FormuAppend(0,0,0,0,Modulation::kDSIDIS); // sin(PhiD)
+      this->FormuAppend(2,0,0,0,Modulation::kDSIDIS); // sin(PhiD)
       break;
     case 889: // DSIDIS, with 7 azimuthal modulations
       enablePW = false;
@@ -804,14 +804,14 @@ void Asymmetry::SetFitMode(Int_t fitMode) {
       this->FormuAppend(2,2,2);
       this->FormuAppend(3,2,2);
       this->FormuAppend(3,2,-2);
-      this->FormuAppend(0,0,0,0,Modulation::kDSIDIS); // sin(PhiD)
+      this->FormuAppend(2,0,0,0,Modulation::kDSIDIS); // sin(PhiD)
       break;
     case 890: // DSIDIS, with 4 azimuthal modulations
       this->FormuAppend(3,0,0);
       this->FormuAppend(2,1,1);
       this->FormuAppend(3,1,1);
       this->FormuAppend(3,1,-1);
-      this->FormuAppend(0,0,0,0,Modulation::kDSIDIS); // sin(PhiD)
+      this->FormuAppend(2,0,0,0,Modulation::kDSIDIS); // sin(PhiD)
       break;
     case 891: // DSIDIS, with higher order azimuthal modulations only
       //this->FormuAppend(3,0,0);
@@ -821,7 +821,7 @@ void Asymmetry::SetFitMode(Int_t fitMode) {
       this->FormuAppend(2,2,2);
       this->FormuAppend(3,2,2);
       this->FormuAppend(3,2,-2);
-      this->FormuAppend(0,0,0,0,Modulation::kDSIDIS); // sin(PhiD)
+      this->FormuAppend(2,0,0,0,Modulation::kDSIDIS); // sin(PhiD)
       break;
     case 892: // DSIDIS, with twist-2 azimuthal modulations only
       enablePW = false;
@@ -832,17 +832,24 @@ void Asymmetry::SetFitMode(Int_t fitMode) {
       this->FormuAppend(2,2,2);
       //this->FormuAppend(3,2,2);
       //this->FormuAppend(3,2,-2);
-      this->FormuAppend(0,0,0,0,Modulation::kDSIDIS); // sin(PhiD)
+      this->FormuAppend(2,0,0,0,Modulation::kDSIDIS); // sin(PhiD)
       break;
-    case 1000:
-      this->FormuAppend(2,1,1,0,Modulation::kLL); // double-spin asym
-      this->FormuAppend(3,1,1,0,Modulation::kLL);
+    case 8000: // DSIDIS
+      enablePW = false;
+      this->FormuAppend(2,0,0,0,Modulation::kDSIDIS); // sin(PhiD)
+      this->FormuAppend(2,0,0,1,Modulation::kDSIDIS); // sin(2*PhiD)
       break;
-    case 1001:
-      enablePW = true;
-      this->FormuAppend(2,1,1,0,Modulation::kLL); // double-spin asym
-      this->FormuAppend(2,2,1,0,Modulation::kLL); // with tw2 PWs
-      this->FormuAppend(2,2,2,0,Modulation::kLL);
+    case 8001: // DSIDIS + 7 modulations
+      enablePW = false;
+      this->FormuAppend(3,0,0);
+      this->FormuAppend(2,1,1);
+      this->FormuAppend(3,1,1);
+      this->FormuAppend(3,1,-1);
+      this->FormuAppend(2,2,2);
+      this->FormuAppend(3,2,2);
+      this->FormuAppend(3,2,-2);
+      this->FormuAppend(2,0,0,0,Modulation::kDSIDIS); // sin(PhiD)
+      this->FormuAppend(2,0,0,1,Modulation::kDSIDIS); // sin(2*PhiD)
       break;
     default:
       fprintf(stderr,"ERROR: bad fitMode; using G1perp default\n");
@@ -1050,9 +1057,12 @@ void Asymmetry::FormuAppend(Int_t TW, Int_t L, Int_t M,
 
   rfA[nAmpUsed]->SetTitle(modu[nAmpUsed]->AsymmetryTitle());
 
+  // set depolarization factors
   if(polarization==Modulation::kLU) {
     if(TW==2)      dpIdx[nAmpUsed] = dpCA;
     else if(TW==3) dpIdx[nAmpUsed] = dpWA;
+  } else if(polarization==Modulation::kDSIDIS) {
+    if(TW==2)      dpIdx[nAmpUsed] = dpCA;
   };
 
   nAmpUsed++;

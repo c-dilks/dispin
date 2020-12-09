@@ -35,7 +35,7 @@ Binning::Binning(Int_t pairType_) {
     /* // below VM resonances vs. above
     AddBinBound(vM,0.63);
     */
-    /* // adjusted 12-bin scheme
+    ///* // adjusted 12-bin scheme
     AddBinBound(vM,0.381);
     AddBinBound(vM,0.462);
     AddBinBound(vM,0.531);
@@ -47,14 +47,24 @@ Binning::Binning(Int_t pairType_) {
     AddBinBound(vM,0.900);
     AddBinBound(vM,0.981);
     AddBinBound(vM,1.125);
-    */
-    ///* // 6 quantile bins
-    AddBinBound(vM,0.57);
-    AddBinBound(vM,0.69);
-    AddBinBound(vM,0.78);
-    AddBinBound(vM,0.87);
-    AddBinBound(vM,1.01);
     //*/
+    /* // 6 quantile bins
+    //AddBinBound(vM,0.37); // CFR via yH<-0.2
+    //AddBinBound(vM,0.43);
+    //AddBinBound(vM,0.49);
+    //AddBinBound(vM,0.58);
+    //AddBinBound(vM,0.72);
+    //AddBinBound(vM,0.57); // DSIDIS via yH cut at 0.2
+    //AddBinBound(vM,0.69);
+    //AddBinBound(vM,0.78);
+    //AddBinBound(vM,0.87);
+    //AddBinBound(vM,1.01);
+    AddBinBound(vM,0.64); // TFR via yH>0.2
+    AddBinBound(vM,0.82);
+    AddBinBound(vM,0.96);
+    AddBinBound(vM,1.11);
+    AddBinBound(vM,1.27);
+    */
     /* // 14 quantile bins
     AddBinBound(vM,0.38);
     AddBinBound(vM,0.44);

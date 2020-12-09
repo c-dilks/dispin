@@ -273,8 +273,11 @@ void EventTree::GetEvent(Int_t i) {
     hadYH[h] = -1 * hadMom[h].Rapidity(); // flip sign
   };
 
-  // compute hadron Pperp
-  for(int h=0; h<2; h++) hadPperp[h] = objDihadron->hadPperp[h];
+  // compute hadron Pperp and qT
+  for(int h=0; h<2; h++) {
+    hadPperp[h] = objDihadron->hadPperp[h];
+    hadQt[h] = hadPperp[h] / Z[h];
+  }
 
 
 
@@ -289,13 +292,27 @@ void EventTree::GetEvent(Int_t i) {
   cutDIS = cutQ2 && cutW && cutY;
 
   // DSIDIS cuts
-  //cutDSIDIS = true;
-  //cutDSIDIS = hadYH[qA] < -0.2 && hadYH[qB] > 0.2; // NP
-  cutDSIDIS = hadYH[qA] < -0.0 && hadYH[qB] > 0.0; // NP
-  //cutDSIDIS = hadYH[qA] > -0.0 && hadYH[qB] < 0.0; // PN
-  //cutDSIDIS = hadYH[qA] < -0.2 && hadYH[qB] < -0.2; // NN
-  //cutDSIDIS = hadYH[qA] > 0.2 && hadYH[qB] < -0.2; // test PN
-  //cutDSIDIS = hadYH[qA] > 0.2 && hadYH[qB] > 0.2; // test PP
+  yhb = 0.2; // y_h bound for TFR/CFR separation
+  // Breit frame rapidity cuts
+  for(int h=0; h<2; h++) {
+    cutCFR[h] = hadYH[h] < -yhb;
+    cutTFR[h] = hadYH[h] > yhb;
+  };
+  cutDSIDIS = true; // bypass
+  //cutDSIDIS = hadXF[qA]>0 && hadXF[qB]>0; // PRL CFR
+  //cutDSIDIS = cutCFR[qA] && cutTFR[qB]; // DSIDIS
+  //cutDSIDIS = cutTFR[qA] && cutTFR[qB]; // TFR
+  //cutDSIDIS = cutCFR[qA] && cutCFR[qB]; // CFR
+  //cutDSIDIS = cutCFR[qA]; // pi+ in CFR, pi- no cut
+  
+  /* // Prokudin cuts:
+  for(int h=0; h<2; h++) {
+    cutCFR[h] = hadQt[h]<2 && Z[h]>0.2;
+    cutTFR[h] = hadQt[h]>1 &&
+      ( (x<0.45 && Z[h]<0.1) || (x>=0.45 && Z[h]<0.3) );
+  };
+  */
+
 
   // dihadron cuts
   /* (note: PairSame ensures we have the correct channel, e.g., pi+pi-) */

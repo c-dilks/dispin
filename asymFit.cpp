@@ -622,6 +622,7 @@ int main(int argc, char** argv) {
   TLegend * multiLeg;
   TString legText;
   TString multiGrCanvN;
+  TString pngN;
   TObjArray * multiGrCanvArr;
   Int_t nRows = ( N_AMP + 1 - (includeOAonMultiGr?0:1) )/4 + 1;
   for(Int_t bn : BS->binVec) {
@@ -662,11 +663,8 @@ int main(int argc, char** argv) {
 
       multiGrCanvArr = new TObjArray();
       multiGrCanvArr->AddLast(multiGrCanv);
-      multiGrCanv->Print(
-        TString(spinrootDir+"/"+multiGrCanvN+DparamStr+".png"),
-        "png");
-
-
+      pngN = Form("%s/%s%s_%d.png",spinrootDir.Data(),multiGrCanvN.Data(),DparamStr.Data(),fitMode),
+      multiGrCanv->Print(pngN,"png");
     };
   };
 
