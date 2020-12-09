@@ -31,7 +31,7 @@ sleep 1
 catSpinroot.exe
 
 sleep 1
-fitmode=888 # |m|<=2
+fitmode=8001
 
 # chi2 fit
 asymFit.exe $fitmode 2 | tee spinroot/fitOutput_chi2.txt

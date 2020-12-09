@@ -125,7 +125,7 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
       };
     };
   };
-  moduArr->AddLast(new Modulation(0,0,0,0,0,Modulation::kDSIDIS));
+  moduArr->AddLast(new Modulation(2,0,0,0,0,Modulation::kDSIDIS));
   Int_t NMODi = moduArr->GetEntries();
   const Int_t NMOD = NMODi;
 

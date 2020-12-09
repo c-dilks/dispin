@@ -78,6 +78,7 @@ class EventTree : public TObject
     Float_t hadXF[2];
     Float_t hadYH[2];
     Float_t hadPperp[2];
+    Float_t hadQt[2];
     Float_t hadVertex[2][3];
     Int_t hadStatus[2];
     Float_t hadChi2pid[2];
@@ -127,6 +128,7 @@ class EventTree : public TObject
     // DSIDIS angles
     Float_t hadPhiH[2];
     Float_t PhiD; // hadPhiH[qA] - hadPhiH[qB]
+    Float_t yhb;
 
 
 
@@ -134,6 +136,8 @@ class EventTree : public TObject
     //   EventCuts
     ///////////////////////////
     Bool_t cutQ2,cutW,cutY,cutDIS,cutDSIDIS;
+    Bool_t cutCFR[2];
+    Bool_t cutTFR[2];
     Bool_t cutDihadron;
     Bool_t cutHelicity;
     Bool_t cutVertex;
