@@ -18,10 +18,12 @@ import clasqa.QADB
 
 ////////////////////////
 // ARGUMENTS
-def inHipoName = "../data/skim/skim4_005052.hipo" // skim file
+def inHipoName = "../data/skim/skim4_005052.hipo" // skim file, or directory of DST files
 def dataStream = 'data' // 'data', 'mcrec', 'mcgen'
+def inHipoType = "skim" // options: "skim", "dst"
 if(args.length>=1) inHipoName = args[0]
 if(args.length>=2) dataStream = args[1]
+if(args.length>=3) inHipoType = args[2]
 ////////////////////////
 // OPTIONS
 def verbose = 0
@@ -403,218 +405,244 @@ def cntPairPipPim = 0
 def cnt
 evCount = 0
 
-// open skim HIPO file
-reader = new HipoDataSource()
-reader.open(inHipoName)
-
-// begin event loop
-while(reader.hasEvent()) {
-  //if(evCount>100000) break // limiter
-  evCount++
-  if(evCount % 100000 == 0) println "read $evCount events"
-  if(verbose) { 30.times{print '='}; println " begin event" }
-
-  event = reader.getNextEvent()
-
-  if(event.hasBank("REC::Particle") &&
-     event.hasBank("REC::Event") &&
-     event.hasBank("RUN::config") ) {
-
-    // get banks
-    particleBank = event.getBank("REC::Particle")
-    eventBank = event.getBank("REC::Event")
-    configBank = event.getBank("RUN::config")
-    calBank = event.getBank("REC::Calorimeter")
-    trkBank = event.getBank("REC::Track")
-    trajBank = event.getBank("REC::Traj")
-    if(useMC) {
-      mcParticleBank = event.getBank("MC::Particle")
-    }
+// get list of HIPO files (if reading DSTs)
+def inHipoList = []
+if(inHipoType=="dst") {
+  def inHipoDirObj = new File(inHipoName)
+  def inHipoFilter = ~/.*\.hipo/
+  inHipoDirObj.traverse( type: groovy.io.FileType.FILES, nameFilter: inHipoFilter ) {
+    if(it.size()>0) inHipoList << inHipoName+"/"+it.getName()
+  }
+  inHipoList.sort()
+  if(inHipoList.size()==0) {
+    System.err << "ERROR: no hipo files found in this directory\n"
+    return
+  }
+}
+else if(inHipoType=="skim") { inHipoList << inHipoName }
+else {
+  System.err << "ERROR: unknown inHipoType setting\n"
+  return
+}
 
 
-    // get event-level information
-    // - evnum may surpass float precision limit, if it has more than 7
-    //   digits; since ntuples only store floats, we split evnum into
-    //   two 16-bit halves; reconstruct full evnum with 
-    //   `evnumLo+(evnumHi<<16)`
-    helicity = eventBank.getByte('helicity',0)
-    runnum = configBank.getInt('run',0)
-    evnum = configBank.getInt('event',0)
-    evnumLo = evnum & 0xFFFF
-    evnumHi = (evnum>>16) & 0xFFFF
-    if(once) {
-      println "ANALYZING RUN $runnum"
-      once = false
-    }
+// HIPO file loop (only 1 file, if reading a skim file)
+inHipoList.each { inHipoFile ->
 
+  // open HIPO file
+  reader = new HipoDataSource()
+  reader.open(inHipoFile)
 
-    // CUT: data monitoring QA cut (not applied to MC)
-    if(!useMC) {
-      if(!qa.OkForAsymmetry(runnum,evnum)) {
-        //println "toss file " + qa.getFilenum() + " (evnum=$evnum)"
-        continue;
+  // begin event loop
+  while(reader.hasEvent()) {
+    //if(evCount>100000) break // limiter
+    evCount++
+    if(evCount % 100000 == 0) println "read $evCount events"
+    if(verbose) { 30.times{print '='}; println " begin event" }
+
+    event = reader.getNextEvent()
+
+    if(event.hasBank("REC::Particle") &&
+       event.hasBank("REC::Event") &&
+       event.hasBank("RUN::config") ) {
+
+      // get banks
+      particleBank = event.getBank("REC::Particle")
+      eventBank = event.getBank("REC::Event")
+      configBank = event.getBank("RUN::config")
+      calBank = event.getBank("REC::Calorimeter")
+      trkBank = event.getBank("REC::Track")
+      trajBank = event.getBank("REC::Traj")
+      if(useMC) {
+        mcParticleBank = event.getBank("MC::Particle")
       }
-    }
 
 
-    // get list of PIDs, with list index corresponding to bank row
-    pids = (0..<particleBank.rows()).collect{ 
-      particleBank.getInt('pid',it)
-    }
-    if(verbose) println "PIDs = $pids"
-
-
-    // read MC generated particles
-    // - mcgenTreeList is a list of trees; one list element = one PID;
-    //   each list element is a 'tree': a list of subtrees (branches), one for 
-    //   for each particle with that PID
-    if(useMC) {
-      mcPids = (0..<mcParticleBank.rows()).collect{ 
-        mcParticleBank.getInt('pid',it)
+      // get event-level information
+      // - evnum may surpass float precision limit, if it has more than 7
+      //   digits; since ntuples only store floats, we split evnum into
+      //   two 16-bit halves; reconstruct full evnum with 
+      //   `evnumLo+(evnumHi<<16)`
+      helicity = eventBank.getByte('helicity',0)
+      runnum = configBank.getInt('run',0)
+      evnum = configBank.getInt('event',0)
+      evnumLo = evnum & 0xFFFF
+      evnumHi = (evnum>>16) & 0xFFFF
+      if(once) {
+        println "ANALYZING RUN $runnum"
+        once = false
       }
-      if(verbose) println "MC PIDs = $mcPids"
-      mcgenTreeList = hadPIDlist.collect{ growMCtree(mcPids,it) }
-      mcgenTreeList << growMCtree(mcPids,11)
-      if(verbose) {
-        println "MCGENTREELIST"
-        println pPrint(mcgenTreeList)
+
+
+      // CUT: data monitoring QA cut (not applied to MC)
+      if(!useMC) {
+        if(!qa.OkForAsymmetry(runnum,evnum)) {
+          //println "toss file " + qa.getFilenum() + " (evnum=$evnum)"
+          continue;
+        }
       }
-    }
 
 
-    
-    //----------------------------------
-    // find the DIS electron
-    //----------------------------------
-    eleTree = growParticleTree(pids,11)
-    //if(verbose) { println "----- eleTree:"; println eleTree; }
-
-    // skip event if no electron found
-    if(eleTree.size()==0) continue
+      // get list of PIDs, with list index corresponding to bank row
+      pids = (0..<particleBank.rows()).collect{ 
+        particleBank.getInt('pid',it)
+      }
+      if(verbose) println "PIDs = $pids"
 
 
-    // CUT: choose maximum energy electron branch (only needed if more than
-    //      one candidate DIS electron was found)
-    eleDIS = eleTree.max{it.particle.e()}
-    // CUT: electron must be in FD trigger
-    if( eleDIS.status <= -3000 || eleDIS.status > -2000) continue
-
-    if(verbose) { println "----- eleDIS:"; println eleDIS.particle; }
-
-
-    //------------------------------
-    // dihadron pairing
-    //------------------------------
-
-    // first build a list of hadron trees; one list element = one PID
-    //   each list element is a 'tree': a list of subtrees (branches), one for 
-    //   for each particle with that PID
-    eventHasPipPim = false
-    if(verbose) println "..... hadrons:"
-    hadTreeList = hadPIDlist.collect{ growParticleTree(pids,it) }
-    //if(verbose) { println "--- hadTreeList:"; println pPrint(hadTreeList); }
-
-    // then loop over pairs of hadron PIDs
-    // (`Idx` is a local ID, defined as the index of the PID in `hadPIDlist`)
-    hadTreeList.eachWithIndex { hadTreeA, hadIdxA ->
-      hadTreeList.eachWithIndex { hadTreeB, hadIdxB ->
-
-        // take only permutations of PIDs, with repetition allowed
-        if( hadIdxB < hadIdxA ) return
-
-        // proceed only if there are one or more hadrons for each PID
-        if( hadTreeA.size()==0 || hadTreeB.size==0) return;
-
-        // loop over pairs of hadrons with the specified PIDs
-        hadTreeA.each { hadA ->
-          hadTreeB.each { hadB ->
-
-            // like PIDs -> take all permutations of pairs (no repetition)
-            // unlike PIDs -> take all combinations of pairs
-            if(hadIdxA==hadIdxB && hadB.row <= hadA.row) return
+      // read MC generated particles
+      // - mcgenTreeList is a list of trees; one list element = one PID;
+      //   each list element is a 'tree': a list of subtrees (branches), one for 
+      //   for each particle with that PID
+      if(useMC) {
+        mcPids = (0..<mcParticleBank.rows()).collect{ 
+          mcParticleBank.getInt('pid',it)
+        }
+        if(verbose) println "MC PIDs = $mcPids"
+        mcgenTreeList = hadPIDlist.collect{ growMCtree(mcPids,it) }
+        mcgenTreeList << growMCtree(mcPids,11)
+        if(verbose) {
+          println "MCGENTREELIST"
+          println pPrint(mcgenTreeList)
+        }
+      }
 
 
-            // CUT: reject hadrons which are only in the CD; they will fail
-            //      fiducial cuts because they do not have a DC trajectory,
-            //      but rather only a CVT trajectory
-            if( (hadA.status>=4000 && hadA.status<5000) ||
-                (hadB.status>=4000 && hadB.status<5000) ) return
+      
+      //----------------------------------
+      // find the DIS electron
+      //----------------------------------
+      eleTree = growParticleTree(pids,11)
+      //if(verbose) { println "----- eleTree:"; println eleTree; }
+
+      // skip event if no electron found
+      if(eleTree.size()==0) continue
 
 
-            // MC matching
-            if(useMC) {
-              mcgenSet = [eleDIS,hadA,hadB].collect{ rec ->
-                def minDist = 10000.0
-                def dist
-                def match
-                mcgenTreeList.each{ genTree ->
-                  genTree.each{ gen ->
-                    if(gen.particle.pid()==rec.particle.pid()) {
-                      // calculate distance between gen and rec particles
-                      dist = Math.sqrt(
-                        Math.pow(adjAngle(gen.particle.phi()-rec.particle.phi()),2) +
-                        Math.pow(adjAngle(Math.toRadians(gen.particle.theta()-rec.particle.theta())),2)
-                      )
-                      // find gen particle with minimum dist from rec
-                      if(dist<minDist) {
-                        match = gen // `match` is the matched mcgen particle
-                        match.matchDist = dist // for ntuple
-                        minDist = dist
+      // CUT: choose maximum energy electron branch (only needed if more than
+      //      one candidate DIS electron was found)
+      eleDIS = eleTree.max{it.particle.e()}
+      // CUT: electron must be in FD trigger
+      if( eleDIS.status <= -3000 || eleDIS.status > -2000) continue
+
+      if(verbose) { println "----- eleDIS:"; println eleDIS.particle; }
+
+
+      //------------------------------
+      // dihadron pairing
+      //------------------------------
+
+      // first build a list of hadron trees; one list element = one PID
+      //   each list element is a 'tree': a list of subtrees (branches), one for 
+      //   for each particle with that PID
+      eventHasPipPim = false
+      if(verbose) println "..... hadrons:"
+      hadTreeList = hadPIDlist.collect{ growParticleTree(pids,it) }
+      //if(verbose) { println "--- hadTreeList:"; println pPrint(hadTreeList); }
+
+      // then loop over pairs of hadron PIDs
+      // (`Idx` is a local ID, defined as the index of the PID in `hadPIDlist`)
+      hadTreeList.eachWithIndex { hadTreeA, hadIdxA ->
+        hadTreeList.eachWithIndex { hadTreeB, hadIdxB ->
+
+          // take only permutations of PIDs, with repetition allowed
+          if( hadIdxB < hadIdxA ) return
+
+          // proceed only if there are one or more hadrons for each PID
+          if( hadTreeA.size()==0 || hadTreeB.size==0) return;
+
+          // loop over pairs of hadrons with the specified PIDs
+          hadTreeA.each { hadA ->
+            hadTreeB.each { hadB ->
+
+              // like PIDs -> take all permutations of pairs (no repetition)
+              // unlike PIDs -> take all combinations of pairs
+              if(hadIdxA==hadIdxB && hadB.row <= hadA.row) return
+
+
+              // CUT: reject hadrons which are only in the CD; they will fail
+              //      fiducial cuts because they do not have a DC trajectory,
+              //      but rather only a CVT trajectory
+              if( (hadA.status>=4000 && hadA.status<5000) ||
+                  (hadB.status>=4000 && hadB.status<5000) ) return
+
+
+              // MC matching
+              if(useMC) {
+                mcgenSet = [eleDIS,hadA,hadB].collect{ rec ->
+                  def minDist = 10000.0
+                  def dist
+                  def match
+                  mcgenTreeList.each{ genTree ->
+                    genTree.each{ gen ->
+                      if(gen.particle.pid()==rec.particle.pid()) {
+                        // calculate distance between gen and rec particles
+                        dist = Math.sqrt(
+                          Math.pow(adjAngle(gen.particle.phi()-rec.particle.phi()),2) +
+                          Math.pow(adjAngle(Math.toRadians(gen.particle.theta()-rec.particle.theta())),2)
+                        )
+                        // find gen particle with minimum dist from rec
+                        if(dist<minDist) {
+                          match = gen // `match` is the matched mcgen particle
+                          match.matchDist = dist // for ntuple
+                          minDist = dist
+                        }
                       }
                     }
                   }
+                  // threshold distance for matching
+                  return minDist<10 ? match : null
                 }
-                // threshold distance for matching
-                return minDist<10 ? match : null
+                mcEle = mcgenSet[0]
+                mcHadA = mcgenSet[1]
+                mcHadB = mcgenSet[2]
               }
-              mcEle = mcgenSet[0]
-              mcHadA = mcgenSet[1]
-              mcHadB = mcgenSet[2]
+
+
+              // fill ntuple (be sure order matches defined order)
+              NTleaves = [
+                *fillParticleLeaves(eleDIS), *fillDetectorLeaves(eleDIS),
+                *fillParticleLeaves(hadA), *fillDetectorLeaves(hadA),
+                *fillParticleLeaves(hadB), *fillDetectorLeaves(hadB),
+                runnum,evnumLo,evnumHi,
+                helicity
+              ]
+              if(useMC) NTleaves += [
+                *fillMCleaves(mcEle),
+                *fillMCleaves(mcHadA),
+                *fillMCleaves(mcHadB)
+              ]
+              NT.fill(*NTleaves)
+              //println NTleaves//.size()
+
+              // print dihadron hadrons
+              if(verbose) { 
+                20.times{print '.'}
+                println " dihadron "+
+                  hadPIDlist[hadIdxA]+" "+hadPIDlist[hadIdxB];
+                println hadA.particle
+                println hadB.particle
+              }
+
+              if( (hadA.particle.pid()==211 && hadB.particle.pid()==-211) ||
+                  (hadA.particle.pid()==-211 && hadB.particle.pid()==211)) {
+                eventHasPipPim = true
+                cntPairPipPim++
+              }
+
             }
-
-
-            // fill ntuple (be sure order matches defined order)
-            NTleaves = [
-              *fillParticleLeaves(eleDIS), *fillDetectorLeaves(eleDIS),
-              *fillParticleLeaves(hadA), *fillDetectorLeaves(hadA),
-              *fillParticleLeaves(hadB), *fillDetectorLeaves(hadB),
-              runnum,evnumLo,evnumHi,
-              helicity
-            ]
-            if(useMC) NTleaves += [
-              *fillMCleaves(mcEle),
-              *fillMCleaves(mcHadA),
-              *fillMCleaves(mcHadB)
-            ]
-            NT.fill(*NTleaves)
-            //println NTleaves//.size()
-
-            // print dihadron hadrons
-            if(verbose) { 
-              20.times{print '.'}
-              println " dihadron "+
-                hadPIDlist[hadIdxA]+" "+hadPIDlist[hadIdxB];
-              println hadA.particle
-              println hadB.particle
-            }
-
-            if( (hadA.particle.pid()==211 && hadB.particle.pid()==-211) ||
-                (hadA.particle.pid()==-211 && hadB.particle.pid()==211)) {
-              eventHasPipPim = true
-              cntPairPipPim++
-            }
-
           }
         }
       }
-    }
 
-    if(eventHasPipPim) cntEventHasPipPim++
+      if(eventHasPipPim) cntEventHasPipPim++
 
-  } // end if event has specific banks
+    } // end if event has specific banks
 
-} // end event loop
-reader.close()
+  } // end event loop
+  reader.close()
+  reader = null
+} // end HIPO file loop
 
 
 // write out to diskim file
@@ -623,7 +651,3 @@ diskimFile.close()
 
 println "number of events with at least one pi+pi- pair: $cntEventHasPipPim"
 println "number of pi+p- pairs: $cntPairPipPim"
-
-
-// close reader
-reader = null

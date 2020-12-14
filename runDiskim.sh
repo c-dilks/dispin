@@ -7,7 +7,9 @@ if [ $# -lt 1 ]; then
 fi
 skimfile=$1
 datastream="data"
+hipotype="skim"
 if [ $# -ge 2 ]; then datastream="$2"; fi
+if [ $# -ge 3 ]; then hipotype="$3"; fi
 
 # check setup
 if [ -z "$DISPIN_HOME" ]; then
@@ -21,7 +23,7 @@ if [ ! -d "outroot" ]; then
 fi
 
 diskimfile="diskim/$(echo $skimfile|sed 's/^.*\///g').root"
-run-groovy skimDihadrons.groovy $skimfile $datastream
+run-groovy skimDihadrons.groovy $skimfile $datastream $hipotype
 sleep 1
 if [ "$datastream" = "data" ]; then
   calcKinematics.exe $diskimfile

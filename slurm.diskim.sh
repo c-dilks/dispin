@@ -3,12 +3,14 @@
 
 
 if [ $# -lt 1 ];then
-  echo "USAGE: $0 [train directory] [optional:data/mcrec/mcgen]"
+  echo "USAGE: $0 [train directory] [optional:data/mcrec/mcgen] [optional:skim/dst]"
   exit
 fi
 traindir=$1
 datastream="data"
+hipotype="skim"
 if [ $# -ge 2 ]; then datastream="$2"; fi
+if [ $# -ge 3 ]; then hipotype="$3"; fi
 
 # check setup
 if [ -z "$DISPIN_HOME" ]; then
@@ -26,13 +28,23 @@ rm -vf diskim/*.root
 rm -vf outroot/*.root
 
 
-# build list of files, and cleanup outdat and outmon directories
+# build list of files to process
 jobsuffix=$(echo $traindir|sed 's/\/$//'|sed 's/^.*\///g')
 joblist=jobs.${jobsuffix}.slurm
 > $joblist
-for skimfile in ${traindir}/*.hipo; do
-  echo "./runDiskim.sh $skimfile $datastream" >> $joblist
-done
+if [ "$hipotype" == "skim" ]; then
+  for skimfile in ${traindir}/*.hipo; do
+    echo "./runDiskim.sh $skimfile $datastream $hipotype" >> $joblist
+  done
+elif [ "$hipotype" == "dst" ]; then
+  for rundir in `ls -d ${traindir}/*/ | sed 's/\/$//'`; do
+    echo "./runDiskim.sh $rundir $datastream $hipotype" >> $joblist
+  done
+else
+  echo "ERROR: unknown hipotype"
+  exit
+fi
+
 
 
 # write job descriptor
