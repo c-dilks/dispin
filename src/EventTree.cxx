@@ -266,12 +266,16 @@ void EventTree::GetEvent(Int_t i) {
     ( 1 - y + y*y/2 + TMath::Power(gamma*y,2)/4 );
 
 
-  // compute Breit frame rapidity for hadrons
+  // compute Breit frame rapidity for hadrons and dihadron (which could be a VM)
+  breitVec = this->GetDISObj()->BreitBoost;
   for(int h=0; h<2; h++) {
-    hadMom[h].SetPtEtaPhiE(hadPt[h],hadEta[h],hadPhi[h],hadE[h]);
-    hadMom[h].Boost(this->GetDISObj()->BreitBoost);
-    hadYH[h] = -1 * hadMom[h].Rapidity(); // flip sign
+    hadMomBreit[h].SetPtEtaPhiE(hadPt[h],hadEta[h],hadPhi[h],hadE[h]);
+    hadMomBreit[h].Boost(breitVec);
+    hadYH[h] = -1 * hadMomBreit[h].Rapidity(); // flip sign
   };
+  vmMomBreit.SetPtEtaPhiM( Ph/TMath::CosH(PhEta), PhEta, PhPhi, Mh );
+  vmMomBreit.Boost(breitVec);
+  YH = -1 * vmMomBreit.Rapidity(); // flip sign
 
   // compute hadron Pperp and qT
   for(int h=0; h<2; h++) {
@@ -298,7 +302,8 @@ void EventTree::GetEvent(Int_t i) {
     cutCFR[h] = hadYH[h] < -yhb;
     cutTFR[h] = hadYH[h] > yhb;
   };
-  cutDSIDIS = true; // bypass
+  //cutDSIDIS = true; // bypass
+  cutDSIDIS = Zpair>0.4; // try to look at decays from CFR rhos
   //cutDSIDIS = hadXF[qA]>0 && hadXF[qB]>0; // PRL CFR
   //cutDSIDIS = cutCFR[qA] && cutTFR[qB]; // DSIDIS
   //cutDSIDIS = cutTFR[qA] && cutTFR[qB]; // TFR

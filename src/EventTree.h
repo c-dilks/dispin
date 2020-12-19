@@ -101,7 +101,7 @@ class EventTree : public TObject
     Bool_t hadFiduCut[2];
 
     // dihadron kinematics
-    Float_t Mh,Zpair,PhiH,Mmiss,xF,alpha;
+    Float_t Mh,Zpair,PhiH,Mmiss,xF,alpha,YH;
     Float_t Z[2];
     Float_t zeta;
     Float_t theta;
@@ -216,6 +216,9 @@ class EventTree : public TObject
 
     TLorentzVector hadMom[2];
     TLorentzVector eleMom;
+    TLorentzVector hadMomBreit[2];
+    TLorentzVector vmMomBreit;
+    TVector3 breitVec;
 
     Bool_t vzBoolEle;
     Bool_t vzBoolHad[2];

@@ -210,6 +210,10 @@ int main(int argc, char** argv) {
      "P_{h}^{perp} vs. M_{h};M_{h};P_{h}^{perp}",
      NBINS,0,3,
      NBINS,0,3);
+   TH2D * YHVsMh = new TH2D("YHVsMh",
+     "y_{hh} vs. M_{h};M_{h};y_{h}",
+     NBINS,0,3,
+     NBINS,-3,3);
    TH2D * RTvsMh = new TH2D("RTvsMh",
      "R_{T} vs. M_{h};M_{h};R_{T}",
      NBINS,0,3,
@@ -261,7 +265,7 @@ int main(int argc, char** argv) {
        NBINS,0,10,NBINS,0,PIe);
      YHvsXF[h] = new TH2D(TString("YHvsXF_"+hadName[h]),
        TString(hadTitle[h]+" y_{h} vs. x_{F};x_{F};y_{h}"),
-       NBINS,-1,1,NBINS,-4,4);
+       NBINS,-1,1,NBINS,-3,3);
      YHvsMh[h] = new TH2D(TString("YHvsMh_"+hadName[h]),
        TString(hadTitle[h]+" y_{h} vs. M_{h};M_{h};y_{h}"),
        2*NBINS,0,3,NBINS,-4,4);
@@ -279,11 +283,51 @@ int main(int argc, char** argv) {
 
    TH3D * MhVsYHcorr = new TH3D("MhVsYHcorr",
      TString("M_{h} vs. y_{h} correlation;y_{h}("+hadTitle[qA]+");y_{h}("+hadTitle[qB]+");M_{h}"),
-     70,-4,4,
-     70,-4,4,
-     50,0,2
+     70,-3,3,
+     70,-3,3,
+     100,0,2
+   );
+   TH3D * MhVsXFcorr = new TH3D("MhVsXFcorr",
+     TString("M_{h} vs. x_{F} correlation;x_{F}("+hadTitle[qA]+");x_{F}("+hadTitle[qB]+");M_{h}"),
+     70,-1,1,
+     70,-1,1,
+     100,0,2
+   );
+   TH3D * MhVsPperpcorr = new TH3D("MhVsPperpcorr",
+     TString("M_{h} vs. p_{perp} correlation;p_{perp}("+hadTitle[qA]+");p_{perp}("+hadTitle[qB]+");M_{h}"),
+     70,0,2,
+     70,0,2,
+     100,0,2
+   );
+   TH3D * MhVsPtVsYh = new TH3D("MhVsPtVsYh",
+     TString("M_{h} vs. P_{h}^{perp} vs. y_{hh};y_{hh};P_{h}^{perp};M_{h}"),
+     70,-3,3,
+     70,0,2,
+     100,0,2
+   );
+   TH3D * MhVsThetaVsAlpha = new TH3D("MhVsThetaVsAlpha",
+     TString("M_{h} vs. #theta_{h} vs. #alpha;#alpha;#theta_{h};M_{h}"),
+     70,0,70,
+     70,0,37,
+     100,0,2
    );
 
+   TH3D * AlphaVsYHcorr = new TH3D("AlphaVsYHcorr",
+     TString("#alpha vs. y_{h} correlation;y_{h}("+hadTitle[qA]+");y_{h}("+hadTitle[qB]+");#alpha"),
+     70,-3,3,
+     70,-3,3,
+     100,0,75
+   );
+   TH3D * AlphaVsPperpcorr = new TH3D("AlphaVsPperpcorr",
+     TString("#alpha vs. p_{perp} correlation;p_{perp}("+hadTitle[qA]+");p_{perp}("+hadTitle[qB]+");#alpha"),
+     70,0,2,
+     70,0,2,
+     100,0,75
+   );
+
+   TH2D * MhVsAlpha = new TH2D(
+     "MhVsAlpha","M_{h} vs. #alpha [deg];#alpha [deg];M_{h}",
+     NBINS,0,75,NBINS,0,3);
    
    TH1D * sinThetaDist = new TH1D("sinThetaDist",
      "sin(#theta) distribution;sin(#theta)",NBINS,-1.1,1.1);
@@ -416,6 +460,7 @@ int main(int argc, char** argv) {
 
    printf("begin loop through %lld events...\n",ev->ENT);
    Int_t hadI[2];
+   Float_t alphaDeg;
    for(int i=0; i<ev->ENT; i++) {
      //if(i>10000) break; // limiter
 
@@ -505,6 +550,7 @@ int main(int argc, char** argv) {
        PhiHRDist->Fill(ev->PhiHR);
        g1perpWeightVsMod->Fill(TMath::Sin(ev->PhiHR),ev->PhPerp/ev->Mh);
        PhPerpVsMh->Fill(ev->Mh,ev->PhPerp);
+       YHVsMh->Fill(ev->Mh,ev->YH);
        RTvsMh->Fill(ev->Mh,ev->RT);
 
        thetaDist->Fill(ev->theta);
@@ -532,8 +578,20 @@ int main(int argc, char** argv) {
          hadPperpVsYH[h]->Fill(ev->hadYH[h],ev->hadPperp[h]);
          xFvsZ[h]->Fill(ev->Z[h],ev->hadXF[h]);
        };
+       
+       alphaDeg = ev->alpha*TMath::RadToDeg();
 
        MhVsYHcorr->Fill(ev->hadYH[qA],ev->hadYH[qB],ev->Mh);
+       MhVsXFcorr->Fill(ev->hadXF[qA],ev->hadXF[qB],ev->Mh);
+       MhVsPperpcorr->Fill(ev->hadPperp[qA],ev->hadPperp[qB],ev->Mh);
+       MhVsPtVsYh->Fill(ev->YH,ev->PhPerp,ev->Mh);
+       MhVsThetaVsAlpha->Fill(alphaDeg,Tools::EtaToTheta(ev->PhEta),ev->Mh);
+
+
+       AlphaVsYHcorr->Fill(ev->hadYH[qA],ev->hadYH[qB],alphaDeg);
+       AlphaVsPperpcorr->Fill(ev->hadPperp[qA],ev->hadPperp[qB],alphaDeg);
+
+       MhVsAlpha->Fill(alphaDeg,ev->Mh);
 
        PhiHvsMh->Fill(ev->Mh,ev->PhiH);
        PhiHvsX->Fill(ev->x,ev->PhiH);
@@ -580,7 +638,19 @@ int main(int argc, char** argv) {
    for(int h=0; h<2; h++) XFvsMh[h]->Write();
    for(int h=0; h<2; h++) PperpvsMh[h]->Write();
    for(int h=0; h<2; h++) hadPperpVsYH[h]->Write();
+   PhPerpVsMh->Write(); 
+   YHVsMh->Write(); 
+   MhVsAlpha->Write();
+
    MhVsYHcorr->Write();
+   MhVsXFcorr->Write();
+   MhVsPperpcorr->Write();
+   MhVsPtVsYh->Write();
+   MhVsThetaVsAlpha->Write();
+
+   AlphaVsYHcorr->Write();
+   AlphaVsPperpcorr->Write();
+
    DeltaPhiVsPhiR->Write();
    SinDeltaPhiVsPhiR->Write();
    DeltaPhiVsPhiHR2->Write();
@@ -676,7 +746,6 @@ int main(int argc, char** argv) {
 
    PhiHRDist->Write();
    g1perpWeightVsMod->Write();
-   PhPerpVsMh->Write(); 
    RTvsMh->Write(); 
   
    thetaDist->Write();

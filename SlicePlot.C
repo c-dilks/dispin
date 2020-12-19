@@ -28,7 +28,7 @@ void DrawSlice()
   TH2 * hist2D = (TH2*) histSelected;
   gPad->GetCanvas()->FeedbackMode(kTRUE);
 
-  // line drawing
+  // horizontal line drawing
   int mYold = gPad->GetUniqueID();
   int mY = gPad->GetEventY();
   float uXmin = gPad->GetUxmin();
