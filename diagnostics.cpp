@@ -311,6 +311,18 @@ int main(int argc, char** argv) {
      70,0,37,
      100,0,2
    );
+   TH3D * MhVsPhiHVsPhiR = new TH3D("MhVsPhiHVsPhiR",
+     TString("M_{h} vs. #phi_{h} vs. #phi_{R};#phi_{R};#phi_{h};M_{h}"),
+     70,-PI,PI,
+     70,-PI,PI,
+     100,0,2
+   );
+   TH3D * MhVsDeltaPhiVsPhiR = new TH3D("MhVsDeltaPhiVsPhiR",
+     TString("M_{h} vs. #Delta#phi vs. #phi_{R};#phi_{R};#Delta#phi;M_{h}"),
+     70,-PI,PI,
+     70,-PI,PI,
+     100,0,2
+   );
 
    TH3D * AlphaVsYHcorr = new TH3D("AlphaVsYHcorr",
      TString("#alpha vs. y_{h} correlation;y_{h}("+hadTitle[qA]+");y_{h}("+hadTitle[qB]+");#alpha"),
@@ -586,7 +598,8 @@ int main(int argc, char** argv) {
        MhVsPperpcorr->Fill(ev->hadPperp[qA],ev->hadPperp[qB],ev->Mh);
        MhVsPtVsYh->Fill(ev->YH,ev->PhPerp,ev->Mh);
        MhVsThetaVsAlpha->Fill(alphaDeg,Tools::EtaToTheta(ev->PhEta),ev->Mh);
-
+       MhVsPhiHVsPhiR->Fill(ev->PhiR,ev->PhiH,ev->Mh);
+       MhVsDeltaPhiVsPhiR->Fill(ev->PhiR,ev->PhiD,ev->Mh);
 
        AlphaVsYHcorr->Fill(ev->hadYH[qA],ev->hadYH[qB],alphaDeg);
        AlphaVsPperpcorr->Fill(ev->hadPperp[qA],ev->hadPperp[qB],alphaDeg);
@@ -647,6 +660,8 @@ int main(int argc, char** argv) {
    MhVsPperpcorr->Write();
    MhVsPtVsYh->Write();
    MhVsThetaVsAlpha->Write();
+   MhVsPhiHVsPhiR->Write();
+   MhVsDeltaPhiVsPhiR->Write();
 
    AlphaVsYHcorr->Write();
    AlphaVsPperpcorr->Write();

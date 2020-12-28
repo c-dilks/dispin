@@ -20,7 +20,7 @@ FLAGS += -O0
 # ROOT
 DEPS = $(shell root-config --cflags)
 LIBS = $(shell root-config --glibs)
-LIBS += -lMinuit -lRooFitCore -lRooFit
+LIBS += -lMinuit -lRooFitCore -lRooFit -lRooStats
 
 # HIPO
 #DEPS += -I$(HIPO)/hipo4

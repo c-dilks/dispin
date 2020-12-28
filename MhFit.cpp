@@ -24,6 +24,7 @@
 #include <RooAddPdf.h>
 #include <RooFitResult.h>
 #include <RooPlot.h>
+#include <RooStats/SPlot.h> // +++
 
 
 TString infileN;
@@ -32,12 +33,15 @@ using namespace RooFit;
 int main(int argc, char** argv) {
 
   // ARGUMENTS
-  infileN = "plots.inbending.noXFcut.root";
+  infileN = "plots.root";
   if(argc>1) infileN = TString(argv[1]);
 
   // open mass distribution
   TFile * infile = new TFile(infileN,"READ");
   TH1D * MhDist = (TH1D*) infile->Get("MhDist");
+
+  // define output file
+  TFile * outfile = new TFile("mfit.root","RECREATE");
 
   // mask hard to fit region
   /*
@@ -51,7 +55,7 @@ int main(int argc, char** argv) {
 
 
   // assign RooDataHist
-  RooRealVar mass("mass","M_{h}",0,3,"GeV");
+  RooRealVar mass("rfMh","M_{h}",0,3,"GeV");
   RooDataHist massdist("massdist","M_{h} distribution",mass,Import(*MhDist));
 
   // resonances
@@ -141,6 +145,53 @@ int main(int argc, char** argv) {
   printf("\n:::::::::::::::::::::::::::::::::::::::::::::::\n");
 
 
+  // write to root file
+  canv->Write();
+
+  // -- fix all PDF parameters except yields
+  bgP0.setConstant();
+  bgP1.setConstant();
+  bgP2.setConstant();
+  bgP3.setConstant();
+  bgP4.setConstant();
+  resF0Width.setConstant();
+  resF2Width.setConstant();
+  resRhoWidth.setConstant();
+
+  // +++
+  TFile * rooFile = new TFile("rooset/roo.skim4_005052.hipo.root","READ");
+  RooDataSet * rooData = (RooDataSet*) rooFile->Get("rooData");
+  outfile->cd();
+  /*
+  printf("BEGIN SPLOT\n");
+  RooStats::SPlot * rooSplot = new RooStats::SPlot(
+    "rooSplot","rooSplot",
+    *rooData,
+    &model,
+    RooArgList(resRhoN,resF0N,resF2N,bgN)
+  );
+  printf("DONE SPLOT\n");
+  */
+
+  // -- write pdf
+  resRhoN.Write();
+  resF0N.Write();
+  resF2N.Write();
+  bgN.Write();
+  bgP0.Write();
+  bgP1.Write();
+  bgP2.Write();
+  bgP3.Write();
+  bgP4.Write();
+  resF0Width.Write();
+  resF2Width.Write();
+  resRhoWidth.Write();
+  model.Write("mfitPdf");
+  rooData->Write(); // +++
+  //rooSplot->Write(); // +++
+
+  outfile->Close();
+
+
 
 };
-
