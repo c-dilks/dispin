@@ -19,7 +19,6 @@
 #include <RooArgSet.h>
 #include <RooDataSet.h>
 #include <RooRealVar.h>
-#include <RooStats/SPlot.h>
 
 // Dispin
 #include "Constants.h"
@@ -113,45 +112,11 @@ int main(int argc, char** argv) {
     };
   }; // end event loop
 
-  
-  // append splot weights (if PDF MhFit file is found)
-  Bool_t pdfExists = ! gSystem->AccessPathName("mfit.root");
-  //pdfExists = false; // override
-  RooStats::SPlot * rooSplot;
-  RooAbsPdf * rooPdf;
-  TFile * mfitFile;
-  RooRealVar * resRhoN;
-  RooRealVar * resF0N;
-  RooRealVar * resF2N;
-  RooRealVar * bgN;
-  if(pdfExists) {
-    mfitFile = new TFile("mfit.root","READ");
-    rooPdf = (RooAbsPdf*) mfitFile->Get("mfitPdf");
-    resRhoN = (RooRealVar*) mfitFile->Get("resRhoN");
-    resF0N = (RooRealVar*) mfitFile->Get("resF0N");
-    resF2N = (RooRealVar*) mfitFile->Get("resF2N");
-    bgN = (RooRealVar*) mfitFile->Get("bgN");
-    roofile->cd();
-    printf("BEGIN SPLOT\n");
-    rooSplot = new RooStats::SPlot(
-      "rooSplot","rooSplot",
-      *rooData,
-      rooPdf,
-      RooArgList(*resRhoN,*resF0N,*resF2N,*bgN)
-    );
-    printf("DONE SPLOT\n");
-  };
-
 
   // write output
   rooData->Write("rooData");
-  rooData->write("roo.txt"); // dump to text file
-  if(pdfExists) {
-    rooSplot->Write("rooSplot");
-    rooSplot->GetSDataSet()->write("rooSplot.txt");
-  };
+  //rooData->write("roo.txt"); // dump to text file
   printf("\n%s written\n\n",roofileN.Data());
   printf("evCount = %.0f\n",evCount);
   roofile->Close();
-  if(pdfExists) mfitFile->Close();
 };

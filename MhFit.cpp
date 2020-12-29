@@ -24,24 +24,24 @@
 #include <RooAddPdf.h>
 #include <RooFitResult.h>
 #include <RooPlot.h>
-#include <RooStats/SPlot.h> // +++
+#include <RooStats/SPlot.h>
 
 
 TString infileN;
+bool makeSplots;
 using namespace RooFit;
 
 int main(int argc, char** argv) {
 
   // ARGUMENTS
   infileN = "plots.root";
+  makeSplots = false;
   if(argc>1) infileN = TString(argv[1]);
+  if(argc>2) makeSplots = true;
 
   // open mass distribution
   TFile * infile = new TFile(infileN,"READ");
   TH1D * MhDist = (TH1D*) infile->Get("MhDist");
-
-  // define output file
-  TFile * outfile = new TFile("mfit.root","RECREATE");
 
   // mask hard to fit region
   /*
@@ -145,9 +145,6 @@ int main(int argc, char** argv) {
   printf("\n:::::::::::::::::::::::::::::::::::::::::::::::\n");
 
 
-  // write to root file
-  canv->Write();
-
   // -- fix all PDF parameters except yields
   bgP0.setConstant();
   bgP1.setConstant();
@@ -158,40 +155,57 @@ int main(int argc, char** argv) {
   resF2Width.setConstant();
   resRhoWidth.setConstant();
 
-  // +++
-  TFile * rooFile = new TFile("rooset/roo.skim4_005052.hipo.root","READ");
-  RooDataSet * rooData = (RooDataSet*) rooFile->Get("rooData");
-  outfile->cd();
-  /*
-  printf("BEGIN SPLOT\n");
-  RooStats::SPlot * rooSplot = new RooStats::SPlot(
-    "rooSplot","rooSplot",
-    *rooData,
-    &model,
-    RooArgList(resRhoN,resF0N,resF2N,bgN)
-  );
-  printf("DONE SPLOT\n");
-  */
 
-  // -- write pdf
-  resRhoN.Write();
-  resF0N.Write();
-  resF2N.Write();
-  bgN.Write();
-  bgP0.Write();
-  bgP1.Write();
-  bgP2.Write();
-  bgP3.Write();
-  bgP4.Write();
-  resF0Width.Write();
-  resF2Width.Write();
-  resRhoWidth.Write();
-  model.Write("mfitPdf");
-  rooData->Write(); // +++
-  //rooSplot->Write(); // +++
+  // build sWeighted data sets
+  RooAbsData::setDefaultStorageType(RooAbsData::Tree); // use TTree backend
+  TFile *rooFile, *outFile;
+  RooDataSet * rooData;
+  if(makeSplots) {
 
-  outfile->Close();
+    // open roofile
+    rooFile = new TFile("rooset/roo.skim4_005052.hipo.root","UPDATE");
+    rooData = (RooDataSet*) rooFile->Get("rooData");
 
+    // splot
+    printf("BEGIN SPLOT\n");
+    RooStats::SPlot * rooSplot = new RooStats::SPlot(
+      "rooSplot","rooSplot",
+      *rooData,
+      &model,
+      RooArgList(resRhoN,resF0N,resF2N,bgN)
+    );
+    printf("DONE SPLOT\n");
 
+    // write to root file
+    canv->Write();
 
+    // -- write pdf
+    /*
+    resRhoN.Write();
+    resF0N.Write();
+    resF2N.Write();
+    bgN.Write();
+    bgP0.Write();
+    bgP1.Write();
+    bgP2.Write();
+    bgP3.Write();
+    bgP4.Write();
+    resF0Width.Write();
+    resF2Width.Write();
+    resRhoWidth.Write();
+    */
+    model.Write("mfitPdf");
+    modelFit->Write("mfitResult");
+    // -- write data sets
+    rooData->Write();
+    rooSplot->Write();
+    rooFile->Close();
+  }
+  else {
+    outFile = new TFile("mfit.root","RECREATE");
+    canv->Write();
+    model.Write("mfitPdf");
+    modelFit->Write("mfitResult");
+    outFile->Close();
+  };
 };
