@@ -6,6 +6,7 @@ src/*.pcm
 *.root
 *.png
 *.pdf
+!docDiagram.pdf
 .~lock*
 src/DiSpinDict.*
 outz
