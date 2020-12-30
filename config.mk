@@ -30,6 +30,8 @@ LIBS += -lMinuit -lRooFitCore -lRooFit
 #DEPS += -I$(CLAS12ROOT)/hipo4 -I$(CLAS12ROOT)/Clas12Banks -I$(CLAS12ROOT)/Clas12Root
 #LIBS += -L$(CLAS12ROOT)/lib -lClas12Banks -lClas12Root -lHipo4 -llz4
 
+# QADB
+DEPS += -I$(QADB)/srcC/rapidjson/include -I$(QADB)/srcC/include
 
 # DiSpin shared object name and source directory
 DISPIN = DiSpin

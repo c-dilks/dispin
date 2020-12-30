@@ -40,7 +40,7 @@ dihadron spin asymmetry analysis
 
 ## clasqaDB
 - if you clone this repository with the option `--recurse-submodules`, it will
-  clone a copy of [`clasqaDB`](https://github.com/c-dilks/clasqaDB) to the
+  clone a copy of [`clasqaDB`](https://github.com/JeffersonLab/clasqaDB) to the
   directory `deps/clasqaDB`
 - this repository contains the file quality assurance (QA) database, and
   uses the groovy accessors to query information in an event loop

@@ -11,7 +11,7 @@
 #include "TString.h"
 #include "TRegexp.h"
 
-// DihBsa
+// Dispin
 #include "Constants.h"
 #include "EventTree.h"
 #include "Binning.h"
