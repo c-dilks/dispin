@@ -52,33 +52,37 @@ int main(int argc, char** argv) {
   TFile * roofile = new TFile(roofileN,"RECREATE");
 
 
-  // define RooDataSet (ensure var names match those in Asymmetry.cxx)
-  RooRealVar rfPhiH("rfPhiH","#phi_{h}",-PIe,PIe);
-  RooRealVar rfPhiR("rfPhiR","#phi_{R}",-PIe,PIe);
-  RooRealVar rfPhiD("rfPhiD","#Delta#phi",-PIe,PIe);
-  RooRealVar rfTheta("rfTheta","#theta",-0.1,PIe);
-  RooRealVar rfMh("rfMh","M_{h}",0,3);
-  RooRealVar rfx("rfx","x",0,1);
-  RooRealVar rfz("rfz","z",0,1);
-  RooRealVar rfyhA("rfyhA","y_{h}^{A}",-4,4);
-  RooRealVar rfyhB("rfyhB","y_{h}^{B}",-4,4);
-  RooRealVar rfPhPerp("rfPhPerp","P_{h}^{perp}",0,2);
-  RooRealVar rfPol("rfPol","P",0,1);
-  RooRealVar rfSpin("rfSpin","s",0,1);
+  // define RooDataSet
+  RooRealVar runnum("runnum","runnum",0);
+  RooRealVar evnum("evnum","evnum",0);
+  RooRealVar PhiH("PhiH","#phi_{h}",-PIe,PIe);
+  RooRealVar PhiR("PhiR","#phi_{R}",-PIe,PIe);
+  RooRealVar PhiD("PhiD","#Delta#phi",-PIe,PIe);
+  RooRealVar Theta("Theta","#theta",-0.1,PIe);
+  RooRealVar Mh("Mh","M_{h}",0,3);
+  RooRealVar x("x","x",0,1);
+  RooRealVar z("z","z",0,1);
+  RooRealVar yhA("yhA","y_{h}^{A}",-4,4);
+  RooRealVar yhB("yhB","y_{h}^{B}",-4,4);
+  RooRealVar PhPerp("PhPerp","P_{h}^{perp}",0,2);
+  RooRealVar Pol("Pol","P",0,1);
+  RooRealVar Spin("Spin","s",0,1);
   RooArgSet * rooVars = new RooArgSet();
 
-  rooVars->add(rfPhiH);
-  rooVars->add(rfPhiR);
-  rooVars->add(rfPhiD);
-  rooVars->add(rfTheta);
-  rooVars->add(rfMh);
-  rooVars->add(rfx);
-  rooVars->add(rfz);
-  rooVars->add(rfyhA);
-  rooVars->add(rfyhB);
-  rooVars->add(rfPhPerp);
-  rooVars->add(rfPol);
-  rooVars->add(rfSpin);
+  rooVars->add(runnum);
+  rooVars->add(evnum);
+  rooVars->add(PhiH);
+  rooVars->add(PhiR);
+  rooVars->add(PhiD);
+  rooVars->add(Theta);
+  rooVars->add(Mh);
+  rooVars->add(x);
+  rooVars->add(z);
+  rooVars->add(yhA);
+  rooVars->add(yhB);
+  rooVars->add(PhPerp);
+  rooVars->add(Pol);
+  rooVars->add(Spin);
 
   RooDataSet * rooData = new RooDataSet("rooData","rooData",*rooVars);
     
@@ -93,18 +97,20 @@ int main(int argc, char** argv) {
     ev->GetEvent(i);
     if(ev->Valid()) {
 
-      rfPhiH.setVal(ev->PhiH);
-      rfPhiR.setVal(ev->PhiR);
-      rfPhiD.setVal(ev->PhiD);
-      rfTheta.setVal(ev->theta);
-      rfMh.setVal(ev->Mh);
-      rfx.setVal(ev->x);
-      rfz.setVal(ev->Zpair);
-      rfyhA.setVal(ev->hadYH[qA]);
-      rfyhB.setVal(ev->hadYH[qB]);
-      rfPhPerp.setVal(ev->PhPerp);
-      rfPol.setVal(ev->Polarization());
-      rfSpin.setVal(ev->SpinState());
+      runnum.setVal(ev->runnum);
+      evnum.setVal(ev->evnum);
+      PhiH.setVal(ev->PhiH);
+      PhiR.setVal(ev->PhiR);
+      PhiD.setVal(ev->PhiD);
+      Theta.setVal(ev->theta);
+      Mh.setVal(ev->Mh);
+      x.setVal(ev->x);
+      z.setVal(ev->Zpair);
+      yhA.setVal(ev->hadYH[qA]);
+      yhB.setVal(ev->hadYH[qB]);
+      PhPerp.setVal(ev->PhPerp);
+      Pol.setVal(ev->Polarization());
+      Spin.setVal(ev->SpinState());
 
       rooData->add(*rooVars);
 
