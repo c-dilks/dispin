@@ -1,8 +1,11 @@
-void drawAccidentals(TString infileN="accidentals/skim4_005052.hipo.root") {
-  TFile * infile = new TFile(infileN,"READ");
-  TTree * ditr = (TTree*) infile->Get("ditr");
+void drawAccidentals(TString infileN="accidentals/*.root") {
+
+  TChain * ditr = new TChain("ditr");
+  ditr->Add(infileN);
+
+  TFile * outfile = new TFile("acc.root","RECREATE");
   TH2D * betaVsP = new TH2D("betaVsP","#beta vs. p;p;#beta",
-    100,0,11,100,0,3);
+    700,0,11,700,0,3);
 
   Float_t pid[2];
   Float_t beta[2];
@@ -22,6 +25,8 @@ void drawAccidentals(TString infileN="accidentals/skim4_005052.hipo.root") {
 
   bool proceed;
   for(Long64_t i=0; i<ditr->GetEntries(); i++) {
+    if(i%10000==0) printf("[+] %lld/%lld\n",i,ditr->GetEntries());
+    //if(i>30000) break;
     ditr->GetEntry(i);
     for(int h=0; h<2; h++) {
 
@@ -38,7 +43,5 @@ void drawAccidentals(TString infileN="accidentals/skim4_005052.hipo.root") {
     };
   };
 
-  new TCanvas();
-  betaVsP->Draw("colz");
+  betaVsP->Write();
 };
-      
