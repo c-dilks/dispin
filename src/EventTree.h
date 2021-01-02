@@ -196,6 +196,10 @@ class EventTree : public TObject
 
     Float_t eleSampFrac;
 
+    Bool_t vzBoolEle;
+    Bool_t vzdiffBool;
+    Float_t vzdiff[2];
+
   private:
     TChain * chain;
     Int_t whichHad[2];
@@ -209,12 +213,6 @@ class EventTree : public TObject
     TLorentzVector hadMom[2];
     TLorentzVector eleMom;
 
-    Bool_t vzBoolEle;
-    Bool_t vzBoolHad[2];
-    Bool_t vrBool;
-    Bool_t vzdiffBool;
-    Float_t vzdiffHads;
-    Float_t vzdiff[2];
 
     Bool_t vertexWarned;
     Bool_t sfcutDiag, sfcutSigma;

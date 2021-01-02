@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
       specStr[0]="h^{+}"; specStr[1]="#pi^{-}"; break;
     case 3: // h+h-
       specStr[0]="h^{+}"; specStr[1]="h^{-}"; break;
-    default: fprintf(stderr,"bad species\n"); return 0;
+    default: fprintf(stderr,"bad species\n"); return 1;
   };
   TString plotN,plotT;
   for(int h=0; h<2; h++) {
@@ -55,6 +55,7 @@ int main(int argc, char** argv) {
   Bool_t loc_cutFiducial;
   Bool_t loc_cutDihadron;
   Bool_t loc_cutPID;
+  Bool_t loc_cutVertex;
 
   for(int i=0; i<ev->ENT; i++) {
     //if(i>30000) break; // limiter
@@ -65,24 +66,27 @@ int main(int argc, char** argv) {
       case 1: // pi+h-
         cutSpecies = ev->hadIdx[qA]==kPip && PartCharge(ev->hadIdx[qB])<0;
         loc_cutFiducial = ev->eleFiduCut && ev->hadFiduCut[qA];
+        loc_cutVertex = ev->vzBoolEle && ev->vzdiff[qA]<20;
         loc_cutPID =
           ev->cutElePID && ev->cutHadPID[qA] &&
-          ev->hadTheta[qB]>5 && ev->hadTheta[qB]<35 && ev->hadP[qB]>1.25 && TMath::Abs(ev->hadChi2pid[qB])<3;
+          ev->hadTheta[qB]>5 && ev->hadTheta[qB]<35 && ev->hadP[qB]>1.25 /*&& TMath::Abs(ev->hadChi2pid[qB])<3*/;
         break;
       case 2: // h+pi-
         cutSpecies = PartCharge(ev->hadIdx[qA])>0 && ev->hadIdx[qB]==kPim;
         loc_cutFiducial = ev->eleFiduCut && ev->hadFiduCut[qB];
+        loc_cutVertex = ev->vzBoolEle && ev->vzdiff[qB]<20;
         loc_cutPID =
           ev->cutElePID && ev->cutHadPID[qB] &&
-          ev->hadTheta[qA]>5 && ev->hadTheta[qA]<35 && ev->hadP[qA]>1.25 && TMath::Abs(ev->hadChi2pid[qA])<3;
+          ev->hadTheta[qA]>5 && ev->hadTheta[qA]<35 && ev->hadP[qA]>1.25 /*&& TMath::Abs(ev->hadChi2pid[qA])<3*/;
         break;
       case 3: // h+h-
         cutSpecies = PartCharge(ev->hadIdx[qA])*PartCharge(ev->hadIdx[qB]) < 0;
         loc_cutFiducial = ev->eleFiduCut;
+        loc_cutVertex = ev->vzBoolEle;
         loc_cutPID =
           ev->cutElePID &&
-          ev->hadTheta[qA]>5 && ev->hadTheta[qA]<35 && ev->hadP[qA]>1.25 && TMath::Abs(ev->hadChi2pid[qA])<3 &&
-          ev->hadTheta[qB]>5 && ev->hadTheta[qB]<35 && ev->hadP[qB]>1.25 && TMath::Abs(ev->hadChi2pid[qB])<3;
+          ev->hadTheta[qA]>5 && ev->hadTheta[qA]<35 && ev->hadP[qA]>1.25 /*&& TMath::Abs(ev->hadChi2pid[qA])<3*/ &&
+          ev->hadTheta[qB]>5 && ev->hadTheta[qB]<35 && ev->hadP[qB]>1.25 /*&& TMath::Abs(ev->hadChi2pid[qB])<3*/;
         break;
     };
 
@@ -91,7 +95,6 @@ int main(int argc, char** argv) {
       ev->Zpair<0.95 &&
       ev->Mmiss>1.5 &&
       ev->hadXF[qA]>0 && ev->hadXF[qB]>0;
-    
 
     loc_Valid = 
       ev->cutDIS &&
@@ -99,7 +102,7 @@ int main(int argc, char** argv) {
       ev->cutHelicity &&
       loc_cutFiducial &&
       loc_cutPID &&
-      ev->cutVertex;
+      loc_cutVertex;
 
     if(loc_Valid) {
       for(int h=0; h<2; h++) {
@@ -113,5 +116,5 @@ int main(int argc, char** argv) {
   };
 
   outfile->Close();
-  return 1;
+  return 0;
 };
