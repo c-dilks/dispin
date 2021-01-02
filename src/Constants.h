@@ -30,6 +30,7 @@ enum particle_enum {
   kPi0,
   kKp,
   kKm,
+  kAP,
   kPhoton,
   kDiph,
   nParticles
@@ -46,6 +47,7 @@ static TString PartName(Int_t p) {
     case kPi0: return "pi0";
     case kKp: return "KPlus";
     case kKm: return "KMinus";
+    case kAP: return "antiproton";
     case kPhoton: return "photon";
     case kDiph: return "diphoton";
     default: 
@@ -63,6 +65,7 @@ static TString PartTitle(Int_t p) {
     case kPi0: return "#pi^{0}";
     case kKp: return "K^{+}";
     case kKm: return "K^{-}";
+    case kAP: return "p^{-}";
     case kPhoton: return "#gamma";
     case kDiph: return "#gamma#gamma";
     default: 
@@ -82,6 +85,7 @@ static Int_t PartPID(Int_t p) {
     case kPi0: return 111;
     case kKp: return 321;
     case kKm: return -321;
+    case kAP: return -2212;
     case kPhoton: return 22;
     case kDiph: return UNDEF; // (no PID)
     default: 
@@ -106,6 +110,7 @@ static Float_t PartMass(Int_t p) {
     case kPi0: return 0.134977;
     case kKp: return 0.493677;
     case kKm: return 0.493677;
+    case kAP: return 0.938272;
     case kPhoton: return 0.0;
     case kDiph: return UNDEF; // (use Diphoton class instead)
     default: 
@@ -123,6 +128,7 @@ static Int_t PartCharge(Int_t p) {
     case kPi0: return 0;
     case kKp: return 1;
     case kKm: return -1;
+    case kAP: return -1;
     case kPhoton: return 0;
     case kDiph: return 0;
     default: 
@@ -142,6 +148,7 @@ static Int_t PartColor(Int_t p) {
     case kPi0: return kMagenta;
     case kKp: return kGreen+1;
     case kKm: return kGreen-1;
+    case kAP: return kAzure;
     case kPhoton: return kOrange;
     case kDiph: return kMagenta;
     default: 
@@ -159,6 +166,7 @@ static TString PartColorName(Int_t p) {
     case kPi0: return "magenta";
     case kKp: return "lightGreen";
     case kKm: return "darkGreen";
+    case kAP: return "darkBlue";
     case kPhoton: return "orange";
     case kDiph: return "magenta";
     default: 
@@ -169,7 +177,8 @@ static TString PartColorName(Int_t p) {
 
 
 
-// observables 
+// observables -- NOTE: may be deprecated, as these enumerators were used
+//                only for the old pairing algorithm
 // ---------------------------------------------------
 // - these are the particles that we observe for analysis, for example, for 
 //   making dihadron pairs (excludes DIS electron, which is already
@@ -179,9 +188,10 @@ static TString PartColorName(Int_t p) {
 enum observable_enum {
   sPip,
   sPim,
-  sDiph,
-  //sKp,
-  //sKm,
+  sKp,
+  sKm,
+  sProt,
+  sAP,
   nObservables
 };
 
@@ -190,10 +200,12 @@ static Int_t OI(Int_t s) {
   switch(s) {
     case sPip: return kPip;
     case sPim: return kPim;
-    case sDiph: return kDiph;
+    //case sDiph: return kDiph;
     //case sDiph: return kPi0; // (for if pi0s are found in HIPO files)
-    //case sKp: return kKp;
-    //case sKm: return kKm;
+    case sKp: return kKp;
+    case sKm: return kKm;
+    case sProt: return kP;
+    case sAP: return kAP;
     default: 
       fprintf(stderr,"ERROR: bad OI request (see Constants.h)\n");
       return UNDEF;
@@ -204,10 +216,12 @@ static Int_t IO(Int_t s) {
   switch(s) {
     case kPip: return sPip;
     case kPim: return sPim;
-    case kDiph: return sDiph; 
+    //case kDiph: return sDiph; 
     //case kPi0: return sDiph; // (for if pi0s are found in HIPO files)
-    //case kKp: return sKp;
-    //case kKm: return sKm;
+    case kKp: return sKp;
+    case kKm: return sKm;
+    case kP: return sProt;
+    case kAP: return sAP;
     default: 
       fprintf(stderr,"ERROR: bad IO request (see Constants.h)\n");
       return UNDEF;

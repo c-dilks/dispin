@@ -125,6 +125,8 @@ class FiducialCuts : public TObject {
     bool fcutEleDC[nReg];
     bool fcutHadDC[nReg];
 
+    int errCnt;
+
   
   ClassDef(FiducialCuts,1);
 };

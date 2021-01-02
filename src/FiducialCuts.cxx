@@ -13,6 +13,9 @@ FiducialCuts::FiducialCuts() {
 
   // initialize public cut booleans
   fiduCut = false;
+
+  // misc
+  errCnt = 0;
 };
 
 
@@ -56,7 +59,12 @@ void FiducialCuts::ApplyCuts(int runnum_, int pid_) {
     fiduCut = fcutHadDC[0] && fcutHadDC[1] && fcutHadDC[2];
   }
   else {
-    fprintf(stderr,"ERROR: FiducialCuts not implemented PID %d\n",pid_);
+    if(errCnt<=100) {
+      fprintf(stderr,"ERROR: FiducialCuts not implemented for PID %d\n",pid_);
+      if(errCnt==100) 
+        fprintf(stderr,"....... suppressing this error printout .....\n");
+      errCnt++;
+    };
     fiduCut = false;
     return;
   };

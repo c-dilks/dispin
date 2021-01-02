@@ -1,7 +1,32 @@
-R__LOAD_LIBRARY(DiSpin)
-#include "Constants.h"
+#include <cstdlib>
+#include <iostream>
 
-void drawAccidentals(Int_t species=1, TString infileN="outroot/*.root") {
+// ROOT
+#include "TFile.h"
+#include "TTree.h"
+#include "TChain.h"
+#include "TString.h"
+#include "TMath.h"
+#include "TSystem.h"
+#include "TRegexp.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "TCanvas.h"
+
+// DihBsa
+#include "Constants.h"
+#include "Tools.h"
+#include "EventTree.h"
+
+
+int main(int argc, char** argv) {
+
+
+  // ARGUMENTS
+  Int_t species=1;
+  TString infileN="outroot/*.root";
+  if(argc>1) species = (Int_t)strtof(argv[1],NULL);
+  if(argc>2) infileN = TString(argv[2]);
   
   EventTree * ev = new EventTree(infileN,0x34); // whichPair doesn't matter, see cutSpecies below
 
@@ -15,7 +40,7 @@ void drawAccidentals(Int_t species=1, TString infileN="outroot/*.root") {
       specStr[0]="h^{+}"; specStr[1]="#pi^{-}"; break;
     case 3: // h+h-
       specStr[0]="h^{+}"; specStr[1]="h^{-}"; break;
-    default: fprintf(stderr,"bad species\n"); return;
+    default: fprintf(stderr,"bad species\n"); return 0;
   };
   TString plotN,plotT;
   for(int h=0; h<2; h++) {
@@ -86,4 +111,7 @@ void drawAccidentals(Int_t species=1, TString infileN="outroot/*.root") {
   for(int h=0; h<2; h++) {
     betaVsP[h]->Write();
   };
+
+  outfile->Close();
+  return 1;
 };
