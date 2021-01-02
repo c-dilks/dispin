@@ -53,6 +53,7 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
   chain->SetBranchAddress("hadVertex",hadVertex);
   chain->SetBranchAddress("hadStatus",hadStatus);
   chain->SetBranchAddress("hadChi2pid",hadChi2pid);
+  chain->SetBranchAddress("hadBeta",hadBeta);
 
   // these branches were temporarily used for early crosscheck studies
   if(chain->GetBranch("hadPtq")) chain->SetBranchAddress("hadPtq",hadPtq);

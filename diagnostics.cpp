@@ -282,6 +282,12 @@ int main(int argc, char** argv) {
        hadTitle[qB]+")-V_{z}(e^{-})"),
      NBINS,-40,40,NBINS,-40,40);
 
+   TH2D * betaVsP[2];
+   for(int h=0; h<2; h++) {
+     betaVsP[h] = new TH2D(
+       TString("betaVsP_"+hadName[h]),dist2Title(hadTitle[h],"p","#beta"),
+       5*NBINS,0,10,5*NBINS,0.7,1.2);
+   };
 
    // kinematic factor distributions
    enum KF_enum {kfA, kfB, kfC, kfV, kfW, kfWA, kfVA, kfCA, kfBA, Nkf};
@@ -485,6 +491,10 @@ int main(int argc, char** argv) {
        PhiRvsAlpha->Fill(ev->alpha,ev->PhiR);
        PhiHRvsAlpha->Fill(ev->alpha,ev->PhiHR);
 
+       for(int h=0; h<2; h++) {
+         betaVsP[h]->Fill(ev->hadP[h],ev->hadBeta[h]);
+       };
+
        kfVal[kfA] = ev->GetDepolarizationFactor('A');
        kfVal[kfB] = ev->GetDepolarizationFactor('B');
        kfVal[kfC] = ev->GetDepolarizationFactor('C');
@@ -628,7 +638,7 @@ int main(int argc, char** argv) {
    PhiRvsZ->Write();
    PhiRvsAlpha->Write();
    PhiHRvsAlpha->Write();
-
+   for(int h=0; h<2; h++) betaVsP[h]->Write();
    helicityDist->Write();
 
 
