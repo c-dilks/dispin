@@ -32,6 +32,7 @@ int main(int argc, char** argv) {
 
   TFile * outfile = new TFile("acc.root","RECREATE");
   TH2D * betaVsP[2];
+  TH2D * betaVsVdz[2];
   TString specStr[2];
   switch(species) { 
     case 1: // pi+h-
@@ -43,11 +44,17 @@ int main(int argc, char** argv) {
     default: fprintf(stderr,"bad species\n"); return 1;
   };
   TString plotN,plotT;
+  TString procStr = "e"+specStr[0]+specStr[1]+"X";
   for(int h=0; h<2; h++) {
     plotN = Form("betaVsP%d",h);
-    plotT = "e"+specStr[0]+specStr[1]+"X production, #beta("+specStr[h]+") vs. p("+specStr[h]+");p;#beta";
+    plotT = procStr+" production, #beta("+specStr[h]+") vs. p("+specStr[h]+");p;#beta";
     betaVsP[h] = new TH2D(plotN,plotT,700,0,11,700,0,3);
+    plotN = Form("betaVsVdz%d",h);
+    plotT = procStr+" production, #beta("+specStr[h]+") vs. #Deltav_{z}(e,"+specStr[h]+");#Deltav_{z};#beta";
+    betaVsVdz[h] = new TH2D(plotN,plotT,700,-300,300,700,0,3);
   };
+  plotT = procStr+"+production, #beta("+specStr[qB]+") vs. #beta("+specStr[qA]+");#beta("+specStr[qA]+");#beta("+specStr[qB]+")";
+  TH2D * betaVsBeta = new TH2D("betaVsBeta",plotT,700,0,3,700,0,3);
 
 
   Bool_t loc_Valid;
@@ -107,13 +114,17 @@ int main(int argc, char** argv) {
     if(loc_Valid) {
       for(int h=0; h<2; h++) {
         betaVsP[h]->Fill(ev->hadP[h],ev->hadBeta[h]);
+        betaVsVdz[h]->Fill(
+          ev->eleVertex[eZ] - ev->hadVertex[h][eZ], ev->hadBeta[h]
+        );
       };
+      betaVsBeta->Fill(ev->hadBeta[qA],ev->hadBeta[qB]);
     };
   };
 
-  for(int h=0; h<2; h++) {
-    betaVsP[h]->Write();
-  };
+  for(int h=0; h<2; h++) betaVsP[h]->Write();
+  for(int h=0; h<2; h++) betaVsVdz[h]->Write();
+  betaVsBeta->Write();
 
   outfile->Close();
   return 0;
