@@ -103,6 +103,7 @@ int main(int argc, char** argv) {
       ev->Mmiss>1.5 &&
       ev->hadXF[qA]>0 && ev->hadXF[qB]>0;
 
+    /* // full cuts
     loc_Valid = 
       ev->cutDIS &&
       loc_cutDihadron &&
@@ -110,6 +111,20 @@ int main(int argc, char** argv) {
       loc_cutFiducial &&
       loc_cutPID &&
       loc_cutVertex;
+    */
+    ///* // relaxed cuts
+    switch(species) {
+      case 1:
+        loc_Valid = cutSpecies && TMath::Abs(ev->hadChi2pid[qA])<3;
+        break;
+      case 2:
+        loc_Valid = cutSpecies && TMath::Abs(ev->hadChi2pid[qB])<3;
+        break;
+      case 3:
+        loc_Valid = cutSpecies;
+        break;
+    };
+    //*/
 
     if(loc_Valid) {
       for(int h=0; h<2; h++) {
