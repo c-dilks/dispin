@@ -56,6 +56,7 @@ def undef = -10000.0
 def event
 def particleBank, configBank, eventBank, calBank, trkBank, trajBank
 def mcParticleBank
+def lundBank
 def eleTree
 def hadTreeList
 def mcgenTreeList
@@ -290,6 +291,7 @@ def growMCtree = { pidList, pid ->
   //   'row' -> bank row number
   //   'particle' -> COATJAVA Particle object
   //   'vx,vy,vz' -> vertex
+  // -- these are the generated particles from MC::Particle
   def particleTree = rowList.collect { row ->
     [
       'row': (float) row,
@@ -301,6 +303,51 @@ def growMCtree = { pidList, pid ->
       'matchDist':10000
     ]
   }
+
+  // obtain parent particle info from MC::Lund; particles in MC::Lund are matched
+  // to those in MC::Particle by requiring matching momentum
+  def lundIdx,parentIdx
+  def lundPid,parentPid
+  def lundPx,lundPy,lundPz
+  def genPx,genPy,genPz
+  def genPid
+  // - loop through MC::Particle particles, stored in particleTree
+  particleTree.each{ br ->
+    genPid = br.particle.pid()
+    genPx = br.particle.px()
+    genPy = br.particle.py()
+    genPz = br.particle.pz()
+    // - search for matching particle in MC::Lund
+    lundIdx = -1
+    (0..<lundBank.rows()).each{
+      lundPid = lundBank.getInt('pid',it)
+      lundPx = lundBank.getFloat('px',it)
+      lundPy = lundBank.getFloat('py',it)
+      lundPz = lundBank.getFloat('pz',it)
+      if(genPid==lundPid) {
+        if( Math.abs(genPx-lundPx)<0.0001 && 
+            Math.abs(genPy-lundPy)<0.0001 && 
+            Math.abs(genPz-lundPz)<0.0001 ) {
+          lundIdx = lundBank.getByte('index',it)
+          parentIdx = lundBank.getByte('parent',it)
+        }
+      }
+    }
+    // - if match found in MC::Lund, get parent PID
+    if(lundIdx>=0) {
+      def parentRow = (0..<lundBank.rows()).find{
+        parentIdx == lundBank.getByte('index',it)
+      }
+      parentPid = lundBank.getInt('pid',parentRow)
+    }
+    else {
+      parentIdx = -1
+      parentPid = -1
+    }
+    br['parentIdx'] = parentIdx
+    br['parentPid'] = parentPid
+  }
+
 
   // verbose printing
   if(verbose) {
@@ -331,7 +378,8 @@ def buildMCleaves = { par ->
     'Px','Py','Pz',
     'E',
     'Vx','Vy','Vz',
-    'matchDist'
+    'matchDist',
+    'parentIdx','parentPid'
   ].collect{par+'_'+it}
 }
 
@@ -356,7 +404,8 @@ def fillMCleaves = { br ->
       br.particle.px(), br.particle.py(), br.particle.pz(),
       br.particle.e(),
       br.vx, br.vy, br.vz,
-      br.matchDist
+      br.matchDist,
+      br.parentIdx,br.parentPid
     ]
   } else {
     // match was not found
@@ -366,7 +415,8 @@ def fillMCleaves = { br ->
       undef,undef,undef,
       undef,
       undef,undef,undef,
-      undef
+      undef,
+      undef,undef
     ]
   }
 }
@@ -456,6 +506,7 @@ inHipoList.each { inHipoFile ->
       trajBank = event.getBank("REC::Traj")
       if(useMC) {
         mcParticleBank = event.getBank("MC::Particle")
+        lundBank = event.getBank("MC::Lund")
       }
 
 
