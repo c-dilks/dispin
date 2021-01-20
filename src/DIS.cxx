@@ -10,9 +10,7 @@ DIS::DIS() {
   debug = false;
   speedup = false;
 
-  BeamEn = 10.6041; // this is constant for all of pass1 data:
-                    // 5032-5419 inbending
-                    // 5422-5666 outbending
+  BeamEn = 10.6041; // default (RGA Fall 18); see SetBeamEnFromRun()
 
   vecBeam = TLorentzVector(
     0.0,
@@ -29,16 +27,14 @@ DIS::DIS() {
   );
 };
 
-
-/*
-// not used, but could be if we want to use RCDB to get beam energy
-void DIS::SetBeamEn(Float_t newBeamEn) {
-  BeamEn = newBeamEn;
-  vecBeam.SetPz(BeamEn);
+void DIS::SetBeamEnFromRun(Int_t runnum) {
+  if(runnum>=5032 && runnum<=5666) BeamEn=10.6041; // spring 18
+  else if(runnum>=6616 && runnum<=6783) BeamEn=10.1998; // spring 19
+  else fprintf(stderr,"ERROR: unknown runnum in DIS::SetBeamEnFromRun\n");
+  vecBeam.SetPz(Tools::EMtoP(BeamEn,PartMass(kE)));
   vecBeam.SetE(BeamEn);
   return;
 };
-*/
 
 
 void DIS::SetElectron(Trajectory * tr) {
