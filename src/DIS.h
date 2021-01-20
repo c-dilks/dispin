@@ -16,9 +16,10 @@
 #include "TFile.h"
 #include "TLorentzVector.h"
 
-// dihbsa
+// dispin
 #include "Constants.h"
 #include "Trajectory.h"
+#include "Tools.h"
 
 
 
@@ -28,7 +29,7 @@ class DIS : public TObject
     DIS();
     ~DIS() {};
 
-    //void SetBeamEn(Float_t newBeamEn);
+    void SetBeamEnFromRun(Int_t runnum);
     void SetElectron(Trajectory * tr);
     void CalculateKinematics();
     void CalculateKinematics(Trajectory * tr);

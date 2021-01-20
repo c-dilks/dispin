@@ -381,6 +381,7 @@ int main(int argc, char** argv) {
     };
 
     // calculate DIS kinematics
+    disEv->SetBeamEnFromRun(runnum);
     disEv->CalculateKinematics(traj[kEle]);
 
 

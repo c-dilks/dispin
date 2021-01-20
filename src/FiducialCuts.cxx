@@ -27,6 +27,8 @@ void FiducialCuts::ApplyCuts(int runnum_, int pid_) {
     inbending=true; outbending=false;
   } else if(runnum_>=5422 && runnum_<=5666) {
     inbending=false; outbending=true;
+  } else if(runnum_>=6616 && runnum_<=6783) {
+    inbending=true; outbending=false;
   } else if(runnum_==11) { // MC
     inbending=true; outbending=false;
   } else {
