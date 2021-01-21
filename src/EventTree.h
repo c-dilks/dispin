@@ -193,6 +193,9 @@ class EventTree : public TObject
     Bool_t gen_hadIsMatch[2];
     Float_t gen_eleMatchDist;
     Float_t gen_hadMatchDist[2];
+    // - other
+    Int_t gen_hadParentIdx[2];
+    Int_t gen_hadParentPid[2];
 
     Float_t eleSampFrac;
 

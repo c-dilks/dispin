@@ -14,7 +14,7 @@
 #include "TCanvas.h"
 #include "TGraph.h"
 
-// DihBsa
+// Dispin
 #include "Constants.h"
 #include "Tools.h"
 #include "DIS.h"
