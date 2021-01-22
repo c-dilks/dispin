@@ -48,13 +48,22 @@ Binning::Binning(Int_t pairType_) {
     AddBinBound(vM,0.981);
     AddBinBound(vM,1.125);
     //*/
-    /* // 7 quantile bins
-    AddBinBound(vM,0.46);
-    AddBinBound(vM,0.60);
-    AddBinBound(vM,0.72);
-    AddBinBound(vM,0.81);
-    AddBinBound(vM,0.93);
-    AddBinBound(vM,1.10);
+    /* // 6 quantile bins
+    //AddBinBound(vM,0.37); // CFR via yH<-0.2
+    //AddBinBound(vM,0.43);
+    //AddBinBound(vM,0.49);
+    //AddBinBound(vM,0.58);
+    //AddBinBound(vM,0.72);
+    //AddBinBound(vM,0.57); // DSIDIS via yH cut at 0.2
+    //AddBinBound(vM,0.69);
+    //AddBinBound(vM,0.78);
+    //AddBinBound(vM,0.87);
+    //AddBinBound(vM,1.01);
+    AddBinBound(vM,0.64); // TFR via yH>0.2
+    AddBinBound(vM,0.82);
+    AddBinBound(vM,0.96);
+    AddBinBound(vM,1.11);
+    AddBinBound(vM,1.27);
     */
     /* // 14 quantile bins
     AddBinBound(vM,0.38);
@@ -93,13 +102,12 @@ Binning::Binning(Int_t pairType_) {
     AddBinBound(vX,0.315);
     AddBinBound(vX,0.375);
     //*/
-    /* // 7 quantile bins
-    AddBinBound(vX,0.12);
-    AddBinBound(vX,0.15);
-    AddBinBound(vX,0.18);
-    AddBinBound(vX,0.21);
-    AddBinBound(vX,0.25);
-    AddBinBound(vX,0.32);
+    /* // 6 quantile bins
+    AddBinBound(vX,0.14);
+    AddBinBound(vX,0.17);
+    AddBinBound(vX,0.20);
+    AddBinBound(vX,0.23);
+    AddBinBound(vX,0.28);
     */
     /* // 14 quantile bins
     AddBinBound(vX,0.11);
@@ -191,8 +199,8 @@ Binning::Binning(Int_t pairType_) {
     AddBinBound(vPt,0.5); // 2 quantile bins
     */
     /*
-    AddBinBound(vPt,0.37); // 3 quantile bins 
-    AddBinBound(vPt,0.58);
+    AddBinBound(vPt,0.45); // 3 quantile bins 
+    AddBinBound(vPt,0.63);
     */
     /*
     AddBinBound(vPt,0.16); // 14 quantile bins

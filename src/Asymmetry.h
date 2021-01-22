@@ -120,6 +120,7 @@ class Asymmetry : public TObject
     Float_t z;
     Float_t PhiH;
     Float_t PhiR;
+    Float_t PhiD;
     Float_t PhPerp;
     Float_t Ph;
     Float_t Q2;
@@ -231,7 +232,7 @@ class Asymmetry : public TObject
     TString rellumFactor[2];
     Float_t rfParamRange;
 
-    RooRealVar *rfPhiH, *rfPhiR, *rfTheta;
+    RooRealVar *rfPhiH, *rfPhiR, *rfPhiD, *rfTheta;
     RooRealVar *rfWeight;
     RooRealVar *rfPol, *rfRellum;
 

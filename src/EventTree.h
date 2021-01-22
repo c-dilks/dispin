@@ -51,7 +51,6 @@ class EventTree : public TObject
 
     Dihadron * GetDihadronObj();
     DIS * GetDISObj();
-    Float_t GetBreitRapidity(Int_t had);
 
     //Float_t GetDepolarizationFactorApprox(Char_t kf);
     Float_t GetDepolarizationFactor(Char_t kf);
@@ -77,6 +76,9 @@ class EventTree : public TObject
     Float_t hadTheta[2];
     Float_t hadPhi[2];
     Float_t hadXF[2];
+    Float_t hadYH[2];
+    Float_t hadPperp[2];
+    Float_t hadQt[2];
     Float_t hadVertex[2][3];
     Int_t hadStatus[2];
     Float_t hadChi2pid[2];
@@ -100,7 +102,7 @@ class EventTree : public TObject
     Bool_t hadFiduCut[2];
 
     // dihadron kinematics
-    Float_t Mh,Zpair,PhiH,Mmiss,xF,alpha;
+    Float_t Mh,Zpair,PhiH,Mmiss,xF,alpha,YH;
     Float_t Z[2];
     Float_t zeta;
     Float_t theta;
@@ -124,12 +126,19 @@ class EventTree : public TObject
 
     Float_t PhiHR; // PhiH-PhiR
 
+    // DSIDIS angles
+    Float_t hadPhiH[2];
+    Float_t PhiD; // hadPhiH[qA] - hadPhiH[qB]
+    Float_t yhb;
+
 
 
     ///////////////////////////
     //   EventCuts
     ///////////////////////////
-    Bool_t cutQ2,cutW,cutY,cutDIS;
+    Bool_t cutQ2,cutW,cutY,cutDIS,cutFR;
+    Bool_t cutCFR[2];
+    Bool_t cutTFR[2];
     Bool_t cutDihadron;
     Bool_t cutHelicity;
     Bool_t cutVertex;
@@ -215,6 +224,9 @@ class EventTree : public TObject
 
     TLorentzVector hadMom[2];
     TLorentzVector eleMom;
+    TLorentzVector hadMomBreit[2];
+    TLorentzVector vmMomBreit;
+    TVector3 breitVec;
 
 
     Bool_t vertexWarned;

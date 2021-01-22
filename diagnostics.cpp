@@ -11,6 +11,7 @@
 #include "TRegexp.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TH3.h"
 #include "TCanvas.h"
 #include "TGraph.h"
 
@@ -91,25 +92,28 @@ int main(int argc, char** argv) {
    TH2D * hadECorr = new TH2D("hadECorr",corrTitle("E"),NBINS,0,10,NBINS,0,10);
    TH2D * hadPCorr = new TH2D("hadPCorr",corrTitle("p"),NBINS,0,10,NBINS,0,10);
    TH2D * hadPtCorr = new TH2D("hadPtCorr",corrTitle("p_{T}"),NBINS,0,4,NBINS,0,4);
+   TH2D * hadPperpCorr = new TH2D("hadPperpCorr",corrTitle("p_{perp}"),NBINS,0,2,NBINS,0,2);
    TH2D * hadEtaCorr = new TH2D("hadEtaCorr",corrTitle("#eta"),NBINS,0,5,NBINS,0,5);
    TH2D * hadThetaCorr = new TH2D("hadThetaCorr",corrTitle("#theta"),NBINS,0,40,NBINS,0,40);
-   TH2D * hadPhiCorr = new TH2D("hadPhiCorr",corrTitle("#phi"),
-                                             NBINS,-PIe,PIe,NBINS,-PIe,PIe);
+   TH2D * hadPhiCorr = new TH2D("hadPhiCorr",corrTitle("#phi"), NBINS,-PIe,PIe,NBINS,-PIe,PIe);
    TH2D * hadZCorr = new TH2D("hadZCorr",corrTitle("z"),NBINS,0,1,NBINS,0,1);
-   TH2D * hadXFCorr = new TH2D("hadXFCorr",corrTitle("x_{F}"),
-     NBINS,-1,1,NBINS,-1,1);
-   TH2D * hadVzCorr = new TH2D("hadVzCorr",corrTitle("V_{z}"),
-     NBINS,-20,20,NBINS,-20,20);
+   TH2D * hadXFCorr = new TH2D("hadXFCorr",corrTitle("x_{F}"), NBINS,-1,1,NBINS,-1,1);
+   TH2D * hadYHCorr = new TH2D("hadYHCorr",corrTitle("y_{h}"), NBINS,-4,4,NBINS,-4,4);
+   TH2D * hadPhiHCorr = new TH2D("hadPhiHCorr",corrTitle("#phi_{h}"), NBINS,-4,4,NBINS,-4,4);
+   TH2D * hadVzCorr = new TH2D("hadVzCorr",corrTitle("V_{z}"), NBINS,-20,20,NBINS,-20,20);
    
    // dihadron's hadron kinematics
    TH1D * hadEDist[2];
    TH1D * hadPDist[2];
    TH1D * hadPtDist[2];
+   TH1D * hadPperpDist[2];
    TH1D * hadEtaDist[2];
    TH1D * hadThetaDist[2];
    TH1D * hadPhiDist[2];
    TH1D * hadZDist[2];
    TH1D * hadXFDist[2];
+   TH1D * hadYHDist[2];
+   TH1D * hadPhiHDist[2];
    TH1D * hadVzDist[2];
    TH2D * hadVxyDist[2];
    TH2D * hadEtaVsPhi[2];
@@ -122,6 +126,8 @@ int main(int argc, char** argv) {
        NBINS,0,10);
      hadPtDist[h] = new TH1D(TString(hadName[h]+"hadPtDist"),distTitle("p_{T}"),
        NBINS,0,4);
+     hadPperpDist[h] = new TH1D(TString(hadName[h]+"hadPperpDist"),distTitle("p_{perp}"),
+       NBINS,0,2);
      hadEtaDist[h] = new TH1D(TString(hadName[h]+"hadEtaDist"),distTitle("#eta"),
        NBINS,0,5);
      hadThetaDist[h] = new TH1D(TString(hadName[h]+"hadThetaDist"),distTitle("#theta"),
@@ -132,6 +138,10 @@ int main(int argc, char** argv) {
        NBINS,0,1);
      hadXFDist[h] = new TH1D(TString(hadName[h]+"hadXFDist"),distTitle("x_{F}"),
        NBINS,-1,1);
+     hadYHDist[h] = new TH1D(TString(hadName[h]+"hadYHDist"),distTitle("y_{h}"),
+       NBINS,-4,4);
+     hadPhiHDist[h] = new TH1D(TString(hadName[h]+"hadPhiHDist"),distTitle("#phi_{h}"),
+       NBINS,-PIe,PIe);
      hadVzDist[h] = new TH1D(TString(hadName[h]+"hadVzDist"),
        distTitle("V_{z}"),
        NBINS,-20,20);
@@ -182,6 +192,15 @@ int main(int argc, char** argv) {
      "#phi_{h}-#phi_{R} distribution;#phi_{h}-#phi_{R}",
      NBINS,-PIe,PIe);
 
+   TH2D * DeltaPhiVsPhiR = new TH2D("DeltaPhiVsPhiR","#Delta#phi vs. #phi_{R};#phi_{R};#Delta#phi",
+     NBINS,-PIe,PIe,NBINS,-PIe,PIe);
+   TH2D * SinDeltaPhiVsPhiR = new TH2D("SinDeltaPhiVsPhiR","sin(#Delta#phi) vs. sin(#phi_{R});sin(#phi_{R});sin(#Delta#phi)",
+     NBINS,-1.1,1.1,NBINS,-1.1,1.1);
+   TH2D * DeltaPhiVsPhiHR2 = new TH2D("DeltaPhiVsPhiHR2","#Delta#phi vs. 2#phi_{h}-2#phi_{R};2#phi_{h}-2#phi_{R};#Delta#phi",
+     NBINS,-PIe,PIe,NBINS,-PIe,PIe);
+   TH2D * SinDeltaPhiVsPhiHR2 = new TH2D("SinDeltaPhiVsPhiHR2","sin(#Delta#phi) vs. sin(2#phi_{h}-2#phi_{R});sin(2#phi_{h}-2#phi_{R});sin(#Delta#phi)",
+     NBINS,-1.1,1.1,NBINS,-1.1,1.1);
+
    plotTitle = "P_{h}^{perp}/M_{h} vs. sin(#phi_{h}-#phi_{R});";
    plotTitle += "sin(#phi_{h}-#phi_{R});P_{h}^{perp}/M_{h}";
    TH2D * g1perpWeightVsMod = new TH2D("g1perpWeightVsMod",plotTitle,
@@ -191,6 +210,10 @@ int main(int argc, char** argv) {
      "P_{h}^{perp} vs. M_{h};M_{h};P_{h}^{perp}",
      NBINS,0,3,
      NBINS,0,3);
+   TH2D * YHVsMh = new TH2D("YHVsMh",
+     "y_{hh} vs. M_{h};M_{h};y_{h}",
+     NBINS,0,3,
+     NBINS,-3,3);
    TH2D * RTvsMh = new TH2D("RTvsMh",
      "R_{T} vs. M_{h};M_{h};R_{T}",
      NBINS,0,3,
@@ -229,6 +252,10 @@ int main(int argc, char** argv) {
    TH2D * thetaVsZ[2];
    TH2D * thetaVsHadP[2];
    TH2D * YHvsXF[2];
+   TH2D * YHvsMh[2];
+   TH2D * XFvsMh[2];
+   TH2D * PperpvsMh[2];
+   TH2D * hadPperpVsYH[2];
    for(int h=0; h<2; h++) {
      thetaVsZ[h] = new TH2D(TString("thetaVsZ_"+hadName[h]),
        TString("#theta vs. "+hadTitle[h]+" z;z;#theta"),
@@ -238,8 +265,81 @@ int main(int argc, char** argv) {
        NBINS,0,10,NBINS,0,PIe);
      YHvsXF[h] = new TH2D(TString("YHvsXF_"+hadName[h]),
        TString(hadTitle[h]+" y_{h} vs. x_{F};x_{F};y_{h}"),
-       NBINS,-1,1,NBINS,-4,4);
+       NBINS,-1,1,NBINS,-3,3);
+     YHvsMh[h] = new TH2D(TString("YHvsMh_"+hadName[h]),
+       TString(hadTitle[h]+" y_{h} vs. M_{h};M_{h};y_{h}"),
+       2*NBINS,0,3,NBINS,-4,4);
+     XFvsMh[h] = new TH2D(TString("XFvsMh_"+hadName[h]),
+       TString(hadTitle[h]+" x_{F} vs. M_{h};M_{h};x_{F}"),
+       2*NBINS,0,3,NBINS,-1,1);
+     PperpvsMh[h] = new TH2D(TString("PperpvsMh_"+hadName[h]),
+       TString(hadTitle[h]+" p_{perp} vs. M_{h};M_{h};p_{perp}"),
+       2*NBINS,0,3,NBINS,0,2);
+     hadPperpVsYH[h] = new TH2D(TString("hadPperpVsYH_"+hadName[h]),
+       TString(hadTitle[h]+"p_{perp} vs. y_{h};y_{h};p_{perp}"),
+       NBINS,-4,4,NBINS,0,2);
    };
+
+
+   TH3D * MhVsYHcorr = new TH3D("MhVsYHcorr",
+     TString("M_{h} vs. y_{h} correlation;y_{h}("+hadTitle[qA]+");y_{h}("+hadTitle[qB]+");M_{h}"),
+     70,-3,3,
+     70,-3,3,
+     100,0,2
+   );
+   TH3D * MhVsXFcorr = new TH3D("MhVsXFcorr",
+     TString("M_{h} vs. x_{F} correlation;x_{F}("+hadTitle[qA]+");x_{F}("+hadTitle[qB]+");M_{h}"),
+     70,-1,1,
+     70,-1,1,
+     100,0,2
+   );
+   TH3D * MhVsPperpcorr = new TH3D("MhVsPperpcorr",
+     TString("M_{h} vs. p_{perp} correlation;p_{perp}("+hadTitle[qA]+");p_{perp}("+hadTitle[qB]+");M_{h}"),
+     70,0,2,
+     70,0,2,
+     100,0,2
+   );
+   TH3D * MhVsPtVsYh = new TH3D("MhVsPtVsYh",
+     TString("M_{h} vs. P_{h}^{perp} vs. y_{hh};y_{hh};P_{h}^{perp};M_{h}"),
+     70,-3,3,
+     70,0,2,
+     100,0,2
+   );
+   TH3D * MhVsThetaVsAlpha = new TH3D("MhVsThetaVsAlpha",
+     TString("M_{h} vs. #theta_{h} vs. #alpha;#alpha;#theta_{h};M_{h}"),
+     70,0,70,
+     70,0,37,
+     100,0,2
+   );
+   TH3D * MhVsPhiHVsPhiR = new TH3D("MhVsPhiHVsPhiR",
+     TString("M_{h} vs. #phi_{h} vs. #phi_{R};#phi_{R};#phi_{h};M_{h}"),
+     70,-PI,PI,
+     70,-PI,PI,
+     100,0,2
+   );
+   TH3D * MhVsDeltaPhiVsPhiR = new TH3D("MhVsDeltaPhiVsPhiR",
+     TString("M_{h} vs. #Delta#phi vs. #phi_{R};#phi_{R};#Delta#phi;M_{h}"),
+     70,-PI,PI,
+     70,-PI,PI,
+     100,0,2
+   );
+
+   TH3D * AlphaVsYHcorr = new TH3D("AlphaVsYHcorr",
+     TString("#alpha vs. y_{h} correlation;y_{h}("+hadTitle[qA]+");y_{h}("+hadTitle[qB]+");#alpha"),
+     70,-3,3,
+     70,-3,3,
+     100,0,75
+   );
+   TH3D * AlphaVsPperpcorr = new TH3D("AlphaVsPperpcorr",
+     TString("#alpha vs. p_{perp} correlation;p_{perp}("+hadTitle[qA]+");p_{perp}("+hadTitle[qB]+");#alpha"),
+     70,0,2,
+     70,0,2,
+     100,0,75
+   );
+
+   TH2D * MhVsAlpha = new TH2D(
+     "MhVsAlpha","M_{h} vs. #alpha [deg];#alpha [deg];M_{h}",
+     NBINS,0,75,NBINS,0,3);
    
    TH1D * sinThetaDist = new TH1D("sinThetaDist",
      "sin(#theta) distribution;sin(#theta)",NBINS,-1.1,1.1);
@@ -378,6 +478,7 @@ int main(int argc, char** argv) {
 
    printf("begin loop through %lld events...\n",ev->ENT);
    Int_t hadI[2];
+   Float_t alphaDeg;
    for(int i=0; i<ev->ENT; i++) {
      //if(i>10000) break; // limiter
 
@@ -410,22 +511,28 @@ int main(int argc, char** argv) {
        hadECorr->Fill(ev->hadE[qB],ev->hadE[qA]);
        hadPCorr->Fill(ev->hadP[qB],ev->hadP[qA]);
        hadPtCorr->Fill(ev->hadPt[qB],ev->hadPt[qA]);
+       hadPperpCorr->Fill(ev->hadPperp[qB],ev->hadPperp[qA]);
        hadEtaCorr->Fill(ev->hadEta[qB],ev->hadEta[qA]);
        hadThetaCorr->Fill(ev->hadTheta[qB],ev->hadTheta[qA]);
        hadPhiCorr->Fill(ev->hadPhi[qB],ev->hadPhi[qA]);
        hadZCorr->Fill(ev->Z[qB],ev->Z[qA]);
        hadXFCorr->Fill(ev->hadXF[qB],ev->hadXF[qA]);
+       hadYHCorr->Fill(ev->hadYH[qB],ev->hadYH[qA]);
+       hadPhiHCorr->Fill(ev->hadPhiH[qB],ev->hadPhiH[qA]);
        hadVzCorr->Fill(ev->hadVertex[qB][eZ],ev->hadVertex[qA][eZ]);
 
        for(int h=0; h<2; h++) {
          hadEDist[h]->Fill(ev->hadE[h]);
          hadPDist[h]->Fill(ev->hadP[h]);
          hadPtDist[h]->Fill(ev->hadPt[h]);
+         hadPperpDist[h]->Fill(ev->hadPperp[h]);
          hadEtaDist[h]->Fill(ev->hadEta[h]);
          hadThetaDist[h]->Fill(ev->hadTheta[h]);
          hadPhiDist[h]->Fill(ev->hadPhi[h]);
          hadZDist[h]->Fill(ev->Z[h]);
          hadXFDist[h]->Fill(ev->hadXF[h]);
+         hadYHDist[h]->Fill(ev->hadYH[h]);
+         hadPhiHDist[h]->Fill(ev->hadPhiH[h]);
          hadVzDist[h]->Fill(ev->hadVertex[h][eZ]);
          hadVxyDist[h]->Fill(ev->hadVertex[h][eX],ev->hadVertex[h][eY]);
 
@@ -453,10 +560,15 @@ int main(int argc, char** argv) {
        PhiHDist->Fill(ev->PhiH);
        PhiRDist->Fill(ev->PhiR);
        PhiHvsPhiR->Fill(ev->PhiR,ev->PhiH);
+       DeltaPhiVsPhiR->Fill(ev->PhiR,ev->PhiD);
+       SinDeltaPhiVsPhiR->Fill(TMath::Sin(ev->PhiR),TMath::Sin(ev->PhiD));
+       DeltaPhiVsPhiHR2->Fill(Tools::AdjAngle(2*ev->PhiH-2*ev->PhiR),ev->PhiD);
+       SinDeltaPhiVsPhiHR2->Fill(TMath::Sin(Tools::AdjAngle(2*ev->PhiH-2*ev->PhiR)),TMath::Sin(ev->PhiD));
 
        PhiHRDist->Fill(ev->PhiHR);
        g1perpWeightVsMod->Fill(TMath::Sin(ev->PhiHR),ev->PhPerp/ev->Mh);
        PhPerpVsMh->Fill(ev->Mh,ev->PhPerp);
+       YHVsMh->Fill(ev->Mh,ev->YH);
        RTvsMh->Fill(ev->Mh,ev->RT);
 
        thetaDist->Fill(ev->theta);
@@ -477,9 +589,28 @@ int main(int argc, char** argv) {
        for(int h=0; h<2; h++) {
          thetaVsZ[h]->Fill(ev->Z[h],ev->theta);
          thetaVsHadP[h]->Fill(ev->hadP[h],ev->theta);
-         YHvsXF[h]->Fill(ev->hadXF[h],ev->GetBreitRapidity(h));
+         YHvsXF[h]->Fill(ev->hadXF[h],ev->hadYH[h]);
+         YHvsMh[h]->Fill(ev->Mh,ev->hadYH[h]);
+         XFvsMh[h]->Fill(ev->Mh,ev->hadXF[h]);
+         PperpvsMh[h]->Fill(ev->Mh,ev->hadPperp[h]);
+         hadPperpVsYH[h]->Fill(ev->hadYH[h],ev->hadPperp[h]);
          xFvsZ[h]->Fill(ev->Z[h],ev->hadXF[h]);
        };
+       
+       alphaDeg = ev->alpha*TMath::RadToDeg();
+
+       MhVsYHcorr->Fill(ev->hadYH[qA],ev->hadYH[qB],ev->Mh);
+       MhVsXFcorr->Fill(ev->hadXF[qA],ev->hadXF[qB],ev->Mh);
+       MhVsPperpcorr->Fill(ev->hadPperp[qA],ev->hadPperp[qB],ev->Mh);
+       MhVsPtVsYh->Fill(ev->YH,ev->PhPerp,ev->Mh);
+       MhVsThetaVsAlpha->Fill(alphaDeg,Tools::EtaToTheta(ev->PhEta),ev->Mh);
+       MhVsPhiHVsPhiR->Fill(ev->PhiR,ev->PhiH,ev->Mh);
+       MhVsDeltaPhiVsPhiR->Fill(ev->PhiR,ev->PhiD,ev->Mh);
+
+       AlphaVsYHcorr->Fill(ev->hadYH[qA],ev->hadYH[qB],alphaDeg);
+       AlphaVsPperpcorr->Fill(ev->hadPperp[qA],ev->hadPperp[qB],alphaDeg);
+
+       MhVsAlpha->Fill(alphaDeg,ev->Mh);
 
        PhiHvsMh->Fill(ev->Mh,ev->PhiH);
        PhiHvsX->Fill(ev->x,ev->PhiH);
@@ -524,6 +655,31 @@ int main(int argc, char** argv) {
 
    }; // eo event loop
 
+   for(int h=0; h<2; h++) xFvsZ[h]->Write();
+   for(int h=0; h<2; h++) YHvsXF[h]->Write();
+   for(int h=0; h<2; h++) YHvsMh[h]->Write();
+   for(int h=0; h<2; h++) XFvsMh[h]->Write();
+   for(int h=0; h<2; h++) PperpvsMh[h]->Write();
+   for(int h=0; h<2; h++) hadPperpVsYH[h]->Write();
+   PhPerpVsMh->Write(); 
+   YHVsMh->Write(); 
+   MhVsAlpha->Write();
+
+   MhVsYHcorr->Write();
+   MhVsXFcorr->Write();
+   MhVsPperpcorr->Write();
+   MhVsPtVsYh->Write();
+   MhVsThetaVsAlpha->Write();
+   MhVsPhiHVsPhiR->Write();
+   MhVsDeltaPhiVsPhiR->Write();
+
+   AlphaVsYHcorr->Write();
+   AlphaVsPperpcorr->Write();
+
+   DeltaPhiVsPhiR->Write();
+   SinDeltaPhiVsPhiR->Write();
+   DeltaPhiVsPhiHR2->Write();
+   SinDeltaPhiVsPhiHR2->Write();
 
    WDist->Write();
    XDist->Write();
@@ -547,11 +703,14 @@ int main(int argc, char** argv) {
    TCanvas * hadECanv = new TCanvas("hadECanv","hadECanv",1000,800);
    TCanvas * hadPCanv = new TCanvas("hadPCanv","hadPCanv",1000,800);
    TCanvas * hadPtCanv = new TCanvas("hadPtCanv","hadPtCanv",1000,800);
+   TCanvas * hadPperpCanv = new TCanvas("hadPperpCanv","hadPperpCanv",1000,800);
    TCanvas * hadEtaCanv = new TCanvas("hadEtaCanv","hadEtaCanv",1000,800);
    TCanvas * hadThetaCanv = new TCanvas("hadThetaCanv","hadThetaCanv",1000,800);
    TCanvas * hadPhiCanv = new TCanvas("hadPhiCanv","hadPhiCanv",1000,800);
    TCanvas * hadZCanv = new TCanvas("hadZCanv","hadZCanv",1000,800);
    TCanvas * hadXFCanv = new TCanvas("hadXFCanv","hadXFCanv",1000,800);
+   TCanvas * hadYHCanv = new TCanvas("hadYHCanv","hadYHCanv",1000,800);
+   TCanvas * hadPhiHCanv = new TCanvas("hadPhiHCanv","hadPhiHCanv",1000,800);
    TCanvas * hadVzCanv = new TCanvas("hadVzCanv","hadVzCanv",1000,800);
    TCanvas * hadEtaVsPhiCanv = new TCanvas("hadEtaVsPhiCanv","hadEtaVsPhiCanv",1000,800);
    TCanvas * hadEVsPhiCanv = new TCanvas("hadEVsPhiCanv","hadEVsPhiCanv",1000,800);
@@ -560,11 +719,14 @@ int main(int argc, char** argv) {
    HadronCompareCanv(hadECanv, hadEDist, hadECorr);
    HadronCompareCanv(hadPCanv, hadPDist, hadPCorr);
    HadronCompareCanv(hadPtCanv, hadPtDist, hadPtCorr);
+   HadronCompareCanv(hadPperpCanv, hadPperpDist, hadPperpCorr);
    HadronCompareCanv(hadEtaCanv, hadEtaDist, hadEtaCorr);
    HadronCompareCanv(hadThetaCanv, hadThetaDist, hadThetaCorr);
    HadronCompareCanv(hadPhiCanv, hadPhiDist, hadPhiCorr);
    HadronCompareCanv(hadZCanv, hadZDist, hadZCorr);
    HadronCompareCanv(hadXFCanv, hadXFDist, hadXFCorr);
+   HadronCompareCanv(hadYHCanv, hadYHDist, hadYHCorr);
+   HadronCompareCanv(hadPhiHCanv, hadPhiHDist, hadPhiHCorr);
    HadronCompareCanv(hadVzCanv, hadVzDist, hadVzCorr);
    Hadron2dCanv(hadEtaVsPhiCanv, hadEtaVsPhi[qA], hadEtaVsPhi[qB]);
    Hadron2dCanv(hadEVsPhiCanv, hadEVsPhi[qA], hadEVsPhi[qB]);
@@ -573,11 +735,14 @@ int main(int argc, char** argv) {
    hadECanv->Write();
    hadPCanv->Write();
    hadPtCanv->Write();
+   hadPperpCanv->Write();
    hadEtaCanv->Write();
    hadThetaCanv->Write();
    hadPhiCanv->Write();
    hadZCanv->Write();
    hadXFCanv->Write();
+   hadYHCanv->Write();
+   hadPhiHCanv->Write();
    hadEtaVsPhiCanv->Write();
    hadEVsPhiCanv->Write();
    hadPtVsPhiCanv->Write();
@@ -606,7 +771,6 @@ int main(int argc, char** argv) {
 
    PhiHRDist->Write();
    g1perpWeightVsMod->Write();
-   PhPerpVsMh->Write(); 
    RTvsMh->Write(); 
   
    thetaDist->Write();
@@ -623,8 +787,6 @@ int main(int argc, char** argv) {
    thetaVsX->Write();
    thetaVsZpair->Write();
    thetaVsZeta->Write();
-   for(int h=0; h<2; h++) xFvsZ[h]->Write();
-   for(int h=0; h<2; h++) YHvsXF[h]->Write();
    for(int h=0; h<2; h++) thetaVsZ[h]->Write();
    thetaVsPh->Write();
    for(int h=0; h<2; h++) thetaVsHadP[h]->Write();

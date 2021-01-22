@@ -72,6 +72,7 @@ class Dihadron : public TObject
     Float_t hadPhi[2];  // hadron lab-frame azimuth
     Float_t PhMag; // dihadron total momentum
     Float_t PhPerpMag; // transverse component of dihadron total momentum (perp frame)
+    Float_t hadPperp[2]; // transverse component of hadron total momentum (perp frame)
     Float_t PhEta; // pseudorapidity of dihadron pair
     Float_t PhPhi; // azimuth of dihadron pair
 

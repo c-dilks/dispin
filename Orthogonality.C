@@ -16,8 +16,9 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
   
   // OPTIONS
   ///////////////////
+  Bool_t usePhiD = 0; // if true, replace theta with phiD; must match BuildOrtho.cpp
+  Bool_t enableLegendre = 0; // must be false if usePhiD==true
   Int_t polarizationSetting = Modulation::kLU;
-  Bool_t enableLegendre = 1;
   Int_t LMAX = 2;
   Bool_t useModulationTitle = false; // if true, print functions instaed of kets
   ///////////////////
@@ -124,6 +125,7 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
       };
     };
   };
+  if(usePhiD) moduArr->AddLast(new Modulation(2,0,0,0,0,Modulation::kDSIDIS));
   Int_t NMODi = moduArr->GetEntries();
   const Int_t NMOD = NMODi;
 
@@ -151,7 +153,7 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
   TH3D * intDist[NMOD][NMOD];
   TH1D * modDist[NMOD];
   TString modDistN,modDistT;
-  Float_t phiH,phiR,theta;
+  Float_t phiH,phiR,theta,phiD;
   Double_t dataWeight,modValF,modValG,product,integral;
   TString intDistN,intDistT;
   Double_t weightedNorm[NMOD];
@@ -183,18 +185,30 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
 
             phiR = intDist[f][g]->GetXaxis()->GetBinCenter(r);
             phiH = intDist[f][g]->GetYaxis()->GetBinCenter(h);
-            theta = intDist[f][g]->GetZaxis()->GetBinCenter(t);
+            if(usePhiD) {
+              theta = 0;
+              phiD = intDist[f][g]->GetZaxis()->GetBinCenter(t);
+            } else {
+              theta = intDist[f][g]->GetZaxis()->GetBinCenter(t);
+              phiD = 0;
+            };
 
             dataWeight = dataDist->GetBinContent(r,h,t);
 
-            modValF = moduF->Evaluate(phiR,phiH,theta);
-            modValG = moduG->Evaluate(phiR,phiH,theta);
-
-            // +++
-            //if(f==6) modValF = 1.0/(1+0.2*TMath::Cos(phiH));
-            //if(g==6) modValG = 1.0/(1+0.2*TMath::Cos(phiH));
-            //if(f==6) modValF = 1;
-            //if(g==6) modValG = 1;
+            // TODO: simplify this; Modulation::Evaluate does not yet handle extra dimension (phiD)
+            if(usePhiD) {
+              modValF = 
+                moduF->polarization == Modulation::kDSIDIS ?
+                TMath::Sin(phiD) : 
+                moduF->Evaluate(phiR,phiH,theta);
+              modValG = 
+                moduG->polarization == Modulation::kDSIDIS ?
+                TMath::Sin(phiD) : 
+                moduG->Evaluate(phiR,phiH,theta);
+            } else {
+              modValF = moduF->Evaluate(phiR,phiH,theta);
+              modValG = moduG->Evaluate(phiR,phiH,theta);
+            };
             
             product = dataWeight * modValF * modValG;
 
@@ -233,9 +247,9 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
   gStyle->SetPaintTextFormat(".3f");
 
   TCanvas * dataCanv = new TCanvas("dataCanv","dataCanv",1200,800);
-  //dataCanv->Divide(1,2);
+  dataCanv->Divide(1,2);
   dataCanv->cd(1); Draw3d(dataDist,1);
-  //dataCanv->cd(2); Draw3d(dataDist,2);
+  dataCanv->cd(2); Draw3d(dataDist,2);
 
   TCanvas * matCanv = new TCanvas("matCanv","matCanv",1000,1000);
   orthMatrix->SetMinimum(-1);
@@ -382,7 +396,8 @@ void Draw3d(TH3D * dd, Int_t whichProj) {
     case 2:
       //dd_z = (TH1D*) dd->Project3D("z");
       dd_z = (TH1D*) dd->ProjectionZ();
-      dd_z->SetTitle(TString(ddT+" -- #theta projection;#theta"));
+      if(usePhiD) dd_z->SetTitle(TString(ddT+" -- #Delta#phi projection;#Delta#phi"));
+      else dd_z->SetTitle(TString(ddT+" -- #theta projection;#theta"));
       dd_z->Draw();
       break;
     default: return;

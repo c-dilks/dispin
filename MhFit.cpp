@@ -9,6 +9,7 @@
 #include <TRegexp.h>
 #include <TH1.h>
 #include <TCanvas.h>
+#include <TTree.h>
 
 // RooFit
 #include <RooGlobalFunc.h>
@@ -24,16 +25,20 @@
 #include <RooAddPdf.h>
 #include <RooFitResult.h>
 #include <RooPlot.h>
+#include <RooStats/SPlot.h>
 
 
 TString infileN;
+bool makeSplots;
 using namespace RooFit;
 
 int main(int argc, char** argv) {
 
   // ARGUMENTS
-  infileN = "plots.inbending.noXFcut.root";
+  infileN = "plots.root";
+  makeSplots = false;
   if(argc>1) infileN = TString(argv[1]);
+  if(argc>2) makeSplots = true;
 
   // open mass distribution
   TFile * infile = new TFile(infileN,"READ");
@@ -48,11 +53,14 @@ int main(int argc, char** argv) {
   };
   */
 
-
-
   // assign RooDataHist
-  RooRealVar mass("mass","M_{h}",0,3,"GeV");
+  RooRealVar mass("Mh","M_{h}",0,3,"GeV"); // name should match that in `buildRooset.cpp`
   RooDataHist massdist("massdist","M_{h} distribution",mass,Import(*MhDist));
+
+
+  //==================
+  // build PDF
+  //==================
 
   // resonances
   // -- rho
@@ -99,12 +107,17 @@ int main(int argc, char** argv) {
   RooAddPdf bgFull("bgFull","bgFull",RooArgList(bg,bgCon),RooArgList(bgW1,bgW2));
   */
 
-
   // composite
   RooAddPdf model("model","model",
     RooArgList(resRho,resF0,resF2,bg),
     RooArgList(resRhoN,resF0N,resF2N,bgN)
   );
+
+
+
+  //==================
+  // fit
+  //==================
 
   // set fit range
   mass.setRange("fit_range",0.25,1.5);
@@ -127,7 +140,7 @@ int main(int argc, char** argv) {
   model.plotOn( plotframe, Name("resF2Plot"), Components("resF2"), Range("Full"), LineColor(kRed), LineWidth(4));
   model.plotOn( plotframe, Name("bgPlot"), Components("bg"), Range("Full"), LineColor(kBlue), LineWidth(4), LineStyle(9));
 
-  TCanvas * canv = new TCanvas("canv","canv",1200,800);
+  TCanvas * canv = new TCanvas("mfitCanv","mfitCanv",1200,800);
   plotframe->Draw();
   MhDist->SetMarkerStyle(kFullCircle);
   MhDist->SetMarkerSize(1);
@@ -142,5 +155,66 @@ int main(int argc, char** argv) {
 
 
 
-};
+  //==================
+  // sPlot
+  //==================
 
+  // fix all PDF parameters except yields
+  bgP0.setConstant();
+  bgP1.setConstant();
+  bgP2.setConstant();
+  bgP3.setConstant();
+  bgP4.setConstant();
+  resF0Width.setConstant();
+  resF2Width.setConstant();
+  resRhoWidth.setConstant();
+
+
+  // build sWeighted data sets
+  RooAbsData::setDefaultStorageType(RooAbsData::Tree); // use TTree backend
+  TFile *rooFile, *outFile;
+  RooDataSet * rooData;
+  RooStats::SPlot * sData;
+  TTree * sTree;
+  if(makeSplots) {
+
+    // open roofile
+    rooFile = new TFile("rooset/roo.skim4_005052.hipo.root","UPDATE");
+    rooData = (RooDataSet*) rooFile->Get("rooData");
+
+    // sPlot
+    printf("BEGIN SPLOT\n");
+    sData = new RooStats::SPlot(
+      "sData","sData",
+      *rooData,
+      &model,
+      RooArgList(resRhoN,resF0N,resF2N,bgN)
+    );
+    printf("DONE SPLOT\n");
+
+    // convert to TTree
+    sTree = sData->GetSDataSet()->GetClonedTree();
+
+
+    // write to roofile
+    canv->Write();
+
+    // -- write pdf
+    model.Write("mfitPdf");
+    modelFit->Write("mfitResult");
+    // -- write data sets
+    //sData->Write();
+    sTree->Write("sTree");
+
+    rooFile->Close();
+  }
+  else {
+    // if sPlots are not created, produce root file containing
+    // fit results only
+    outFile = new TFile("mfit.root","RECREATE");
+    canv->Write();
+    model.Write("mfitPdf");
+    modelFit->Write("mfitResult");
+    outFile->Close();
+  };
+};

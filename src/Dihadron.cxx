@@ -238,6 +238,7 @@ void Dihadron::ComputeAngles() {
   // momentum magnitudes
   PhMag = pPh.Mag(); // dihadron total momentum Ph
   PhPerpMag = pPh_Perp.Mag(); // trans. comp. of Ph (perp frame, obviously)
+  for(h=0; h<2; h++) hadPperp[h] = pHad_Perp[h].Mag();
   RMag = pR.Mag(); // dihadron relative momentum R
   RTMag = pR_T_byKt.Mag(); // trans. comp. of R (perp frame)
   RPerpMag = pR_Perp.Mag(); // trans. comp. of R (perp frame)
@@ -343,6 +344,7 @@ void Dihadron::ResetVars() {
 
   PhMag = UNDEF;
   PhPerpMag = UNDEF;
+  for(h=0; h<2; h++) hadPperp[h] = UNDEF;
   PhEta = UNDEF;
   PhPhi = UNDEF;
 

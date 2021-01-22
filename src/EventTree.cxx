@@ -235,7 +235,9 @@ void EventTree::GetEvent(Int_t i) {
 
   // set preferred PhiR angle
   PhiR = PhiRp; // preferred definition by Bacchetta (see Dihadron.cxx)
+
   PhiHR = Tools::AdjAngle( PhiH - PhiR );
+
 
   // adjust range to 0-2pi (for cross-checking with Timothy)
   /*
@@ -243,6 +245,16 @@ void EventTree::GetEvent(Int_t i) {
   PhiH = Tools::AdjAngleTwoPi(PhiH);
   PhiHR = Tools::AdjAngleTwoPi(PhiHR);
   */
+
+
+  // DSIDIS angles // TODO: move this to calcKinematics.cpp; (will need to reproduce outroot files)
+  this->GetDihadronObj(); // sets objDihadron
+  for(int h=0; h<2; h++) {
+    hadPhiH[h] = objDihadron->GetSingleHadronPhiH(h);
+  };
+  PhiD = Tools::AdjAngle(hadPhiH[qA]-hadPhiH[qB]);
+
+
 
   // theta symmetrization tests
   //theta = fabs( fabs(theta-PI/2.0) - PI/2.0 ); // HERMES symmetrization
@@ -265,6 +277,26 @@ void EventTree::GetEvent(Int_t i) {
     ( 1 - y + y*y/2 + TMath::Power(gamma*y,2)/4 );
 
 
+  // compute Breit frame rapidity for hadrons and dihadron (which could be a VM)
+  // TODO: move this to calcKinematics.cpp; (will need to reproduce outroot files)
+  breitVec = this->GetDISObj()->BreitBoost;
+  for(int h=0; h<2; h++) {
+    hadMomBreit[h].SetPtEtaPhiE(hadPt[h],hadEta[h],hadPhi[h],hadE[h]);
+    hadMomBreit[h].Boost(breitVec);
+    hadYH[h] = -1 * hadMomBreit[h].Rapidity(); // flip sign
+  };
+  vmMomBreit.SetPtEtaPhiM( Ph/TMath::CosH(PhEta), PhEta, PhPhi, Mh );
+  vmMomBreit.Boost(breitVec);
+  YH = -1 * vmMomBreit.Rapidity(); // flip sign
+
+  // compute hadron Pperp and qT
+  // TODO: move this to calcKinematics.cpp; (will need to reproduce outroot files)
+  for(int h=0; h<2; h++) {
+    hadPperp[h] = objDihadron->hadPperp[h];
+    hadQt[h] = hadPperp[h] / Z[h];
+  }
+
+
 
   /**************************************/
   /* cut definitions                    */
@@ -276,20 +308,44 @@ void EventTree::GetEvent(Int_t i) {
   cutY = y < 0.8;
   cutDIS = cutQ2 && cutW && cutY;
 
+
+  // fragmentation region (FR) cuts
+  yhb = 0.2; // y_h bound for TFR/CFR separation
+  // Breit frame rapidity cuts
+  for(int h=0; h<2; h++) {
+    cutCFR[h] = hadYH[h] < -yhb;
+    cutTFR[h] = hadYH[h] > yhb;
+  };
+  /*for(int h=0; h<2; h++) { // Prokudin cuts:
+    cutCFR[h] = hadQt[h]<2 && Z[h]>0.2;
+    cutTFR[h] = hadQt[h]>1 &&
+      ( (x<0.45 && Z[h]<0.1) || (x>=0.45 && Z[h]<0.3) );
+  };*/
+  cutFR = hadXF[qA]>0 && hadXF[qB]>0; // PRL CFR
+  //cutFR = true; // bypass
+  //cutFR = cutCFR[qA] && cutTFR[qB]; // DSIDIS
+  //cutFR = cutTFR[qA] && cutTFR[qB]; // TFR
+  //cutFR = cutCFR[qA] && cutCFR[qB]; // CFR
+  //cutFR = cutCFR[qA]; // pi+ in CFR, pi- no cut
+  //cutFR = Zpair>0.4; // try to look at decays from CFR rhos
+
+
   // dihadron cuts
   /* (note: PairSame ensures we have the correct channel, e.g., pi+pi-) */
   cutDihadron = 
     Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) &&
     Zpair < 0.95 && /* legacy; redundant with Mx>1.5 */
-    Mmiss > 1.5 &&
-    hadXF[qA] > 0 && hadXF[qB] > 0;
+    Mmiss > 1.5;
+
 
   // vertex cuts
   cutVertex = CheckVertex(); /* applies to electron and hadrons */
 
+
   // fiducial cuts
   // - note: status is required to be in FD, as a prerequisite 
   cutFiducial = eleFiduCut && hadFiduCut[qA] && hadFiduCut[qB];
+
 
   // PID refinement cuts
   // -- electron
@@ -318,7 +374,7 @@ void EventTree::GetEvent(Int_t i) {
 // MAIN ANALYSIS CUT
 Bool_t EventTree::Valid() {
   return cutDIS && cutDihadron && cutHelicity && 
-         cutFiducial && cutPID && cutVertex;
+         cutFiducial && cutPID && cutVertex && cutFR;
 };
 /////////////////////////////////////////////////////////
 
@@ -606,16 +662,6 @@ DIS * EventTree::GetDISObj() {
   objDIS->CalculateKinematics(trEle);
   return objDIS;
 };
-
-
-// return Breit frame rapidity for hadron had (qA or qB)
-Float_t EventTree::GetBreitRapidity(Int_t had) {
-  if(had!=qA && had!=qB) return UNDEF;
-  hadMom[had].SetPtEtaPhiE(hadPt[had],hadEta[had],hadPhi[had],hadE[had]);
-  hadMom[had].Boost(this->GetDISObj()->BreitBoost);
-  return hadMom[had].Rapidity();
-};
-
 
 
 

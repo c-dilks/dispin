@@ -320,12 +320,13 @@ Asymmetry::Asymmetry(Binning * binScheme, Int_t binNum) {
   // - event vars
   rfPhiH = new RooRealVar("rfPhiH","#phi_{h}",-PIe,PIe);
   rfPhiR = new RooRealVar("rfPhiR","#phi_{R}",-PIe,PIe);
+  rfPhiD = new RooRealVar("rfPhiD","#Delta#phi",-PIe,PIe);
   rfTheta = new RooRealVar("rfTheta","#theta",-0.1,PIe);
   rfPol = new RooRealVar("rfPol","P",0,1);
   rfRellum = new RooRealVar("rfRellum","R",0,3);
   rfWeight = new RooRealVar("rfWeight","P_{h}^{T}/M_{h}",0,10);
 
-  rfVars = new RooArgSet(*rfPhiH,*rfPhiR,*rfTheta,*rfPol,*rfRellum);
+  rfVars = new RooArgSet(*rfPhiH,*rfPhiR,*rfPhiD,*rfTheta,*rfPol,*rfRellum);
   rfVars->add(*rfWeight);
   rfVars->add(*rfSpinCateg);
 
@@ -388,6 +389,7 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
   z = ev->Zpair;
   PhiH = ev->PhiH;
   PhiR = ev->PhiR;
+  PhiD = ev->PhiD;
   PhPerp = ev->PhPerp;
   Ph = ev->Ph;
   Q2 = ev->Q2;
@@ -432,6 +434,7 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
   };
   if(PhiH<-PIe || PhiH>PIe) return KickEvent("PhiH out of range",PhiH);
   if(PhiR<-PIe || PhiR>PIe) return KickEvent("PhiR out of range",PhiR);
+  if(PhiD<-PIe || PhiD>PIe) return KickEvent("PhiD out of range",PhiD);
   if(PhPerp<-8000) return KickEvent("PhPerp out of range",PhPerp);
   if(Ph<-8000) return KickEvent("Ph out of range",Ph);
   if(Q2<-8000) return KickEvent("Q2 out of range",Q2);
@@ -476,6 +479,7 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
   // set RooFit vars
   rfPhiH->setVal(PhiH);
   rfPhiR->setVal(PhiR);
+  rfPhiD->setVal(PhiD);
   rfTheta->setVal(theta);
   rfPol->setVal(pol);
   rfRellum->setVal(rellum);
@@ -787,11 +791,71 @@ void Asymmetry::SetFitMode(Int_t fitMode) {
       this->FormuAppend(3,1,1);
       this->FormuAppend(3,2,1);
       break;
-    case 1000:
+    case 888: // DSIDIS
+      enablePW = false;
+      this->FormuAppend(2,0,0,0,Modulation::kDSIDIS); // sin(PhiD)
+      break;
+    case 889: // DSIDIS, with 7 azimuthal modulations
+      enablePW = false;
+      this->FormuAppend(3,0,0);
+      this->FormuAppend(2,1,1);
+      this->FormuAppend(3,1,1);
+      this->FormuAppend(3,1,-1);
+      this->FormuAppend(2,2,2);
+      this->FormuAppend(3,2,2);
+      this->FormuAppend(3,2,-2);
+      this->FormuAppend(2,0,0,0,Modulation::kDSIDIS); // sin(PhiD)
+      break;
+    case 890: // DSIDIS, with 4 azimuthal modulations
+      this->FormuAppend(3,0,0);
+      this->FormuAppend(2,1,1);
+      this->FormuAppend(3,1,1);
+      this->FormuAppend(3,1,-1);
+      this->FormuAppend(2,0,0,0,Modulation::kDSIDIS); // sin(PhiD)
+      break;
+    case 891: // DSIDIS, with higher order azimuthal modulations only
+      //this->FormuAppend(3,0,0);
+      //this->FormuAppend(2,1,1);
+      //this->FormuAppend(3,1,1);
+      //this->FormuAppend(3,1,-1);
+      this->FormuAppend(2,2,2);
+      this->FormuAppend(3,2,2);
+      this->FormuAppend(3,2,-2);
+      this->FormuAppend(2,0,0,0,Modulation::kDSIDIS); // sin(PhiD)
+      break;
+    case 892: // DSIDIS, with twist-2 azimuthal modulations only
+      enablePW = false;
+      //this->FormuAppend(3,0,0);
+      this->FormuAppend(2,1,1);
+      //this->FormuAppend(3,1,1);
+      //this->FormuAppend(3,1,-1);
+      this->FormuAppend(2,2,2);
+      //this->FormuAppend(3,2,2);
+      //this->FormuAppend(3,2,-2);
+      this->FormuAppend(2,0,0,0,Modulation::kDSIDIS); // sin(PhiD)
+      break;
+    case 8000: // DSIDIS
+      enablePW = false;
+      this->FormuAppend(2,0,0,0,Modulation::kDSIDIS); // sin(PhiD)
+      this->FormuAppend(2,0,0,1,Modulation::kDSIDIS); // sin(2*PhiD)
+      break;
+    case 8001: // DSIDIS + 7 modulations
+      enablePW = false;
+      this->FormuAppend(3,0,0);
+      this->FormuAppend(2,1,1);
+      this->FormuAppend(3,1,1);
+      this->FormuAppend(3,1,-1);
+      this->FormuAppend(2,2,2);
+      this->FormuAppend(3,2,2);
+      this->FormuAppend(3,2,-2);
+      this->FormuAppend(2,0,0,0,Modulation::kDSIDIS); // sin(PhiD)
+      this->FormuAppend(2,0,0,1,Modulation::kDSIDIS); // sin(2*PhiD)
+      break;
+    case 10000:
       this->FormuAppend(2,1,1,0,Modulation::kLL); // double-spin asym
       this->FormuAppend(3,1,1,0,Modulation::kLL);
       break;
-    case 1001:
+    case 10001:
       enablePW = true;
       this->FormuAppend(2,1,1,0,Modulation::kLL); // double-spin asym
       this->FormuAppend(2,2,1,0,Modulation::kLL); // with tw2 PWs
@@ -885,6 +949,7 @@ void Asymmetry::FitAsymMLM() {
     rfParams[s] = new RooArgSet();
     if(rfPdfFormu[s].Contains("rfPhiH")) rfParams[s]->add(*rfPhiH);
     if(rfPdfFormu[s].Contains("rfPhiR")) rfParams[s]->add(*rfPhiR);
+    if(rfPdfFormu[s].Contains("rfPhiD")) rfParams[s]->add(*rfPhiD);
     if(rfPdfFormu[s].Contains("rfTheta")) rfParams[s]->add(*rfTheta);
     for(int aa=0; aa<nAmpUsed; aa++) rfParams[s]->add(*rfA[aa]);
     for(int dd=0; dd<nDparamUsed; dd++) rfParams[s]->add(*rfD[dd]);
@@ -994,13 +1059,20 @@ void Asymmetry::FormuAppend(Int_t TW, Int_t L, Int_t M,
   modu[nAmpUsed] = new Modulation(TW, L, M, lev, enablePW, polarization);
 
   asymFormu += "A"+TString::Itoa(nAmpUsed,10)+"*"+modu[nAmpUsed]->FormuRF();
-  fitFunc2formu += "["+TString::Itoa(nAmpUsed,10)+"]*"+modu[nAmpUsed]->Formu();
+  if(polarization!=Modulation::kDSIDIS) {
+    fitFunc2formu += "["+TString::Itoa(nAmpUsed,10)+"]*"+modu[nAmpUsed]->Formu();
+  } else {
+    fitFunc2formu += "0"; // (do not use)
+  };
 
   rfA[nAmpUsed]->SetTitle(modu[nAmpUsed]->AsymmetryTitle());
 
+  // set depolarization factors
   if(polarization==Modulation::kLU) {
     if(TW==2)      dpIdx[nAmpUsed] = dpCA;
     else if(TW==3) dpIdx[nAmpUsed] = dpWA;
+  } else if(polarization==Modulation::kDSIDIS) {
+    if(TW==2)      dpIdx[nAmpUsed] = dpCA;
   };
 
   nAmpUsed++;
@@ -1075,6 +1147,7 @@ void Asymmetry::ResetVars() {
   z = UNDEF;
   PhiH = UNDEF;
   PhiR = UNDEF;
+  PhiD = UNDEF;
   PhPerp = UNDEF;
   Ph = UNDEF;
   Q2 = UNDEF;
