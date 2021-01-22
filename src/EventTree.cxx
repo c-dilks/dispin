@@ -94,7 +94,6 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
   // MC branches
   if(chain->GetBranch("gen_hadMatchDist")) {
     MCrecMode = true;
-    chain->SetBranchAddress("helicityMC",helicityMC);
     chain->SetBranchAddress("gen_W",&gen_W);
     chain->SetBranchAddress("gen_Q2",&gen_Q2);
     chain->SetBranchAddress("gen_Nu",&gen_Nu);
@@ -144,6 +143,15 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
     chain->SetBranchAddress("gen_hadIsMatch",gen_hadIsMatch);
     chain->SetBranchAddress("gen_eleMatchDist",&gen_eleMatchDist);
     chain->SetBranchAddress("gen_hadMatchDist",gen_hadMatchDist);
+    // - other
+    chain->SetBranchAddress("gen_hadParentIdx",gen_hadParentIdx);
+    chain->SetBranchAddress("gen_hadParentPid",gen_hadParentPid);
+    // - helicityMC
+    if(chain->GetBranch("helicityMC")) {
+      chain->SetBranchAddress("helicityMC",helicityMC);
+    } else {
+      for(int hh=0; hh<NhelicityMC; hh++) helicityMC[hh]=0; 
+    };
   } else { 
     MCrecMode = false;
     for(int hh=0; hh<NhelicityMC; hh++) helicityMC[hh]=0; 
@@ -199,6 +207,8 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
     for(int h=0; h<2; h++) {
       gen_hadIsMatch[h] = false;
       gen_hadMatchDist[h] = UNDEF;
+      gen_hadParentIdx[h] = -1;
+      gen_hadParentPid[h] = -1;
     };
   };
 
@@ -330,7 +340,7 @@ Int_t EventTree::SpinState() {
       case 2: return sM;
       case 3: return sP;
       case 0: return UNDEF;
-      default: fprintf(stderr,"WARNING: bad SpinState request: %d\n",helicity);
+      default: fprintf(stderr,"WARNING: bad SpinState request: %d\n",helicityMC[whichHelicityMC]);
     };
   }
   else fprintf(stderr,"WARNING: runnum %d not in EventTree::SpinState\n",runnum);
