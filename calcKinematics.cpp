@@ -108,6 +108,8 @@ int main(int argc, char** argv) {
   Float_t Vy[nPar];  Float_t genVy[nPar];
   Float_t Vz[nPar];  Float_t genVz[nPar];
                      Float_t genMatchDist[nPar];
+                     Float_t genParentIdx[nPar];
+                     Float_t genParentPid[nPar];
   Float_t chi2pid[nPar];
   Float_t status[nPar];
   Float_t beta[nPar];
@@ -150,6 +152,8 @@ int main(int argc, char** argv) {
       SetParticleBranchAddress(parMCname[p],"Vy",&(genVy[p]));
       SetParticleBranchAddress(parMCname[p],"Vz",&(genVz[p]));
       SetParticleBranchAddress(parMCname[p],"matchDist",&(genMatchDist[p]));
+      SetParticleBranchAddress(parMCname[p],"parentIdx",&(genParentIdx[p]));
+      SetParticleBranchAddress(parMCname[p],"parentPid",&(genParentPid[p]));
     };
     // - detector info
     SetParticleBranchAddress(parName[p],"pcal_found",&(fidu[p]->part_Cal_PCAL_found[0]));
@@ -284,6 +288,8 @@ int main(int argc, char** argv) {
   // - MC branches
   Float_t gen_eleMatchDist;
   Float_t gen_hadMatchDist[2];
+  Int_t gen_hadParentIdx[2];
+  Int_t gen_hadParentPid[2];
   Bool_t gen_eleIsMatch;
   Bool_t gen_hadIsMatch[2];
   Bool_t isMatch[nPar];
@@ -340,6 +346,8 @@ int main(int argc, char** argv) {
       outrootTr->Branch("gen_hadIsMatch",gen_hadIsMatch,"gen_hadIsMatch[2]/O");
       outrootTr->Branch("gen_eleMatchDist",&gen_eleMatchDist,"gen_eleMatchDist/F");
       outrootTr->Branch("gen_hadMatchDist",gen_hadMatchDist,"gen_hadMatchDist[2]/F");
+      outrootTr->Branch("gen_hadParentIdx",gen_hadParentIdx,"gen_hadParentIdx[2]/I");
+      outrootTr->Branch("gen_hadParentPid",gen_hadParentPid,"gen_hadParentPid[2]/I");
     };
   };
 
@@ -417,6 +425,8 @@ int main(int argc, char** argv) {
         for(int h=0; h<2; h++) {
           gen_hadIsMatch[h] = false;
           gen_hadMatchDist[h] = UNDEF;
+          gen_hadParentIdx[h] = -1;
+          gen_hadParentPid[h] = -1;
         };
         // get momenta and verteces
         for(int p=0; p<nPar; p++) {
@@ -438,10 +448,18 @@ int main(int argc, char** argv) {
               dihMC->CalculateKinematics(trajMC[kHadA],trajMC[kHadB],disEvMC);
               gen_hadMatchDist[qA] = genMatchDist[kHadA];
               gen_hadMatchDist[qB] = genMatchDist[kHadB];
+              gen_hadParentIdx[qA] = (Int_t) genParentIdx[kHadA];
+              gen_hadParentIdx[qB] = (Int_t) genParentIdx[kHadB];
+              gen_hadParentPid[qA] = (Int_t) genParentPid[kHadA];
+              gen_hadParentPid[qB] = (Int_t) genParentPid[kHadB];
             } else {
               dihMC->CalculateKinematics(trajMC[kHadB],trajMC[kHadA],disEvMC);
               gen_hadMatchDist[qA] = genMatchDist[kHadB];
               gen_hadMatchDist[qB] = genMatchDist[kHadA];
+              gen_hadParentIdx[qA] = (Int_t) genParentIdx[kHadB];
+              gen_hadParentIdx[qB] = (Int_t) genParentIdx[kHadA];
+              gen_hadParentPid[qA] = (Int_t) genParentPid[kHadB];
+              gen_hadParentPid[qB] = (Int_t) genParentPid[kHadA];
             };
           };
         };

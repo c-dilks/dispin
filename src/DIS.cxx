@@ -30,6 +30,7 @@ DIS::DIS() {
 void DIS::SetBeamEnFromRun(Int_t runnum) {
   if(runnum>=5032 && runnum<=5666) BeamEn=10.6041; // spring 18
   else if(runnum>=6616 && runnum<=6783) BeamEn=10.1998; // spring 19
+  else if(runnum==11) BeamEn=10.6041; // MC
   else fprintf(stderr,"ERROR: unknown runnum in DIS::SetBeamEnFromRun\n");
   vecBeam.SetPz(Tools::EMtoP(BeamEn,PartMass(kE)));
   vecBeam.SetE(BeamEn);
