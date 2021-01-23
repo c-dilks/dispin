@@ -24,6 +24,7 @@
 using namespace std;
 
 TString infiles;
+TString dataPlotsFile;
 Int_t whichPair;
 Int_t whichHad[2];
 TString hadName[2];
@@ -31,10 +32,14 @@ TString hadTitle[2];
 
 const Int_t kpAll = 1000000;
 const Int_t kpUnknown = 1000001;
+const Int_t kpCousins = 1000002;
+
+Double_t electronCntData, electronCntMC;
+map<TString,TH1D*> dataDists;
 
 
 // Parent class
-// -- store histograms etc. for each dihadron parent
+// -- store histograms etc. for each dihadron parent type
 class Parent {
   public:
     Int_t KF;
@@ -42,21 +47,40 @@ class Parent {
     Color_t col;
     Style_t sty;
     map<TString,TH1D*> dists;
+
+    // constructor
     Parent(
       Int_t KF_, TString title_, Color_t col_, Style_t sty_
     ) { 
+
+      // set vars
       KF=KF_;
       title=title_;
       col=col_;
       sty=sty_;
+
+      // clone data histograms
       TString kn = Form("_%d",KF);
-      dists.insert(pair<TString,TH1D*>("Mh",new TH1D(TString("MhDist"+kn),"M_{h} distribution",150,0,3)));
-      dists.insert(pair<TString,TH1D*>("x",new TH1D(TString("xDist"+kn),"x distribution",150,0,1)));
-      dists.insert(pair<TString,TH1D*>("z",new TH1D(TString("zDist"+kn),"z distribution",150,0,1)));
+      for(auto const & kv : dataDists) {
+        TString distN = kv.first;
+        TH1D * dataDist = kv.second;
+        dists.insert(pair<TString,TH1D*>(
+          distN,
+          new TH1D(
+            distN+kn,
+            dataDist->GetTitle(),
+            dataDist->GetNbinsX(),
+            dataDist->GetXaxis()->GetXmin(),
+            dataDist->GetXaxis()->GetXmax()
+          )
+        ));
+      };
+
+      // format
       for(auto const & kv : dists) {
         kv.second->SetLineColor(col);
         kv.second->SetLineStyle(sty);
-        kv.second->SetLineWidth(KF==kpAll?4:2);
+        kv.second->SetLineWidth(KF==kpAll?3:2);
       };
     };
 };
@@ -64,18 +88,28 @@ class Parent {
 map<Int_t,Parent> parMap;
 
 // subroutines ////////////////////////////////////
+// build a canvas for specified distribution; also normalizes
+// distributions to the # of electrons
 TCanvas * BuildCanvas(TString distName) {
   TString canvName = distName + "Canv";
   TCanvas * canv = new TCanvas(canvName,canvName,1200,600);
+  Double_t max=0;
+  Double_t maxTmp;
   canv->Divide(2,1);
   canv->cd(1);
+  dataDists.at(distName)->Scale(1/electronCntData);
+  dataDists.at(distName)->Draw("PE");
+  max=dataDists.at(distName)->GetMaximum();
   TLegend * leg = new TLegend(0.1,0.1,0.9,0.9);
-  parMap.at(kpAll).dists.at(distName)->Draw();
   for(auto const & kv : parMap) {
     auto par = kv.second;
-    par.dists.at(distName)->Draw("SAME");
+    par.dists.at(distName)->Scale(1/electronCntMC);
+    par.dists.at(distName)->Draw("HIST SAME");
+    maxTmp = par.dists.at(distName)->GetMaximum();
+    max = maxTmp>max ? maxTmp:max;
     leg->AddEntry(par.dists.at(distName),par.title,"LE");
   };
+  dataDists.at(distName)->GetYaxis()->SetRangeUser(0,1.1*max);
   canv->cd(2);
   leg->Draw();
   return canv;
@@ -90,9 +124,12 @@ int main(int argc, char** argv) {
 
   // ARGUMENTS
   infiles = "outroot.mcrec.injgen/*.root";
+  dataPlotsFile = "plots.inbending.root"; // plots.root for data (from diagnostics)
   whichPair = EncodePairType(kPip,kPim);
   if(argc>1) infiles = TString(argv[1]);
-  if(argc>2) whichPair = (Int_t)strtof(argv[2],NULL);
+  if(argc>2) dataPlotsFile = TString(argv[2]);
+  if(argc>3) whichPair = (Int_t)strtof(argv[2],NULL);
+
 
   // get hadron pair from whichPair; note that in the print out, the 
   // order of hadron 0 and 1 is set by Constants::dihHadIdx
@@ -108,11 +145,24 @@ int main(int argc, char** argv) {
   EventTree * ev = new EventTree(infiles,whichPair);
 
 
+  // read dists from plots.root, produced from data
+  TFile * plotsFile = new TFile(dataPlotsFile,"READ");
+  electronCntData = ((TH1D*)plotsFile->Get("dihadronCntDist"))->GetEntries();
+  dataDists.insert(pair<TString,TH1D*>("Mh",(TH1D*)plotsFile->Get("MhDist")));
+  dataDists.insert(pair<TString,TH1D*>("x",(TH1D*)plotsFile->Get("XDist")));
+  dataDists.insert(pair<TString,TH1D*>("z",(TH1D*)plotsFile->Get("ZpairDist")));
+  for(auto const & kv : dataDists) {
+    kv.second->SetMarkerStyle(kFullCircle);
+    kv.second->SetMarkerColor(kBlack);
+    kv.second->SetMarkerSize(1);
+  };
+
   // define output file
   TFile * outfile = new TFile("mhdecomp.root","RECREATE");
 
 
-  // parMap : KFcode -> Parent object
+  // define Parent objects, and store them in a map
+  //    parMap : KFcode -> Parent object
   parMap.insert(pair<Int_t,Parent>(-1,Parent(-1,"undefined",kYellow-3,kSolid)));
   parMap.insert(pair<Int_t,Parent>(91,Parent(91,"cluster",kGray,kSolid)));
   parMap.insert(pair<Int_t,Parent>(92,Parent(92,"string",kGray,kDashed)));
@@ -123,6 +173,7 @@ int main(int argc, char** argv) {
   parMap.insert(pair<Int_t,Parent>(331,Parent(331,"#eta'",kCyan,kDashed)));
   parMap.insert(pair<Int_t,Parent>(333,Parent(333,"#phi",kRed,kSolid)));
   parMap.insert(pair<Int_t,Parent>(kpAll,Parent(kpAll,"all",kBlack,kSolid)));
+  parMap.insert(pair<Int_t,Parent>(kpCousins,Parent(kpCousins,"cousins",kBlack,kDashed)));
   parMap.insert(pair<Int_t,Parent>(kpUnknown,Parent(kpUnknown,"unknown",kYellow-3,kDashed)));
 
 
@@ -130,38 +181,72 @@ int main(int argc, char** argv) {
 
   // event loop -------------------------
   Int_t parPid;
+  Int_t evnumTmp = -10000;
   for(int i=0; i<ev->ENT; i++) {
-    //if(i>10000) break; // limiter
+    //if(i>100000) break; // limiter
     ev->GetEvent(i);
 
+    // event selection
     ev->cutHelicity=true; // override requirement for having defined helicity
     if(ev->Valid()) {
 
-      // hadrons are siblings (have same parent)
-      if(ev->gen_hadParentIdx[qA] == ev->gen_hadParentIdx[qB]) {
-
-        for(int i=0; i<2; i++) {
-          if(i==0) {
-            parPid = parMap.find(ev->gen_hadParentPid[qA]) != parMap.end() ?
-                     ev->gen_hadParentPid[qA] : kpUnknown;
-          } else parPid = kpAll;
-          auto par = parMap.at(parPid);
-          par.dists.at("Mh")->Fill(ev->Mh);
-          par.dists.at("x")->Fill(ev->x);
-          par.dists.at("z")->Fill(ev->Zpair);
-        };
-
+      // increment electron counter
+      if(evnumTmp<0) evnumTmp=ev->evnum;
+      if(ev->evnum!=evnumTmp) {
+        //printf("event %d\n",evnumTmp);
+        electronCntMC++;
+        evnumTmp=ev->evnum;
       };
+
+      // decide which histograms to fill
+      for(int i=0; i<=1; i++) {
+        // determine parPid, which will decide the histogram
+        switch(i) {
+          case 0:
+            if(ev->gen_hadParentIdx[qA] == ev->gen_hadParentIdx[qB]) {
+              // hadrons are siblings (have same parent)
+              parPid = parMap.find(ev->gen_hadParentPid[qA]) != parMap.end() ?
+                                   ev->gen_hadParentPid[qA] : kpUnknown;
+            } else {
+              // hadrons are cousins (have different parents)
+              parPid = kpCousins;
+            };
+            break;
+          case 1:
+            // all hadrons inclusively
+            parPid = kpAll;
+            break;
+        }
+
+        // fill histograms
+        auto par = parMap.at(parPid);
+        par.dists.at("Mh")->Fill(ev->Mh);
+        par.dists.at("x")->Fill(ev->x);
+        par.dists.at("z")->Fill(ev->Zpair);
+      };
+
     };
   };
+  electronCntMC++; // (count the last one)
+
+  printf("num. electrons in MC: %f\n",electronCntMC);
+  printf("num. electrons in data: %f\n",electronCntData);
 
 
-  // draw
+  // draw (also normalizes by number of electrons)
   vector<TCanvas*> canvVec;
   canvVec.push_back(BuildCanvas("Mh"));
   canvVec.push_back(BuildCanvas("x"));
   canvVec.push_back(BuildCanvas("z"));
+
+  // write
   for(TCanvas * c : canvVec) c->Write();
+  for(auto const & parKV : parMap) {
+    for(auto distKV : parKV.second.dists) {
+      distKV.second->Write();
+    };
+  };
+  for(auto distKV : dataDists) distKV.second->Write();
 
 
   // close

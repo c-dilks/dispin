@@ -468,6 +468,9 @@ int main(int argc, char** argv) {
      
    // event-level distributions
    TH1D * helicityDist = new TH1D("helicityDist","helicity",5,-2,3);
+   TH1D * dihadronCntDist = new TH1D("dihadronCntDist","number of dihadrons per event",10,0,10);
+   Int_t evnumTmp = -10000;
+   Int_t dihadronCnt = 0;
   
 
    ///////////////////////////
@@ -487,6 +490,14 @@ int main(int argc, char** argv) {
      // fill dihadron kinematics plots
      // ------------------------------
      if(ev->Valid()) {
+
+       if(evnumTmp<0) evnumTmp=ev->evnum;
+       if(ev->evnum!=evnumTmp) {
+         dihadronCntDist->Fill(dihadronCnt);
+         dihadronCnt=0;
+         evnumTmp=ev->evnum;
+       };
+       dihadronCnt++;
 
        WDist->Fill(ev->W);
        Q2vsW->Fill(ev->W,ev->Q2);
@@ -654,6 +665,7 @@ int main(int argc, char** argv) {
 
 
    }; // eo event loop
+   dihadronCntDist->Fill(dihadronCnt); // (count last event's dihadrons)
 
    for(int h=0; h<2; h++) xFvsZ[h]->Write();
    for(int h=0; h<2; h++) YHvsXF[h]->Write();
@@ -802,6 +814,7 @@ int main(int argc, char** argv) {
    PhiHRvsAlpha->Write();
    for(int h=0; h<2; h++) betaVsP[h]->Write();
    helicityDist->Write();
+   dihadronCntDist->Write();
 
 
    outfile->mkdir("depolarizationFactors");
