@@ -178,6 +178,9 @@ int main(int argc, char** argv) {
 
    TH1D * MmissDistZoom = new TH1D("MmissDistZoom","M_{X} distribution;M_{X}",
      2*NBINS,0.5,3);
+   TH1D * YHDist = new TH1D("YHDist","y_{hh} distribution;y_{hh}",NBINS,-3,3);
+
+
    TH2D * MmissVsMh = new TH2D("MmissVsMh","M_{X} vs. M_{h};M_{h};M_{X}",
      NBINS,0,2.5,
      NBINS,0.5,3);
@@ -566,6 +569,8 @@ int main(int argc, char** argv) {
        xFDist->Fill(ev->xF);
        MmissDist->Fill(ev->Mmiss);
        MmissDistZoom->Fill(ev->Mmiss);
+       YHDist->Fill(ev->YH);
+
        MmissVsMh->Fill(ev->Mh,ev->Mmiss);
 
        PhiHDist->Fill(ev->PhiH);
@@ -775,6 +780,9 @@ int main(int argc, char** argv) {
    xFDist->Write();
    MmissDist->Write();
    MmissDistZoom->Write();
+   YHDist->Write();
+   for(int h=0; h<2; h++) hadYHDist[h]->Write();
+
    MmissVsMh->Write();
 
    PhiHDist->Write();
