@@ -35,7 +35,33 @@ Binning::Binning(Int_t pairType_) {
     /* // below VM resonances vs. above
     AddBinBound(vM,0.63);
     */
-    ///* // adjusted 12-bin scheme
+    /* // 20 quantile bins
+    AddBinBound(vM,0.36);
+    AddBinBound(vM,0.41);
+    AddBinBound(vM,0.45);
+    AddBinBound(vM,0.50);
+    AddBinBound(vM,0.54);
+    AddBinBound(vM,0.59);
+    AddBinBound(vM,0.63);
+    AddBinBound(vM,0.68);
+    AddBinBound(vM,0.71);
+    AddBinBound(vM,0.74);
+    AddBinBound(vM,0.77);
+    AddBinBound(vM,0.80);
+    AddBinBound(vM,0.83);
+    AddBinBound(vM,0.87);
+    AddBinBound(vM,0.91);
+    AddBinBound(vM,0.96);
+    AddBinBound(vM,1.02);
+    AddBinBound(vM,1.10);
+    AddBinBound(vM,1.21);
+    */
+    ///* // 4 mass regions <-> 4 YHcorr regions
+    AddBinBound(vM,0.4);
+    AddBinBound(vM,0.6);
+    AddBinBound(vM,0.9);
+    //*/
+    /* // adjusted 12-bin scheme // PRL
     AddBinBound(vM,0.381);
     AddBinBound(vM,0.462);
     AddBinBound(vM,0.531);
@@ -47,7 +73,7 @@ Binning::Binning(Int_t pairType_) {
     AddBinBound(vM,0.900);
     AddBinBound(vM,0.981);
     AddBinBound(vM,1.125);
-    //*/
+    */
     /* // 6 quantile bins
     //AddBinBound(vM,0.37); // CFR via yH<-0.2
     //AddBinBound(vM,0.43);
@@ -89,7 +115,7 @@ Binning::Binning(Int_t pairType_) {
     */
 
     // -- x (bjorken-x)
-    ///* // adjusted 12-bin scheme
+    ///* // adjusted 12-bin scheme // PRL
     AddBinBound(vX,0.118);
     AddBinBound(vX,0.135);
     AddBinBound(vX,0.150);
@@ -139,7 +165,7 @@ Binning::Binning(Int_t pairType_) {
     AddBinBound(vZ,0.675);
     AddBinBound(vZ,0.720);
     */
-    ///* // adjusted 6-bin scheme
+    ///* // adjusted 6-bin scheme // PRL
     AddBinBound(vZ,0.445);
     AddBinBound(vZ,0.500);
     AddBinBound(vZ,0.555);
@@ -188,7 +214,7 @@ Binning::Binning(Int_t pairType_) {
     AddBinBound(vPt,0.725);
     AddBinBound(vPt,0.835);
     */
-    ///* // adjusted 6-bin scheme
+    ///* // adjusted 6-bin scheme // PRL
     AddBinBound(vPt,0.245);
     AddBinBound(vPt,0.365);
     AddBinBound(vPt,0.480);
@@ -457,8 +483,9 @@ Bool_t Binning::SetScheme(Int_t ivType) {
   };
 
 
-  // override 2D binning scheme for final asymmetry production
+  // PRL: override 2D binning scheme for final asymmetry production
   ///////////////////////////////////////
+  /*
   if(dimensions==2 && ivVar[1]==vM) {
     printf("\nOVERRIDE 2D Binning scheme to have M above and below 0.63\n\n");
     nBins[vM] = -1;
@@ -468,6 +495,7 @@ Bool_t Binning::SetScheme(Int_t ivType) {
     AddBinBound(vM,maxIV[vM]);
     PrintBinBounds();
   };
+  */
   ///////////////////////////////////////
 
 

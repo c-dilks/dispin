@@ -382,8 +382,8 @@ Bool_t EventTree::Valid() {
 
 // translate "helicity" to a local index for the spin
 Int_t EventTree::SpinState() {
-  if(runnum>=5032 && runnum<=5666) {
-    // Fall 2018 convention
+  if( (runnum>=5032 && runnum<=5666) || (runnum>=6616 && runnum<=6783) ) {
+    // RGA convention
     switch(helicity) {
       case 1: return sM;
       case -1: return sP;
@@ -408,6 +408,7 @@ Int_t EventTree::SpinState() {
 Float_t EventTree::Polarization() {
   if(runnum>=5032 && runnum<5333)       return 0.8592; // +-0.0129
   else if(runnum>=5333 && runnum<=5666) return 0.8922; // +-0.02509
+  else if(runnum>=6616 && runnum<=6783) return 0.86; // TODO: get proper value for spring19 polarization!
   else if(runnum==11) return 0.86; // MC
   fprintf(stderr,"WARNING: runnum %d not in EventTree::Polarization\n",runnum);
   return UNDEF;
@@ -423,8 +424,8 @@ Float_t EventTree::Rellum() {
 Bool_t EventTree::CheckVertex() {
 
   // electron Vz cuts
-  if(runnum>=5032 && runnum<=5419) {
-    vzBoolEle = -13 < eleVertex[eZ] && eleVertex[eZ] < 12; // inbending
+  if((runnum>=5032 && runnum<=5419) || (runnum>=6616 && runnum<=6783)) {
+    vzBoolEle = -13 < eleVertex[eZ] && eleVertex[eZ] < 12; // inbending (fall18, spring19)
   } else if(runnum>=5422 && runnum<=5666) {
     vzBoolEle = -18 < eleVertex[eZ] && eleVertex[eZ] < 10; // outbending
   } else if(runnum==11) {
