@@ -408,7 +408,7 @@ Int_t EventTree::SpinState() {
 Float_t EventTree::Polarization() {
   if(runnum>=5032 && runnum<5333)       return 0.8592; // +-0.0129
   else if(runnum>=5333 && runnum<=5666) return 0.8922; // +-0.02509
-  else if(runnum>=6616 && runnum<=6783) return 0.86; // TODO: get proper value for spring19 polarization!
+  else if(runnum>=6616 && runnum<=6783) return 0.8453; // +-0.01474 // from Moller run https://logbooks.jlab.org/entry/3677077
   else if(runnum==11) return 0.86; // MC
   fprintf(stderr,"WARNING: runnum %d not in EventTree::Polarization\n",runnum);
   return UNDEF;
