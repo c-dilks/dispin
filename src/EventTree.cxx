@@ -150,7 +150,9 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
     if(chain->GetBranch("helicityMC")) {
       chain->SetBranchAddress("helicityMC",helicityMC);
     } else {
-      for(int hh=0; hh<NhelicityMC; hh++) helicityMC[hh]=0; 
+      // set to +helicity, so cutHelicity==true if MC helicity has
+      // not yet been injected
+      for(int hh=0; hh<NhelicityMC; hh++) helicityMC[hh]=3; 
     };
   } else { 
     MCrecMode = false;

@@ -220,7 +220,6 @@ int main(int argc, char** argv) {
     ev->GetEvent(i);
 
     // event selection
-    ev->cutHelicity=true; // override requirement for having defined helicity
     if(ev->Valid()) {
 
       // increment electron counter
