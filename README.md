@@ -53,6 +53,10 @@ dihadron spin asymmetry analysis
 - this repository contains the file quality assurance (QA) database, and
   uses the groovy accessors to query information in an event loop
 
+## brufit
+- build instructions: see `deps/brufit` readme
+- source `./env.sh` will set `$BRUFIT`, which is needed to compile `brufit`
+
 
 # Usage
 - first call `source env.sh`

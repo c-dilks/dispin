@@ -195,13 +195,17 @@ int main(int argc, char** argv) {
      "#phi_{h}-#phi_{R} distribution;#phi_{h}-#phi_{R}",
      NBINS,-PIe,PIe);
 
-   TH2D * DeltaPhiVsPhiR = new TH2D("DeltaPhiVsPhiR","#Delta#phi vs. #phi_{R};#phi_{R};#Delta#phi",
+   TH2D * PhiDVsPhiR = new TH2D("PhiDVsPhiR","#Delta#phi vs. #phi_{R};#phi_{R};#Delta#phi",
      NBINS,-PIe,PIe,NBINS,-PIe,PIe);
-   TH2D * SinDeltaPhiVsPhiR = new TH2D("SinDeltaPhiVsPhiR","sin(#Delta#phi) vs. sin(#phi_{R});sin(#phi_{R});sin(#Delta#phi)",
+   TH2D * SinPhiDVsPhiR = new TH2D("SinPhiDVsPhiR","sin(#Delta#phi) vs. sin(#phi_{R});sin(#phi_{R});sin(#Delta#phi)",
      NBINS,-1.1,1.1,NBINS,-1.1,1.1);
-   TH2D * DeltaPhiVsPhiHR2 = new TH2D("DeltaPhiVsPhiHR2","#Delta#phi vs. 2#phi_{h}-2#phi_{R};2#phi_{h}-2#phi_{R};#Delta#phi",
+   TH2D * PhiDVsPhiHR = new TH2D("PhiDVsPhiHR","#Delta#phi vs. #phi_{h}-#phi_{R};#phi_{h}-#phi_{R};#Delta#phi",
      NBINS,-PIe,PIe,NBINS,-PIe,PIe);
-   TH2D * SinDeltaPhiVsPhiHR2 = new TH2D("SinDeltaPhiVsPhiHR2","sin(#Delta#phi) vs. sin(2#phi_{h}-2#phi_{R});sin(2#phi_{h}-2#phi_{R});sin(#Delta#phi)",
+   TH2D * SinPhiDVsPhiHR = new TH2D("SinPhiDVsPhiHR","sin(#Delta#phi) vs. sin(#phi_{h}-#phi_{R});sin(#phi_{h}-#phi_{R});sin(#Delta#phi)",
+     NBINS,-1.1,1.1,NBINS,-1.1,1.1);
+   TH2D * PhiDVsPhiHR2 = new TH2D("PhiDVsPhiHR2","#Delta#phi vs. 2#phi_{h}-2#phi_{R};2#phi_{h}-2#phi_{R};#Delta#phi",
+     NBINS,-PIe,PIe,NBINS,-PIe,PIe);
+   TH2D * SinPhiDVsPhiHR2 = new TH2D("SinPhiDVsPhiHR2","sin(#Delta#phi) vs. sin(2#phi_{h}-2#phi_{R});sin(2#phi_{h}-2#phi_{R});sin(#Delta#phi)",
      NBINS,-1.1,1.1,NBINS,-1.1,1.1);
 
    plotTitle = "P_{h}^{perp}/M_{h} vs. sin(#phi_{h}-#phi_{R});";
@@ -320,7 +324,7 @@ int main(int argc, char** argv) {
      70,-PI,PI,
      100,0,2
    );
-   TH3D * MhVsDeltaPhiVsPhiR = new TH3D("MhVsDeltaPhiVsPhiR",
+   TH3D * MhVsPhiDVsPhiR = new TH3D("MhVsPhiDVsPhiR",
      TString("M_{h} vs. #Delta#phi vs. #phi_{R};#phi_{R};#Delta#phi;M_{h}"),
      70,-PI,PI,
      70,-PI,PI,
@@ -576,10 +580,12 @@ int main(int argc, char** argv) {
        PhiHDist->Fill(ev->PhiH);
        PhiRDist->Fill(ev->PhiR);
        PhiHvsPhiR->Fill(ev->PhiR,ev->PhiH);
-       DeltaPhiVsPhiR->Fill(ev->PhiR,ev->PhiD);
-       SinDeltaPhiVsPhiR->Fill(TMath::Sin(ev->PhiR),TMath::Sin(ev->PhiD));
-       DeltaPhiVsPhiHR2->Fill(Tools::AdjAngle(2*ev->PhiH-2*ev->PhiR),ev->PhiD);
-       SinDeltaPhiVsPhiHR2->Fill(TMath::Sin(Tools::AdjAngle(2*ev->PhiH-2*ev->PhiR)),TMath::Sin(ev->PhiD));
+       PhiDVsPhiR->Fill(ev->PhiR,ev->PhiD);
+       SinPhiDVsPhiR->Fill(TMath::Sin(ev->PhiR),TMath::Sin(ev->PhiD));
+       PhiDVsPhiHR->Fill(Tools::AdjAngle(ev->PhiH-ev->PhiR),ev->PhiD);
+       SinPhiDVsPhiHR->Fill(TMath::Sin(Tools::AdjAngle(ev->PhiH-ev->PhiR)),TMath::Sin(ev->PhiD));
+       PhiDVsPhiHR2->Fill(Tools::AdjAngle(2*ev->PhiH-2*ev->PhiR),ev->PhiD);
+       SinPhiDVsPhiHR2->Fill(TMath::Sin(Tools::AdjAngle(2*ev->PhiH-2*ev->PhiR)),TMath::Sin(ev->PhiD));
 
        PhiHRDist->Fill(ev->PhiHR);
        g1perpWeightVsMod->Fill(TMath::Sin(ev->PhiHR),ev->PhPerp/ev->Mh);
@@ -621,7 +627,7 @@ int main(int argc, char** argv) {
        MhVsPtVsYh->Fill(ev->YH,ev->PhPerp,ev->Mh);
        MhVsThetaVsAlpha->Fill(alphaDeg,Tools::EtaToTheta(ev->PhEta),ev->Mh);
        MhVsPhiHVsPhiR->Fill(ev->PhiR,ev->PhiH,ev->Mh);
-       MhVsDeltaPhiVsPhiR->Fill(ev->PhiR,ev->PhiD,ev->Mh);
+       MhVsPhiDVsPhiR->Fill(ev->PhiR,ev->PhiD,ev->Mh);
 
        AlphaVsYHcorr->Fill(ev->hadYH[qA],ev->hadYH[qB],alphaDeg);
        AlphaVsPperpcorr->Fill(ev->hadPperp[qA],ev->hadPperp[qB],alphaDeg);
@@ -688,15 +694,17 @@ int main(int argc, char** argv) {
    MhVsPtVsYh->Write();
    MhVsThetaVsAlpha->Write();
    MhVsPhiHVsPhiR->Write();
-   MhVsDeltaPhiVsPhiR->Write();
+   MhVsPhiDVsPhiR->Write();
 
    AlphaVsYHcorr->Write();
    AlphaVsPperpcorr->Write();
 
-   DeltaPhiVsPhiR->Write();
-   SinDeltaPhiVsPhiR->Write();
-   DeltaPhiVsPhiHR2->Write();
-   SinDeltaPhiVsPhiHR2->Write();
+   PhiDVsPhiR->Write();
+   SinPhiDVsPhiR->Write();
+   PhiDVsPhiHR->Write();
+   SinPhiDVsPhiHR->Write();
+   PhiDVsPhiHR2->Write();
+   SinPhiDVsPhiHR2->Write();
 
    WDist->Write();
    XDist->Write();

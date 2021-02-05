@@ -5,3 +5,6 @@
 [submodule "deps/clasqaDB"]
 	path = deps/clasqaDB
 	url = https://github.com/JeffersonLab/clasqaDB.git
+[submodule "deps/brufit"]
+	path = deps/brufit
+	url = https://github.com/dglazier/brufit.git

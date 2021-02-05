@@ -1,6 +1,8 @@
 #!/bin/bash
 
 export DISPIN_HOME=$(dirname $(realpath $0))
+export BRUFIT=${DISPIN_HOME}/deps/brufit
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${BRUFIT}/lib
 
 pushd deps
 
