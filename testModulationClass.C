@@ -1,6 +1,6 @@
 // test new Modulation class
 
-R__LOAD_LIBRARY(DihBsa)
+R__LOAD_LIBRARY(DiSpin)
 #include "Tools.h"
 #include "Modulation.h"
 
@@ -11,7 +11,9 @@ void testModu(Int_t tw, Int_t l, Int_t m, Int_t lev, Bool_t pw, Int_t pol) {
   printf(" %s\n",(modu->StateTitle()).Data());
   printf(" base:     %s\n",(modu->GetBaseString()).Data());
   printf(" formuRF:  %s\n",(modu->FormuRF()).Data());
+  printf(" formuBru: %s\n",(modu->FormuBru()).Data());
   printf(" formu:    %s\n",(modu->Formu()).Data());
+  printf(" ampName:  %s\n",(modu->AmpName()).Data());
   printf("\n");
 };
 

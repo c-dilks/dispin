@@ -393,6 +393,15 @@ static TString SpinSign(Int_t s) {
       return "unknown";
   };
 };
+static Int_t SpinInt(Int_t s) {
+  switch(s) {
+    case sP: return 1;
+    case sM: return -1;
+    default:
+      fprintf(stderr,"ERROR: bad SpinInt request\n");
+      return 0;
+  };
+};
 static TString SpinTitle(Int_t s) {
   return "spin " + SpinSign(s);
 };

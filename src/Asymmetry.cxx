@@ -312,19 +312,19 @@ Asymmetry::Asymmetry(Binning * binScheme, Int_t binNum) {
   // initialize RooFit variables and parameters and data set containers
   // ------------------------------------------------------------------
   // - build category to index spins
-  rfSpinCateg = new RooCategory("rfSpinCateg","rfSpinCateg");
+  rfSpinCateg = new RooCategory("Spin","Spin");
   for(int s=0; s<nSpin; s++) {
-    rfSpinName[s] = "rfSpin" + SpinName(s);
-    rfSpinCateg->defineType(rfSpinName[s]);
+    rfSpinName[s] = "Spin" + SpinName(s);
+    rfSpinCateg->defineType(rfSpinName[s],SpinInt(s));
   };
   // - event vars
-  rfPhiH = new RooRealVar("rfPhiH","#phi_{h}",-PIe,PIe);
-  rfPhiR = new RooRealVar("rfPhiR","#phi_{R}",-PIe,PIe);
-  rfPhiD = new RooRealVar("rfPhiD","#Delta#phi",-PIe,PIe);
-  rfTheta = new RooRealVar("rfTheta","#theta",-0.1,PIe);
-  rfPol = new RooRealVar("rfPol","P",0,1);
-  rfRellum = new RooRealVar("rfRellum","R",0,3);
-  rfWeight = new RooRealVar("rfWeight","P_{h}^{T}/M_{h}",0,10);
+  rfPhiH = new RooRealVar("PhiH","#phi_{h}",-PIe,PIe);
+  rfPhiR = new RooRealVar("PhiR","#phi_{R}",-PIe,PIe);
+  rfPhiD = new RooRealVar("PhiD","#Delta#phi",-PIe,PIe);
+  rfTheta = new RooRealVar("Theta","#theta",-0.1,PIe);
+  rfPol = new RooRealVar("Pol","P",0,1);
+  rfRellum = new RooRealVar("Rellum","R",0,3);
+  rfWeight = new RooRealVar("Weight","P_{h}^{T}/M_{h}",0,10);
 
   rfVars = new RooArgSet(*rfPhiH,*rfPhiR,*rfPhiD,*rfTheta,*rfPol,*rfRellum);
   rfVars->add(*rfWeight);
@@ -928,7 +928,7 @@ void Asymmetry::SetAsymGrPoint(Int_t modBin_, Int_t modBin2_) {
 void Asymmetry::FitAsymMLM() {
 
   // append polarization factor to asymFormu
-  asymFormu = "rfPol*("+asymFormu+")";
+  asymFormu = "Pol*("+asymFormu+")";
 
   // append unpolarized denominator, if D_1 is expanded in partial waves
   // (for systematic uncertainty study from unmeasured/non-orthogonal 
@@ -936,8 +936,8 @@ void Asymmetry::FitAsymMLM() {
   if(nDparamUsed>0) asymFormu += "/(" + denomFormu + ")";
 
   // rellum factors
-  rellumFactor[sP] = "rfRellum/(rfRellum+1)";
-  rellumFactor[sM] = "1/(rfRellum+1)";
+  rellumFactor[sP] = "Rellum/(Rellum+1)";
+  rellumFactor[sM] = "1/(Rellum+1)";
 
 
   // -- build full PDF ( = rellumFactor * ( 1 +/- pol*asymFormu ) for each spin
@@ -947,10 +947,10 @@ void Asymmetry::FitAsymMLM() {
     // build list of variables and parameters; we *only* want variables that
     // are actually being used in the PDF
     rfParams[s] = new RooArgSet();
-    if(rfPdfFormu[s].Contains("rfPhiH")) rfParams[s]->add(*rfPhiH);
-    if(rfPdfFormu[s].Contains("rfPhiR")) rfParams[s]->add(*rfPhiR);
-    if(rfPdfFormu[s].Contains("rfPhiD")) rfParams[s]->add(*rfPhiD);
-    if(rfPdfFormu[s].Contains("rfTheta")) rfParams[s]->add(*rfTheta);
+    if(rfPdfFormu[s].Contains("PhiH")) rfParams[s]->add(*rfPhiH);
+    if(rfPdfFormu[s].Contains("PhiR")) rfParams[s]->add(*rfPhiR);
+    if(rfPdfFormu[s].Contains("PhiD")) rfParams[s]->add(*rfPhiD);
+    if(rfPdfFormu[s].Contains("Theta")) rfParams[s]->add(*rfTheta);
     for(int aa=0; aa<nAmpUsed; aa++) rfParams[s]->add(*rfA[aa]);
     for(int dd=0; dd<nDparamUsed; dd++) rfParams[s]->add(*rfD[dd]);
     rfParams[s]->add(*rfPol);

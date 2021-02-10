@@ -214,16 +214,39 @@ TString Modulation::FormuRF() {
   Tools::GlobalRegexp(formuStr,TRegexp("sin"),"TMath::Sin");
   Tools::GlobalRegexp(formuStr,TRegexp("cos"),"TMath::Cos");
   Tools::GlobalRegexp(formuStr,TRegexp("pow"),"TMath::Power");
-  Tools::GlobalRegexp(formuStr,TRegexp("phiH"),"rfPhiH");
-  Tools::GlobalRegexp(formuStr,TRegexp("phiR"),"rfPhiR");
-  Tools::GlobalRegexp(formuStr,TRegexp("phiS"),"rfPhiS");
-  Tools::GlobalRegexp(formuStr,TRegexp("phiD"),"rfPhiD");
-  Tools::GlobalRegexp(formuStr,TRegexp("theta"),"rfTheta");
+  Tools::GlobalRegexp(formuStr,TRegexp("phiH"),"PhiH");
+  Tools::GlobalRegexp(formuStr,TRegexp("phiR"),"PhiR");
+  Tools::GlobalRegexp(formuStr,TRegexp("phiS"),"PhiS");
+  Tools::GlobalRegexp(formuStr,TRegexp("phiD"),"PhiD");
+  Tools::GlobalRegexp(formuStr,TRegexp("theta"),"Theta");
   return formuStr;
 };
 
+// build formula string for BruFit
+TString Modulation::FormuBru() {
+  formuStr = baseStr;
+  Tools::GlobalRegexp(formuStr,TRegexp("phiH"),"@PhiH[]");
+  Tools::GlobalRegexp(formuStr,TRegexp("phiR"),"@PhiR[]");
+  Tools::GlobalRegexp(formuStr,TRegexp("phiS"),"@PhiS[]");
+  Tools::GlobalRegexp(formuStr,TRegexp("phiD"),"@PhiD[]");
+  Tools::GlobalRegexp(formuStr,TRegexp("theta"),"@Theta[]");
+  return formuStr;
+};
+
+// amplitude name for parameter name
+TString Modulation::AmpName() {
+  TString retstr = Form("AmpT%dL%dM%s%dLv%d",
+    tw,
+    l,
+    m<0?"m":"p",
+    TMath::Abs(m),
+    lev
+  );
+  return retstr;
+};
 
 
+// modulation formula for ROOT title
 TString Modulation::ModulationTitle() {
   TString retstr = baseStr;
   retstr.ReplaceAll("phi","#phi");
@@ -231,8 +254,15 @@ TString Modulation::ModulationTitle() {
   retstr.ReplaceAll("theta","#theta");
   return retstr;
 };
+// modulation formula for ROOT name
 TString Modulation::ModulationName() {
-  TString retstr = Form("mod_t%d_l%d_m%s%d_lev%d",tw,l,m<0?"N":"",m,lev);
+  TString retstr = Form("mod_t%d_l%d_m%s%d_lev%d",
+    tw,
+    l,
+    m<0?"N":"",
+    TMath::Abs(m),
+    lev
+  );
   return retstr;
 };
 

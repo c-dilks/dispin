@@ -28,6 +28,8 @@ class Modulation : public TObject
     Double_t Evaluate(Float_t phiR, Float_t phiH, Float_t theta);
     TString Formu();
     TString FormuRF();
+    TString FormuBru();
+    TString AmpName();
 
     TString ModulationTitle();
     TString ModulationName();

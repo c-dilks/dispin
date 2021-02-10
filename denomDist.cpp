@@ -64,9 +64,9 @@ int main(int argc, char** argv) {
     printf("read bin %d...\n",bn);
     for(int i=0; i<A->rfData->numEntries(); i++) {
       // get (phiR,phiH,theta) value
-      phiR = A->rfData->get(i)->getRealValue("rfPhiR");
-      phiH = A->rfData->get(i)->getRealValue("rfPhiH");
-      theta = A->rfData->get(i)->getRealValue("rfTheta");
+      phiR = A->rfData->get(i)->getRealValue("PhiR");
+      phiH = A->rfData->get(i)->getRealValue("PhiH");
+      theta = A->rfData->get(i)->getRealValue("Theta");
 
       // compute denominator
       denom = A->DenomEval(phiR,phiH,theta);
