@@ -21,6 +21,11 @@ void testBru(TString infileN = "spinroot/cat.root") {
 
   B->LoadDataSets(rooData,rooMC);
 
+
+  B->MCMC_iter = 30000;
+  B->MCMC_burnin = 10000;
+  B->MCMC_norm= 1000;
+
   B->Fit();
 };
 

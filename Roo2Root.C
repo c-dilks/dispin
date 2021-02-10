@@ -1,5 +1,6 @@
+// convert RooDataSet `roodataN` to TTree on the fly
 void Roo2Root(
-  TString infileN = "spinroot_final_2.fall18inbending/cat.root",
+  TString infileN = "spinroot/cat.root",
   TString roodataN = "A_M1/stream_cat_rfData_M1"
 ) {
   TFile * infile = new TFile(infileN,"READ");
@@ -7,7 +8,7 @@ void Roo2Root(
   TFile * tmpfile = new TFile("tmp.root","RECREATE");
   roodata->convertToTreeStore();
   TTree * tree = (TTree*) roodata->tree();
-  tree->Write();
+  tree->Write("tree");
   tree->Print();
 };
 

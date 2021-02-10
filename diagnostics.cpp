@@ -684,6 +684,7 @@ int main(int argc, char** argv) {
    for(int h=0; h<2; h++) XFvsMh[h]->Write();
    for(int h=0; h<2; h++) PperpvsMh[h]->Write();
    for(int h=0; h<2; h++) hadPperpVsYH[h]->Write();
+   for(int h=0; h<2; h++) hadPhiHDist[h]->Write();
    PhPerpVsMh->Write(); 
    YHVsMh->Write(); 
    MhVsAlpha->Write();
