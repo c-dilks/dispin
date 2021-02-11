@@ -30,6 +30,7 @@ TString distTitle(TString var);
 TString dist2Title(TString hadron, TString varX,TString varY);
 
 TString infiles;
+TString outfileN;
 Int_t whichPair;
 Int_t whichHad[2];
 TString hadName[2];
@@ -39,9 +40,11 @@ int main(int argc, char** argv) {
 
    // ARGUMENTS
    infiles = "outroot/*.root";
+   outfileN = "plots.root";
    whichPair = EncodePairType(kPip,kPim);
    if(argc>1) infiles = TString(argv[1]);
-   if(argc>2) whichPair = (Int_t)strtof(argv[2],NULL);
+   if(argc>2) outfileN = TString(argv[2]);
+   if(argc>3) whichPair = (Int_t)strtof(argv[3],NULL);
    
    // get hadron pair from whichPair; note that in the print out, the 
    // order of hadron 0 and 1 is set by Constants::dihHadIdx
@@ -57,7 +60,7 @@ int main(int argc, char** argv) {
    EventTree * ev = new EventTree(infiles,whichPair);
 
 
-   TFile * outfile = new TFile("plots.root","RECREATE");
+   TFile * outfile = new TFile(outfileN,"RECREATE");
 
    const Int_t NBINS = 150;
    Float_t deltaPhi;

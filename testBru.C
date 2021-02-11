@@ -7,6 +7,14 @@ void testBru(TString infileN = "spinroot/cat.root") {
   RooDataSet * rooData = (RooDataSet*) infile->Get(roodataN);
   RooDataSet * rooMC = (RooDataSet*) rooData->Clone();
 
+  // macros needed for PROOF
+  /*
+  TString BRUCODE=gSystem->Getenv("BRUFIT");
+  TString macpath=BRUCODE+"/macros";
+  gROOT->SetMacroPath(
+    Form("%s:%s",gROOT->GetMacroPath(),(macpath).Data()));
+  */
+   
   BruAsymmetry * B = new BruAsymmetry("testbrudir");
 
   B->AddNumerMod(new Modulation(3,0,0));
@@ -22,9 +30,9 @@ void testBru(TString infileN = "spinroot/cat.root") {
   B->LoadDataSets(rooData,rooMC);
 
 
-  B->MCMC_iter = 30000;
-  B->MCMC_burnin = 10000;
-  B->MCMC_norm= 1000;
+  B->MCMC_iter = 10000;
+  B->MCMC_burnin = 300;
+  B->MCMC_norm= 20;
 
   B->Fit();
 };

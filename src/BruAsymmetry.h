@@ -50,8 +50,8 @@ class BruAsymmetry : public TObject
 
 
     // MCMC settings
-    Int_t MCMC_iter; // number of samples
-    Int_t MCMC_burnin; // number of burnin
+    Int_t MCMC_iter; // number of MCMC MH steps
+    Int_t MCMC_burnin; // discard the first `MCMC_burnin` steps ("burn-in")
     Float_t MCMC_norm; // ~ 1/stepSize
 
     

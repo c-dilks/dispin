@@ -56,12 +56,12 @@ Binning::Binning(Int_t pairType_) {
     AddBinBound(vM,1.10);
     AddBinBound(vM,1.21);
     */
-    ///* // 4 mass regions <-> 4 YHcorr regions
+    /* // 4 mass regions <-> 4 YHcorr regions
     AddBinBound(vM,0.4);
     AddBinBound(vM,0.6);
     AddBinBound(vM,0.9);
-    //*/
-    /* // adjusted 12-bin scheme // PRL
+    */
+    ///* // adjusted 12-bin scheme // PRL
     AddBinBound(vM,0.381);
     AddBinBound(vM,0.462);
     AddBinBound(vM,0.531);
@@ -73,7 +73,7 @@ Binning::Binning(Int_t pairType_) {
     AddBinBound(vM,0.900);
     AddBinBound(vM,0.981);
     AddBinBound(vM,1.125);
-    */
+    //*/
     /* // 6 quantile bins
     //AddBinBound(vM,0.37); // CFR via yH<-0.2
     //AddBinBound(vM,0.43);

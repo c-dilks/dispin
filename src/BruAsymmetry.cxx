@@ -61,21 +61,23 @@ void BruAsymmetry::AddNumerMod(Modulation * modu) {
 void BruAsymmetry::BuildPDF() {
 
   // build PDFstr
-  PDFstr = "RooComponentsPDF::PWfit(1,"; // PDF class, name, "+1" term
-  PDFstr += "{PhiH,PhiR,Theta,Pol,Spin_idx},"; // observables
+  PDFstr = "RooComponentsPDF::PWfit(1,"; // PDF class::name ("+1" term ,
+  PDFstr += "{PhiH,PhiR,Theta,Pol,Spin_idx},"; // observables list
   PDFstr += "=" + numerList + ")"; // sum_i { pol * spin * amp_i * mod_i }
 
   // construct the extended likelihood
   FM->SetUp().FactoryPDF(PDFstr);
   FM->SetUp().LoadSpeciesPDF("PWfit",1); /* second arg is lower bound of
-                                              * yield parameter */
+                                          * yield parameter */
 
   // print PDF
   this->PrintFitter();
 };
 
 
-// convert RooDataSet to disk-resident TTree, then load to FM
+// load data and MC events into FitManager, by converting RooDataSets to
+// disk-resident TTrees
+// - RooDataSets expected to be from Asymmetry::rfData
 void BruAsymmetry::LoadDataSets(RooDataSet * rooData, RooDataSet * rooMC) {
 
   // data
@@ -120,6 +122,7 @@ void BruAsymmetry::Fit() {
 
   // perform the fit
   HS::FIT::PROCESS::Here::Go(FM);
+  //HS::FIT::PROCESS::Proof::Go(FM,nThreads);
 };
 
 
