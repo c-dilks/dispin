@@ -21,13 +21,14 @@ enum xyz_enum { eX, eY, eZ };
 // ---------------------------------------------------
 
 // local "particle index" used to address each particle
+// - some names are chosen to avoid conflicts with ROOT...
 enum particle_enum {
   kE,
   kP,
   kN,
   kPip,
   kPim,
-  kPi0,
+  kPio,
   kKp,
   kKm,
   kAP,
@@ -44,7 +45,7 @@ static TString PartName(Int_t p) {
     case kN: return "neutron";
     case kPip: return "piPlus";
     case kPim: return "piMinus";
-    case kPi0: return "pi0";
+    case kPio: return "pi0";
     case kKp: return "KPlus";
     case kKm: return "KMinus";
     case kAP: return "antiproton";
@@ -62,7 +63,7 @@ static TString PartTitle(Int_t p) {
     case kN: return "n";
     case kPip: return "#pi^{+}";
     case kPim: return "#pi^{-}";
-    case kPi0: return "#pi^{0}";
+    case kPio: return "#pi^{0}";
     case kKp: return "K^{+}";
     case kKm: return "K^{-}";
     case kAP: return "p^{-}";
@@ -82,7 +83,7 @@ static Int_t PartPID(Int_t p) {
     case kN: return 2112;
     case kPip: return 211;
     case kPim: return -211;
-    case kPi0: return 111;
+    case kPio: return 111;
     case kKp: return 321;
     case kKm: return -321;
     case kAP: return -2212;
@@ -107,7 +108,7 @@ static Float_t PartMass(Int_t p) {
     case kN: return 0.939565;
     case kPip: return 0.139571;
     case kPim: return 0.139571;
-    case kPi0: return 0.134977;
+    case kPio: return 0.134977;
     case kKp: return 0.493677;
     case kKm: return 0.493677;
     case kAP: return 0.938272;
@@ -125,7 +126,7 @@ static Int_t PartCharge(Int_t p) {
     case kN: return 0;
     case kPip: return 1;
     case kPim: return -1;
-    case kPi0: return 0;
+    case kPio: return 0;
     case kKp: return 1;
     case kKm: return -1;
     case kAP: return -1;
@@ -145,7 +146,7 @@ static Int_t PartColor(Int_t p) {
     case kN: return kAzure+10;
     case kPip: return kBlue;
     case kPim: return kRed;
-    case kPi0: return kMagenta;
+    case kPio: return kMagenta;
     case kKp: return kGreen+1;
     case kKm: return kGreen-1;
     case kAP: return kAzure;
@@ -163,7 +164,7 @@ static TString PartColorName(Int_t p) {
     case kN: return "lightBlue";
     case kPip: return "blue";
     case kPim: return "red";
-    case kPi0: return "magenta";
+    case kPio: return "magenta";
     case kKp: return "lightGreen";
     case kKm: return "darkGreen";
     case kAP: return "darkBlue";
@@ -201,7 +202,7 @@ static Int_t OI(Int_t s) {
     case sPip: return kPip;
     case sPim: return kPim;
     //case sDiph: return kDiph;
-    //case sDiph: return kPi0; // (for if pi0s are found in HIPO files)
+    //case sDiph: return kPio; // (for if pi0s are found in HIPO files)
     case sKp: return kKp;
     case sKm: return kKm;
     case sProt: return kP;
@@ -217,7 +218,7 @@ static Int_t IO(Int_t s) {
     case kPip: return sPip;
     case kPim: return sPim;
     //case kDiph: return sDiph; 
-    //case kPi0: return sDiph; // (for if pi0s are found in HIPO files)
+    //case kPio: return sDiph; // (for if pi0s are found in HIPO files)
     case kKp: return sKp;
     case kKm: return sKm;
     case kP: return sProt;
@@ -236,10 +237,10 @@ static TString ObsTitle(Int_t s) { return PartTitle(OI(s)); };
 // the pi0 observable is really a diphoton; thus we allow freedom to change
 // the name "pi0" to "background" when analysin background events
 static void TransformNameBG(TString & str) {
-  str.ReplaceAll(PartName(kPi0),"diphBG");
+  str.ReplaceAll(PartName(kPio),"diphBG");
 };
 static void TransformTitleBG(TString & str) {
-  str.ReplaceAll(PartTitle(kPi0),"#gamma#gamma_{BG}");
+  str.ReplaceAll(PartTitle(kPio),"#gamma#gamma_{BG}");
 };
 
 
