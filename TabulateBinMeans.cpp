@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
   printf("ivType = %d\n",ivType);
 
   // set binning scheme
-  BS = new Binning(pairType);
+  BS = new Binning();
   Bool_t schemeSuccess = BS->SetScheme(ivType);
   if(!schemeSuccess) {
     fprintf(stderr,"ERROR: Binning::SetScheme failed\n");
@@ -271,7 +271,7 @@ void SetDefaultArgs() {
 int PrintUsage() {
 
   SetDefaultArgs();
-  BS = new Binning(EncodePairType(kPip,kPim));
+  BS = new Binning();
   fprintf(stderr,"\nUSAGE: buildSpinroot.exe [-f or -d input_data ] [options...]\n\n");
 
   printf("INPUT DATA:\n");
@@ -291,7 +291,7 @@ int PrintUsage() {
   printf("   \tplotted against. The number of digits will be the number of\n");
   printf("   \tdimensions in the multi-dimensional binning\n");
   printf("   \t* the allowed digits are:\n");
-  BS = new Binning(pairType);
+  BS = new Binning();
   for(int i=0; i<Binning::nIV; i++) {
     printf("   \t  %d = %s\n",i+1,(BS->IVtitle[i]).Data());
   };

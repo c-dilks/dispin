@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
   //
   const Int_t nUUmods = 3; // number of UU modulations for lattice
   // - setup for injection of measuered physics asym
-  BS = new Binning(EncodePairType(kPip,kPim)); // pi+pi-
+  BS = new Binning();
   BS->SetScheme(2); // ivType from `buildSpinroot.exe -i`
   TString asymTable = "spinroot_final_2/table_42_mlm.dat";
   TString iv0str = "gen_Mh"; // which vars to read

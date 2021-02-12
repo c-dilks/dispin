@@ -5,13 +5,8 @@ ClassImp(Binning)
 using namespace std;
 
 
-Binning::Binning(Int_t pairType_) {
+Binning::Binning() {
   //printf("Instantiating Binning...\n");
-
-  // get hadron indices (bin bounds depends on hadron type)
-  DecodePairType(pairType_,whichHad[qA],whichHad[qB]);
-  numKaons = 0;
-  for(int h=0; h<2; h++) { if(whichHad[h]==kKp || whichHad[h]==kKm) numKaons++; };
 
   // set minimum and maximum IV values
   minIV[vM] = 0;   maxIV[vM] = 3;
@@ -24,293 +19,11 @@ Binning::Binning(Int_t pairType_) {
   for(int v=0; v<nIV; v++) nBins[v]=-1;
 
 
-  // set minimum bin boundaries
-  for(int v=0; v<nIV; v++) AddBinBound(v,minIV[v]);
-
-
-  // set main bin boundaries
-  if(numKaons==0) {
-
-    // -- M_h (dihadron invariant mass)
-    /* // below VM resonances vs. above
-    AddBinBound(vM,0.63);
-    */
-    /* // 20 quantile bins
-    AddBinBound(vM,0.36);
-    AddBinBound(vM,0.41);
-    AddBinBound(vM,0.45);
-    AddBinBound(vM,0.50);
-    AddBinBound(vM,0.54);
-    AddBinBound(vM,0.59);
-    AddBinBound(vM,0.63);
-    AddBinBound(vM,0.68);
-    AddBinBound(vM,0.71);
-    AddBinBound(vM,0.74);
-    AddBinBound(vM,0.77);
-    AddBinBound(vM,0.80);
-    AddBinBound(vM,0.83);
-    AddBinBound(vM,0.87);
-    AddBinBound(vM,0.91);
-    AddBinBound(vM,0.96);
-    AddBinBound(vM,1.02);
-    AddBinBound(vM,1.10);
-    AddBinBound(vM,1.21);
-    */
-    /* // 4 mass regions <-> 4 YHcorr regions
-    AddBinBound(vM,0.4);
-    AddBinBound(vM,0.6);
-    AddBinBound(vM,0.9);
-    */
-    ///* // adjusted 12-bin scheme // PRL
-    AddBinBound(vM,0.381);
-    AddBinBound(vM,0.462);
-    AddBinBound(vM,0.531);
-    AddBinBound(vM,0.606);
-    AddBinBound(vM,0.675);
-    AddBinBound(vM,0.737);
-    AddBinBound(vM,0.781);
-    AddBinBound(vM,0.831);
-    AddBinBound(vM,0.900);
-    AddBinBound(vM,0.981);
-    AddBinBound(vM,1.125);
-    //*/
-    /* // 6 quantile bins
-    //AddBinBound(vM,0.37); // CFR via yH<-0.2
-    //AddBinBound(vM,0.43);
-    //AddBinBound(vM,0.49);
-    //AddBinBound(vM,0.58);
-    //AddBinBound(vM,0.72);
-    //AddBinBound(vM,0.57); // DSIDIS via yH cut at 0.2
-    //AddBinBound(vM,0.69);
-    //AddBinBound(vM,0.78);
-    //AddBinBound(vM,0.87);
-    //AddBinBound(vM,1.01);
-    AddBinBound(vM,0.64); // TFR via yH>0.2
-    AddBinBound(vM,0.82);
-    AddBinBound(vM,0.96);
-    AddBinBound(vM,1.11);
-    AddBinBound(vM,1.27);
-    */
-    /* // 14 quantile bins
-    AddBinBound(vM,0.38);
-    AddBinBound(vM,0.44);
-    AddBinBound(vM,0.51);
-    AddBinBound(vM,0.57);
-    AddBinBound(vM,0.63);
-    AddBinBound(vM,0.69);
-    AddBinBound(vM,0.74);
-    AddBinBound(vM,0.78);
-    AddBinBound(vM,0.82);
-    AddBinBound(vM,0.88);
-    AddBinBound(vM,0.94);
-    AddBinBound(vM,1.02);
-    AddBinBound(vM,1.16);
-    */
-    /* // 3 quantile bins
-    AddBinBound(vM,0.60);
-    AddBinBound(vM,0.83);
-    */
-    /* // above/below rho
-    AddBinBound(vM,0.77);
-    */
-
-    // -- x (bjorken-x)
-    ///* // adjusted 12-bin scheme // PRL
-    AddBinBound(vX,0.118);
-    AddBinBound(vX,0.135);
-    AddBinBound(vX,0.150);
-    AddBinBound(vX,0.165);
-    AddBinBound(vX,0.183);
-    AddBinBound(vX,0.200);
-    AddBinBound(vX,0.223);
-    AddBinBound(vX,0.248);
-    AddBinBound(vX,0.275);
-    AddBinBound(vX,0.315);
-    AddBinBound(vX,0.375);
-    //*/
-    /* // 6 quantile bins
-    AddBinBound(vX,0.14);
-    AddBinBound(vX,0.17);
-    AddBinBound(vX,0.20);
-    AddBinBound(vX,0.23);
-    AddBinBound(vX,0.28);
-    */
-    /* // 14 quantile bins
-    AddBinBound(vX,0.11);
-    AddBinBound(vX,0.13);
-    AddBinBound(vX,0.14);
-    AddBinBound(vX,0.15);
-    AddBinBound(vX,0.17);
-    AddBinBound(vX,0.18);
-    AddBinBound(vX,0.19);
-    AddBinBound(vX,0.21);
-    AddBinBound(vX,0.23);
-    AddBinBound(vX,0.25);
-    AddBinBound(vX,0.28);
-    AddBinBound(vX,0.32);
-    AddBinBound(vX,0.38);
-    */
-
-    // -- z (fragmentation fraction)
-    /* // adjusted 12-bin scheme
-    AddBinBound(vZ,0.408);
-    AddBinBound(vZ,0.445);
-    AddBinBound(vZ,0.473);
-    AddBinBound(vZ,0.500);
-    AddBinBound(vZ,0.528);
-    AddBinBound(vZ,0.555);
-    AddBinBound(vZ,0.580);
-    AddBinBound(vZ,0.605);
-    AddBinBound(vZ,0.638);
-    AddBinBound(vZ,0.675);
-    AddBinBound(vZ,0.720);
-    */
-    ///* // adjusted 6-bin scheme // PRL
-    AddBinBound(vZ,0.445);
-    AddBinBound(vZ,0.500);
-    AddBinBound(vZ,0.555);
-    AddBinBound(vZ,0.605);
-    AddBinBound(vZ,0.675);
-    //*/
-    /* // 3 quantile bins
-    AddBinBound(vZ,0.51);
-    AddBinBound(vZ,0.61);
-    */
-    /* // 7 quantile bins
-    AddBinBound(vZ,0.43);
-    AddBinBound(vZ,0.48);
-    AddBinBound(vZ,0.52);
-    AddBinBound(vZ,0.57);
-    AddBinBound(vZ,0.62);
-    AddBinBound(vZ,0.68);
-    */
-    /* // 14 quantile bins
-    AddBinBound(vZ,0.40);
-    AddBinBound(vZ,0.44);
-    AddBinBound(vZ,0.46);
-    AddBinBound(vZ,0.49);
-    AddBinBound(vZ,0.51);
-    AddBinBound(vZ,0.53);
-    AddBinBound(vZ,0.56);
-    AddBinBound(vZ,0.58);
-    AddBinBound(vZ,0.60);
-    AddBinBound(vZ,0.63);
-    AddBinBound(vZ,0.66);
-    AddBinBound(vZ,0.69);
-    AddBinBound(vZ,0.73);
-    */
-
-    // -- PhPerp (transverse momentum of dihadron)
-    /* // adjusted 12-bin scheme
-    AddBinBound(vPt,0.175);
-    AddBinBound(vPt,0.245);
-    AddBinBound(vPt,0.310);
-    AddBinBound(vPt,0.365);
-    AddBinBound(vPt,0.425);
-    AddBinBound(vPt,0.480);
-    AddBinBound(vPt,0.530);
-    AddBinBound(vPt,0.585);
-    AddBinBound(vPt,0.650);
-    AddBinBound(vPt,0.725);
-    AddBinBound(vPt,0.835);
-    */
-    ///* // adjusted 6-bin scheme // PRL
-    AddBinBound(vPt,0.245);
-    AddBinBound(vPt,0.365);
-    AddBinBound(vPt,0.480);
-    AddBinBound(vPt,0.585);
-    AddBinBound(vPt,0.725);
-    //*/
-    /*
-    AddBinBound(vPt,0.5); // 2 quantile bins
-    */
-    /*
-    AddBinBound(vPt,0.45); // 3 quantile bins 
-    AddBinBound(vPt,0.63);
-    */
-    /*
-    AddBinBound(vPt,0.16); // 14 quantile bins
-    AddBinBound(vPt,0.23);
-    AddBinBound(vPt,0.29);
-    AddBinBound(vPt,0.34);
-    AddBinBound(vPt,0.39);
-    AddBinBound(vPt,0.43);
-    AddBinBound(vPt,0.47);
-    AddBinBound(vPt,0.52);
-    AddBinBound(vPt,0.57);
-    AddBinBound(vPt,0.62);
-    AddBinBound(vPt,0.68);
-    AddBinBound(vPt,0.75);
-    AddBinBound(vPt,0.85);
-    */
-
-    // -- Ph (magnitude of momentum sum of dihadron)
-    AddBinBound(vPh,3.15); // 5 quantile bins 
-    AddBinBound(vPh,3.60);
-    AddBinBound(vPh,4.10);
-    AddBinBound(vPh,4.80);
-
-    // -- Q^2
-    ///* // adjusted 12-bin scheme
-    AddBinBound(vQ,1.600);
-    AddBinBound(vQ,1.800);
-    AddBinBound(vQ,1.980);
-    AddBinBound(vQ,2.160);
-    AddBinBound(vQ,2.340);
-    AddBinBound(vQ,2.560);
-    AddBinBound(vQ,2.820);
-    AddBinBound(vQ,3.160);
-    AddBinBound(vQ,3.560);
-    AddBinBound(vQ,4.080);
-    AddBinBound(vQ,4.860);
-    //*/
-    /* // 3 quantile bins, inbending only
-    AddBinBound(vQ,2.37);
-    AddBinBound(vQ,3.35);
-    */
-
-    // -- xF
-    /*
-    AddBinBound(vXF,0.16); // 14 bins
-    AddBinBound(vXF,0.20);
-    AddBinBound(vXF,0.23);
-    AddBinBound(vXF,0.26);
-    AddBinBound(vXF,0.28);
-    AddBinBound(vXF,0.31);
-    AddBinBound(vXF,0.33);
-    AddBinBound(vXF,0.36);
-    AddBinBound(vXF,0.39);
-    AddBinBound(vXF,0.42);
-    AddBinBound(vXF,0.45);
-    AddBinBound(vXF,0.49);
-    AddBinBound(vXF,0.55);
-    */
-    AddBinBound(vXF,0.20); // 7 bins
-    AddBinBound(vXF,0.26);
-    AddBinBound(vXF,0.31);
-    AddBinBound(vXF,0.37);
-    AddBinBound(vXF,0.42);
-    AddBinBound(vXF,0.50);
-    
-  } else if(numKaons==1) {
-
-    // -- mass
-    AddBinBound(vM,0.85);
-    AddBinBound(vM,1.1);
-
-    // -- x
-    AddBinBound(vX,0.2);
-    AddBinBound(vX,0.3);
-
-    // -- z
-    AddBinBound(vZ,0.5);
-    AddBinBound(vZ,0.7);
-
-    // -- other IVs' binnings can be added later when kaons are included
+  // set minimum and maximum bin boundaries
+  for(int v=0; v<nIV; v++) {
+    AddBinBound(v,minIV[v]);
+    AddBinBound(v,maxIV[v]);
   };
-
-  // set maximum bin boundaries
-  for(int v=0; v<nIV; v++) AddBinBound(v,maxIV[v]);
 
 
   // set IV names and titles
@@ -331,8 +44,6 @@ Binning::Binning(Int_t pairType_) {
   IVtitle[vXF] = "x_{F}";
 
 
-  //PrintBinBounds();
-
   // set binning scheme defaults
   dimensions = 0;
   for(int d=0; d<3; d++) ivVar[d] = -1;
@@ -341,6 +52,7 @@ Binning::Binning(Int_t pairType_) {
   oaM = UNDEF;
   useWeighting = false;
   gridDim = 1;
+  for(int h=0; h<2; h++) whichHad[h]=-1;
 };
 
 
@@ -363,7 +75,7 @@ void Binning::PrintBinBounds() {
   for(int v=0; v<nIV; v++) {
     printf("[ %s ] %s bins:  (nbins=%d)\n",IVname[v].Data(),IVtitle[v].Data(),nBins[v]);
     for(int b=0; b<nBins[v]; b++) {
-      printf(" bin %d:\t\t%.2f\t%.2f\n",b,bound[v].at(b),bound[v].at(b+1));
+      printf(" bin  %d:\t%.3f\t%.3f\n",b,bound[v].at(b),bound[v].at(b+1));
     };
   };
   printf("\n");
@@ -443,8 +155,19 @@ TString Binning::GetBoundStr(Int_t bn, Int_t dim) {
 };
 
 
+Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
 
-Bool_t Binning::SetScheme(Int_t ivType) {
+  // clear current scheme
+  binVec.clear();
+  for(int d=0; d<3; d++) {
+    ivVar[d] = -1;
+    binVecMap[d].clear();
+  };
+  for(int v=0; v<nIV; v++) {
+    nBins[v]=-1;
+    bound[v].clear();
+  };
+
 
   // determine number of dimensions
   dimensions=1;
@@ -452,8 +175,10 @@ Bool_t Binning::SetScheme(Int_t ivType) {
   if(ivType>=100) dimensions=3;
   if(ivType>=1000) {
     fprintf(stderr,"ERROR: ivType has too many digits\n");
+    dimensions = 0;
     return false;
   };
+
 
   // read ivType and convert it to IV enumerators
   // -- if dimensions==1, all asymmetries will be plotted against one independent
@@ -483,22 +208,6 @@ Bool_t Binning::SetScheme(Int_t ivType) {
   };
 
 
-  // PRL: override 2D binning scheme for final asymmetry production
-  ///////////////////////////////////////
-  /*
-  if(dimensions==2 && ivVar[1]==vM) {
-    printf("\nOVERRIDE 2D Binning scheme to have M above and below 0.63\n\n");
-    nBins[vM] = -1;
-    bound[vM].clear();
-    AddBinBound(vM,minIV[vM]);
-    AddBinBound(vM,0.63);
-    AddBinBound(vM,maxIV[vM]);
-    PrintBinBounds();
-  };
-  */
-  ///////////////////////////////////////
-
-
   // check IV enumerators
   for(int d=0; d<dimensions; d++) {
     if(!(ivVar[d]>=0 && ivVar[d]<nIV)) {
@@ -509,12 +218,140 @@ Bool_t Binning::SetScheme(Int_t ivType) {
   };
 
 
-  
+  // default binning schemes for each IV, if they weren't specified as args
+  Int_t nb[3];
+  if( nb0==-1 && nb1==-1 && nb2==-1) {
+    if(ivVar[0]==vX) nb0=12; // PRL 1D binning
+    if(ivVar[0]==vM) nb0=12; // PRL 1D binning
+    if(ivVar[0]==vZ  && ivVar[1]==vM) { nb0=6; nb1=2; }; // PRL 2D binning
+    if(ivVar[0]==vPt && ivVar[1]==vM) { nb0=6; nb1=2; }; // PRL 2D binning
+  };
+  nb[0]=nb0; nb[1]=nb1; nb[2]=nb2;
+
+
+  // set minimum bin bound
+  for(int v=0; v<nIV; v++) AddBinBound(v,minIV[v]);
+
+  // set internal bin boundaries, for each defined dimension
+  for(int d=0; d<dimensions; d++) {
+    // -- Mh --------------
+    if(ivVar[d] == vM) {
+      switch(nb[d]) {
+        case 1: break; // single bin
+        case 2:
+          AddBinBound(vM,0.63); // PRL 2D binning
+          break;
+        case 4:
+          AddBinBound(vM,0.4);
+          AddBinBound(vM,0.6);
+          AddBinBound(vM,0.9);
+          break;
+        case 12:
+          AddBinBound(vM,0.381); // PRL 1D binning
+          AddBinBound(vM,0.462);
+          AddBinBound(vM,0.531);
+          AddBinBound(vM,0.606);
+          AddBinBound(vM,0.675);
+          AddBinBound(vM,0.737);
+          AddBinBound(vM,0.781);
+          AddBinBound(vM,0.831);
+          AddBinBound(vM,0.900);
+          AddBinBound(vM,0.981);
+          AddBinBound(vM,1.125);
+          break;
+        case 20:
+          AddBinBound(vM,0.36);
+          AddBinBound(vM,0.41);
+          AddBinBound(vM,0.45);
+          AddBinBound(vM,0.50);
+          AddBinBound(vM,0.54);
+          AddBinBound(vM,0.59);
+          AddBinBound(vM,0.63);
+          AddBinBound(vM,0.68);
+          AddBinBound(vM,0.71);
+          AddBinBound(vM,0.74);
+          AddBinBound(vM,0.77);
+          AddBinBound(vM,0.80);
+          AddBinBound(vM,0.83);
+          AddBinBound(vM,0.87);
+          AddBinBound(vM,0.91);
+          AddBinBound(vM,0.96);
+          AddBinBound(vM,1.02);
+          AddBinBound(vM,1.10);
+          AddBinBound(vM,1.21);
+          break;
+        default:
+          fprintf(stderr,"ERROR: unknown nb for %s\n",GetIVname(d).Data());
+      };
+    }
+    // -- x --------------
+    else if(ivVar[d] == vX) {
+      switch(nb[d]) {
+        case 1: break; // single bin
+        case 12:
+          AddBinBound(vX,0.118); // PRL 1D binning
+          AddBinBound(vX,0.135);
+          AddBinBound(vX,0.150);
+          AddBinBound(vX,0.165);
+          AddBinBound(vX,0.183);
+          AddBinBound(vX,0.200);
+          AddBinBound(vX,0.223);
+          AddBinBound(vX,0.248);
+          AddBinBound(vX,0.275);
+          AddBinBound(vX,0.315);
+          AddBinBound(vX,0.375);
+          break;
+        default:
+          fprintf(stderr,"ERROR: unknown nb for %s\n",GetIVname(d).Data());
+      };
+    }
+    // -- z --------------
+    else if(ivVar[d] == vZ) {
+      switch(nb[d]) {
+        case 1: break; // single bin
+        case 6:
+          AddBinBound(vZ,0.445); // PRL 2D binning
+          AddBinBound(vZ,0.500);
+          AddBinBound(vZ,0.555);
+          AddBinBound(vZ,0.605);
+          AddBinBound(vZ,0.675);
+          break;
+        default:
+          fprintf(stderr,"ERROR: unknown nb for %s\n",GetIVname(d).Data());
+      };
+    }
+    // -- PhPerp --------------
+    else if(ivVar[d] == vPt) {
+      switch(nb[d]) {
+        case 1: break; // single bin
+        case 6:
+          AddBinBound(vPt,0.245); // PRL 2D binning
+          AddBinBound(vPt,0.365);
+          AddBinBound(vPt,0.480);
+          AddBinBound(vPt,0.585);
+          AddBinBound(vPt,0.725);
+          break;
+        default:
+          fprintf(stderr,"ERROR: unknown nb for %s\n",GetIVname(d).Data());
+      };
+    }
+    // -- Ph -------------- // no schemes defined yet
+    // -- Q2 -------------- // no schemes defined yet
+    // -- xF -------------- // no schemes defined yet
+    else { printf("default to single bin\n"); };
+  };
+
+
+  // set maximum bin bound
+  for(int v=0; v<nIV; v++) AddBinBound(v,maxIV[v]);
+
+
   // print which IVs will be analyzed
   printf("--> Binning scheme set for asymmetries vs. %s ",(IVname[ivVar[0]]).Data());
   if(dimensions>=2) printf("in bins of %s ",(IVname[ivVar[1]]).Data());
   if(dimensions>=3) printf("and %s ",(IVname[ivVar[2]]).Data());
-  printf("\n\n");
+  printf("\n\n--> Bin boundaries:\n");
+  PrintBinBounds();
 
 
   // build binVec and binVecMap

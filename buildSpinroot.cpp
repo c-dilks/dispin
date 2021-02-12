@@ -117,7 +117,8 @@ int main(int argc, char** argv) {
 
 
   // set binning scheme
-  BS = new Binning(pairType);
+  BS = new Binning();
+  BS->SetPairType(pairType);
   BS->SetOAnums(oaTw,oaL,oaM);
   BS->useWeighting = useWeighting;
   BS->gridDim = gridDim;
@@ -255,7 +256,7 @@ void SetDefaultArgs() {
 int PrintUsage() {
 
   SetDefaultArgs();
-  BS = new Binning(EncodePairType(kPip,kPim));
+  BS = new Binning();
   fprintf(stderr,"\nUSAGE: buildSpinroot.exe [-f or -d input_data ] [options...]\n\n");
 
   printf("INPUT DATA:\n");
@@ -275,7 +276,7 @@ int PrintUsage() {
   printf("   \tplotted against. The number of digits will be the number of\n");
   printf("   \tdimensions in the multi-dimensional binning\n");
   printf("   \t* the allowed digits are:\n");
-  BS = new Binning(pairType);
+  BS = new Binning();
   for(int i=0; i<Binning::nIV; i++) {
     printf("   \t  %d = %s\n",i+1,(BS->IVtitle[i]).Data());
   };

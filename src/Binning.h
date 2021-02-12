@@ -33,15 +33,14 @@
 class Binning : public TObject
 {
   public:
-    Binning() {}; // empty default constructor for streaming instances to ROOT files
-    Binning(Int_t pairType_);
+    Binning();
     ~Binning();
     void AddBinBound(Int_t ivIdx, Float_t newBound);
     void PrintBinBounds();
     Int_t GetBin(Int_t v_, Float_t iv_);
     TString GetBoundStr(Int_t bn, Int_t dim);
 
-    Bool_t SetScheme(Int_t ivType);
+    Bool_t SetScheme(Int_t ivType, Int_t nb0=-1, Int_t nb1=-1, Int_t nb2=-1);
 
 
 
@@ -98,13 +97,16 @@ class Binning : public TObject
     void SetOAnums(Int_t t_, Int_t l_, Int_t m_) {
       oaTw=t_; oaL=l_; oaM=m_;
     };
-    Int_t whichHad[2];
     Bool_t useWeighting;
     Int_t gridDim;
 
+    Int_t whichHad[2];
+    void SetPairType(Int_t pairType_) { 
+      DecodePairType(pairType_,whichHad[qA],whichHad[qB]);
+    };
+
     
   private:
-    Int_t numKaons;
 
 
   ClassDef(Binning,1);
