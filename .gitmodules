@@ -8,5 +8,4 @@
   ignore = dirty
 [submodule "deps/brufit"]
 	path = deps/brufit
-	url = https://github.com/dglazier/brufit.git
-  ignore = dirty
+	url = https://github.com/c-dilks/brufit.git

@@ -48,6 +48,9 @@ class BruAsymmetry : public TObject
     void Fit();
     void PrintFitter() { FM->SetUp().WS().Print("v"); };
 
+    Int_t GetNdim();
+    Int_t GetNbins();
+
 
     // MCMC settings
     Int_t MCMC_iter; // number of MCMC MH steps
@@ -62,7 +65,7 @@ class BruAsymmetry : public TObject
     TString outdir;
     TTree *trData, *trMC;
     TString numerList, PDFstr;
-    Int_t nThreads;
+    Int_t nThreads, nWorkers;
 
 
   ClassDef(BruAsymmetry,1);

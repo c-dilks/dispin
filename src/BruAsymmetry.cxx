@@ -108,10 +108,16 @@ void BruAsymmetry::Fit() {
   if(nThreads<1) nThreads=1;
   if(nThreads>12) nThreads=12; // max (to not clobber shared nodes)
   printf("---- fit with %d parallel threads\n",nThreads);
+  nWorkers = TMath::Min(nThreads,this->GetNbins()); // for PROOF
+
+
+
+  // roofit settings:
+  // -optimize: calculate and cache formulas; suitable for RooComponentsPDF
+  // -number of parellel threads
+  FM->SetUp().AddFitOption(RooFit::Optimize(1));
   FM->SetUp().AddFitOption(RooFit::NumCPU(nThreads));
 
-  // optimize: calculate and cache formulas; suitable for RooComponentsPDF
-  FM->SetUp().AddFitOption(RooFit::Optimize(1));
 
   // MINOS uncertainty estimation
   //FM->SetUp().AddFitOption(RooFit::Minos(kTRUE));
@@ -121,8 +127,20 @@ void BruAsymmetry::Fit() {
   FM->SetMinimiser(new HS::FIT::RooMcmcSeq(MCMC_iter,MCMC_burnin,MCMC_norm));
 
   // perform the fit
-  HS::FIT::PROCESS::Here::Go(FM);
-  //HS::FIT::PROCESS::Proof::Go(FM,nThreads);
+  //HS::FIT::PROCESS::Here::Go(FM);
+  HS::FIT::PROCESS::Proof::Go(FM,nWorkers);
+};
+
+
+// get number of bins and dimensions configured in FitManager
+Int_t BruAsymmetry::GetNbins() {
+  Int_t nb = 1;
+  for(auto axis : FM->Bins().GetBins().GetVarAxis())
+    nb *= axis.GetNbins();
+  return nb;
+};
+Int_t BruAsymmetry::GetNdim() {
+  return FM->Bins().GetBins().GetNAxis();
 };
 
 
