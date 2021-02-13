@@ -27,12 +27,12 @@ Binning::Binning() {
 
 
   // set IV names and titles
-  IVname[vM] = "M";
+  IVname[vM] = "Mh";
   IVname[vX] = "X";
   IVname[vZ] = "Z";
-  IVname[vPt] = "Pt";
+  IVname[vPt] = "PhPerp";
   IVname[vPh] = "Ph";
-  IVname[vQ] = "Q";
+  IVname[vQ] = "Qsq";
   IVname[vXF] = "XF";
 
   IVtitle[vM] = "M_{h}";

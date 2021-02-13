@@ -235,6 +235,7 @@ class Asymmetry : public TObject
     RooRealVar *rfPhiH, *rfPhiR, *rfPhiD, *rfTheta;
     RooRealVar *rfWeight;
     RooRealVar *rfPol, *rfRellum;
+    RooRealVar *rfIV[Binning::nIV];
 
     static const Int_t nAmp = 15;
     Int_t nAmpUsed;

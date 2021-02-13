@@ -50,6 +50,7 @@ class BruAsymmetry : public TObject
 
     Int_t GetNdim();
     Int_t GetNbins();
+    void PrintBinScheme();
 
 
     // MCMC settings

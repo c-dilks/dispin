@@ -143,8 +143,23 @@ Int_t BruAsymmetry::GetNdim() {
   return FM->Bins().GetBins().GetNAxis();
 };
 
-
-
+// print bin information
+void BruAsymmetry::PrintBinScheme() {
+  printf("\nBin Scheme defined in BruAsymmetry FM:\n");
+  Tools::PrintSeparator(50,"=");
+  printf("- nBins = %d\n- nDims = %d\n",
+    this->GetNbins(), this->GetNdim() );
+  for(auto axis : FM->Bins().GetBins().GetVarAxis()) {
+    Tools::PrintSeparator(50,"-");
+    printf("%s axis has %d bins:\n",
+      axis.GetName(), axis.GetNbins() );
+    for(int ib=1; ib<=axis.GetNbins(); ib++) {
+      printf("  bin %d:  %.3f to %.3f\n",
+        ib, axis.GetBinLowEdge(ib), axis.GetBinUpEdge(ib) );
+    };
+  };
+  Tools::PrintSeparator(50,"=");
+};
 
 BruAsymmetry::~BruAsymmetry() {
 };

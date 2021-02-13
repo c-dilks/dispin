@@ -324,9 +324,17 @@ Asymmetry::Asymmetry(Binning * binScheme, Int_t binNum) {
   rfTheta = new RooRealVar("Theta","#theta",-0.1,PIe);
   rfPol = new RooRealVar("Pol","P",0,1);
   rfRellum = new RooRealVar("Rellum","R",0,3);
+  // - IVs
+  for(int v=0; v<Binning::nIV; v++) {
+    rfIV[v] = new RooRealVar(
+      BS->IVname[v],BS->IVtitle[v],
+      BS->minIV[v],BS->maxIV[v]);
+  };
+  // - weight
   rfWeight = new RooRealVar("Weight","P_{h}^{T}/M_{h}",0,10);
 
   rfVars = new RooArgSet(*rfPhiH,*rfPhiR,*rfPhiD,*rfTheta,*rfPol,*rfRellum);
+  for(int v=0; v<Binning::nIV; v++) rfVars->add(*(rfIV[v]));
   rfVars->add(*rfWeight);
   rfVars->add(*rfSpinCateg);
 
@@ -483,8 +491,20 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
   rfTheta->setVal(theta);
   rfPol->setVal(pol);
   rfRellum->setVal(rellum);
+  // set IVs
+  rfIV[Binning::vM]->setVal(ev->Mh);
+  rfIV[Binning::vX]->setVal(ev->x);
+  rfIV[Binning::vZ]->setVal(ev->Zpair);
+  rfIV[Binning::vPt]->setVal(ev->PhPerp);
+  rfIV[Binning::vPh]->setVal(ev->Ph);
+  rfIV[Binning::vQ]->setVal(ev->Q2);
+  rfIV[Binning::vXF]->setVal(ev->xF);
+  // set weight
   rfWeight->setVal(weight);
+  // set spin
   rfSpinCateg->setLabel(rfSpinName[spinn]);
+
+  // fill rfData
   rfData->add(*rfVars,rfWeight->getVal());
 
 
