@@ -22,6 +22,7 @@
 // argument variables
 TString inputData;
 Int_t pairType;
+Int_t nBins[3];
 Int_t ivType;
 Int_t oaTw,oaL,oaM;
 Bool_t useWeighting;
@@ -51,7 +52,8 @@ int main(int argc, char** argv) {
   int opt;
   enum inputType_enum {iFile,iDir};
   Int_t inputType = -1;
-  while( (opt=getopt(argc,argv,"f:d:p:i:t:l:m:w|b|h:")) != -1 ) {
+  Int_t nd=0;
+  while( (opt=getopt(argc,argv,"f:d:p:i:n:t:l:m:w|b|h:")) != -1 ) {
     switch(opt) {
       case 'f': /* input file */
         if(inputType>=0) return PrintUsage();
@@ -68,6 +70,12 @@ int main(int argc, char** argv) {
         break;
       case 'i': /* independent variables */
         ivType = (Int_t) strtof(optarg,NULL);
+        break;
+      case 'n': /* number of bins for each independent variable */
+        optind--;
+        for( ; optind<argc && *argv[optind]!='-'; optind++) {
+          if(nd<3) nBins[nd++] = (Int_t) strtof(argv[optind],NULL);
+        };
         break;
       case 't': /* one-amp fit modulation specifier Twist */
         oaTw = (Int_t) strtof(optarg,NULL);
@@ -104,6 +112,7 @@ int main(int argc, char** argv) {
   printf("inputData = %s\n",inputData.Data());
   printf("pairType = 0x%x\n",pairType);
   printf("ivType = %d\n",ivType);
+  printf("nBins = ( %d, %d, %d )\n",nBins[0],nBins[1],nBins[2]);
   printf("enable PhPerp/Mh weighting: %s\n",useWeighting?"true":"false");
   Tools::PrintSeparator(40,"-");
   printf("one-amp fit modulation: |%d,%d>, twist-%d\n",oaL,oaM,oaTw);
@@ -122,7 +131,7 @@ int main(int argc, char** argv) {
   BS->SetOAnums(oaTw,oaL,oaM);
   BS->useWeighting = useWeighting;
   BS->gridDim = gridDim;
-  Bool_t schemeSuccess = BS->SetScheme(ivType);
+  Bool_t schemeSuccess = BS->SetScheme(ivType,nBins[0],nBins[1],nBins[2]);
   if(!schemeSuccess) {
     fprintf(stderr,"ERROR: Binning::SetScheme failed\n");
     return 0;
@@ -243,6 +252,7 @@ void SetDefaultArgs() {
   inputData = "";
   pairType = EncodePairType(kPip,kPim);
   ivType = Binning::vM + 1;
+  for(int d=0; d<3; d++) nBins[d] = -1;
   oaTw = 2;
   oaL = 1;
   oaM = 1;
@@ -282,6 +292,8 @@ int PrintUsage() {
   };
   printf("   \tdefault = %d\n\n",ivType);
 
+  printf(" -n\tnumber of bins, listed for each independent variable,\n");
+  printf("   \tseparated by spaces\n\n");
   printf(" -w\tenable PhPerp/Mh weighting (default is off)\n\n");
 
   printf(" -t, -l, -m   azimuthal modulation single-amplitude asymmetry linear fit\n");
