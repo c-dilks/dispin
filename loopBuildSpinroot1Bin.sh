@@ -29,6 +29,6 @@ else
   waitForCondor.sh
 fi
 
-# concatenate spinroot files to cat.root
+# concatenate spinroot files to catTree.root
 sleep 3
-catSpinroot.exe
+hadd spinroot/catTree.root spinroot/tree*.root

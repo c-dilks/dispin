@@ -85,6 +85,7 @@ void BruAsymmetry::LoadDataSets(RooDataSet * rooData, RooDataSet * rooMC) {
   rooData->convertToTreeStore();
   trData = (TTree*) rooData->tree();
   trData->Write("tree");
+  AddUIDbranch(trData);
   treeFile->Close();
 
   // MC
@@ -92,6 +93,7 @@ void BruAsymmetry::LoadDataSets(RooDataSet * rooData, RooDataSet * rooMC) {
   rooMC->convertToTreeStore();
   trMC = (TTree*) rooMC->tree();
   trMC->Write("tree");
+  AddUIDbranch(trMC);
   treeFile->Close();
 
   // load trees into FitManager
@@ -107,8 +109,8 @@ void BruAsymmetry::Fit() {
   nThreads = (Int_t) std::thread::hardware_concurrency();
   if(nThreads<1) nThreads=1;
   if(nThreads>12) nThreads=12; // max (to not clobber shared nodes)
-  printf("---- fit with %d parallel threads\n",nThreads);
   nWorkers = TMath::Min(nThreads,this->GetNbins()); // for PROOF
+  printf("---- fit with %d parallel threads\n",nWorkers);
 
 
 
@@ -116,7 +118,7 @@ void BruAsymmetry::Fit() {
   // -optimize: calculate and cache formulas; suitable for RooComponentsPDF
   // -number of parellel threads
   FM->SetUp().AddFitOption(RooFit::Optimize(1));
-  FM->SetUp().AddFitOption(RooFit::NumCPU(nThreads));
+  FM->SetUp().AddFitOption(RooFit::NumCPU(nWorkers));
 
 
   // MINOS uncertainty estimation
@@ -162,4 +164,16 @@ void BruAsymmetry::PrintBinScheme() {
 };
 
 BruAsymmetry::~BruAsymmetry() {
+};
+
+// add ID branch to TTree
+void BruAsymmetry::AddUIDbranch(TTree * tr) {
+  /*
+  UID=0;
+  tr->Branch("UID",&UID,"UID/D");
+  for(Long64_t i=0; i<tr->GetEntries(); i++) { tr->Fill(); UID++; };
+  */
+  UIDbr = tr->Branch("UID",&UID,"UID/I");
+  for(Long64_t i=0; i<tr->GetEntries(); i++) { UIDbr->Fill(); UID++; };
+
 };

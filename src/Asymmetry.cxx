@@ -371,6 +371,9 @@ Asymmetry::Asymmetry(Binning * binScheme, Int_t binNum) {
     rfWeight->GetName()
   );
 
+  treeActivated = false;
+
+
 
   if(debug) {
     printf("whichDim = %d\n",whichDim);
@@ -403,6 +406,7 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
   Q2 = ev->Q2;
   xF = ev->xF;
   theta = ev->theta;
+
 
   // testing single-hadron phiH definition
   /*
@@ -506,6 +510,26 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
 
   // fill rfData
   rfData->add(*rfVars,rfWeight->getVal());
+
+
+  // fill tree
+  if(treeActivated) {
+    tree_PhiH = (Double_t)(PhiH);
+    tree_PhiR = (Double_t)(PhiR);
+    tree_PhiD = (Double_t)(PhiD);
+    tree_Theta = (Double_t)(theta);
+    tree_Pol = (Double_t)(pol);
+    tree_Rellum = (Double_t)(rellum);
+    tree_X = (Double_t)(x);
+    tree_Mh = (Double_t)(Mh);
+    tree_Z = (Double_t)(z);
+    tree_PhPerp = (Double_t)(PhPerp);
+    tree_Qsq = (Double_t)(Q2);
+    tree_XF = (Double_t)(xF);
+    tree_Weight = (Double_t)(weight);
+    tree_Spin_idx = (Int_t)(SpinInt(spinn));
+    tree->Fill();
+  };
 
 
   // fill plots
@@ -1333,6 +1357,26 @@ TString Asymmetry::AppFileName(TFile * tf) {
 Bool_t Asymmetry::KickEvent(TString reason,Float_t badValue) {
   fprintf(stderr,"kick event, since %s (value=%f)\n",reason.Data(),badValue);
   return false;
+};
+
+
+void Asymmetry::ActivateTree() {
+  tree = new TTree("tree","tree");
+  tree->Branch("PhiH",&tree_PhiH,"PhiH/D");
+  tree->Branch("PhiR",&tree_PhiR,"PhiR/D");
+  tree->Branch("PhiD",&tree_PhiD,"PhiD/D");
+  tree->Branch("Theta",&tree_Theta,"Theta/D");
+  tree->Branch("Pol",&tree_Pol,"Pol/D");
+  tree->Branch("Rellum",&tree_Rellum,"Rellum/D");
+  tree->Branch("X",&tree_X,"X/D");
+  tree->Branch("Mh",&tree_Mh,"Mh/D");
+  tree->Branch("Z",&tree_Z,"Z/D");
+  tree->Branch("PhPerp",&tree_PhPerp,"PhPerp/D");
+  tree->Branch("Qsq",&tree_Qsq,"Qsq/D");
+  tree->Branch("XF",&tree_XF,"XF/D");
+  tree->Branch("Weight",&tree_Weight,"Weight/D");
+  tree->Branch("Spin_idx",&tree_Spin_idx,"Spin_idx/I");
+  treeActivated = true;
 };
 
 

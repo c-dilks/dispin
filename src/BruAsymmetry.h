@@ -52,6 +52,7 @@ class BruAsymmetry : public TObject
     Int_t GetNbins();
     void PrintBinScheme();
 
+    void AddUIDbranch(TTree * tr);
 
     // MCMC settings
     Int_t MCMC_iter; // number of MCMC MH steps
@@ -67,6 +68,8 @@ class BruAsymmetry : public TObject
     TTree *trData, *trMC;
     TString numerList, PDFstr;
     Int_t nThreads, nWorkers;
+    Double_t UID;
+    TBranch * UIDbr;
 
 
   ClassDef(BruAsymmetry,1);

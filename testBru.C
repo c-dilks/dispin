@@ -2,13 +2,17 @@ R__LOAD_LIBRARY(DiSpin)
 #include "BruAsymmetry.h"
 void testBru(TString infileN = "spinroot/cat.root") {
 
-  TString roodataN = "A_M1/stream_cat_rfData_M1";
+  // RooDataSet name: expects single 1D x-bin `cat.root` file;
+  // use `loopBuildSpinroot1Bin.sh` to produce this
+  TString roodataN = "A_X0/stream_cat_rfData_X0";
+  
+  // obtain RooDataSets for data and MC
   TFile * infile = new TFile(infileN,"READ");
   RooDataSet * rooData = (RooDataSet*) infile->Get(roodataN);
   TFile * mcfile = new TFile("catMC.root","READ");
   RooDataSet * rooMC = (RooDataSet*) mcfile->Get(roodataN);
 
-  // macros needed for PROOF
+  // load macros needed for PROOF
   ///*
   gSystem->Load("libRooStats");
   gSystem->Load("libProof");
@@ -20,7 +24,7 @@ void testBru(TString infileN = "spinroot/cat.root") {
   //*/
    
   // instantiate
-  BruAsymmetry * B = new BruAsymmetry("testbrudir");
+  BruAsymmetry * B = new BruAsymmetry("bruspin");
 
   // build modulations
   B->AddNumerMod(new Modulation(3,0,0));
@@ -52,6 +56,3 @@ void testBru(TString infileN = "spinroot/cat.root") {
   // perform fit
   B->Fit();
 };
-
-
-

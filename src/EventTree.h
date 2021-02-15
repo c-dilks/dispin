@@ -35,7 +35,7 @@ class EventTree : public TObject
     EventTree(TString filelist, Int_t whichPair_);
     ~EventTree();
 
-    void GetEvent(Int_t i);
+    void GetEvent(Long64_t i);
     Bool_t Valid();
 
     Int_t SpinState();

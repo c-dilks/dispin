@@ -38,6 +38,7 @@ Binning * BS;
 Asymmetry * A;
 EventTree * ev;
 TFile * spinrootFile;
+TFile * treeFile;
 
 
 //////////////////////////////////////
@@ -136,6 +137,7 @@ int main(int argc, char** argv) {
     fprintf(stderr,"ERROR: Binning::SetScheme failed\n");
     return 0;
   };
+  Bool_t singleBinMode = BS->GetNbinsTotal()==1;
 
 
   // instantiate EventTree 
@@ -150,7 +152,7 @@ int main(int argc, char** argv) {
 
 
   // instantiate spinroot file
-  TString spinrootFileN;
+  TString spinrootFileN,treeFileN;
   if(inputType==iDir) {
     spinrootFileN = "spinroot/spin";
     spinrootFileN += "__" + PairName(pairType) + "_";
@@ -161,6 +163,8 @@ int main(int argc, char** argv) {
     spinrootFileN = inputData;
     spinrootFileN(TRegexp("^.*/")) = "spinroot/spin.";
   };
+  treeFileN = spinrootFileN;
+  treeFileN(TRegexp("spinroot/spin")) = "spinroot/tree";
   printf("\nCREATING OUTPUT FILE = %s\n\n",spinrootFileN.Data());
   spinrootFile = new TFile(spinrootFileN,"RECREATE");
 
@@ -173,6 +177,15 @@ int main(int argc, char** argv) {
     if(A->success) asymMap.insert(std::pair<Int_t, Asymmetry*>(bn,A));
     else return 0;
   };
+
+  // define output tree in a separate file, if analysing a single bin
+  if(singleBinMode) {
+    printf("\nCREATING TREE FILE = %s\n\n",treeFileN.Data());
+    treeFile = new TFile(treeFileN,"RECREATE");
+    A->ActivateTree(); // tell the one and only A to fill its TTree
+    spinrootFile->cd();
+  };
+
         
 
   //-----------------------------------------------------
@@ -207,6 +220,14 @@ int main(int argc, char** argv) {
   for(Int_t bn : BS->binVec) {
     A = asymMap.at(bn);
     A->StreamData(spinrootFile);
+  };
+
+  // write out to tree file
+  if(singleBinMode) {
+    treeFile->cd();
+    A->tree->Write("tree");
+    treeFile->Close();
+    spinrootFile->cd();
   };
 
 

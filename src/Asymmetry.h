@@ -89,6 +89,7 @@ class Asymmetry : public TObject
     void AppendData(TFile * tf);
     TString AppFileName(TFile * tf);
 
+    void ActivateTree();
 
     Double_t nEvents;
 
@@ -214,6 +215,7 @@ class Asymmetry : public TObject
     Double_t average_rellum;
 
 
+    TTree * tree;
 
     // RooFit variables
     RooDataSet * rfData;
@@ -284,6 +286,22 @@ class Asymmetry : public TObject
     TString dpTitle[Ndp];
     Int_t dpIdx[nAmp]; // which dp associated with the amplitude
 
+    Double_t tree_PhiH;
+    Double_t tree_PhiR;
+    Double_t tree_PhiD;
+    Double_t tree_Theta;
+    Double_t tree_Pol;
+    Double_t tree_Rellum;
+    Double_t tree_X;
+    Double_t tree_Mh;
+    Double_t tree_Z;
+    Double_t tree_PhPerp;
+    Double_t tree_Qsq;
+    Double_t tree_XF;
+    Double_t tree_Weight;
+    Int_t tree_Spin_idx;
+
+    Bool_t treeActivated;
 
 
 
