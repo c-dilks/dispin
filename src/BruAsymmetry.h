@@ -44,7 +44,8 @@ class BruAsymmetry : public TObject
 
     void AddNumerMod(Modulation * modu);
     void BuildPDF();
-    void LoadDataSets(RooDataSet * rooData, RooDataSet * rooMC);
+    void LoadDataSets(
+      TString dataFileN, TString mcFileN, TString treename="tree");
     void Fit();
     void PrintFitter() { FM->SetUp().WS().Print("v"); };
 
@@ -52,7 +53,6 @@ class BruAsymmetry : public TObject
     Int_t GetNbins();
     void PrintBinScheme();
 
-    void AddUIDbranch(TTree * tr);
 
     // MCMC settings
     Int_t MCMC_iter; // number of MCMC MH steps
@@ -65,11 +65,16 @@ class BruAsymmetry : public TObject
   private:
 
     TString outdir;
-    TTree *trData, *trMC;
+
+    TFile * infile[2];
+    TFile * outfile[2];
+    TTree * intr[2];
+    TTree * outtr[2];
+    Double_t Idx[2];
+    TBranch * IdxBr[2];
+
     TString numerList, PDFstr;
     Int_t nThreads, nWorkers;
-    Double_t UID;
-    TBranch * UIDbr;
 
 
   ClassDef(BruAsymmetry,1);

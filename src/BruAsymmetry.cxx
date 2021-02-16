@@ -17,10 +17,12 @@ BruAsymmetry::BruAsymmetry(TString outdir_) {
   FM->SetUp().LoadVariable(TString("Theta")+Form("[%f,%f]",-0.1,PIe));
   FM->SetUp().LoadVariable(TString("Pol")+Form("[%f,%f]",-1.0,1.0));
 
-
   // category for spin
   FM->SetUp().LoadCategory(
     TString("Spin_idx") + Form("[SpinP=%d,SpinM=%d]",sP,sM) );
+  
+  // unique ID variable
+  FM->SetUp().SetIDBranchName("Idx");
 
 
   // MCMC settings
@@ -78,27 +80,43 @@ void BruAsymmetry::BuildPDF() {
 // load data and MC events into FitManager, by converting RooDataSets to
 // disk-resident TTrees
 // - RooDataSets expected to be from Asymmetry::rfData
-void BruAsymmetry::LoadDataSets(RooDataSet * rooData, RooDataSet * rooMC) {
+void BruAsymmetry::LoadDataSets(
+  TString dataFileN, TString mcFileN, TString treename
+) {
 
-  // data
-  TFile * treeFile = new TFile(outdir+"/treeData.root","RECREATE");
-  rooData->convertToTreeStore();
-  trData = (TTree*) rooData->tree();
-  trData->Write("tree");
-  AddUIDbranch(trData);
-  treeFile->Close();
+  // read input trees
+  enum dataEnum {dt,mc}; // data, MC
+  infile[dt] = new TFile(dataFileN,"READ");
+  infile[mc] = new TFile(mcFileN,"READ");
+  for(int ff=0; ff<2; ff++)
+    intr[ff] = (TTree*) infile[ff]->Get(treename);
 
-  // MC
-  treeFile = new TFile(outdir+"/treeMC.root","RECREATE");
-  rooMC->convertToTreeStore();
-  trMC = (TTree*) rooMC->tree();
-  trMC->Write("tree");
-  AddUIDbranch(trMC);
-  treeFile->Close();
+  // create output tree, initially cloned from input trees
+  TString outfileN[2];
+  outfileN[dt] = outdir+"/treeData.root";
+  outfileN[mc] = outdir+"/treeMC.root";
+  for(int ff=0; ff<2; ff++) {
+    outfile[ff] = new TFile(outfileN[ff],"RECREATE");
+    outtr[ff] = intr[ff]->CloneTree();
+  };
+
+  // add unique ID branch to output trees, write and close
+  for(int ff=0; ff<2; ff++) {
+    outfile[ff]->cd();
+    Idx[ff] = 0;
+    IdxBr[ff] = outtr[ff]->Branch("Idx",&(Idx[ff]),"Idx/D");
+    for(Long64_t i=0; i<outtr[ff]->GetEntries(); i++) {
+      IdxBr[ff]->Fill();
+      Idx[ff] += 1;
+    };
+    outtr[ff]->Write(treename);
+    outfile[ff]->Close();
+    infile[ff]->Close();
+  };
 
   // load trees into FitManager
-  FM->LoadData("tree",outdir+"/treeData.root");
-  FM->LoadSimulated("tree",outdir+"/treeMC.root","PWfit");
+  FM->LoadData("tree",outfileN[dt]);
+  FM->LoadSimulated("tree",outfileN[mc],"PWfit");
 };
   
 
@@ -166,14 +184,3 @@ void BruAsymmetry::PrintBinScheme() {
 BruAsymmetry::~BruAsymmetry() {
 };
 
-// add ID branch to TTree
-void BruAsymmetry::AddUIDbranch(TTree * tr) {
-  /*
-  UID=0;
-  tr->Branch("UID",&UID,"UID/D");
-  for(Long64_t i=0; i<tr->GetEntries(); i++) { tr->Fill(); UID++; };
-  */
-  UIDbr = tr->Branch("UID",&UID,"UID/I");
-  for(Long64_t i=0; i<tr->GetEntries(); i++) { UIDbr->Fill(); UID++; };
-
-};

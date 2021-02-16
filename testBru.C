@@ -1,16 +1,6 @@
 R__LOAD_LIBRARY(DiSpin)
 #include "BruAsymmetry.h"
-void testBru(TString infileN = "spinroot/cat.root") {
-
-  // RooDataSet name: expects single 1D x-bin `cat.root` file;
-  // use `loopBuildSpinroot1Bin.sh` to produce this
-  TString roodataN = "A_X0/stream_cat_rfData_X0";
-  
-  // obtain RooDataSets for data and MC
-  TFile * infile = new TFile(infileN,"READ");
-  RooDataSet * rooData = (RooDataSet*) infile->Get(roodataN);
-  TFile * mcfile = new TFile("catMC.root","READ");
-  RooDataSet * rooMC = (RooDataSet*) mcfile->Get(roodataN);
+void testBru() {
 
   // load macros needed for PROOF
   ///*
@@ -46,7 +36,7 @@ void testBru(TString infileN = "spinroot/cat.root") {
 
 
   // load data and MC trees
-  B->LoadDataSets(rooData,rooMC);
+  B->LoadDataSets("spinroot/catTree.root","catTreeMC.root");
 
   // MCMC settings
   B->MCMC_iter = 100;
