@@ -64,7 +64,7 @@ void BruAsymmetry::BuildPDF() {
 
   // build PDFstr
   PDFstr = "RooComponentsPDF::PWfit(1,"; // PDF class::name ("+1" term ,
-  PDFstr += "{PhiH,PhiR,Theta,Pol,Spin_idx},"; // observables list
+  PDFstr += "{PhiH,PhiR,PhiD,Theta,Pol,Spin_idx},"; // observables list
   PDFstr += "=" + numerList + ")"; // sum_i { pol * spin * amp_i * mod_i }
 
   // construct the extended likelihood

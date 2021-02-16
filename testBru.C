@@ -3,15 +3,10 @@ R__LOAD_LIBRARY(DiSpin)
 void testBru() {
 
   // load macros needed for PROOF
-  ///*
-  gSystem->Load("libRooStats");
-  gSystem->Load("libProof");
-  gSystem->Load("libMathMore");
   TString BRUCODE=gSystem->Getenv("BRUFIT");
   TString macpath=BRUCODE+"/macros";
   gROOT->SetMacroPath(
     Form("%s:%s",gROOT->GetMacroPath(),(macpath).Data()));
-  //*/
    
   // instantiate
   BruAsymmetry * B = new BruAsymmetry("bruspin");
