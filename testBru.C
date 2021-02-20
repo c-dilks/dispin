@@ -34,8 +34,8 @@ void testBru() {
   B->LoadDataSets("spinroot/catTree.root","catTreeMC.root");
 
   // MCMC settings
-  B->MCMC_iter = 100;
-  B->MCMC_burnin = 30;
+  B->MCMC_iter = 10000;
+  B->MCMC_burnin = 300;
   B->MCMC_norm= 1.0 / 0.01;
 
   // perform fit
