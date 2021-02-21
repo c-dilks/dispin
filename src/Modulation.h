@@ -23,8 +23,10 @@ class Modulation : public TObject
                Int_t level_ = 0,
                Bool_t enablePW_ = false,
                Int_t polarization_ = kLU);
+    Modulation(TString ampStr, Int_t polarization_ = kLU);
     ~Modulation();
 
+    void Initialize();
     Double_t Evaluate(Float_t phiR, Float_t phiH, Float_t theta);
     TString Formu();
     TString FormuRF();

@@ -14,10 +14,14 @@ R__LOAD_LIBRARY(DiSpin)
 
 //////////////////////////////////////////////////////////
 
-TObjArray * BruBins;
+TObjArray * BruBinList;
 Int_t nDim, nBins;
 TString bruDir;
 HS::FIT::Bins * HSbins;
+const int nParamsMax = 30;
+const Float_t ASYM_PLOT_MIN = -0.07;
+const Float_t ASYM_PLOT_MAX = 0.07;
+
 
 //////////////////////////////////////////////////////////
 
@@ -27,6 +31,8 @@ class BruBin : public TObject {
     TString name,var;
     Double_t center,mean,ub,lb;
     TH1D * hist;
+    Double_t param[nParamsMax];
+    Double_t paramErr[nParamsMax];
     // -constructor
     BruBin(TAxis axis, Int_t binnum, TVectorD coord) {
       idx = HSbins->FindBin(coord); // bin index
@@ -51,6 +57,11 @@ class BruBin : public TObject {
       };
       mean = hist->GetMean();
       binTreeFile->Close();
+      // misc
+      for(int i=0; i<nParamsMax; i++) {
+        param[i] = UNDEF;
+        paramErr[i] = UNDEF;
+      };
     };
     // -print out
     void PrintInfo() {
@@ -73,62 +84,148 @@ void drawBru(TString bruDir_="bruspin") {
   HSbins = (HS::FIT::Bins*) binFile->Get("HSBins");
   nDim = HSbins->GetNAxis();
   printf("nDim = %d\n",nDim);
+  binFile->Close();
 
   // get Nbins
   nBins = HSbins->GetN();
   printf("nBins = %d\n",nBins);
 
   // build array of BruBin objects
-  BruBins = new TObjArray();
+  BruBinList = new TObjArray();
   TVectorD binCoord(nDim);
+  TString hTitle;
   if(nDim==1) {
     for(TAxis axis0 : HSbins->GetVarAxis()) {
       for(int bn=1; bn<=axis0.GetNbins(); bn++) {
         binCoord[0] = axis0.GetBinCenter(bn);
-        BruBins->AddLast(new BruBin(axis0,bn,binCoord));
+        BruBinList->AddLast(new BruBin(axis0,bn,binCoord));
       };
+      hTitle = axis0.GetName();
     };
   };
 
 
-  // print bins
+  // define BruBin iterator, and print bins
   BruBin * BB;
-  TObjArrayIter nextBin(BruBins);
-  while((BB = (BruBin*) nextBin())) {
-    BB->PrintInfo();
-  };
+  TObjArrayIter nextBin(BruBinList);
+  Tools::PrintSeparator(30);
+  while((BB = (BruBin*) nextBin())) BB->PrintInfo();
+  Tools::PrintSeparator(30);
   nextBin.Reset();
 
 
-  // get parameter values
+  // get parameter values from results trees
   Bool_t first = true;
   TFile * resultFile;
   TTree * resultTree;
   RooDataSet * paramSet;
-  TObjArray * paramList;
+  TString paramList[nParamsMax];
+  Modulation * moduList[nParamsMax];
   Int_t nParams;
   TString paramName;
   while((BB = (BruBin*) nextBin())) {
 
+    // get parameter tree
     resultFile = new TFile(
       bruDir+"/"+BB->name+"/ResultsHSRooMcmcSeq.root","READ");
     resultTree = (TTree*) resultFile->Get("ResultTree");
     paramSet = (RooDataSet*) resultFile->Get("FinalParameters");
 
+    // get parameter list
     if(first) {
-      // get parameter list
-      nParams = paramSet->get()->size();
-      paramList = new TObjArray();
-      for(int i=0; i<paramSet->get()->getSize(); i++) {
+      nParams = 0;
+      for(int i=0; i<paramSet->get()->size(); i++) {
+        if(nParams>nParamsMax) {
+          fprintf(stderr,"ERROR: too many params\n"); return 1; };
         paramName = (*(paramSet->get()))[i]->GetName();
-        printf("param %d:  %s\n",i,paramName.Data());
+        if(paramName=="NLL") continue;
+        if(paramName.Contains("Yld")) moduList[nParams] = nullptr;
+        else moduList[nParams] = new Modulation(paramName);
+        paramList[nParams] = paramName;
+        printf("param %d:  %s\n",nParams,paramList[nParams].Data());
+        nParams++;
       };
+      Tools::PrintSeparator(30);
       first = false;
+    };
+
+    // get parameter values
+    if(resultTree->GetEntries()!=1)
+      fprintf(stderr,"WARNING: ResultTree does not have 1 entry\n");
+    for(int i=0; i<nParams; i++) {
+      resultTree->SetBranchAddress(paramList[i],&(BB->param[i]));
+      resultTree->SetBranchAddress(paramList[i]+"_err",&(BB->paramErr[i]));
+      resultTree->GetEntry(0);
+    };
+    resultFile->Close();
+  };
+  nextBin.Reset();
+
+
+  // build graphs
+  TFile * outFile = new TFile(bruDir+"/asym.root","RECREATE");
+  TGraphErrors * paramGr[nParamsMax];
+  Int_t cnt;
+  TString vTitle;
+  /*
+   * 1dim
+   *   one graph per param
+   * 2dim
+   *   categ0: horizontal axis
+   *   one graph per param, times numBins in categ1
+   */
+  if(nDim==1) {
+    for(int i=0; i<nParams; i++) {
+
+      // define graph
+      paramGr[i] = new TGraphErrors();
+      paramGr[i]->SetName("gr_"+paramList[i]);
+      vTitle = moduList[i] ? moduList[i]->AsymmetryTitle() : "N";
+      paramGr[i]->SetTitle(vTitle+" vs. "+hTitle+";"+hTitle+";"+vTitle);
+      paramGr[i]->SetMarkerStyle(kFullCircle);
+      paramGr[i]->SetMarkerColor(kAzure);
+      paramGr[i]->SetLineColor(kAzure);
+
+      // add points to graph
+      cnt=0;
+      while((BB = (BruBin*) nextBin())) {
+        paramGr[i]->SetPoint(cnt,BB->mean,BB->param[i]);
+        paramGr[i]->SetPointError(cnt,0,BB->paramErr[i]);
+        cnt++;
+      };
+      nextBin.Reset();
+      paramGr[i]->Write();
     };
   };
 
-
-  // cleanup
-  binFile->Close();
+  // build canvases
+  TCanvas * paramCanv;
+  Float_t xMin,xMax,yMin,yMax;
+  TLine * zeroLine;
+  if(nDim==1) {
+    paramCanv = new TCanvas("canv","canv",1000,1000);
+    paramCanv->Divide(4,(nParams-1)/4+1);
+    for(int i=0; i<nParams; i++) {
+      paramCanv->cd(i+1);
+      yMin = ASYM_PLOT_MIN;
+      yMax = ASYM_PLOT_MAX;
+      if(paramGr[i]->GetYaxis()->GetXmin() < yMin)
+        yMin = paramGr[i]->GetYaxis()->GetXmin();
+      if(paramGr[i]->GetYaxis()->GetXmax() > yMax)
+        yMax = paramGr[i]->GetYaxis()->GetXmax();
+      paramGr[i]->GetYaxis()->SetRangeUser(yMin,yMax);
+      paramGr[i]->Draw("APE");
+      xMin = paramGr[i]->GetXaxis()->GetXmin();
+      xMax = paramGr[i]->GetXaxis()->GetXmax();
+      zeroLine = new TLine(xMin,0,xMax,0);
+      zeroLine->SetLineColor(kBlack);
+      zeroLine->SetLineWidth(2);
+      zeroLine->SetLineStyle(kDashed);
+      zeroLine->Draw();
+    };
+    paramCanv->Draw();
+    paramCanv->Write();
+  };
+  outFile->Close();
 
 };

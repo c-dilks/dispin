@@ -2,6 +2,7 @@
 
 ClassImp(Modulation)
 
+// constructor
 Modulation::Modulation(Int_t tw_, Int_t l_, Int_t m_,
  Int_t level_, Bool_t enablePW_, Int_t polarization_) {
 
@@ -19,6 +20,30 @@ Modulation::Modulation(Int_t tw_, Int_t l_, Int_t m_,
 
   // set polarization of structure function
   polarization = polarization_;
+
+  // build formula
+  this->Initialize();
+};
+
+
+// alternative constructor, for BruAsymmetry formatted amplitude names
+Modulation::Modulation(TString ampStr, Int_t polarization_) {
+
+  // parse amplitude name
+  enablePW = ampStr.Contains("pwAmp");
+  ampStr = ampStr.ReplaceAll("pw","");
+  char sgn;
+  sscanf(ampStr,"AmpT%dL%dM%c%dLv%d",&tw,&l,&sgn,&m,&lev);
+  if(sgn=='m') m*=-1;
+  polarization = polarization_;
+
+  // build formula
+  this->Initialize();
+};
+
+
+// build formula (called by the constructor)
+void Modulation::Initialize() {
 
   // validation; will likely crash if any of these errors are thrown
   if( !( tw==0 || tw==2 || tw==3 )) {
@@ -242,6 +267,7 @@ TString Modulation::AmpName() {
     TMath::Abs(m),
     lev
   );
+  if(enablePW) retstr = "pw" + retstr;
   return retstr;
 };
 
