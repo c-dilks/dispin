@@ -12,14 +12,14 @@
 R__LOAD_LIBRARY(DiSpin)
 #include "BruAsymmetry.h"
 
-/////////////////////////////
+//////////////////////////////////////////////////////////
 
 TObjArray * BruBins;
 Int_t nDim, nBins;
 TString bruDir;
 HS::FIT::Bins * HSbins;
 
-/////////////////////////////
+//////////////////////////////////////////////////////////
 
 class BruBin : public TObject {
   public:
@@ -63,7 +63,7 @@ class BruBin : public TObject {
     };
 };
 
-/////////////////////////////
+//////////////////////////////////////////////////////////
 
 void drawBru(TString bruDir_="bruspin") {
 
@@ -100,6 +100,32 @@ void drawBru(TString bruDir_="bruspin") {
   nextBin.Reset();
 
 
+  // get parameter values
+  Bool_t first = true;
+  TFile * resultFile;
+  TTree * resultTree;
+  RooDataSet * paramSet;
+  TObjArray * paramList;
+  Int_t nParams;
+  TString paramName;
+  while((BB = (BruBin*) nextBin())) {
+
+    resultFile = new TFile(
+      bruDir+"/"+BB->name+"/ResultsHSRooMcmcSeq.root","READ");
+    resultTree = (TTree*) resultFile->Get("ResultTree");
+    paramSet = (RooDataSet*) resultFile->Get("FinalParameters");
+
+    if(first) {
+      // get parameter list
+      nParams = paramSet->get()->size();
+      paramList = new TObjArray();
+      for(int i=0; i<paramSet->get()->getSize(); i++) {
+        paramName = (*(paramSet->get()))[i]->GetName();
+        printf("param %d:  %s\n",i,paramName.Data());
+      };
+      first = false;
+    };
+  };
 
 
   // cleanup
