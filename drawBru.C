@@ -21,6 +21,8 @@ HS::FIT::Bins * HSbins;
 const int nParamsMax = 30;
 const Float_t ASYM_PLOT_MIN = -0.07;
 const Float_t ASYM_PLOT_MAX = 0.07;
+Int_t minimizer;
+enum minimEnum { mkMCMC, mkMinuit };
 
 
 //////////////////////////////////////////////////////////
@@ -76,7 +78,12 @@ class BruBin : public TObject {
 
 //////////////////////////////////////////////////////////
 
-void drawBru(TString bruDir_="bruspin") {
+void drawBru(TString bruDir_="bruspin", TString minimizer_="mcmc") {
+
+  // get minimizer type
+  if(minimizer_=="mcmc") minimizer=mkMCMC;
+  else if(minimizer_=="minuit") minimizer=mkMinuit;
+  else { fprintf(stderr,"ERROR: unknown minimizer type\n"); return; };
 
   // get nDim
   bruDir = bruDir_;
@@ -100,7 +107,7 @@ void drawBru(TString bruDir_="bruspin") {
         binCoord[0] = axis0.GetBinCenter(bn);
         BruBinList->AddLast(new BruBin(axis0,bn,binCoord));
       };
-      hTitle = axis0.GetName();
+      hTitle = axis0.GetName(); // TODO: use dispin Binning to convert to proper title
     };
   };
 
@@ -115,9 +122,14 @@ void drawBru(TString bruDir_="bruspin") {
 
 
   // get parameter values from results trees
-  Bool_t first = true;
   TFile * resultFile;
+  TString resultFileN;
+  switch(minimizer) {
+    case mkMCMC: resultFileN="ResultsHSRooMcmcSeq.root"; break;
+    case mkMinuit: resultFileN="ResultsHSMinuit2.root"; break;
+  };
   TTree * resultTree;
+  Bool_t first = true;
   RooDataSet * paramSet;
   TString paramList[nParamsMax];
   Modulation * moduList[nParamsMax];
@@ -126,8 +138,7 @@ void drawBru(TString bruDir_="bruspin") {
   while((BB = (BruBin*) nextBin())) {
 
     // get parameter tree
-    resultFile = new TFile(
-      bruDir+"/"+BB->name+"/ResultsHSRooMcmcSeq.root","READ");
+    resultFile = new TFile(bruDir+"/"+BB->name+"/"+resultFileN,"READ");
     resultTree = (TTree*) resultFile->Get("ResultTree");
     paramSet = (RooDataSet*) resultFile->Get("FinalParameters");
 
@@ -217,11 +228,13 @@ void drawBru(TString bruDir_="bruspin") {
       paramGr[i]->Draw("APE");
       xMin = paramGr[i]->GetXaxis()->GetXmin();
       xMax = paramGr[i]->GetXaxis()->GetXmax();
-      zeroLine = new TLine(xMin,0,xMax,0);
-      zeroLine->SetLineColor(kBlack);
-      zeroLine->SetLineWidth(2);
-      zeroLine->SetLineStyle(kDashed);
-      zeroLine->Draw();
+      if(!paramList[i].Contains("Yld")) {
+        zeroLine = new TLine(xMin,0,xMax,0);
+        zeroLine->SetLineColor(kBlack);
+        zeroLine->SetLineWidth(2);
+        zeroLine->SetLineStyle(kDashed);
+        zeroLine->Draw();
+      };
     };
     paramCanv->Draw();
     paramCanv->Write();

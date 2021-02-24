@@ -24,8 +24,23 @@ void testBru() {
   B->BuildPDF();
 
   // binning
-  Double_t MhBins[5] = { 0.0, 0.4, 0.6, 0.9, 3.0 };
-  B->FM->Bins().LoadBinVar("Mh",4,MhBins);
+  const Int_t nBins = 12;
+  Double_t MhBins[nBins+1] = {
+    0.0,
+    0.381,
+    0.462,
+    0.531,
+    0.606,
+    0.675,
+    0.737,
+    0.781,
+    0.831,
+    0.900,
+    0.981,
+    1.125,
+    3.0
+  };
+  B->FM->Bins().LoadBinVar("Mh",nBins,MhBins);
   //B->FM->Bins().LoadBinVar("Z",4,ZBins);
   B->PrintBinScheme();
 
@@ -34,9 +49,9 @@ void testBru() {
   B->LoadDataSets("spinroot/catTree.root","catTreeMC.root");
 
   // MCMC settings
-  B->MCMC_iter = 10000;
-  B->MCMC_burnin = 300;
-  B->MCMC_norm= 1.0 / 0.01;
+  B->MCMC_iter = 3000; // number of samples
+  B->MCMC_burnin = 300; // number of initial samples to drop
+  B->MCMC_norm = 1.0 / 0.03; // 1/stepsize
 
   // perform fit
   B->Fit();

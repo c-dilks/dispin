@@ -131,8 +131,12 @@ void BruAsymmetry::Fit() {
   printf("---- fit with %d parallel threads\n",nWorkers);
 
 
+  // set minimizer
+  //FM->SetMinimiser(new HS::FIT::RooMcmcSeq(MCMC_iter,MCMC_burnin,MCMC_norm));
+  FM->SetMinimiser(new HS::FIT::Minuit2());
 
-  // roofit settings:
+
+  // fit settings:
   // -optimize: calculate and cache formulas; suitable for RooComponentsPDF
   // -number of parellel threads
   FM->SetUp().AddFitOption(RooFit::Optimize(1));
@@ -142,9 +146,6 @@ void BruAsymmetry::Fit() {
   // MINOS uncertainty estimation
   //FM->SetUp().AddFitOption(RooFit::Minos(kTRUE));
 
-
-  // set minimizer
-  FM->SetMinimiser(new HS::FIT::RooMcmcSeq(MCMC_iter,MCMC_burnin,MCMC_norm));
 
   // perform the fit
   //HS::FIT::PROCESS::Here::Go(FM);
