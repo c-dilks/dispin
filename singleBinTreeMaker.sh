@@ -31,4 +31,4 @@ fi
 
 # concatenate spinroot files to catTree.root
 sleep 3
-hadd spinroot/catTree.root spinroot/tree*.root
+${ROOTSYS}/bin/hadd spinroot/catTree.root spinroot/tree*.root

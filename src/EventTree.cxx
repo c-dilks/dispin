@@ -149,14 +149,15 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
     // - helicityMC
     if(chain->GetBranch("helicityMC")) {
       chain->SetBranchAddress("helicityMC",helicityMC);
+      helicityMCinjected = true;
     } else {
-      // set to +helicity, so cutHelicity==true if MC helicity has
-      // not yet been injected
-      for(int hh=0; hh<NhelicityMC; hh++) helicityMC[hh]=3; 
+      for(int hh=0; hh<NhelicityMC; hh++) helicityMC[hh]=0;
+      helicityMCinjected = false;
     };
   } else { 
     MCrecMode = false;
     for(int hh=0; hh<NhelicityMC; hh++) helicityMC[hh]=0; 
+    helicityMCinjected = false;
     gen_W = UNDEF;
     gen_Q2 = UNDEF;
     gen_Nu = UNDEF;
@@ -226,6 +227,8 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
   };
   whichHelicityMC = 0;
   vertexWarned = false;
+
+  RNG = new TRandomMixMax(14972); // seed
 
 };
 
@@ -367,7 +370,8 @@ void EventTree::GetEvent(Long64_t i) {
   
 
   // check if helicity is defined
-  cutHelicity = this->SpinState()==sP || this->SpinState()==sM;
+  sps = this->SpinState();
+  cutHelicity = sps==sP || sps==sM;
 
 };
 
@@ -394,6 +398,11 @@ Int_t EventTree::SpinState() {
     };
   }
   else if(runnum==11) { // MC helicity
+    if(!helicityMCinjected) {
+      // if helicityMC has not yet been injected, then inject something here so cutHelicity==true
+      //helicityMC[whichHelicityMC] = 3; // +helicity only
+      helicityMC[whichHelicityMC] = RNG->Uniform()<0.5 ? 2:3; // 50/50 random
+    };
     switch(helicityMC[whichHelicityMC]) {
       case 2: return sM;
       case 3: return sP;

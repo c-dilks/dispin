@@ -17,6 +17,8 @@
 #include "TFile.h"
 #include "TString.h"
 #include "TMath.h"
+#include "TRandom.h"
+#include "TRandomGen.h"
 
 // dihbsa
 #include "Constants.h"
@@ -232,6 +234,10 @@ class EventTree : public TObject
     Bool_t vertexWarned;
     Bool_t sfcutDiag, sfcutSigma;
     Float_t dfA;
+
+    Bool_t helicityMCinjected;
+    TRandom * RNG;
+    Int_t sps;
 
   ClassDef(EventTree,1);
 };
