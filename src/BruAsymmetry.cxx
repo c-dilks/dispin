@@ -19,7 +19,7 @@ BruAsymmetry::BruAsymmetry(TString outdir_) {
 
   // category for spin
   FM->SetUp().LoadCategory(
-    TString("Spin_idx") + Form("[SpinP=%d,SpinM=%d]",sP,sM) );
+    TString("Spin_idx") + Form("[SpinP=%d,SpinM=%d]",1,-1) );
   
   // unique ID variable
   FM->SetUp().SetIDBranchName("Idx");
