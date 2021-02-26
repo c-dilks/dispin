@@ -1,6 +1,6 @@
 R__LOAD_LIBRARY(DiSpin)
 #include "BruAsymmetry.h"
-void testBru() {
+void asymBruFit(TString bruDir="bruspin", TString minimizer="minuit") {
 
   // load macros needed for PROOF
   TString BRUCODE=gSystem->Getenv("BRUFIT");
@@ -9,16 +9,32 @@ void testBru() {
     Form("%s:%s",gROOT->GetMacroPath(),(macpath).Data()));
    
   // instantiate
-  BruAsymmetry * B = new BruAsymmetry("bruspin");
+  BruAsymmetry * B = new BruAsymmetry(bruDir);
 
   // build modulations
-  B->AddNumerMod(new Modulation(3,0,0));
+  /*
+  B->AddNumerMod(new Modulation(3,0,0)); // 7 amps (PRL)
   B->AddNumerMod(new Modulation(2,1,1));
   B->AddNumerMod(new Modulation(3,1,1));
   B->AddNumerMod(new Modulation(3,1,-1));
   B->AddNumerMod(new Modulation(2,2,2));
   B->AddNumerMod(new Modulation(3,2,2));
   B->AddNumerMod(new Modulation(3,2,-2));
+  */
+  ///*
+  B->AddNumerMod(new Modulation(3,0,0,0,true)); // all 12 PWs up to L=2 (dnp2020)
+  B->AddNumerMod(new Modulation(3,1,0,0,true));
+  B->AddNumerMod(new Modulation(2,1,1,0,true));
+  B->AddNumerMod(new Modulation(3,1,1,0,true));
+  B->AddNumerMod(new Modulation(3,1,-1,0,true));
+  B->AddNumerMod(new Modulation(3,2,0,0,true));
+  B->AddNumerMod(new Modulation(2,2,1,0,true));
+  B->AddNumerMod(new Modulation(3,2,1,0,true));
+  B->AddNumerMod(new Modulation(3,2,-1,0,true));
+  B->AddNumerMod(new Modulation(2,2,2,0,true));
+  B->AddNumerMod(new Modulation(3,2,2,0,true));
+  B->AddNumerMod(new Modulation(3,2,-2,0,true));
+  //*/
 
   // build full PDF
   B->BuildPDF();
@@ -49,10 +65,10 @@ void testBru() {
   B->LoadDataSets("spinroot/catTree.root","catTreeMC.root");
 
   // MCMC settings
-  B->MCMC_iter = 3000; // number of samples
-  B->MCMC_burnin = 300; // number of initial samples to drop
+  B->MCMC_iter = 10000; // number of samples
+  B->MCMC_burnin = 500; // number of initial samples to drop
   B->MCMC_norm = 1.0 / 0.03; // 1/stepsize
 
   // perform fit
-  B->Fit();
+  B->Fit(minimizer);
 };

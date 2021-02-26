@@ -121,7 +121,7 @@ void BruAsymmetry::LoadDataSets(
   
 
 // perform the fit
-void BruAsymmetry::Fit() {
+void BruAsymmetry::Fit(TString minimizer) {
 
   // number of parallel threads
   nThreads = (Int_t) std::thread::hardware_concurrency();
@@ -131,9 +131,16 @@ void BruAsymmetry::Fit() {
   printf("---- fit with %d parallel threads\n",nWorkers);
 
 
-  // set minimizer
-  //FM->SetMinimiser(new HS::FIT::RooMcmcSeq(MCMC_iter,MCMC_burnin,MCMC_norm));
-  FM->SetMinimiser(new HS::FIT::Minuit2());
+  // set minimizer algorithm
+  if(minimizer=="mcmc") {
+    FM->SetMinimiser( new HS::FIT::RooMcmcSeq(
+      MCMC_iter,MCMC_burnin,MCMC_norm ) );
+  } else if(minimizer=="minuit") {
+    FM->SetMinimiser(new HS::FIT::Minuit2());
+  } else {
+    fprintf(stderr,"ERROR: unknown minimizer in BruAsymmetry::Fit()\n");
+    return;
+  };
 
 
   // fit settings:
