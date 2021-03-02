@@ -20,11 +20,12 @@ Int_t nSamples;
 TString bruDir;
 HS::FIT::Bins * HSbins;
 const int nParamsMax = 30;
-const Float_t ASYM_PLOT_MIN = -0.10;
-const Float_t ASYM_PLOT_MAX = 0.10;
+Float_t asymPlotMin;
+Float_t asymPlotMax;
 Int_t minimizer;
 enum minimEnum { mkMCMC, mkMinuit };
 TString hTitle,vTitle,pName;
+TString resultFileN;
 
 
 //////////////////////////////////////////////////////////
@@ -38,15 +39,22 @@ class BruBin : public TObject {
     Double_t param[nParamsMax];
     Double_t paramErr[nParamsMax];
     TH1D * paramVsSample[nParamsMax];
+    TFile * resultFile;
+    TTree * resultTree;
+    TTree * mcmcTree;
+
     // -constructor
     BruBin(TAxis axis, Int_t binnum, TVectorD coord) {
+
       idx = HSbins->FindBin(coord); // bin index
       name = HSbins->GetBinName(idx); // bin name (brufit syntax)
       var = axis.GetName(); // bin variable
+
       // get bin center, lower bound, upper bound
       center = axis.GetBinCenter(binnum);
       lb = axis.GetBinLowEdge(binnum);
       ub = axis.GetBinUpEdge(binnum);
+
       // get bin mean (requires opening the bin's tree)
       hist = new TH1D( Form("ivHist%d",idx),Form("ivHist%d",idx),
         100,lb-0.05,ub+0.05);
@@ -62,26 +70,30 @@ class BruBin : public TObject {
       };
       mean = hist->GetMean();
       binTreeFile->Close();
-      // if using MCMC, get number of samples and define paramVsSample
+
+      // open result file, and read trees
+      switch(minimizer) {
+        case mkMCMC: resultFileN="ResultsHSRooMcmcSeq.root"; break;
+        case mkMinuit: resultFileN="ResultsHSMinuit2.root"; break;
+      };
+      resultFile = new TFile(bruDir+"/"+name+"/"+resultFileN,"READ");
+      resultTree = (TTree*) resultFile->Get("ResultTree");
       if(minimizer==mkMCMC) {
-        if(nSamples==0) {
-          TFile * tmpFile = new TFile(
-            bruDir+"/"+name+"/ResultsHSRooMcmcSeq.root","READ");
-          TTree * tmpTree = (TTree*) tmpFile->Get("MCMCTree");
-          nSamples = (Int_t) tmpTree->GetEntries();
-          tmpFile->Close();
-        };
+        mcmcTree = (TTree*) resultFile->Get("MCMCTree");
+        nSamples = (Int_t) mcmcTree->GetEntries();
         for(int i=0; i<nParamsMax; i++) {
           pName = Form("bin%d_param%d_vs_sample",idx,i);
-          paramVsSample[i] = new TH1D(pName,pName,nSamples,0,nSamples);
+          paramVsSample[i] = new TH1D(pName,pName,nSamples,1,nSamples+1);
         };
       };
+
       // misc
       for(int i=0; i<nParamsMax; i++) {
         param[i] = UNDEF;
         paramErr[i] = UNDEF;
       };
     };
+
     // -print out
     void PrintInfo() {
       printf("BIN %d\n",idx);
@@ -95,12 +107,22 @@ class BruBin : public TObject {
 
 //////////////////////////////////////////////////////////
 
-void drawBru(TString bruDir_="bruspin", TString minimizer_="minuit") {
+void drawBru(
+  TString bruDir_ = "bruspin",
+  TString minimizer_ = "minuit",
+  Bool_t logscale = true, /* plot sample# on log scale */
+  Float_t asymPlotMin_ = -10, /* units: % */
+  Float_t asymPlotMax_ =  10  /* units: % */
+) {
+
+  asymPlotMin = asymPlotMin_ / 100.0;
+  asymPlotMax = asymPlotMax_ / 100.0;
 
   // get minimizer type
   if(minimizer_=="mcmc") minimizer=mkMCMC;
   else if(minimizer_=="minuit") minimizer=mkMinuit;
   else { fprintf(stderr,"ERROR: unknown minimizer type\n"); return; };
+
 
   // get nDim
   bruDir = bruDir_;
@@ -141,26 +163,18 @@ void drawBru(TString bruDir_="bruspin", TString minimizer_="minuit") {
 
 
   // get parameter values from results trees
-  TFile * resultFile;
-  TString resultFileN;
-  switch(minimizer) {
-    case mkMCMC: resultFileN="ResultsHSRooMcmcSeq.root"; break;
-    case mkMinuit: resultFileN="ResultsHSMinuit2.root"; break;
-  };
-  TTree * resultTree;
-  TTree * mcmcTree;
   Bool_t first = true;
   RooDataSet * paramSet;
   TString paramList[nParamsMax];
   Modulation * moduList[nParamsMax];
   Int_t nParams;
   TString paramName;
+  Double_t paramval[nParamsMax];
+  Long64_t entry;
   while((BB = (BruBin*) nextBin())) {
 
     // get parameter tree
-    resultFile = new TFile(bruDir+"/"+BB->name+"/"+resultFileN,"READ");
-    resultTree = (TTree*) resultFile->Get("ResultTree");
-    paramSet = (RooDataSet*) resultFile->Get("FinalParameters");
+    paramSet = (RooDataSet*) BB->resultFile->Get("FinalParameters");
 
     // get parameter list
     if(first) {
@@ -181,33 +195,36 @@ void drawBru(TString bruDir_="bruspin", TString minimizer_="minuit") {
     };
 
     // get parameter values
-    if(resultTree->GetEntries()!=1)
+    if(BB->resultTree->GetEntries()!=1)
       fprintf(stderr,"WARNING: ResultTree does not have 1 entry\n");
     for(int i=0; i<nParams; i++) {
-      resultTree->SetBranchAddress(paramList[i],&(BB->param[i]));
-      resultTree->SetBranchAddress(paramList[i]+"_err",&(BB->paramErr[i]));
-      resultTree->GetEntry(0);
+      BB->resultTree->SetBranchAddress(paramList[i],&(BB->param[i]));
+      BB->resultTree->SetBranchAddress(paramList[i]+"_err",&(BB->paramErr[i]));
+      BB->resultTree->GetEntry(0);
     };
 
     // if MCMC was used, fill param vs sample graphs
     if(minimizer==mkMCMC) {
-      mcmcTree = (TTree*) resultFile->Get("MCMCTree");
+      BB->mcmcTree->SetBranchAddress("entry",&entry);
       for(int i=0; i<nParams; i++) {
+        BB->mcmcTree->SetBranchAddress(paramList[i],&paramval[i]);
         vTitle = moduList[i] ? moduList[i]->AsymmetryTitle() : "N";
         BB->paramVsSample[i]->SetTitle(
           vTitle+" vs. MCMC sample;sample;"+vTitle);
-        mcmcTree->Project(
-          BB->paramVsSample[i]->GetName(),"entry",paramList[i]);
+      };
+      for(Long64_t e=0; e<BB->mcmcTree->GetEntries(); e++) {
+        BB->mcmcTree->GetEntry(e);
+        for(int i=0; i<nParams; i++) 
+          BB->paramVsSample[i]->Fill(entry+1,paramval[i]);
       };
     };
-
-    resultFile->Close();
   };
   nextBin.Reset();
 
 
   // build graphs
-  TFile * outFile = new TFile(bruDir+"/asym.root","RECREATE");
+  TString outfileN = bruDir+"/asym.root";
+  TFile * outFile = new TFile(outfileN,"RECREATE");
   TGraphErrors * paramGr[nParamsMax];
   Int_t cnt;
   /*
@@ -244,6 +261,7 @@ void drawBru(TString bruDir_="bruspin", TString minimizer_="minuit") {
   // build canvases
   TCanvas * paramCanv;
   TCanvas * paramVsSampleCanv;
+  TCanvas * cornerCanv;
   Float_t xMin,xMax,yMin,yMax;
   TLine * zeroLine;
   if(nDim==1) {
@@ -253,8 +271,8 @@ void drawBru(TString bruDir_="bruspin", TString minimizer_="minuit") {
     paramCanv->Divide(4,(nParams-1)/4+1);
     for(int i=0; i<nParams; i++) {
       paramCanv->cd(i+1);
-      yMin = ASYM_PLOT_MIN;
-      yMax = ASYM_PLOT_MAX;
+      yMin = asymPlotMin;
+      yMax = asymPlotMax;
       if(paramGr[i]->GetYaxis()->GetXmin() < yMin)
         yMin = paramGr[i]->GetYaxis()->GetXmin();
       if(paramGr[i]->GetYaxis()->GetXmax() > yMax)
@@ -284,14 +302,27 @@ void drawBru(TString bruDir_="bruspin", TString minimizer_="minuit") {
         paramVsSampleCanv->Divide(4,(nParams-1)/4+1);
         for(int i=0; i<nParams; i++) {
           paramVsSampleCanv->cd(i+1);
+          if(logscale) gPad->SetLogx();
+          if(!paramList[i].Contains("Yld"))
+            BB->paramVsSample[i]->GetYaxis()->SetRangeUser(
+              asymPlotMin,asymPlotMax);
           BB->paramVsSample[i]->Draw("HIST");
         };
         paramVsSampleCanv->Write();
       };
       nextBin.Reset();
+      while((BB = (BruBin*) nextBin())) {
+        cornerCanv = (TCanvas*) BB->resultFile->Get("Corner Full Plot")->Clone();
+        cornerCanv->Write(Form("cornerCanv_%d",BB->idx));
+      };
+      nextBin.Reset();
     };
   };
 
+  // cleanup
+  while((BB = (BruBin*) nextBin())) BB->resultFile->Close();
+  nextBin.Reset();
   outFile->Close();
+  printf("produced %s\n",outfileN.Data());
 
 };
