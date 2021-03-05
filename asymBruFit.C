@@ -1,6 +1,6 @@
 R__LOAD_LIBRARY(DiSpin)
 #include "BruAsymmetry.h"
-void asymBruFit(TString bruDir="bruspin", TString minimizer="minuit") {
+void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc") {
 
   // load macros needed for PROOF
   TString BRUCODE=gSystem->Getenv("BRUFIT");
@@ -67,9 +67,9 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="minuit") {
   B->LoadDataSets("spinroot/catTree.root","catTreeMC.root");
 
   // MCMC settings
-  B->MCMC_iter = 10000; // number of samples
-  B->MCMC_burnin = 500; // number of initial samples to drop
-  B->MCMC_norm = 1.0 / 0.03; // 1/stepsize
+  B->MCMC_iter = 50000; // number of samples
+  B->MCMC_burnin = 1000; // number of initial samples to drop
+  B->MCMC_norm = 1.0 / 0.01; // 1/stepsize
 
   // perform fit
   B->Fit(minimizer);
