@@ -340,7 +340,7 @@ void EventTree::GetEvent(Long64_t i) {
   cutDihadron = 
     Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) &&
     Zpair < 0.95 && /* legacy; redundant with Mx>1.5 */
-    Mmiss > 1.5;
+    CheckMissingMass();
 
 
   // vertex cuts
@@ -464,6 +464,17 @@ Bool_t EventTree::CheckVertex() {
          hadVertex[qA][eZ] > -8  &&  hadVertex[qA][eZ] < 3  &&
          hadVertex[qB][eZ] > -8  &&  hadVertex[qB][eZ] < 3;*/
 };
+
+
+// check missing mass cut (which can depend on channel)
+Bool_t EventTree::CheckMissingMass() {
+  if(Tools::PairSame(hadIdx[qA],hadIdx[qB],kPip,kPim))
+    return Mmiss>1.5; // pi+ pi-
+  else if(Tools::PairSame(hadIdx[qA],hadIdx[qB],kP,kPip))
+    return Mmiss>0.6; // p pi+
+  return Mmiss>1.5; // default
+};
+
 
 
 // sampling fraction (SF) cut, for electrons

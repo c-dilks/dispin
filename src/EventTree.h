@@ -46,6 +46,7 @@ class EventTree : public TObject
     Bool_t CheckVertex();
     Bool_t CheckSampFrac();
     Bool_t CheckHadChi2pid(Int_t had);
+    Bool_t CheckMissingMass();
 
     void PrintEventVerbose();
     void PrintEvent();
@@ -238,6 +239,7 @@ class EventTree : public TObject
     Bool_t helicityMCinjected;
     TRandom * RNG;
     Int_t sps;
+
 
   ClassDef(EventTree,1);
 };

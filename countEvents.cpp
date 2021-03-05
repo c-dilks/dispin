@@ -67,14 +67,23 @@ int main(int argc, char** argv) {
 
    };
 
-   printf("total number of pi+pi- pairs = %ld\n",nTotal);
-   printf("total number which satisfies all cuts = %ld\n",nValid);
-   printf("nCutDIS = %ld\n",nCutDIS);
-   printf("nCutDihadron = %ld\n",nCutDihadron);
-   printf("nCutHelicity = %ld\n",nCutHelicity);
-   printf("nCutFiducial = %ld\n",nCutFiducial);
-   printf("nCutPID = %ld\n",nCutPID);
-   printf("nCutVertex = %ld\n",nCutVertex);
+   printf("total number of %s pairs = %ld\n",
+     PairName(whichHad[qA],whichHad[qB]).Data(),
+     nTotal);
+   printf("total number which satisfies all cuts = %ld  (%.3f%%)\n",
+     nValid,100*(Double_t)nValid/nTotal);
+   printf("nCutDIS = %ld  (%.3f%%)\n",
+     nCutDIS,100*(Double_t)nCutDIS/nTotal);
+   printf("nCutDihadron = %ld  (%.3f%%)\n",
+     nCutDihadron,100*(Double_t)nCutDihadron/nTotal);
+   printf("nCutHelicity = %ld  (%.3f%%)\n",
+     nCutHelicity,100*(Double_t)nCutHelicity/nTotal);
+   printf("nCutFiducial = %ld  (%.3f%%)\n",
+     nCutFiducial,100*(Double_t)nCutFiducial/nTotal);
+   printf("nCutPID = %ld  (%.3f%%)\n",
+     nCutPID,100*(Double_t)nCutPID/nTotal);
+   printf("nCutVertex = %ld  (%.3f%%)\n",
+     nCutVertex,100*(Double_t)nCutVertex/nTotal);
 
    if(printEvents) 
      printf("\n!! events printed to eventTable.txt (no more than 10000 printed) !!\n\n");
