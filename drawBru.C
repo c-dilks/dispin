@@ -312,7 +312,8 @@ void drawBru(
       };
       nextBin.Reset();
       while((BB = (BruBin*) nextBin())) {
-        cornerCanv = (TCanvas*) BB->resultFile->Get("Corner Full Plot")->Clone();
+        //cornerCanv = (TCanvas*) BB->resultFile->Get("Corner Full Plot")->Clone();
+        cornerCanv = (TCanvas*) BB->resultFile->Get("Corner Plot")->Clone();
         cornerCanv->Write(Form("cornerCanv_%d",BB->idx));
       };
       nextBin.Reset();
