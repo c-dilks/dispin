@@ -22,6 +22,7 @@ HS::FIT::Bins * HSbins;
 const int nParamsMax = 30;
 Float_t asymPlotMin;
 Float_t asymPlotMax;
+Float_t axisTitleSize;
 Int_t minimizer;
 enum minimEnum { mkMCMC, mkMinuit };
 TString hTitle,vTitle,pName;
@@ -117,6 +118,9 @@ void drawBru(
 
   asymPlotMin = asymPlotMin_ / 100.0;
   asymPlotMax = asymPlotMax_ / 100.0;
+  gStyle->SetTitleSize(0.08,"T");
+  axisTitleSize = 0.05;
+  gStyle->SetOptStat(0);
 
   // get minimizer type
   if(minimizer_=="mcmc") minimizer=mkMCMC;
@@ -210,7 +214,9 @@ void drawBru(
         BB->mcmcTree->SetBranchAddress(paramList[i],&paramval[i]);
         vTitle = moduList[i] ? moduList[i]->AsymmetryTitle() : "N";
         BB->paramVsSample[i]->SetTitle(
-          vTitle+" vs. MCMC sample;sample;"+vTitle);
+          vTitle+" vs. MCMC sample"/*;sample;"+vTitle*/);
+        BB->paramVsSample[i]->GetXaxis()->SetLabelSize(axisTitleSize);
+        BB->paramVsSample[i]->GetYaxis()->SetLabelSize(axisTitleSize);
       };
       for(Long64_t e=0; e<BB->mcmcTree->GetEntries(); e++) {
         BB->mcmcTree->GetEntry(e);
@@ -241,7 +247,9 @@ void drawBru(
       paramGr[i] = new TGraphErrors();
       paramGr[i]->SetName("gr_"+paramList[i]);
       vTitle = moduList[i] ? moduList[i]->AsymmetryTitle() : "N";
-      paramGr[i]->SetTitle(vTitle+" vs. "+hTitle+";"+hTitle+";"+vTitle);
+      paramGr[i]->SetTitle(vTitle+" vs. "+hTitle/*+";"+hTitle+";"+vTitle*/);
+      paramGr[i]->GetXaxis()->SetLabelSize(axisTitleSize);
+      paramGr[i]->GetYaxis()->SetLabelSize(axisTitleSize);
       paramGr[i]->SetMarkerStyle(kFullCircle);
       paramGr[i]->SetMarkerColor(kAzure);
       paramGr[i]->SetLineColor(kAzure);
@@ -309,11 +317,12 @@ void drawBru(
           BB->paramVsSample[i]->Draw("HIST");
         };
         paramVsSampleCanv->Write();
+        paramVsSampleCanv->Close();
       };
       nextBin.Reset();
       while((BB = (BruBin*) nextBin())) {
-        //cornerCanv = (TCanvas*) BB->resultFile->Get("Corner Full Plot")->Clone();
-        cornerCanv = (TCanvas*) BB->resultFile->Get("Corner Plot")->Clone();
+        cornerCanv = (TCanvas*) BB->resultFile->Get("Corner Full Plot")->Clone();
+        //cornerCanv = (TCanvas*) BB->resultFile->Get("Corner Plot")->Clone();
         cornerCanv->Write(Form("cornerCanv_%d",BB->idx));
       };
       nextBin.Reset();

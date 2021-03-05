@@ -33,9 +33,10 @@ Modulation::Modulation(TString ampStr, Int_t polarization_) {
   enablePW = ampStr.Contains("pwAmp");
   ampStr = ampStr.ReplaceAll("pw","");
   char sgn;
-  sscanf(ampStr,"AmpT%dL%dM%c%dLv%d",&tw,&l,&sgn,&m,&lev);
+  sscanf(ampStr,"AmpT%dL%dM%c%dLv%d",&tw,&l,&sgn,&m,&lev); // TODO (update for dsidis)
   if(sgn=='m') m*=-1;
   polarization = polarization_;
+  if(tw==2 && l==0) polarization = kDSIDIS; // TODO (update for dsidis (remove))
 
   // build formula
   this->Initialize();
@@ -266,7 +267,7 @@ TString Modulation::AmpName() {
     m<0?"m":"p",
     TMath::Abs(m),
     lev
-  );
+  ); // TODO (update for dsidis)
   if(enablePW) retstr = "pw" + retstr;
   return retstr;
 };
@@ -338,8 +339,8 @@ TString Modulation::StateTitle() {
 };
 
 TString Modulation::AsymmetryTitle() {
-  TString retstr = "A_{"+this->PolarizationTitle()+"}^{"+
-    this->ModulationTitle()+"}";
+  TString retstr = "A_{"+this->PolarizationTitle()+"}["+
+    this->ModulationTitle()+"]";
   return retstr;
 };
 
