@@ -42,7 +42,7 @@ void FiducialCuts::ApplyCuts(int runnum_, int pid_) {
 
 
   // apply cuts, depending on PID
-  if(pid_==11) {
+  if(pid_==11) { // electrons
     // PCAL cut on lv and lw
     fcutElePCAL = this->EC_hit_position_fiducial_cut_homogeneous(0);
     // DC cuts on chi2/NDF, using straight lines on xy hit plane
@@ -52,7 +52,7 @@ void FiducialCuts::ApplyCuts(int runnum_, int pid_) {
     };
     fiduCut = fcutElePCAL && fcutEleDC[0] && fcutEleDC[1] && fcutEleDC[2];
   }
-  else if(pid_==211 || pid_==-211) {
+  else if(pid_==211 || pid_==-211 || pid_==2212) { // pions and protons
     // DC cuts on chi2/NDF, using polynomial border in (theta,phi) plane
     for(int r=0; r<nReg; r++) {
       fcutHadDC[r] = part_DC_Traj_found[0]>0 ?

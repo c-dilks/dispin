@@ -1,8 +1,14 @@
 #!/bin/bash
 
 # arguments
-if [ $# -lt 1 ]; then echo "USAGE: $0 [outroot dir]"; exit; fi
-outrootDir=$1
+if [ $# -lt 1 ]; then
+  echo "USAGE: $0 [outroot dir] [optional extra args]"
+  echo "  if you pass extra args such as -p, do NOT pass -b, -i, or -n"
+  exit
+fi
+argset=$*
+outrootDir=`echo $argset|awk '{print $1}'`
+argsExtra=`echo $argset|sed 's/[^ ]* *//'`
 
 # check env
 if [ -z "$DISPIN_HOME" ]; then
@@ -13,7 +19,8 @@ fi
 # -n 1 : single bin
 # -i 1 : vs. x (doesn't matter, but keeping this convention for asymBrufit.exe)
 # -b   : 2d phi binning (for chi2 fit, if you want to use it)
-args="$outrootDir -b -i1 -n 1"
+args="$outrootDir -b -i1 -n 1 $argsExtra"
+echo "args = $args"
 
 
 # call buildSpinroot.exe on condor or slurm

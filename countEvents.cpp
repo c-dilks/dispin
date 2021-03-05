@@ -15,6 +15,7 @@
 
 TString infiles;
 Int_t whichPair;
+Int_t whichHad[2];
 EventTree * ev;
 void PrintEvent();
 Bool_t first;
@@ -26,6 +27,7 @@ int main(int argc, char** argv) {
    whichPair = EncodePairType(kPip,kPim);
    if(argc>1) infiles = TString(argv[1]);
    if(argc>2) whichPair = (Int_t)strtof(argv[2],NULL);
+   DecodePairType(whichPair,whichHad[qA],whichHad[qB]);
 
    // OPTIONS
    Bool_t printEvents = true;
@@ -53,7 +55,7 @@ int main(int argc, char** argv) {
      };
 
      // counts for each cut
-     if(Tools::PairSame(ev->hadIdx[qA],ev->hadIdx[qB],kPip,kPim)) {
+     if(Tools::PairSame(ev->hadIdx[qA],ev->hadIdx[qB],whichHad[qA],whichHad[qB])) {
        nTotal++;
        if(ev->cutDIS) nCutDIS++;
        if(ev->cutDihadron) nCutDihadron++;
