@@ -129,6 +129,7 @@ class Asymmetry : public TObject
     Float_t theta;
     Int_t spinn;
     Float_t pol;
+    Float_t depol2,depol3;
     
 
     // number of bins
@@ -291,12 +292,14 @@ class Asymmetry : public TObject
     Double_t tree_PhiD;
     Double_t tree_Theta;
     Double_t tree_Pol;
+    Double_t tree_Depol2;
+    Double_t tree_Depol3;
     Double_t tree_Rellum;
     Double_t tree_X;
     Double_t tree_Mh;
     Double_t tree_Z;
     Double_t tree_PhPerp;
-    Double_t tree_Qsq;
+    Double_t tree_Q2;
     Double_t tree_XF;
     Double_t tree_Weight;
     Int_t tree_Spin_idx;

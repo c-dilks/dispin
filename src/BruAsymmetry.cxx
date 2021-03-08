@@ -16,6 +16,8 @@ BruAsymmetry::BruAsymmetry(TString outdir_) {
   FM->SetUp().LoadVariable(TString("PhiD")+Form("[%f,%f]",-PIe,PIe));
   FM->SetUp().LoadVariable(TString("Theta")+Form("[%f,%f]",-0.1,PIe));
   FM->SetUp().LoadVariable(TString("Pol")+Form("[%f,%f]",-1.0,1.0));
+  FM->SetUp().LoadVariable(TString("Depol2")+Form("[%f,%f]",0.0,2.5));
+  FM->SetUp().LoadVariable(TString("Depol3")+Form("[%f,%f]",0.0,2.5));
 
   // category for spin
   FM->SetUp().LoadCategory(
@@ -50,8 +52,19 @@ void BruAsymmetry::AddNumerMod(Modulation * modu) {
   // amplitude parameter
   FM->SetUp().LoadParameter(ampName+"[0.0,-1,1]");
 
+  // determine which depolarization factor to use
+  // - assumes LU, or DSIDIS twist 2
+  TString depolVar;
+  switch(modu->GetTw()) {
+    case 2: depolVar = "@Depol2[]"; break;
+    case 3: depolVar = "@Depol3[]"; break;
+    default: 
+      fprintf(stderr,"unknown depolarization factor; setting to 1\n");
+      depolVar = "1";
+  };
+
   // modulation, including polarization scale factor and spin sign
-  FM->SetUp().LoadFormula(formuName+"=@Pol[]*@Spin_idx[]*"+modu->FormuBru());
+  FM->SetUp().LoadFormula(formuName+"=@Pol[]*"+depolVar+"*@Spin_idx[]*"+modu->FormuBru());
 
   // append to list for FactoryPDF
   if(numerList!="") numerList += ":";
@@ -64,7 +77,7 @@ void BruAsymmetry::BuildPDF() {
 
   // build PDFstr
   PDFstr = "RooComponentsPDF::PWfit(1,"; // PDF class::name ("+1" term ,
-  PDFstr += "{PhiH,PhiR,PhiD,Theta,Pol,Spin_idx},"; // observables list
+  PDFstr += "{PhiH,PhiR,PhiD,Theta,Pol,Depol2,Depol3,Spin_idx},"; // observables list
   PDFstr += "=" + numerList + ")"; // sum_i { pol * spin * amp_i * mod_i }
 
   // construct the extended likelihood

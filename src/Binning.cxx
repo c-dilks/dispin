@@ -32,7 +32,7 @@ Binning::Binning() {
   IVname[vZ] = "Z";
   IVname[vPt] = "PhPerp";
   IVname[vPh] = "Ph";
-  IVname[vQ] = "Qsq";
+  IVname[vQ] = "Q2";
   IVname[vXF] = "XF";
 
   IVtitle[vM] = "M_{h}";

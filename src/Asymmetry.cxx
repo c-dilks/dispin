@@ -480,6 +480,8 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
       return KickEvent("depol. factor out of range",dpVal[dp]);
     };
   };
+  depol2 = dpVal[dpCA]; // twist-2 LU (+DSIDIS)
+  depol3 = dpVal[dpWA]; // twist-3 LU
 
   // evaluate modValOA
   if(gridDim==1) modValOA = moduOA->Evaluate(PhiR, PhiH, theta);
@@ -519,12 +521,14 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
     tree_PhiD = (Double_t)(PhiD);
     tree_Theta = (Double_t)(theta);
     tree_Pol = (Double_t)(pol);
+    tree_Depol2 = (Double_t)(depol2);
+    tree_Depol3 = (Double_t)(depol3);
     tree_Rellum = (Double_t)(rellum);
     tree_X = (Double_t)(x);
     tree_Mh = (Double_t)(Mh);
     tree_Z = (Double_t)(z);
     tree_PhPerp = (Double_t)(PhPerp);
-    tree_Qsq = (Double_t)(Q2);
+    tree_Q2 = (Double_t)(Q2);
     tree_XF = (Double_t)(xF);
     tree_Weight = (Double_t)(weight);
     tree_Spin_idx = (Int_t)(SpinInt(spinn));
@@ -1367,12 +1371,14 @@ void Asymmetry::ActivateTree() {
   tree->Branch("PhiD",&tree_PhiD,"PhiD/D");
   tree->Branch("Theta",&tree_Theta,"Theta/D");
   tree->Branch("Pol",&tree_Pol,"Pol/D");
+  tree->Branch("Depol2",&tree_Depol2,"Depol2/D");
+  tree->Branch("Depol3",&tree_Depol3,"Depol3/D");
   tree->Branch("Rellum",&tree_Rellum,"Rellum/D");
   tree->Branch("X",&tree_X,"X/D");
   tree->Branch("Mh",&tree_Mh,"Mh/D");
   tree->Branch("Z",&tree_Z,"Z/D");
   tree->Branch("PhPerp",&tree_PhPerp,"PhPerp/D");
-  tree->Branch("Qsq",&tree_Qsq,"Qsq/D");
+  tree->Branch("Q2",&tree_Q2,"Q2/D");
   tree->Branch("XF",&tree_XF,"XF/D");
   tree->Branch("Weight",&tree_Weight,"Weight/D");
   tree->Branch("Spin_idx",&tree_Spin_idx,"Spin_idx/I");
