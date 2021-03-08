@@ -27,16 +27,14 @@ Modulation::Modulation(Int_t tw_, Int_t l_, Int_t m_,
 
 
 // alternative constructor, for BruAsymmetry formatted amplitude names
-Modulation::Modulation(TString ampStr, Int_t polarization_) {
+Modulation::Modulation(TString ampStr) {
 
   // parse amplitude name
   enablePW = ampStr.Contains("pwAmp");
   ampStr = ampStr.ReplaceAll("pw","");
   char sgn;
-  sscanf(ampStr,"AmpT%dL%dM%c%dLv%d",&tw,&l,&sgn,&m,&lev); // TODO (update for dsidis)
+  sscanf(ampStr,"AmpT%dL%dM%c%dLv%dP%d",&tw,&l,&sgn,&m,&lev,&polarization);
   if(sgn=='m') m*=-1;
-  polarization = polarization_;
-  if(tw==2 && l==0) polarization = kDSIDIS; // TODO (update for dsidis (remove))
 
   // build formula
   this->Initialize();
@@ -261,13 +259,14 @@ TString Modulation::FormuBru() {
 
 // amplitude name for parameter name
 TString Modulation::AmpName() {
-  TString retstr = Form("AmpT%dL%dM%s%dLv%d",
+  TString retstr = Form("AmpT%dL%dM%s%dLv%dP%d",
     tw,
     l,
     m<0?"m":"p",
     TMath::Abs(m),
-    lev
-  ); // TODO (update for dsidis)
+    lev,
+    polarization
+  );
   if(enablePW) retstr = "pw" + retstr;
   return retstr;
 };

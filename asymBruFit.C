@@ -34,7 +34,7 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc") {
   B->AddNumerMod(new Modulation(2,2,2,0,true));
   B->AddNumerMod(new Modulation(3,2,2,0,true));
   B->AddNumerMod(new Modulation(3,2,-2,0,true));
-  B->AddNumerMod(new Modulation(2,0,0,0,false,Modulation::kDSIDIS)); // sin(PhiD) // TODO fix parsing in Modulation for these (search for `TODO.*dsidis` in Modulation.cxx)
+  B->AddNumerMod(new Modulation(2,0,0,0,false,Modulation::kDSIDIS)); // sin(PhiD)
   B->AddNumerMod(new Modulation(2,0,0,1,false,Modulation::kDSIDIS)); // sin(2*PhiD)
   //*/
 

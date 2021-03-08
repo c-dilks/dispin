@@ -43,6 +43,7 @@ class BruAsymmetry : public TObject
     ~BruAsymmetry();
 
     void AddNumerMod(Modulation * modu);
+    void AddDenomMod(Modulation * modu);
     void BuildPDF();
     void LoadDataSets(
       TString dataFileN, TString mcFileN, TString treename="tree");
@@ -75,6 +76,9 @@ class BruAsymmetry : public TObject
 
     TString numerList, PDFstr;
     Int_t nThreads, nWorkers;
+    TString denomFormu;
+    TString formu;
+    Int_t nDenomParams;
 
 
   ClassDef(BruAsymmetry,1);

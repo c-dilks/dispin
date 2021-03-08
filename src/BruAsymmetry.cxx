@@ -35,6 +35,8 @@ BruAsymmetry::BruAsymmetry(TString outdir_) {
 
   // misc vars
   numerList = "";
+  denomFormu = "";
+  nDenomParams = 0;
 
   printf("constructed BruAsymmetry\n");
 
@@ -63,12 +65,34 @@ void BruAsymmetry::AddNumerMod(Modulation * modu) {
       depolVar = "1";
   };
 
-  // modulation, including polarization scale factor and spin sign
-  FM->SetUp().LoadFormula(formuName+"=@Pol[]*"+depolVar+"*@Spin_idx[]*"+modu->FormuBru());
+  // modulation, including polarization, depolarization, and spin sign
+  formu = "(@Pol[]*"+depolVar+"*@Spin_idx[]*"+modu->FormuBru()+")";
+  if(nDenomParams>0) formu += "/("+denomFormu+")";
+  printf("LOAD FORMULA %s\n",formu.Data());
+  FM->SetUp().LoadFormula(formuName+"="+formu);
 
   // append to list for FactoryPDF
   if(numerList!="") numerList += ":";
   numerList += ampName+";"+formuName;
+};
+
+
+// add denominator modulation to PDF
+// NOTE: must be called *before* any call to AddNumerMod
+void BruAsymmetry::AddDenomMod(Modulation * modu) {
+
+  // set amplitude and modulation names
+  TString ampName = modu->AmpName();
+  TString formuName = ampName;
+  formuName.ReplaceAll("Amp","Mod");
+
+  // amplitude parameter
+  FM->SetUp().LoadParameter(ampName+"[0.0,-1,1]");
+
+  // append modulation to denominator formula string
+  if(nDenomParams==0) denomFormu = "1";
+  denomFormu += "+@"+ampName+"[]*"+modu->FormuBru(); // might not work...
+  nDenomParams++;
 };
 
 
