@@ -142,7 +142,7 @@ static Int_t PartCharge(Int_t p) {
 static Int_t PartColor(Int_t p) {
   switch(p) {
     case kE: return kGray+2;
-    case kP: return kAzure;
+    case kP: return kBlack;
     case kN: return kAzure+10;
     case kPip: return kBlue;
     case kPim: return kRed;
@@ -160,7 +160,7 @@ static Int_t PartColor(Int_t p) {
 static TString PartColorName(Int_t p) {
   switch(p) {
     case kE: return "grey";
-    case kP: return "darkBlue";
+    case kP: return "black";
     case kN: return "lightBlue";
     case kPip: return "blue";
     case kPim: return "red";

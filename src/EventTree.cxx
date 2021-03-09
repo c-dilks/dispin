@@ -326,8 +326,8 @@ void EventTree::GetEvent(Long64_t i) {
     cutTFR[h] = hadQt[h]>1 &&
       ( (x<0.45 && Z[h]<0.1) || (x>=0.45 && Z[h]<0.3) );
   };*/
-  cutFR = hadXF[qA]>0 && hadXF[qB]>0; // PRL CFR
-  //cutFR = true; // bypass
+  //cutFR = hadXF[qA]>0 && hadXF[qB]>0; // PRL CFR
+  cutFR = true; // bypass
   //cutFR = cutCFR[qA] && cutTFR[qB]; // DSIDIS
   //cutFR = cutTFR[qA] && cutTFR[qB]; // TFR
   //cutFR = cutCFR[qA] && cutCFR[qB]; // CFR
