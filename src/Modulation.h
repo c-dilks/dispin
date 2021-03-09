@@ -23,7 +23,7 @@ class Modulation : public TObject
                Int_t level_ = 0,
                Bool_t enablePW_ = false,
                Int_t polarization_ = kLU);
-    Modulation(TString ampStr, Int_t polarization_ = kLU);
+    Modulation(TString ampStr);
     ~Modulation();
 
     void Initialize();
