@@ -49,11 +49,16 @@ class BruAsymmetry : public TObject
       TString dataFileN, TString mcFileN, TString treename="tree");
     void Fit(TString minimizer);
     void PrintFitter() { FM->SetUp().WS().Print("v"); };
-
+;
     Int_t GetNdim();
     Int_t GetNbins();
     void PrintBinScheme();
 
+    void PrintLog(TString logString) {
+      gSystem->RedirectOutput(outlog,"a");
+      printf("%s\n",logString.Data());
+      gSystem->RedirectOutput(0);
+    };
 
     // MCMC settings
     Int_t MCMC_iter; // number of MCMC MH steps
@@ -66,6 +71,7 @@ class BruAsymmetry : public TObject
   private:
 
     TString outdir;
+    TString outlog;
 
     TFile * infile[2];
     TFile * outfile[2];
@@ -76,8 +82,8 @@ class BruAsymmetry : public TObject
 
     TString numerList, PDFstr;
     Int_t nThreads, nWorkers;
-    TString denomFormu;
-    TString formu;
+    TString numerFormu, denomFormu, formu;
+    TString ampNameList,formuNameList;
     Int_t nDenomParams;
 
 

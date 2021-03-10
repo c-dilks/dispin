@@ -8,6 +8,9 @@ BruAsymmetry::BruAsymmetry(TString outdir_) {
   FM = new HS::FIT::FitManager();
   outdir = outdir_;
   FM->SetUp().SetOutDir(outdir); // calls mkdir automatically
+  outlog = outdir+"/out.log";
+  gSystem->RedirectOutput(outlog,"w");
+  gSystem->RedirectOutput(0);
 
 
   // variables
@@ -35,7 +38,10 @@ BruAsymmetry::BruAsymmetry(TString outdir_) {
 
   // misc vars
   numerList = "";
+  numerFormu = "";
   denomFormu = "";
+  ampNameList = "";
+  formuNameList = "";
   nDenomParams = 0;
 
   printf("constructed BruAsymmetry\n");
@@ -66,19 +72,27 @@ void BruAsymmetry::AddNumerMod(Modulation * modu) {
   };
 
   // modulation, including polarization, depolarization, and spin sign
-  formu = "(@Pol[]*"+depolVar+"*@Spin_idx[]*"+modu->FormuBru()+")";
-  if(nDenomParams>0) formu += "/("+denomFormu+")";
-  printf("LOAD FORMULA %s\n",formu.Data());
+  formu = "@Pol[]*"+depolVar+"*@Spin_idx[]*"+modu->FormuBru();
   FM->SetUp().LoadFormula(formuName+"="+formu);
 
-  // append to list for FactoryPDF
+  // print formula to log
+  this->PrintLog(formuName+" : "+formu);
+
+  // append to list for RooComponentsPDF
   if(numerList!="") numerList += ":";
   numerList += ampName+";"+formuName;
+
+  // append to numerator formula string for EXPR
+  if(numerFormu!="") numerFormu += "+";
+  numerFormu += ampName+"*"+formuName;
+  if(ampNameList!="") ampNameList += ",";
+  ampNameList += ampName;
+  if(formuNameList!="") formuNameList += ",";
+  formuNameList += formuName;
 };
 
 
 // add denominator modulation to PDF
-// NOTE: must be called *before* any call to AddNumerMod
 void BruAsymmetry::AddDenomMod(Modulation * modu) {
 
   // set amplitude and modulation names
@@ -89,9 +103,25 @@ void BruAsymmetry::AddDenomMod(Modulation * modu) {
   // amplitude parameter
   FM->SetUp().LoadParameter(ampName+"[0.0,-1,1]");
 
-  // append modulation to denominator formula string
-  if(nDenomParams==0) denomFormu = "1";
-  denomFormu += "+@"+ampName+"[]*"+modu->FormuBru(); // might not work...
+  // modulation
+  // TODO: move UU depolarization factors to here, if denom
+  // amps are possible to constrain
+  formu = modu->FormuBru();
+  FM->SetUp().LoadFormula(formuName+"="+formu);
+
+  // print formula to log
+  gSystem->RedirectOutput(outlog,"a");
+  printf("%s\t%s\n",formuName.Data(),formu.Data());
+  gSystem->RedirectOutput(0);
+
+  // append to denominator formula string for EXPR
+  if(denomFormu!="") denomFormu += "+";
+  denomFormu += ampName+"*"+formuName;
+  if(ampNameList!="") ampNameList += ",";
+  ampNameList += ampName;
+  if(formuNameList!="") formuNameList += ",";
+  formuNameList += formuName;
+
   nDenomParams++;
 };
 
@@ -100,11 +130,24 @@ void BruAsymmetry::AddDenomMod(Modulation * modu) {
 void BruAsymmetry::BuildPDF() {
 
   // build PDFstr
-  PDFstr = "RooComponentsPDF::PWfit(1,"; // PDF class::name ("+1" term ,
-  PDFstr += "{PhiH,PhiR,PhiD,Theta,Pol,Depol2,Depol3,Spin_idx},"; // observables list
-  PDFstr += "=" + numerList + ")"; // sum_i { pol * spin * amp_i * mod_i }
+  TString obsList = "PhiH,PhiR,PhiD,Theta,Pol,Depol2,Depol3,Spin_idx";
+  if(nDenomParams==0) {
+    // if PDF has numerator amplitudes only, we can use RooComponentsPDF
+    PDFstr = "RooComponentsPDF::PWfit(1,"; // PDF class::name ("+1" term ,
+    PDFstr += "{"+obsList+"},"; // observables list
+    PDFstr += "=" + numerList + ")"; // sum_i { pol * spin * amp_i * mod_i }
+    // alternatively, use EXPR
+    //PDFstr = "EXPR::PWfit('1+"+numerFormu+"'";
+    //PDFstr += ","+obsList+","+ampNameList+","+formuNameList+")";
+  } else {
+    // if PDF has denominator amplitudes, must use EXPR
+    PDFstr = "EXPR::PWfit('1+("+numerFormu+")/(1+"+denomFormu+")'";
+    PDFstr += ","+obsList+","+ampNameList+","+formuNameList+")";
+  };
+
 
   // construct the extended likelihood
+  this->PrintLog("construct PDF "+PDFstr);
   FM->SetUp().FactoryPDF(PDFstr);
   FM->SetUp().LoadSpeciesPDF("PWfit",1); /* second arg is lower bound of
                                           * yield parameter */
