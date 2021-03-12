@@ -38,10 +38,16 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc") {
   B->AddNumerMod(new Modulation(2,0,0,1,false,Modulation::kDSIDIS)); // sin(2*PhiD)
   */
   ///* // pion-pion, with denominators
-  B->AddDenomMod(new Modulation(3,0,0,0,false,Modulation::kUU)); // cos(phiH)
-  //B->AddDenomMod(new Modulation(3,1,1,0,false,Modulation::kUU)); // cos(phiR)
+  B->AddNumerMod(new Modulation(3,0,0));
   B->AddNumerMod(new Modulation(2,1,1));
   B->AddNumerMod(new Modulation(3,1,1));
+  B->AddNumerMod(new Modulation(3,1,-1));
+  B->AddNumerMod(new Modulation(2,2,2));
+  B->AddNumerMod(new Modulation(3,2,2));
+  B->AddNumerMod(new Modulation(3,2,-2));
+  B->AddDenomMod(new Modulation(2,1,1,0,false,Modulation::kUU)); // cos(phiH-phiR)
+  B->AddDenomMod(new Modulation(3,0,0,0,false,Modulation::kUU)); // cos(phiH)
+  B->AddDenomMod(new Modulation(3,1,1,0,false,Modulation::kUU)); // cos(phiR)
   //*/
 
   // build full PDF
@@ -95,7 +101,7 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc") {
   //B->LoadDataSets("spinroot.proton.pion/catTree.root","catTreeMC.proton.pion.root");
 
   // MCMC settings
-  B->MCMC_iter = 1000; // number of samples
+  B->MCMC_iter = 30000; // number of samples
   B->MCMC_burnin = ((Double_t)B->MCMC_iter)/10.0; // number of initial samples to drop
   B->MCMC_norm = 1.0 / 0.01; // 1/stepsize
 

@@ -73,10 +73,8 @@ void BruAsymmetry::AddNumerMod(Modulation * modu) {
 
   // modulation, including polarization, depolarization, and spin sign
   formu = "@Pol[]*"+depolVar+"*@Spin_idx[]*"+modu->FormuBru();
+  this->PrintLog(formuName+" = "+formu);
   FM->SetUp().LoadFormula(formuName+"="+formu);
-
-  // print formula to log
-  this->PrintLog(formuName+" : "+formu);
 
   // append to list for RooComponentsPDF
   if(numerList!="") numerList += ":";
@@ -107,12 +105,8 @@ void BruAsymmetry::AddDenomMod(Modulation * modu) {
   // TODO: move UU depolarization factors to here, if denom
   // amps are possible to constrain
   formu = modu->FormuBru();
+  this->PrintLog(formuName+" = "+formu);
   FM->SetUp().LoadFormula(formuName+"="+formu);
-
-  // print formula to log
-  gSystem->RedirectOutput(outlog,"a");
-  printf("%s\t%s\n",formuName.Data(),formu.Data());
-  gSystem->RedirectOutput(0);
 
   // append to denominator formula string for EXPR
   if(denomFormu!="") denomFormu += "+";
@@ -135,7 +129,7 @@ void BruAsymmetry::BuildPDF() {
     // if PDF has numerator amplitudes only, we can use RooComponentsPDF
     PDFstr = "RooComponentsPDF::PWfit(1,"; // PDF class::name ("+1" term ,
     PDFstr += "{"+obsList+"},"; // observables list
-    PDFstr += "=" + numerList + ")"; // sum_i { pol * spin * amp_i * mod_i }
+    PDFstr += "=" + numerList + ")"; // sum_i { pol *depol*spin * amp_i * mod_i }
     // alternatively, use EXPR
     //PDFstr = "EXPR::PWfit('1+"+numerFormu+"'";
     //PDFstr += ","+obsList+","+ampNameList+","+formuNameList+")";
@@ -215,6 +209,10 @@ void BruAsymmetry::Fit(TString minimizer) {
   if(minimizer=="mcmc") {
     FM->SetMinimiser( new HS::FIT::RooMcmcSeq(
       MCMC_iter,MCMC_burnin,MCMC_norm ) );
+    this->PrintLog("");
+    this->PrintLog(
+      Form("MCMC iter,burnin,stepsize = %d, %d, %f",
+            MCMC_iter,MCMC_burnin,1.0/MCMC_norm));
   } else if(minimizer=="minuit") {
     FM->SetMinimiser(new HS::FIT::Minuit2());
   } else {
