@@ -13,6 +13,10 @@ class AsymGr : public TObject {
     };
 };
 
+//..................................................//
+
+void DiffGraph(
+  TGraphErrors * g1, TGraphErrors *g2, TGraphErrors * diff);
 
 
 //..................................................//
@@ -21,23 +25,23 @@ class AsymGr : public TObject {
 
 void CompareBruAsym(
   /*
-  TString titleBlue="PRL amps",
-  TString bruDirBlue="bruspin.prl__init_0__ss_3",
-  TString titleRed="PRL amps + 3 UU amps",
-  TString bruDirRed="bruspin.denom.10amp"
-  */
-  ///*
   TString titleBlue="PW amps",
   TString bruDirBlue="bruspin.dnp2020.long__ss_1__burn_1000",
   TString titleRed="PW amps + DSIDIS",
   TString bruDirRed="bruspin.dsidis.long__ss_1__burn_1000"
-  //*/
-  /*
-  TString titleBlue="PW amps + DSIDIS",
-  TString bruDirBlue="bruspin.dsidis.long__ss_1__burn_1000",
-  TString titleRed="PW amps",
-  TString bruDirRed="bruspin.dnp2020.long__ss_1__burn_1000"
   */
+  /*
+  TString titleBlue="initial amps = 0.1",
+  TString bruDirBlue="bruspin.dnp2020__init_10__ss_1",
+  TString titleRed="initial amps = -0.1",
+  TString bruDirRed="bruspin.dnp2020__init_-10__ss_1"
+  */
+  ///*
+  TString titleBlue="PRL amps",
+  TString bruDirBlue="bruspin.prl.ss_1",
+  TString titleRed="PRL amps + 3 UU amps",
+  TString bruDirRed="bruspin.denom.10amp"
+  //*/
 ) {
 
   // open asym.root files
@@ -87,7 +91,6 @@ void CompareBruAsym(
     found=false;
     idx[rojo]=0;
     while((agr[rojo] = (AsymGr*) nextAsymGr[rojo]())) {
-      // TODO: might need to regexp names from old files...
       if(agr[rojo]->name==agr[azul]->name) {
         // match was found:
         for(int f=0; f<2; f++) links[nLinks][f] = idx[f];
@@ -116,7 +119,6 @@ void CompareBruAsym(
     found=false;
     idx[azul]=0;
     while((agr[azul] = (AsymGr*) nextAsymGr[azul]())) {
-      // TODO: might need to regexp names from old files...
       if(agr[rojo]->name==agr[azul]->name) {
         // match was found (but already listed in `links`)
         found=true;
@@ -147,7 +149,7 @@ void CompareBruAsym(
   gStyle->SetTitleSize(0.08,"T");
   gStyle->SetLabelSize(0.08,"X");
   gStyle->SetLabelSize(0.08,"Y");
-  Color_t color[2] = {kRed+3,kCyan-2};
+  Color_t color[2] = {kCyan-2,kRed+3};
   Style_t style[2] = {kFullTriangleUp,kFullTriangleDown};
   for(int f=0; f<2; f++) {
     while((agr[f] = (AsymGr*) nextAsymGr[f]())) {
@@ -158,15 +160,30 @@ void CompareBruAsym(
     nextAsymGr[f].Reset();
   };
 
-  // initialize canvas
+  // draw a legend
+  TCanvas * canvLegend = new TCanvas("legend","legend",600,200);
+  TLegend * legend = new TLegend(0.1,0.1,0.9,0.9);
+  legend->AddEntry(
+    ((AsymGr*)AsymGrList[azul]->At(0))->gr,titleBlue,"PE");
+  legend->AddEntry(
+    ((AsymGr*)AsymGrList[rojo]->At(0))->gr,titleRed,"PE");
+  legend->Draw();
+
+  // draw graphs
   Int_t nCol = 4;
   Int_t nRow = (nLinks-1)/nCol+1;
   TMultiGraph * mgr;
-  TCanvas * canv = new TCanvas("canv","canv",600*nCol,300*nRow);
-  canv->Divide(nCol,nRow);
+  TGraphErrors * diffGr;
+  TCanvas * compCanv = new TCanvas("compCanv","compCanv",600*nCol,300*nRow);
+  TCanvas * diffCanv = new TCanvas("diffCanv","diffCanv",600*nCol,300*nRow);
+  compCanv->Divide(nCol,nRow);
+  diffCanv->Divide(nCol,nRow);
   TString gTitle,xTitle,yTitle;
+  TLine * zeroLine;
   for(int n=0; n<nLinks; n++) {
-    canv->cd(n+1);
+
+    // draw comparison
+    compCanv->cd(n+1);
     mgr = new TMultiGraph();
     for(int f=0; f<2; f++) {
       if(links[n][f]>=0) {
@@ -181,5 +198,74 @@ void CompareBruAsym(
       };
     };
     mgr->Draw("APE");
+
+    // draw difference
+    if(links[n][azul]>=0 && links[n][rojo]>=0) {
+      diffCanv->cd(n+1);
+      for(int f=0; f<2; f++)
+        agr[f] = (AsymGr*) AsymGrList[f]->At(links[n][f]);
+      diffGr = new TGraphErrors();
+      DiffGraph(agr[azul]->gr,agr[rojo]->gr,diffGr);
+      diffGr->Draw("APE");
+      zeroLine = new TLine(
+        diffGr->GetXaxis()->GetXmin(),0,diffGr->GetXaxis()->GetXmax(),0);
+      zeroLine->SetLineColor(kBlack);
+      zeroLine->SetLineWidth(2);
+      zeroLine->SetLineStyle(kDashed);
+      zeroLine->Draw();
+    };
   };
 };
+
+
+//..................................................//
+//..................................................//
+//..................................................//
+
+void DiffGraph(
+  TGraphErrors * g1, TGraphErrors *g2, TGraphErrors * diff) {
+
+  if(g1->GetN()!=g2->GetN()) {
+    fprintf(stderr,"ERROR: number of bins differ\n");
+    return;
+  };
+
+  // format difference graph
+  TString gT,xT,yT,gN;
+  gN = g1->GetName();
+  gT = g1->GetTitle();
+  xT = g1->GetXaxis()->GetTitle();
+  yT = g1->GetYaxis()->GetTitle();
+  diff->SetName("diff_"+gN);
+  diff->SetTitle(gT);
+  diff->GetXaxis()->SetTitle(xT);
+  diff->GetYaxis()->SetTitle(yT);
+  diff->SetMarkerStyle(kFullCircle);
+  diff->SetMarkerColor(kRed);
+  diff->SetLineColor(kRed);
+
+  // calculate amount to shift g2 to the right
+  Double_t bump =
+    TMath::Abs(g2->GetXaxis()->GetXmax() - g2->GetXaxis()->GetXmin()) /
+    ( g2->GetN() * 8 );
+
+  // compute difference and correlated error (assumes datasets
+  // are equal, or at least one is a subset of the other)
+  Double_t x1,x2, y1,y2, ey1,ey2;
+  Double_t ydiff,eydiff;
+  for(int i=0; i<g1->GetN(); i++) {
+    g1->GetPoint(i,x1,y1);
+    g2->GetPoint(i,x2,y2);
+    ey1 = g1->GetErrorY(i);
+    ey2 = g2->GetErrorY(i);
+    ydiff = y1-y2; // difference
+    eydiff = TMath::Sqrt(TMath::Abs(ey1*ey1-ey2*ey2)); // correlated error
+    diff->SetPoint(i,x1,ydiff);
+    diff->SetPointError(i,0,eydiff);
+    g2->SetPoint(i,x2+bump,y2); // bump g2 point to the right
+  };
+};
+
+
+
+

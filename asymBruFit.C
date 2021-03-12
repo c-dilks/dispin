@@ -12,7 +12,7 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc") {
   BruAsymmetry * B = new BruAsymmetry(bruDir);
 
   // build modulations
-  /*
+  ///*
   B->AddNumerMod(new Modulation(3,0,0)); // 7 amps (PRL)
   B->AddNumerMod(new Modulation(2,1,1));
   B->AddNumerMod(new Modulation(3,1,1));
@@ -20,7 +20,7 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc") {
   B->AddNumerMod(new Modulation(2,2,2));
   B->AddNumerMod(new Modulation(3,2,2));
   B->AddNumerMod(new Modulation(3,2,-2));
-  */
+  //*/
   /*
   B->AddNumerMod(new Modulation(3,0,0,0,true)); // all 12 PWs up to L=2 (dnp2020)
   B->AddNumerMod(new Modulation(3,1,0,0,true));
@@ -37,7 +37,7 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc") {
   B->AddNumerMod(new Modulation(2,0,0,0,false,Modulation::kDSIDIS)); // sin(PhiD)
   B->AddNumerMod(new Modulation(2,0,0,1,false,Modulation::kDSIDIS)); // sin(2*PhiD)
   */
-  ///* // pion-pion, with denominators
+  /* // pion-pion, with denominators
   B->AddNumerMod(new Modulation(3,0,0));
   B->AddNumerMod(new Modulation(2,1,1));
   B->AddNumerMod(new Modulation(3,1,1));
@@ -48,7 +48,7 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc") {
   B->AddDenomMod(new Modulation(2,1,1,0,false,Modulation::kUU)); // cos(phiH-phiR)
   B->AddDenomMod(new Modulation(3,0,0,0,false,Modulation::kUU)); // cos(phiH)
   B->AddDenomMod(new Modulation(3,1,1,0,false,Modulation::kUU)); // cos(phiR)
-  //*/
+  */
 
   // build full PDF
   B->BuildPDF();
