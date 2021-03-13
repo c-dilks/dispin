@@ -1,4 +1,5 @@
 // compare asymmetries from two brufit results
+// - see `comparator.sh`, a helpful wrapper script
 
 
 class AsymGr : public TObject {
@@ -24,24 +25,10 @@ void DiffGraph(
 //..................................................//
 
 void CompareBruAsym(
-  /*
-  TString titleBlue="PW amps",
-  TString bruDirBlue="bruspin.dnp2020.long__ss_1__burn_1000",
-  TString titleRed="PW amps + DSIDIS",
-  TString bruDirRed="bruspin.dsidis.long__ss_1__burn_1000"
-  */
-  /*
-  TString titleBlue="initial amps = 0.1",
-  TString bruDirBlue="bruspin.dnp2020__init_10__ss_1",
-  TString titleRed="initial amps = -0.1",
-  TString bruDirRed="bruspin.dnp2020__init_-10__ss_1"
-  */
-  ///*
-  TString titleBlue="PRL amps",
-  TString bruDirBlue="bruspin.prl.ss_1",
-  TString titleRed="PRL amps + 3 UU amps",
-  TString bruDirRed="bruspin.denom.10amp"
-  //*/
+  TString titleBlue="blue fit result",
+  TString bruDirBlue="bruspin.blue",
+  TString titleRed="red fit result",
+  TString bruDirRed="bruspin.red"
 ) {
 
   // open asym.root files
@@ -180,10 +167,12 @@ void CompareBruAsym(
   diffCanv->Divide(nCol,nRow);
   TString gTitle,xTitle,yTitle;
   TLine * zeroLine;
+  Double_t xmin,xmax;
   for(int n=0; n<nLinks; n++) {
 
     // draw comparison
     compCanv->cd(n+1);
+    compCanv->GetPad(n+1)->SetGrid(0,1);
     mgr = new TMultiGraph();
     for(int f=0; f<2; f++) {
       if(links[n][f]>=0) {
@@ -195,13 +184,22 @@ void CompareBruAsym(
         mgr->GetXaxis()->SetTitle(xTitle);
         mgr->GetYaxis()->SetTitle(yTitle);
         mgr->Add(agr[f]->gr);
+        xmin = agr[f]->gr->GetXaxis()->GetXmin();
+        xmax = agr[f]->gr->GetXaxis()->GetXmax();
       };
     };
     mgr->Draw("APE");
+    zeroLine = new TLine(xmin,0,xmax,0);
+    zeroLine->SetLineColor(kBlack);
+    zeroLine->SetLineWidth(2);
+    zeroLine->SetLineStyle(kDashed);
+    zeroLine->Draw();
+    mgr->GetXaxis()->SetLimits(xmin,xmax);
 
     // draw difference
     if(links[n][azul]>=0 && links[n][rojo]>=0) {
       diffCanv->cd(n+1);
+      diffCanv->GetPad(n+1)->SetGrid(0,1);
       for(int f=0; f<2; f++)
         agr[f] = (AsymGr*) AsymGrList[f]->At(links[n][f]);
       diffGr = new TGraphErrors();
