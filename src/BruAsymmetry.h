@@ -47,6 +47,7 @@ class BruAsymmetry : public TObject
     void BuildPDF();
     void LoadDataSets(
       TString dataFileN, TString mcFileN, TString treename="tree");
+    void Bin(Binning * binscheme);
     void Fit(TString minimizer);
     void PrintFitter() { FM->SetUp().WS().Print("v"); };
 

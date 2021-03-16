@@ -22,6 +22,18 @@ case $setnum in
       "PRL amps + 3 UU amps", "bruspin.denom.10amp"
     )'''
     ;;
+  4)
+    root CompareBruAsym.C'''(
+      "step size 0.01, 30k steps", "bruspin.prl.ss_1",
+      "step size 0.03, 3k steps",  "bruspin.prl.ss_3"
+    )'''
+    ;;
+  5)
+    root CompareBruAsym.C'''(
+      "step size 0.02, 3k steps", "bruspin.prl.ss_2",
+      "step size 0.03, 3k steps", "bruspin.prl.ss_3"
+    )'''
+    ;;
   *)
     echo "ERROR: bad set"
     ;;

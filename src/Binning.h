@@ -23,6 +23,7 @@
 #include "TH3.h"
 #include "TGraphErrors.h"
 #include "TLine.h"
+#include "TArrayD.h"
 
 // dispin
 #include "Constants.h"
@@ -65,6 +66,7 @@ class Binning : public TObject
     Int_t dimensions; // total number of dimensions, for multi-dim binning
     Int_t ivVar[3]; // which IV the binning scheme is in [dimension]
     Int_t binNum;
+    TArrayD * binArray[3]; // array of bin boundaries for each [dimension]
     // scheme maps:
     // - each IV bin is assigned a 3-digit bin number
     // - use HashBinNum(...) to convert a set of bin numbers to the 3-digit bin number
@@ -79,6 +81,7 @@ class Binning : public TObject
     // scheme accessors, which return things according to the current binning scheme
     Int_t GetNbins(Int_t dim);
     Int_t GetNbinsTotal();
+    TArrayD * GetBinArray(Int_t dim);
     TString GetIVname(Int_t dim);
     TString GetIVtitle(Int_t dim);
     // additional scheme methods

@@ -53,6 +53,7 @@ Binning::Binning() {
   useWeighting = false;
   gridDim = 1;
   for(int h=0; h<2; h++) whichHad[h]=-1;
+  for(int d=0; d<3; d++) binArray[d] = new TArrayD();
 };
 
 
@@ -353,6 +354,19 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
   printf("\n\n--> Bin boundaries:\n");
   PrintBinBounds();
 
+  
+  // build binArray
+  for(int d=0; d<3; d++) {
+    binArray[d]->Set(1);
+    binArray[d]->Reset(0);
+    if(d<dimensions) {
+      binArray[d]->Set(GetNbins(d)+1);
+      for(int b=0; b<GetNbins(d); b++) {
+        if(b==0) binArray[d]->SetAt(bound[ivVar[d]].at(b),b);
+        binArray[d]->SetAt(bound[ivVar[d]].at(b+1),b+1);
+      };
+    };
+  };
 
   // build binVec and binVecMap
   if(dimensions == 1) {
@@ -411,6 +425,9 @@ Int_t Binning::GetNbinsTotal() {
       break;
   };
   return -1;
+};
+TArrayD * Binning::GetBinArray(Int_t dim) {
+  return CheckDim(dim) ? binArray[dim] : nullptr;
 };
 TString Binning::GetIVname(Int_t dim) {
   return CheckDim(dim) ? IVname[ivVar[dim]] : "unknown";

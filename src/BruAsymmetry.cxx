@@ -192,7 +192,19 @@ void BruAsymmetry::LoadDataSets(
   FM->LoadData("tree",outfileN[dt]);
   FM->LoadSimulated("tree",outfileN[mc],"PWfit");
 };
-  
+
+
+// bin the data (and MC) according to specified binning scheme
+// ( see Binning::SetScheme )
+void BruAsymmetry::Bin(Binning * binscheme) {
+  for(int d=0; d<binscheme->dimensions; d++) {
+    FM->Bins().LoadBinVar(
+      binscheme->GetIVname(d),
+      binscheme->GetNbins(d),
+      binscheme->GetBinArray(d)->GetArray()
+    );
+  };
+};
 
 // perform the fit
 void BruAsymmetry::Fit(TString minimizer) {

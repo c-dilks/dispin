@@ -283,8 +283,10 @@ void EventTree::GetEvent(Long64_t i) {
 
 
   // compute Breit frame rapidity for hadrons and dihadron (which could be a VM)
-  // TODO: move this to calcKinematics.cpp; (will need to reproduce outroot files)
+  // TODO: move this to calcKinematics.cpp; (will need to reproduce outroot files;
+  // but also it's useful to have it here, in case we want to check other frames)
   breitVec = this->GetDISObj()->BreitBoost;
+  //breitVec = this->GetDISObj()->ComBoost; // try photon-proton com frame
   for(int h=0; h<2; h++) {
     hadMomBreit[h].SetPtEtaPhiE(hadPt[h],hadEta[h],hadPhi[h],hadE[h]);
     hadMomBreit[h].Boost(breitVec);

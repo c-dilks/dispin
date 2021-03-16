@@ -1,3 +1,4 @@
+// CompareDiagnosticsDists ------------------------------
 // draw kinematic distributions from diagnostics plots.root
 // - useful for presentations
 
