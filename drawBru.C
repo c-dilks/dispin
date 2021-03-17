@@ -1,3 +1,4 @@
+// drawBru -------------------------
 /*
 #include <cstdlib>
 #include <iostream>
@@ -41,6 +42,7 @@ class BruBin : public TObject {
     Double_t param[nParamsMax];
     Double_t paramErr[nParamsMax];
     TH1D * paramVsSample[nParamsMax];
+    TH1D * nllVsSample;
     TFile * resultFile;
     TTree * resultTree;
     TTree * mcmcTree;
@@ -87,6 +89,8 @@ class BruBin : public TObject {
           pName = Form("bin%d_param%d_vs_sample",idx,i);
           paramVsSample[i] = new TH1D(pName,pName,nSamples,1,nSamples+1);
         };
+        pName = Form("bin%d_NLL_vs_sample",idx);
+        nllVsSample = new TH1D(pName,pName,nSamples,1,nSamples+1);
       };
 
       // misc
@@ -192,6 +196,7 @@ void drawBru(
   Int_t nParams;
   TString paramName;
   Double_t paramval[nParamsMax];
+  Double_t nll;
   Long64_t entry;
   while((BB = (BruBin*) nextBin())) {
 
@@ -228,18 +233,26 @@ void drawBru(
     // if MCMC was used, fill param vs sample graphs
     if(minimizer==mkMCMC) {
       BB->mcmcTree->SetBranchAddress("entry",&entry);
+      BB->mcmcTree->SetBranchAddress("nll_MarkovChain_local_",&nll);
       for(int i=0; i<nParams; i++) {
         BB->mcmcTree->SetBranchAddress(paramList[i],&paramval[i]);
+      };
+      for(int i=0; i<nParams; i++) {
         vTitle = moduList[i] ? moduList[i]->AsymmetryTitle() : "N";
         BB->paramVsSample[i]->SetTitle(
           vTitle+" vs. MCMC sample"/*;sample;"+vTitle*/);
         BB->paramVsSample[i]->GetXaxis()->SetLabelSize(axisTitleSize);
         BB->paramVsSample[i]->GetYaxis()->SetLabelSize(axisTitleSize);
       };
+      BB->nllVsSample->SetTitle("-ln(L) vs. MCMC sample");
+      BB->nllVsSample->GetXaxis()->SetLabelSize(axisTitleSize);
+      BB->nllVsSample->GetYaxis()->SetLabelSize(axisTitleSize);
       for(Long64_t e=0; e<BB->mcmcTree->GetEntries(); e++) {
         BB->mcmcTree->GetEntry(e);
-        for(int i=0; i<nParams; i++) 
+        for(int i=0; i<nParams; i++) {
           BB->paramVsSample[i]->Fill(entry+1,paramval[i]);
+        };
+        BB->nllVsSample->Fill(entry+1,nll);
       };
     };
   };
@@ -290,11 +303,13 @@ void drawBru(
   TCanvas * cornerCanv;
   Float_t xMin,xMax,yMin,yMax;
   TLine * zeroLine;
+  Int_t nrow,ncol;
   if(nDim==1) {
 
     // parameter result vs. horizizontal iv
-    paramCanv = new TCanvas("canvAsym","canvAsym",1000,1000);
-    paramCanv->Divide(4,(nParams-1)/4+1);
+    ncol=4; nrow=(nParams-1)/ncol+1;
+    paramCanv = new TCanvas("canvAsym","canvAsym",600*ncol,300*nrow);
+    paramCanv->Divide(ncol,nrow);
     for(int i=0; i<nParams; i++) {
       paramCanv->cd(i+1);
       yMin = asymPlotMin;
@@ -320,12 +335,13 @@ void drawBru(
 
     // parameter vs. sample
     if(minimizer==mkMCMC) {
+      nrow=nParams/ncol+1; // (update for NLL)
       while((BB = (BruBin*) nextBin())) {
         paramVsSampleCanv = new TCanvas(
           Form("paramVsSample_%d",BB->idx),
           Form("paramVsSample_%d",BB->idx),
-          1000,1000);
-        paramVsSampleCanv->Divide(4,(nParams-1)/4+1);
+          600*ncol,300*nrow);
+        paramVsSampleCanv->Divide(ncol,nrow);
         for(int i=0; i<nParams; i++) {
           paramVsSampleCanv->cd(i+1);
           if(logscale) gPad->SetLogx();
@@ -334,6 +350,9 @@ void drawBru(
               asymPlotMin,asymPlotMax);
           BB->paramVsSample[i]->Draw("HIST");
         };
+        paramVsSampleCanv->cd(nParams+1);
+        if(logscale) gPad->SetLogx();
+        BB->nllVsSample->Draw("HIST");
         paramVsSampleCanv->Write();
         paramVsSampleCanv->Close();
       };
