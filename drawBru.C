@@ -15,6 +15,7 @@ R__LOAD_LIBRARY(DiSpin)
 //////////////////////////////////////////////////////////
 
 TObjArray * BruBinList;
+TObjArray * BruSuperList;
 Int_t nDim, nBins;
 Int_t nSamples;
 TString bruDir;
@@ -128,7 +129,7 @@ void drawBru(
   else { fprintf(stderr,"ERROR: unknown minimizer type\n"); return; };
 
 
-  // get nDim
+  // get binning scheme
   bruDir = bruDir_;
   TFile * binFile = new TFile(bruDir+"/DataBinsConfig.root","READ");
   HSbins = (HS::FIT::Bins*) binFile->Get("HSBins");
@@ -143,18 +144,35 @@ void drawBru(
   // initialize nSamples
   nSamples = 0;
 
-  // build array of BruBin objects
-  BruBinList = new TObjArray();
+  // build arrays of BruBin objects
+  // - BruBinList: bins for the first dimension (IV0)
+  // - BruSuperList: array of BruBinLists, one for each higher-dimensional bin
+  // -- get axes:
+  TAxis ax[3];
+  int bn[3];
+  int bnMax[3];
+  for(int i=0; i<3; i++) {
+    if(i<nDim) {
+      ax[i] = HSbins->GetVarAxis()[i];
+      bnMax[i] = ax[i].GetNbins();
+    } else bnMax[i] = 1;
+  };
+  hTitle = ax[0].GetName(); // TODO: use dispin Binning to convert to proper title
+  // -- create BruBin objects, and fill TObjArrays
   TVectorD binCoord(nDim);
-  if(nDim==1) {
-    for(TAxis axis0 : HSbins->GetVarAxis()) {
-      for(int bn=1; bn<=axis0.GetNbins(); bn++) {
-        binCoord[0] = axis0.GetBinCenter(bn);
-        BruBinList->AddLast(new BruBin(axis0,bn,binCoord));
-      };
-      hTitle = axis0.GetName(); // TODO: use dispin Binning to convert to proper title
+  BruSuperList = new TObjArray();
+  for(bn[2]=1; bn[2]<=bnMax[2]; bn[2]++) {
+    for(bn[1]=1; bn[1]<=bnMax[1]; bn[1]++) {
+      BruBinList = new TObjArray(); // create new BruBinList before looping over dimension 0
+      for(bn[0]=1; bn[0]<=bnMax[0]; bn[0]++) {
+        for(int i=0; i<nDim; i++) binCoord[i] = ax[i].GetBinCenter(bn[i]);
+        BruBinList->AddLast(new BruBin(ax[0],bn[0],binCoord));
+      }
+      BruSuperList->AddLast(BruBinList);
     };
   };
+
+  // aqui
 
 
   // define BruBin iterator, and print bins
