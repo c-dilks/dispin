@@ -312,6 +312,7 @@ void drawBru(
     paramCanv->Divide(ncol,nrow);
     for(int i=0; i<nParams; i++) {
       paramCanv->cd(i+1);
+      paramCanv->GetPad(i+1)->SetGrid(1,1);
       yMin = asymPlotMin;
       yMax = asymPlotMax;
       if(paramGr[i]->GetYaxis()->GetXmin() < yMin)

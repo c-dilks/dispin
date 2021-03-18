@@ -228,13 +228,15 @@ class EventTree : public TObject
     TLorentzVector hadMom[2];
     TLorentzVector eleMom;
     TLorentzVector hadMomBreit[2];
-    TLorentzVector vmMomBreit;
-    TVector3 breitVec;
+    TLorentzVector dihMomBreit;
+    TLorentzVector qMomBreit;
+    TVector3 boostVec;
 
 
     Bool_t vertexWarned;
     Bool_t sfcutDiag, sfcutSigma;
     Float_t dfA;
+    Float_t pq;
 
     Bool_t helicityMCinjected;
     TRandom * RNG;

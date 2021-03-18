@@ -64,7 +64,7 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc",
   // MCMC settings
   B->MCMC_iter = 3000; // number of samples
   B->MCMC_burnin = ((Double_t)B->MCMC_iter)/10.0; // number of initial samples to drop
-  B->MCMC_norm = 1.0 / 0.02; // 1/stepsize
+  B->MCMC_norm = 1.0 / 0.01; // 1/stepsize
 
   // perform fit
   B->Fit(minimizer);

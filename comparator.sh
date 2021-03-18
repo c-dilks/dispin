@@ -30,8 +30,8 @@ case $setnum in
     ;;
   5)
     root CompareBruAsym.C'''(
-      "step size 0.02, 3k steps", "bruspin.prl.ss_2",
-      "step size 0.03, 3k steps", "bruspin.prl.ss_3"
+      "with MC",    "bruspin.prl.ss_2",
+      "without MC", "bruspin.test_noMC"
     )'''
     ;;
   *)

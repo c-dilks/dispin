@@ -101,7 +101,7 @@ int main(int argc, char** argv) {
    TH2D * hadPhiCorr = new TH2D("hadPhiCorr",corrTitle("#phi"), NBINS,-PIe,PIe,NBINS,-PIe,PIe);
    TH2D * hadZCorr = new TH2D("hadZCorr",corrTitle("z"),NBINS,0,1,NBINS,0,1);
    TH2D * hadXFCorr = new TH2D("hadXFCorr",corrTitle("x_{F}"), NBINS,-1,1,NBINS,-1,1);
-   TH2D * hadYHCorr = new TH2D("hadYHCorr",corrTitle("y_{h}"), NBINS,-4,4,NBINS,-4,4);
+   TH2D * hadYHCorr = new TH2D("hadYHCorr",corrTitle("Y_{h}"), NBINS,-4,4,NBINS,-4,4);
    TH2D * hadPhiHCorr = new TH2D("hadPhiHCorr",corrTitle("#phi_{h}"), NBINS,-4,4,NBINS,-4,4);
    TH2D * hadVzCorr = new TH2D("hadVzCorr",corrTitle("V_{z}"), NBINS,-20,20,NBINS,-20,20);
    
@@ -141,7 +141,7 @@ int main(int argc, char** argv) {
        NBINS,0,1);
      hadXFDist[h] = new TH1D(TString(hadName[h]+"hadXFDist"),distTitle("x_{F}"),
        NBINS,-1,1);
-     hadYHDist[h] = new TH1D(TString(hadName[h]+"hadYHDist"),distTitle("y_{h}"),
+     hadYHDist[h] = new TH1D(TString(hadName[h]+"hadYHDist"),distTitle("Y_{h}"),
        NBINS,-4,4);
      hadPhiHDist[h] = new TH1D(TString(hadName[h]+"hadPhiHDist"),distTitle("#phi_{h}"),
        NBINS,-PIe,PIe);
@@ -181,7 +181,7 @@ int main(int argc, char** argv) {
 
    TH1D * MmissDistZoom = new TH1D("MmissDistZoom","M_{X} distribution;M_{X}",
      2*NBINS,0.5,3);
-   TH1D * YHDist = new TH1D("YHDist","y_{hh} distribution;y_{hh}",NBINS,-3,3);
+   TH1D * YHDist = new TH1D("YHDist","Y_{hh} distribution;Y_{hh}",NBINS,-3,3);
 
 
    TH2D * MmissVsMh = new TH2D("MmissVsMh","M_{X} vs. M_{h};M_{h};M_{X}",
@@ -221,7 +221,7 @@ int main(int argc, char** argv) {
      NBINS,0,3,
      NBINS,0,3);
    TH2D * YHVsMh = new TH2D("YHVsMh",
-     "y_{hh} vs. M_{h};M_{h};y_{h}",
+     "Y_{hh} vs. M_{h};M_{h};Y_{h}",
      NBINS,0,3,
      NBINS,-3,3);
    TH2D * RTvsMh = new TH2D("RTvsMh",
@@ -274,10 +274,10 @@ int main(int argc, char** argv) {
        TString("#theta vs. "+hadTitle[h]+" p;p;#theta"),
        NBINS,0,10,NBINS,0,PIe);
      YHvsXF[h] = new TH2D(TString("YHvsXF_"+hadName[h]),
-       TString(hadTitle[h]+" y_{h} vs. x_{F};x_{F};y_{h}"),
+       TString(hadTitle[h]+" Y_{h} vs. x_{F};x_{F};Y_{h}"),
        NBINS,-1,1,NBINS,-3,3);
      YHvsMh[h] = new TH2D(TString("YHvsMh_"+hadName[h]),
-       TString(hadTitle[h]+" y_{h} vs. M_{h};M_{h};y_{h}"),
+       TString(hadTitle[h]+" Y_{h} vs. M_{h};M_{h};Y_{h}"),
        2*NBINS,0,3,NBINS,-4,4);
      XFvsMh[h] = new TH2D(TString("XFvsMh_"+hadName[h]),
        TString(hadTitle[h]+" x_{F} vs. M_{h};M_{h};x_{F}"),
@@ -286,13 +286,13 @@ int main(int argc, char** argv) {
        TString(hadTitle[h]+" p_{perp} vs. M_{h};M_{h};p_{perp}"),
        2*NBINS,0,3,NBINS,0,2);
      hadPperpVsYH[h] = new TH2D(TString("hadPperpVsYH_"+hadName[h]),
-       TString(hadTitle[h]+"p_{perp} vs. y_{h};y_{h};p_{perp}"),
+       TString(hadTitle[h]+"p_{perp} vs. Y_{h};Y_{h};p_{perp}"),
        NBINS,-4,4,NBINS,0,2);
    };
 
 
    TH3D * MhVsYHcorr = new TH3D("MhVsYHcorr",
-     TString("M_{h} vs. y_{h} correlation;y_{h}("+hadTitle[qA]+");y_{h}("+hadTitle[qB]+");M_{h}"),
+     TString("M_{h} vs. Y_{h} correlation;Y_{h}("+hadTitle[qA]+");Y_{h}("+hadTitle[qB]+");M_{h}"),
      70,-3,3,
      70,-3,3,
      100,0,2
@@ -310,7 +310,7 @@ int main(int argc, char** argv) {
      100,0,2
    );
    TH3D * MhVsPtVsYh = new TH3D("MhVsPtVsYh",
-     TString("M_{h} vs. P_{h}^{perp} vs. y_{hh};y_{hh};P_{h}^{perp};M_{h}"),
+     TString("M_{h} vs. P_{h}^{perp} vs. Y_{hh};Y_{hh};P_{h}^{perp};M_{h}"),
      70,-3,3,
      70,0,2,
      100,0,2
@@ -335,7 +335,7 @@ int main(int argc, char** argv) {
    );
 
    TH3D * AlphaVsYHcorr = new TH3D("AlphaVsYHcorr",
-     TString("#alpha vs. y_{h} correlation;y_{h}("+hadTitle[qA]+");y_{h}("+hadTitle[qB]+");#alpha"),
+     TString("#alpha vs. Y_{h} correlation;Y_{h}("+hadTitle[qA]+");Y_{h}("+hadTitle[qB]+");#alpha"),
      70,-3,3,
      70,-3,3,
      100,0,75
