@@ -18,6 +18,7 @@ Int_t whichPair;
 Int_t whichHad[2];
 EventTree * ev;
 void PrintEvent();
+void PrintEvent2();
 Bool_t first;
 
 int main(int argc, char** argv) {
@@ -51,7 +52,10 @@ int main(int argc, char** argv) {
      // full cut set
      if(ev->Valid()) {
        nValid++;
-       if(printEvents && nValid<=10000) PrintEvent();
+       if(printEvents && nValid<=100) {
+         //PrintEvent();
+         PrintEvent2();
+       };
      };
 
      // counts for each cut
@@ -131,6 +135,38 @@ void PrintEvent() {
   printf(" %.3f",ev->PhiH);
   printf(" %.3f",ev->PhiR);
   printf(" %.3f",ev->theta);
+  printf("\n");
+  gSystem->RedirectOutput(0);
+};
+
+
+void PrintEvent2() {
+  if(first) {
+    TString pname[2];
+    for(int h=0; h<2; h++) 
+      pname[h] = PairHadName(whichHad[qA],whichHad[qB],h);
+    gSystem->RedirectOutput("eventTable.txt","w");
+    printf("evntnum");
+    for(int h=0; h<2; h++) {
+      printf(" Lab_%s_z",pname[h].Data());
+      printf(" gN_%s_z",pname[h].Data());
+      printf(" Breit_%s_z",pname[h].Data());
+      printf(" gN_%s_rapidity",pname[h].Data());
+      printf(" Breit_%s_rapidity",pname[h].Data());
+      printf(" xF_%s",pname[h].Data());
+    };
+    printf("\n");
+    first = false;
+  } else gSystem->RedirectOutput("eventTable.txt","a");
+  printf("%d",ev->evnum);
+  for(int h=0; h<2; h++) {
+    printf(" %.5f",ev->hadPqLab[h]);
+    printf(" %.5f",ev->hadPqCom[h]);
+    printf(" %.5f",ev->hadPqBreit[h]);
+    printf(" %.5f",ev->hadYCM[h]);
+    printf(" %.5f",ev->hadYH[h]);
+    printf(" %.5f",ev->hadXF[h]);
+  };
   printf("\n");
   gSystem->RedirectOutput(0);
 };

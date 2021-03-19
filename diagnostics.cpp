@@ -79,6 +79,7 @@ int main(int argc, char** argv) {
    TH1D * eleEDist = new TH1D("eleEDist","e^{-} E distribution",NBINS,0,12);
    TH1D * elePtDist = new TH1D("elePtDist","e^{-} p_{T} distribution",NBINS,0,4);
    TH1D * eleEtaDist = new TH1D("eleEtaDist","e^{-} #eta distribution",NBINS,-3,6);
+   TH1D * eleThetaDist = new TH1D("eleThetaDist","e^{-} #theta distribution",NBINS,0,40);
    TH1D * elePhiDist = new TH1D("elePhiDist","e^{-} #phi distribution",NBINS,-PIe,PIe);
    TH2D * eleEtaVsPhi = new TH2D("eleEtavsPhi","e^{-} #eta vs #phi;#phi;#eta",
      NBINS,-PIe,PIe,NBINS,-3,6);
@@ -228,12 +229,6 @@ int main(int argc, char** argv) {
      "R_{T} vs. M_{h};M_{h};R_{T}",
      NBINS,0,3,
      NBINS,0,1.5);
-   TH2D * xFvsZ[2];
-   for(int h=0; h<2; h++) {
-     xFvsZ[h] = new TH2D(TString("xFvsZ_"+hadName[h]),
-       TString(hadTitle[h]+"x_{F} vs. z;z;x_{F}"),
-       NBINS,0,1,NBINS,-1,1);
-   };
 
    // distributions for partial wave analysis
    TH1D * thetaDist = new TH1D("thetaDist","#theta distribution;#theta",NBINS,0,PI);
@@ -261,7 +256,12 @@ int main(int argc, char** argv) {
 
    TH2D * thetaVsZ[2];
    TH2D * thetaVsHadP[2];
+   TH2D * YHvsYCM[2];
    TH2D * YHvsXF[2];
+   TH2D * YCMvsXF[2];
+   TH2D * YHvsZ[2];
+   TH2D * YCMvsZ[2];
+   TH2D * XFvsZ[2];
    TH2D * YHvsMh[2];
    TH2D * XFvsMh[2];
    TH2D * PperpvsMh[2];
@@ -273,9 +273,24 @@ int main(int argc, char** argv) {
      thetaVsHadP[h] = new TH2D(TString("thetaVsHadP_"+hadName[h]),
        TString("#theta vs. "+hadTitle[h]+" p;p;#theta"),
        NBINS,0,10,NBINS,0,PIe);
+     YHvsYCM[h] = new TH2D(TString("YHvsYCM_"+hadName[h]),
+       TString(hadTitle[h]+" Y_{h} vs. Y_{CM};Y_{CM};Y_{h}"),
+       NBINS,-3,3,NBINS,-3,3);
      YHvsXF[h] = new TH2D(TString("YHvsXF_"+hadName[h]),
        TString(hadTitle[h]+" Y_{h} vs. x_{F};x_{F};Y_{h}"),
        NBINS,-1,1,NBINS,-3,3);
+     YCMvsXF[h] = new TH2D(TString("YCMvsXF_"+hadName[h]),
+       TString(hadTitle[h]+" Y_{CM} vs. x_{F};x_{F};Y_{CM}"),
+       NBINS,-1,1,NBINS,-3,3);
+     YHvsZ[h] = new TH2D(TString("YHvsZ_"+hadName[h]),
+       TString(hadTitle[h]+"Y_{H} vs. z;z;Y_{H}"),
+       NBINS,0,1,NBINS,-4,4);
+     YCMvsZ[h] = new TH2D(TString("YCMvsZ_"+hadName[h]),
+       TString(hadTitle[h]+"Y_{CM} vs. z;z;Y_{CM}"),
+       NBINS,0,1,NBINS,-4,4);
+     XFvsZ[h] = new TH2D(TString("XFvsZ_"+hadName[h]),
+       TString(hadTitle[h]+"x_{F} vs. z;z;x_{F}"),
+       NBINS,0,1,NBINS,-1,1);
      YHvsMh[h] = new TH2D(TString("YHvsMh_"+hadName[h]),
        TString(hadTitle[h]+" Y_{h} vs. M_{h};M_{h};Y_{h}"),
        2*NBINS,0,3,NBINS,-4,4);
@@ -286,7 +301,7 @@ int main(int argc, char** argv) {
        TString(hadTitle[h]+" p_{perp} vs. M_{h};M_{h};p_{perp}"),
        2*NBINS,0,3,NBINS,0,2);
      hadPperpVsYH[h] = new TH2D(TString("hadPperpVsYH_"+hadName[h]),
-       TString(hadTitle[h]+"p_{perp} vs. Y_{h};Y_{h};p_{perp}"),
+       TString(hadTitle[h]+" p_{perp} vs. Y_{h};Y_{h};p_{perp}"),
        NBINS,-4,4,NBINS,0,2);
    };
 
@@ -516,6 +531,7 @@ int main(int argc, char** argv) {
        eleEDist->Fill(ev->eleE);
        elePtDist->Fill(ev->elePt);
        eleEtaDist->Fill(ev->eleEta);
+       eleThetaDist->Fill(ev->eleTheta);
        elePhiDist->Fill(ev->elePhi);
        eleEtaVsPhi->Fill(ev->elePhi,ev->eleEta);
        eleEVsPhi->Fill(ev->elePhi,ev->eleE);
@@ -614,12 +630,16 @@ int main(int argc, char** argv) {
        for(int h=0; h<2; h++) {
          thetaVsZ[h]->Fill(ev->Z[h],ev->theta);
          thetaVsHadP[h]->Fill(ev->hadP[h],ev->theta);
+         YHvsYCM[h]->Fill(ev->hadYCM[h],ev->hadYH[h]);
          YHvsXF[h]->Fill(ev->hadXF[h],ev->hadYH[h]);
+         YCMvsXF[h]->Fill(ev->hadXF[h],ev->hadYCM[h]);
+         YHvsZ[h]->Fill(ev->Z[h],ev->hadYH[h]);
+         YCMvsZ[h]->Fill(ev->Z[h],ev->hadYCM[h]);
+         XFvsZ[h]->Fill(ev->Z[h],ev->hadXF[h]);
          YHvsMh[h]->Fill(ev->Mh,ev->hadYH[h]);
          XFvsMh[h]->Fill(ev->Mh,ev->hadXF[h]);
          PperpvsMh[h]->Fill(ev->Mh,ev->hadPperp[h]);
          hadPperpVsYH[h]->Fill(ev->hadYH[h],ev->hadPperp[h]);
-         xFvsZ[h]->Fill(ev->Z[h],ev->hadXF[h]);
        };
        
        alphaDeg = ev->alpha*TMath::RadToDeg();
@@ -681,8 +701,12 @@ int main(int argc, char** argv) {
    }; // eo event loop
    dihadronCntDist->Fill(dihadronCnt); // (count last event's dihadrons)
 
-   for(int h=0; h<2; h++) xFvsZ[h]->Write();
+   for(int h=0; h<2; h++) YHvsYCM[h]->Write();
    for(int h=0; h<2; h++) YHvsXF[h]->Write();
+   for(int h=0; h<2; h++) YCMvsXF[h]->Write();
+   for(int h=0; h<2; h++) YHvsZ[h]->Write();
+   for(int h=0; h<2; h++) YCMvsZ[h]->Write();
+   for(int h=0; h<2; h++) XFvsZ[h]->Write();
    for(int h=0; h<2; h++) YHvsMh[h]->Write();
    for(int h=0; h<2; h++) XFvsMh[h]->Write();
    for(int h=0; h<2; h++) PperpvsMh[h]->Write();
@@ -720,6 +744,7 @@ int main(int argc, char** argv) {
    eleEDist->Write();
    elePtDist->Write();
    eleEtaDist->Write();
+   eleThetaDist->Write();
    elePhiDist->Write();
    eleVzDist->Write();
    eleVxyDist->Write();

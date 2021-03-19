@@ -282,35 +282,35 @@ void EventTree::GetEvent(Long64_t i) {
     ( 1 - y + y*y/2 + TMath::Power(gamma*y,2)/4 );
 
 
-  // compute Breit frame rapidity for hadrons and dihadron
-  // TODO: move this to calcKinematics.cpp; (will need to reproduce outroot files;
-  // but also it's useful to have it here, in case we want to check other frames)
-  // - get boost vector
-  boostVec = this->GetDISObj()->BreitBoost; // boost to breit frame
-  //boostVec = this->GetDISObj()->ComBoost; // boost to q-p com frame
-  // - get q momentum, and boost
-  qMomBreit = this->objDIS->vecQ;
-  qMomBreit.Boost(boostVec);
+  // compute rapidity for hadrons and dihadron
+  // - get boost vectors
+  this->GetDISObj();
+  boostBreit = this->objDIS->BreitBoost; // boost to breit frame
+  boostCom = this->objDIS->ComBoost; // boost to q-p com frame
+  // - get q momentum, and boost (boost is redundant, being along q)
+  qMomBreit = this->objDIS->vecQ; qMomBreit.Boost(boostBreit);
+  qMomCom =   this->objDIS->vecQ; qMomCom.Boost(boostCom);
   // - calculate hadron rapidities
   for(int h=0; h<2; h++) {
-    // get hadron momentum p, and boost
-    hadMomBreit[h].SetPtEtaPhiE(hadPt[h],hadEta[h],hadPhi[h],hadE[h]);
-    hadMomBreit[h].Boost(boostVec);
-    // get component of p along -q direction, which is the +z direction for the
-    // Breit frame light cone coords
-    pq = -1*hadMomBreit[h].Vect().Dot(qMomBreit.Vect()); // p.(-q)
-    // calculate rapidity using 0.5*ln(p+/p-)
-    hadYH[h] = 0.5 * TMath::Log(
-      (hadMomBreit[h].E() + pq) / 
-      (hadMomBreit[h].E() - pq) );
+    hadMom[h].SetPtEtaPhiE(hadPt[h],hadEta[h],hadPhi[h],hadE[h]);
+    this->CalculateRapidity(
+      hadMom[h], boostBreit, qMomBreit.Vect(), hadYH[h],  hadPqBreit[h] );
+    this->CalculateRapidity(
+      hadMom[h], boostCom,   qMomCom.Vect(),   hadYCM[h], hadPqCom[h]   );
+    qmag = this->objDIS->vecQ.Vect().Mag();
+    hadPqLab[h] = qmag*qmag>0 ?
+      hadMom[h].Vect().Dot(this->objDIS->vecQ.Vect()) / qmag : 0;
   };
   // - calculate dihadron rapidity
-  dihMomBreit.SetPtEtaPhiM( Ph/TMath::CosH(PhEta), PhEta, PhPhi, Mh );
-  dihMomBreit.Boost(boostVec);
-  pq = -1*dihMomBreit.Vect().Dot(qMomBreit.Vect());
-  YH = 0.5 * TMath::Log( 
-    (dihMomBreit.E() + pq) / 
-    (dihMomBreit.E() - pq) );
+  dihMom.SetPtEtaPhiM( Ph/TMath::CosH(PhEta), PhEta, PhPhi, Mh );
+  this->CalculateRapidity(
+    dihMom, boostBreit, qMomBreit.Vect(), YH,  dihPqBreit );
+  this->CalculateRapidity(
+    dihMom, boostCom,   qMomCom.Vect(),   YCM, dihPqCom   );
+  // TODO: move these rapidity calculations to calcKinematics.cpp; (will need
+  // to reproduce outroot files; but also it's useful to have it here, in case
+  // we want to check other frames)
+
 
   // compute hadron Pperp and qT
   // TODO: move this to calcKinematics.cpp; (will need to reproduce outroot files)
@@ -738,6 +738,29 @@ Float_t EventTree::GetDepolarizationFactor(Char_t kf) {
     fprintf(stderr,"ERROR: unknown depolarization factor %c; returning 0\n",kf);
     return 0;
   };
+};
+
+// general method to calculate rapidity
+// - calculate the rapidity of `momentumVec`, where `momentumVec` is boosted by
+//   `boostVec`
+// - `zAxis` specifies the light cone coordinates orientation (and is not
+//   boosted by `boostVec`), i.e., the direction taken as `p_3` or `p_z`
+// - outputs `rapidity` and `p_z`
+void EventTree::CalculateRapidity(
+  TLorentzVector momentumVec_,
+  TVector3 boostVec,
+  TVector3 zAxis,
+  Float_t &rapidity,
+  Float_t &p_z
+) {
+  TLorentzVector momentumVec = momentumVec_;
+  momentumVec.Boost(boostVec);
+  Float_t znorm = zAxis.Mag();
+  p_z = znorm*znorm>0 ? 
+    momentumVec.Vect().Dot(zAxis) / znorm : 0;
+  rapidity = 0.5 * TMath::Log(
+    (momentumVec.E() + p_z) / (momentumVec.E() - p_z)
+  );
 };
 
 

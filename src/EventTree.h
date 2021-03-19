@@ -57,6 +57,10 @@ class EventTree : public TObject
 
     //Float_t GetDepolarizationFactorApprox(Char_t kf);
     Float_t GetDepolarizationFactor(Char_t kf);
+    void CalculateRapidity(
+      TLorentzVector momentumVec_,
+      TVector3 boostVec, TVector3 zAxis,
+      Float_t &rapidity, Float_t &p_z);
 
     Bool_t debug;
     Long64_t ENT;
@@ -80,6 +84,7 @@ class EventTree : public TObject
     Float_t hadPhi[2];
     Float_t hadXF[2];
     Float_t hadYH[2];
+    Float_t hadYCM[2];
     Float_t hadPperp[2];
     Float_t hadQt[2];
     Float_t hadVertex[2][3];
@@ -105,7 +110,7 @@ class EventTree : public TObject
     Bool_t hadFiduCut[2];
 
     // dihadron kinematics
-    Float_t Mh,Zpair,PhiH,Mmiss,xF,alpha,YH;
+    Float_t Mh,Zpair,PhiH,Mmiss,xF,alpha,YH,YCM;
     Float_t Z[2];
     Float_t zeta;
     Float_t theta;
@@ -134,6 +139,13 @@ class EventTree : public TObject
     Float_t PhiD; // hadPhiH[qA] - hadPhiH[qB]
     Float_t yhb;
 
+    // other
+    Float_t hadPqBreit[2];
+    Float_t hadPqCom[2];
+    Float_t hadPqLab[2];
+    Float_t dihPqBreit;
+    Float_t dihPqCom;
+    Float_t qmag;
 
 
     ///////////////////////////
@@ -227,16 +239,14 @@ class EventTree : public TObject
 
     TLorentzVector hadMom[2];
     TLorentzVector eleMom;
-    TLorentzVector hadMomBreit[2];
-    TLorentzVector dihMomBreit;
-    TLorentzVector qMomBreit;
-    TVector3 boostVec;
+    TLorentzVector dihMom;
+    TLorentzVector qMomBreit,qMomCom;
+    TVector3 boostBreit,boostCom;
 
 
     Bool_t vertexWarned;
     Bool_t sfcutDiag, sfcutSigma;
     Float_t dfA;
-    Float_t pq;
 
     Bool_t helicityMCinjected;
     TRandom * RNG;
