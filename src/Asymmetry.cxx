@@ -407,6 +407,9 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
   xF = ev->xF;
   theta = ev->theta;
 
+  for(int h=0; h<2; h++) YH[h] = ev->hadYH[h];
+  DYsgn = ev->DYsgn;
+  DY = ev->DY;
 
   // testing single-hadron phiH definition
   /*
@@ -530,6 +533,8 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
     tree_PhPerp = (Double_t)(PhPerp);
     tree_Q2 = (Double_t)(Q2);
     tree_XF = (Double_t)(xF);
+    tree_DY = (Double_t)(DY);
+    tree_DYsgn = (Double_t)(DYsgn);
     tree_Weight = (Double_t)(weight);
     tree_Spin_idx = (Int_t)(SpinInt(spinn));
     tree->Fill();
@@ -1201,6 +1206,9 @@ void Asymmetry::ResetVars() {
   Ph = UNDEF;
   Q2 = UNDEF;
   xF = UNDEF;
+  for(int h=0; h<2; h++) YH[h]=UNDEF;
+  DY = UNDEF;
+  DYsgn = UNDEF;
   theta = UNDEF;
   spinn = UNDEF;
   for(int d=0; d<3; d++) iv[d]=UNDEF;
@@ -1371,7 +1379,6 @@ void Asymmetry::ActivateTree(Bool_t isMC) {
   tree->Branch("PhiR",&tree_PhiR,"PhiR/D");
   tree->Branch("PhiD",&tree_PhiD,"PhiD/D");
   tree->Branch("Theta",&tree_Theta,"Theta/D");
-  if(!isMC) tree->Branch("Pol",&tree_Pol,"Pol/D");
   tree->Branch("Depol2",&tree_Depol2,"Depol2/D");
   tree->Branch("Depol3",&tree_Depol3,"Depol3/D");
   tree->Branch("Rellum",&tree_Rellum,"Rellum/D");
@@ -1381,8 +1388,13 @@ void Asymmetry::ActivateTree(Bool_t isMC) {
   tree->Branch("PhPerp",&tree_PhPerp,"PhPerp/D");
   tree->Branch("Q2",&tree_Q2,"Q2/D");
   tree->Branch("XF",&tree_XF,"XF/D");
+  tree->Branch("DY",&tree_DY,"DY/D");
+  tree->Branch("DYsgn",&tree_DYsgn,"DYsgn/D");
   tree->Branch("Weight",&tree_Weight,"Weight/D");
-  if(!isMC) tree->Branch("Spin_idx",&tree_Spin_idx,"Spin_idx/I");
+  //if(!isMC) {
+    tree->Branch("Spin_idx",&tree_Spin_idx,"Spin_idx/I");
+    tree->Branch("Pol",&tree_Pol,"Pol/D");
+  //};
   treeActivated = true;
 };
 

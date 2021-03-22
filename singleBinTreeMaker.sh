@@ -26,7 +26,6 @@ fi
 args="$outrootDir -b -i1 -n 1 $argsExtra"
 if [ "$dataType" == "mc" ]; then args="$args -s"; fi
 echo "args = $args"
-exit
 
 
 # call buildSpinroot.exe on condor or slurm

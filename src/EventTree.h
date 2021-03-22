@@ -114,6 +114,7 @@ class EventTree : public TObject
     Float_t Z[2];
     Float_t zeta;
     Float_t theta;
+    Float_t DY,DYsgn;
 
     Float_t Ph,PhPerp;
     Float_t PhEta,PhPhi;

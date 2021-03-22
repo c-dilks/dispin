@@ -307,6 +307,9 @@ void EventTree::GetEvent(Long64_t i) {
     dihMom, boostBreit, qMomBreit.Vect(), YH,  dihPqBreit );
   this->CalculateRapidity(
     dihMom, boostCom,   qMomCom.Vect(),   YCM, dihPqCom   );
+  // - calculate delta rapidity
+  DYsgn = hadYH[qA] - hadYH[qB];
+  DY = TMath::Abs(DYsgn);
   // TODO: move these rapidity calculations to calcKinematics.cpp; (will need
   // to reproduce outroot files; but also it's useful to have it here, in case
   // we want to check other frames)
@@ -418,8 +421,8 @@ Int_t EventTree::SpinState() {
   else if(runnum==11) { // MC helicity
     if(!helicityMCinjected) {
       // if helicityMC has not yet been injected, then inject something here so cutHelicity==true
-      //helicityMC[whichHelicityMC] = 3; // +helicity only
-      helicityMC[whichHelicityMC] = RNG->Uniform()<0.5 ? 2:3; // 50/50 random
+      helicityMC[whichHelicityMC] = 3; // +helicity only
+      //helicityMC[whichHelicityMC] = RNG->Uniform()<0.5 ? 2:3; // 50/50 random
     };
     switch(helicityMC[whichHelicityMC]) {
       case 2: return sM;
