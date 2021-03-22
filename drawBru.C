@@ -267,28 +267,33 @@ void drawBru(
 
 
 
-  // aqui
-
-
-
-  // build graphs
-  TString outfileN = bruDir+"/asym.root";
-  TFile * outFile = new TFile(outfileN,"RECREATE");
+  // build graphs and canvases
+  TString outfileN;
+  TFile * outFile;
   TGraphErrors * paramGr[nParamsMax];
   Int_t cnt;
-  /*
-   * 1dim
-   *   one graph per param
-   * 2dim
-   *   categ0: horizontal axis
-   *   one graph per param, times numBins in categ1
-   */
-  if(nDim==1) {
+  TCanvas * paramCanv;
+  TCanvas * paramVsSampleCanv;
+  TCanvas * cornerCanv;
+  Float_t xMin,xMax,yMin,yMax;
+  TLine * zeroLine;
+  Int_t nrow,ncol;
+  Int_t binListCnt=0;
+  TString blStr;
+  nextBinList = TObjArrayIter(BruBinSuperList);
+  while((BBlist = (TObjArray*) nextBinList())) {
+
+    // setup output file
+    outfileN = bruDir+Form("/asym_%d.root",binListCnt);
+    outFile = new TFile(outfileN,"RECREATE");
+    blStr = Form("_BL%d",binListCnt); // BL = Bin List
+
+    // paramter vs. bin mean graphs, for each parameter
     for(int i=0; i<nParams; i++) {
 
       // define graph
       paramGr[i] = new TGraphErrors();
-      paramGr[i]->SetName("gr_"+paramList[i]);
+      paramGr[i]->SetName("gr_"+paramList[i]+blStr);
       vTitle = moduList[i] ? moduList[i]->AsymmetryTitle() : "N";
       paramGr[i]->SetTitle(vTitle+" vs. "+hTitle/*+";"+hTitle+";"+vTitle*/);
       paramGr[i]->GetXaxis()->SetLabelSize(axisTitleSize);
@@ -297,30 +302,20 @@ void drawBru(
       paramGr[i]->SetMarkerColor(kAzure);
       paramGr[i]->SetLineColor(kAzure);
 
-      // add points to graph
+      // add points to graph and write
       cnt=0;
+      nextBin = TObjArrayIter(BBlist);
       while((BB = (BruBin*) nextBin())) {
         paramGr[i]->SetPoint(cnt,BB->mean,BB->param[i]);
         paramGr[i]->SetPointError(cnt,0,BB->paramErr[i]);
         cnt++;
       };
-      nextBin.Reset();
       paramGr[i]->Write();
     };
-  };
 
-  // build canvases
-  TCanvas * paramCanv;
-  TCanvas * paramVsSampleCanv;
-  TCanvas * cornerCanv;
-  Float_t xMin,xMax,yMin,yMax;
-  TLine * zeroLine;
-  Int_t nrow,ncol;
-  if(nDim==1) {
-
-    // parameter result vs. horizizontal iv
+    // canvas for paramter vs. bin mean graphs
     ncol=4; nrow=(nParams-1)/ncol+1;
-    paramCanv = new TCanvas("canvAsym","canvAsym",600*ncol,300*nrow);
+    paramCanv = new TCanvas("canvAsym"+blStr,"canvAsym"+blStr,600*ncol,300*nrow);
     paramCanv->Divide(ncol,nrow);
     for(int i=0; i<nParams; i++) {
       paramCanv->cd(i+1);
@@ -349,10 +344,11 @@ void drawBru(
     // parameter vs. sample
     if(minimizer==mkMCMC) {
       nrow=nParams/ncol+1; // (update for NLL)
+      nextBin = TObjArrayIter(BBlist);
       while((BB = (BruBin*) nextBin())) {
         paramVsSampleCanv = new TCanvas(
-          Form("paramVsSample_%d",BB->idx),
-          Form("paramVsSample_%d",BB->idx),
+          Form("paramVsSample_%d",BB->idx)+blStr,
+          Form("paramVsSample_%d",BB->idx)+blStr,
           600*ncol,300*nrow);
         paramVsSampleCanv->Divide(ncol,nrow);
         for(int i=0; i<nParams; i++) {
@@ -368,21 +364,25 @@ void drawBru(
         BB->nllVsSample->Draw("HIST");
         paramVsSampleCanv->Write();
         paramVsSampleCanv->Close();
-      };
-      nextBin.Reset();
-      while((BB = (BruBin*) nextBin())) {
+
         cornerCanv = (TCanvas*) BB->resultFile->Get("Corner Full Plot")->Clone();
         //cornerCanv = (TCanvas*) BB->resultFile->Get("Corner Plot")->Clone();
-        cornerCanv->Write(Form("cornerCanv_%d",BB->idx));
+        cornerCanv->Write(Form("cornerCanv_%d"+blStr,BB->idx));
       };
-      nextBin.Reset();
     };
+
+    binListCnt++;
+    outFile->Close();
+    printf("produced %s\n",outfileN.Data());
   };
 
   // cleanup
-  while((BB = (BruBin*) nextBin())) BB->resultFile->Close();
-  nextBin.Reset();
-  outFile->Close();
-  printf("produced %s\n",outfileN.Data());
+  nextBinList = TObjArrayIter(BruBinSuperList);
+  while((BBlist = (TObjArray*) nextBinList())) {
+    nextBin = TObjArrayIter(BBlist);
+    while((BB = (BruBin*) nextBin())) {
+     BB->resultFile->Close();
+    };
+  };
 
 };

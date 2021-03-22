@@ -33,6 +33,7 @@ TString hadTitle[2];
 const Int_t kpAll = 1000000;
 const Int_t kpUnknown = 1000001;
 const Int_t kpComb = 1000002;
+const Int_t kpCombUnk = 1000003;
 
 Double_t electronCntData, electronCntMC;
 map<TString,TH1D*> dataDists;
@@ -138,7 +139,7 @@ int main(int argc, char** argv) {
 
   // ARGUMENTS
   infiles = "outroot.mcrec.injgen/*.root";
-  dataPlotsFile = "plots.inbending.root"; // plots.root for data (from diagnostics)
+  dataPlotsFile = "plots.mctest.root"; // plots.root for data (from diagnostics)
   whichPair = EncodePairType(kPip,kPim);
   if(argc>1) infiles = TString(argv[1]);
   if(argc>2) dataPlotsFile = TString(argv[2]);
@@ -204,9 +205,13 @@ int main(int argc, char** argv) {
   parMap.insert(pair<Int_t,Parent>(333,Parent(333,"#phi",kMagenta,kDashed)));
   parMap.insert(pair<Int_t,Parent>(92,Parent(92,"string fragment",kBlack,kDashed)));
   parMap.insert(pair<Int_t,Parent>(91,Parent(91,"cluster fragment",kGray,kDashed)));
-  parMap.insert(pair<Int_t,Parent>(kpComb,Parent(kpComb,"combinatorial BG",kRed,kDashed)));
-  //parMap.insert(pair<Int_t,Parent>(kpUnknown,Parent(kpUnknown,"unknown",kYellow-3,kDashed)));
-  parMap.insert(pair<Int_t,Parent>(-1,Parent(-1,"undefined parent",kGreen+1,kDashed)));
+  parMap.insert(pair<Int_t,Parent>(-1,Parent(-1,"undefined single parent",kGreen+1,kDashed)));
+  
+  // combinatorial BG contributions, where the parents are different:
+  // - both parents are defined:
+  parMap.insert(pair<Int_t,Parent>(kpComb,Parent(kpComb,"combinatorial BG (defined)",kRed,kDashed)));
+  // - one or both parents are undefined:
+  parMap.insert(pair<Int_t,Parent>(kpCombUnk,Parent(kpCombUnk,"combinatorial BG (undefined)",kBlue,kDashed)));
 
 
 
@@ -241,7 +246,10 @@ int main(int argc, char** argv) {
                                    ev->gen_hadParentPid[qA] : kpUnknown;
             } else {
               // hadrons are cousins (have different parents): combinatorial bg
-              parPid = kpComb;
+              if(ev->gen_hadParentPid[qA]==-1 || ev->gen_hadParentPid[qB]==-1)
+                parPid = kpCombUnk; // at least one parent is undefined
+              else
+                parPid = kpComb; // both parents are defined
             };
             break;
           case 1:
