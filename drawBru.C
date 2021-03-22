@@ -16,7 +16,7 @@ R__LOAD_LIBRARY(DiSpin)
 //////////////////////////////////////////////////////////
 
 TObjArray * BruBinList;
-TObjArray * BruSuperList;
+TObjArray * BruBinSuperList;
 Int_t nDim, nBins;
 Int_t nSamples;
 TString bruDir;
@@ -150,7 +150,7 @@ void drawBru(
 
   // build arrays of BruBin objects
   // - BruBinList: bins for the first dimension (IV0)
-  // - BruSuperList: array of BruBinLists, one for each higher-dimensional bin
+  // - BruBinSuperList: array of BruBinLists, one for each higher-dimensional bin
   // -- get axes:
   TAxis ax[3];
   int bn[3];
@@ -164,28 +164,31 @@ void drawBru(
   hTitle = ax[0].GetName(); // TODO: use dispin Binning to convert to proper title
   // -- create BruBin objects, and fill TObjArrays
   TVectorD binCoord(nDim);
-  BruSuperList = new TObjArray();
+  BruBinSuperList = new TObjArray();
   for(bn[2]=1; bn[2]<=bnMax[2]; bn[2]++) {
     for(bn[1]=1; bn[1]<=bnMax[1]; bn[1]++) {
       BruBinList = new TObjArray(); // create new BruBinList before looping over dimension 0
       for(bn[0]=1; bn[0]<=bnMax[0]; bn[0]++) {
+        // get bin center coordinate
         for(int i=0; i<nDim; i++) binCoord[i] = ax[i].GetBinCenter(bn[i]);
+        // create new BruBin object
         BruBinList->AddLast(new BruBin(ax[0],bn[0],binCoord));
       }
-      BruSuperList->AddLast(BruBinList);
+      BruBinSuperList->AddLast(BruBinList);
     };
   };
-
-  // aqui
 
 
   // define BruBin iterator, and print bins
   BruBin * BB;
+  TObjArray * BBlist;
   TObjArrayIter nextBin(BruBinList);
-  Tools::PrintSeparator(30);
-  while((BB = (BruBin*) nextBin())) BB->PrintInfo();
-  Tools::PrintSeparator(30);
-  nextBin.Reset();
+  TObjArrayIter nextBinList(BruBinSuperList);
+  while((BBlist = (TObjArray*) nextBinList())) {
+    nextBin = TObjArrayIter(BBlist);
+    while((BB = (BruBin*) nextBin())) BB->PrintInfo();
+    Tools::PrintSeparator(30,"-");
+  };
 
 
   // get parameter values from results trees
@@ -198,65 +201,74 @@ void drawBru(
   Double_t paramval[nParamsMax];
   Double_t nll;
   Long64_t entry;
-  while((BB = (BruBin*) nextBin())) {
+  nextBinList = TObjArrayIter(BruBinSuperList);
+  while((BBlist = (TObjArray*) nextBinList())) {
+    nextBin = TObjArrayIter(BBlist);
+    while((BB = (BruBin*) nextBin())) {
 
-    // get parameter tree
-    paramSet = (RooDataSet*) BB->resultFile->Get("FinalParameters");
+      // get parameter tree
+      paramSet = (RooDataSet*) BB->resultFile->Get("FinalParameters");
 
-    // get parameter list
-    if(first) {
-      nParams = 0;
-      for(int i=0; i<paramSet->get()->size(); i++) {
-        if(nParams>nParamsMax) {
-          fprintf(stderr,"ERROR: too many params\n"); return 1; };
-        paramName = (*(paramSet->get()))[i]->GetName();
-        if(paramName=="NLL") continue;
-        if(paramName.Contains("Yld")) moduList[nParams] = nullptr;
-        else moduList[nParams] = new Modulation(paramName);
-        paramList[nParams] = paramName;
-        printf("param %d:  %s\n",nParams,paramList[nParams].Data());
-        nParams++;
-      };
-      Tools::PrintSeparator(30);
-      first = false;
-    };
-
-    // get parameter values
-    if(BB->resultTree->GetEntries()!=1)
-      fprintf(stderr,"WARNING: ResultTree does not have 1 entry\n");
-    for(int i=0; i<nParams; i++) {
-      BB->resultTree->SetBranchAddress(paramList[i],&(BB->param[i]));
-      BB->resultTree->SetBranchAddress(paramList[i]+"_err",&(BB->paramErr[i]));
-      BB->resultTree->GetEntry(0);
-    };
-
-    // if MCMC was used, fill param vs sample graphs
-    if(minimizer==mkMCMC) {
-      BB->mcmcTree->SetBranchAddress("entry",&entry);
-      BB->mcmcTree->SetBranchAddress("nll_MarkovChain_local_",&nll);
-      for(int i=0; i<nParams; i++) {
-        BB->mcmcTree->SetBranchAddress(paramList[i],&paramval[i]);
-      };
-      for(int i=0; i<nParams; i++) {
-        vTitle = moduList[i] ? moduList[i]->AsymmetryTitle() : "N";
-        BB->paramVsSample[i]->SetTitle(
-          vTitle+" vs. MCMC sample"/*;sample;"+vTitle*/);
-        BB->paramVsSample[i]->GetXaxis()->SetLabelSize(axisTitleSize);
-        BB->paramVsSample[i]->GetYaxis()->SetLabelSize(axisTitleSize);
-      };
-      BB->nllVsSample->SetTitle("-ln(L) vs. MCMC sample");
-      BB->nllVsSample->GetXaxis()->SetLabelSize(axisTitleSize);
-      BB->nllVsSample->GetYaxis()->SetLabelSize(axisTitleSize);
-      for(Long64_t e=0; e<BB->mcmcTree->GetEntries(); e++) {
-        BB->mcmcTree->GetEntry(e);
-        for(int i=0; i<nParams; i++) {
-          BB->paramVsSample[i]->Fill(entry+1,paramval[i]);
+      // get parameter list
+      if(first) {
+        nParams = 0;
+        for(int i=0; i<paramSet->get()->size(); i++) {
+          if(nParams>nParamsMax) {
+            fprintf(stderr,"ERROR: too many params\n"); return 1; };
+          paramName = (*(paramSet->get()))[i]->GetName();
+          if(paramName=="NLL") continue;
+          if(paramName.Contains("Yld")) moduList[nParams] = nullptr;
+          else moduList[nParams] = new Modulation(paramName);
+          paramList[nParams] = paramName;
+          printf("param %d:  %s\n",nParams,paramList[nParams].Data());
+          nParams++;
         };
-        BB->nllVsSample->Fill(entry+1,nll);
+        Tools::PrintSeparator(30);
+        first = false;
       };
+
+      // get parameter values
+      if(BB->resultTree->GetEntries()!=1)
+        fprintf(stderr,"WARNING: ResultTree does not have 1 entry\n");
+      for(int i=0; i<nParams; i++) {
+        BB->resultTree->SetBranchAddress(paramList[i],&(BB->param[i]));
+        BB->resultTree->SetBranchAddress(paramList[i]+"_err",&(BB->paramErr[i]));
+        BB->resultTree->GetEntry(0);
+      };
+
+      // if MCMC was used, fill param vs sample graphs
+      if(minimizer==mkMCMC) {
+        BB->mcmcTree->SetBranchAddress("entry",&entry);
+        BB->mcmcTree->SetBranchAddress("nll_MarkovChain_local_",&nll);
+        for(int i=0; i<nParams; i++) {
+          BB->mcmcTree->SetBranchAddress(paramList[i],&paramval[i]);
+        };
+        for(int i=0; i<nParams; i++) {
+          vTitle = moduList[i] ? moduList[i]->AsymmetryTitle() : "N";
+          BB->paramVsSample[i]->SetTitle(
+            vTitle+" vs. MCMC sample"/*;sample;"+vTitle*/);
+          BB->paramVsSample[i]->GetXaxis()->SetLabelSize(axisTitleSize);
+          BB->paramVsSample[i]->GetYaxis()->SetLabelSize(axisTitleSize);
+        };
+        BB->nllVsSample->SetTitle("-ln(L) vs. MCMC sample");
+        BB->nllVsSample->GetXaxis()->SetLabelSize(axisTitleSize);
+        BB->nllVsSample->GetYaxis()->SetLabelSize(axisTitleSize);
+        for(Long64_t e=0; e<BB->mcmcTree->GetEntries(); e++) {
+          BB->mcmcTree->GetEntry(e);
+          for(int i=0; i<nParams; i++) {
+            BB->paramVsSample[i]->Fill(entry+1,paramval[i]);
+          };
+          BB->nllVsSample->Fill(entry+1,nll);
+        };
+      };
+
     };
   };
-  nextBin.Reset();
+
+
+
+  // aqui
+
 
 
   // build graphs

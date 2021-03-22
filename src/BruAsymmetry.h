@@ -46,7 +46,7 @@ class BruAsymmetry : public TObject
     void AddDenomMod(Modulation * modu);
     void BuildPDF();
     void LoadDataSets(
-      TString dataFileN, TString mcFileN, TString treename="tree");
+      TString dataFileN, TString mcFileN="", TString treename="tree");
     void Bin(Binning * binscheme);
     void Fit(TString minimizer);
     void PrintFitter() { FM->SetUp().WS().Print("v"); };
@@ -86,6 +86,8 @@ class BruAsymmetry : public TObject
     TString numerFormu, denomFormu, formu;
     TString ampNameList,formuNameList;
     Int_t nDenomParams;
+
+    Bool_t useMCint;
 
 
   ClassDef(BruAsymmetry,1);

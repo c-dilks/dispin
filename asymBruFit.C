@@ -58,11 +58,12 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc",
   B->PrintBinScheme();
 
   // load data and MC trees
-  B->LoadDataSets("spinroot/catTree.root","catTreeMC.root");
+  B->LoadDataSets("spinroot/catTree.root"); // disable MC integration
+  //B->LoadDataSets("spinroot/catTree.root","catTreeMC.root"); // enable MC integration
   //B->LoadDataSets("spinroot.proton.pion/catTree.root","catTreeMC.proton.pion.root");
 
   // MCMC settings
-  B->MCMC_iter = 3000; // number of samples
+  B->MCMC_iter = 5000; // number of samples
   B->MCMC_burnin = ((Double_t)B->MCMC_iter)/10.0; // number of initial samples to drop
   B->MCMC_norm = 1.0 / 0.01; // 1/stepsize
 

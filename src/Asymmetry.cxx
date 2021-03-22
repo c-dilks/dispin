@@ -1044,6 +1044,7 @@ void Asymmetry::FitAsymMLM() {
   if(nDparamUsed>0) nThreads=1;
   else nThreads = (Int_t) std::thread::hardware_concurrency();
   if(nThreads<1) nThreads=1;
+  nThreads=1; // override
   printf("---- fit with %d parallel threads\n",nThreads);
 
   // perform the fit

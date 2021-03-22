@@ -22,6 +22,7 @@ fitOutput.txt
 outz_*
 spinroot
 spinroot_*
+spinroot.*
 ortho*.tex
 eventTable.txt
 prediction.dat

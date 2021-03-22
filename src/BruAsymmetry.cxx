@@ -161,22 +161,26 @@ void BruAsymmetry::LoadDataSets(
   // read input trees
   enum dataEnum {dt,mc}; // data, MC
   infile[dt] = new TFile(dataFileN,"READ");
-  infile[mc] = new TFile(mcFileN,"READ");
-  for(int ff=0; ff<2; ff++)
-    intr[ff] = (TTree*) infile[ff]->Get(treename);
-
-  // create output tree, initially cloned from input trees
-  TString outfileN[2];
-  outfileN[dt] = outdir+"/treeData.root";
-  outfileN[mc] = outdir+"/treeMC.root";
-  for(int ff=0; ff<2; ff++) {
-    outfile[ff] = new TFile(outfileN[ff],"RECREATE");
-    outtr[ff] = intr[ff]->CloneTree();
+  if(mcFileN=="") useMCint=false;
+  else {
+    useMCint=true;
+    infile[mc] = new TFile(mcFileN,"READ");
   };
 
-  // add unique ID branch to output trees, write and close
-  for(int ff=0; ff<2; ff++) {
-    outfile[ff]->cd();
+  TString outfileN[2];
+  int ffMax = useMCint ? 2:1;
+  for(int ff=0; ff<ffMax; ff++) {
+
+    // create output tree, initially cloned from input trees
+    intr[ff] = (TTree*) infile[ff]->Get(treename);
+    switch(ff) {
+      case dt: outfileN[ff] = outdir+"/treeData.root"; break;
+      case mc: outfileN[ff] = outdir+"/treeMC.root"; break;
+    };
+    outfile[ff] = new TFile(outfileN[ff],"RECREATE");
+    outtr[ff] = intr[ff]->CloneTree();
+
+    // add unique ID branch to output trees, write and close
     Idx[ff] = 0;
     IdxBr[ff] = outtr[ff]->Branch("Idx",&(Idx[ff]),"Idx/D");
     for(Long64_t i=0; i<outtr[ff]->GetEntries(); i++) {
@@ -190,7 +194,12 @@ void BruAsymmetry::LoadDataSets(
 
   // load trees into FitManager
   FM->LoadData("tree",outfileN[dt]);
-  FM->LoadSimulated("tree",outfileN[mc],"PWfit");
+  if(useMCint) FM->LoadSimulated("tree",outfileN[mc],"PWfit");
+  
+  if(useMCint)
+    this->PrintLog(Form("MC INTEGRATION ENABLED, using %s",mcFileN.Data()));
+  else
+    this->PrintLog("MC INTEGRATION DISABLED");
 };
 
 

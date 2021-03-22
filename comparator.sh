@@ -30,8 +30,14 @@ case $setnum in
     ;;
   5)
     root CompareBruAsym.C'''(
-      "with MC",    "bruspin.prl.ss_2",
-      "without MC", "bruspin.test_noMC"
+      "MCMC",    "bruspin.prl.ss_1",
+      "Minuit",  "bruspin.prl.minuit"
+    )'''
+    ;;
+  6)
+    root CompareBruAsym.C'''(
+      "Minuit 318",  "bruspin.prl.minuitk,
+      "Minuit fa18",    "bruspin.prl.minuit.fa18"
     )'''
     ;;
   *)
