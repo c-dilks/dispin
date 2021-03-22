@@ -1365,13 +1365,13 @@ Bool_t Asymmetry::KickEvent(TString reason,Float_t badValue) {
 };
 
 
-void Asymmetry::ActivateTree() {
+void Asymmetry::ActivateTree(Bool_t isMC) {
   tree = new TTree("tree","tree");
   tree->Branch("PhiH",&tree_PhiH,"PhiH/D");
   tree->Branch("PhiR",&tree_PhiR,"PhiR/D");
   tree->Branch("PhiD",&tree_PhiD,"PhiD/D");
   tree->Branch("Theta",&tree_Theta,"Theta/D");
-  tree->Branch("Pol",&tree_Pol,"Pol/D");
+  if(!isMC) tree->Branch("Pol",&tree_Pol,"Pol/D");
   tree->Branch("Depol2",&tree_Depol2,"Depol2/D");
   tree->Branch("Depol3",&tree_Depol3,"Depol3/D");
   tree->Branch("Rellum",&tree_Rellum,"Rellum/D");
@@ -1382,7 +1382,7 @@ void Asymmetry::ActivateTree() {
   tree->Branch("Q2",&tree_Q2,"Q2/D");
   tree->Branch("XF",&tree_XF,"XF/D");
   tree->Branch("Weight",&tree_Weight,"Weight/D");
-  tree->Branch("Spin_idx",&tree_Spin_idx,"Spin_idx/I");
+  if(!isMC) tree->Branch("Spin_idx",&tree_Spin_idx,"Spin_idx/I");
   treeActivated = true;
 };
 

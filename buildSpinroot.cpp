@@ -28,6 +28,7 @@ Int_t oaTw,oaL,oaM;
 Bool_t useWeighting;
 Int_t gridDim;
 Int_t whichHelicityMC;
+Bool_t isMC;
 
 // subroutines
 void SetDefaultArgs();
@@ -54,7 +55,7 @@ int main(int argc, char** argv) {
   enum inputType_enum {iFile,iDir};
   Int_t inputType = -1;
   Int_t nd=0;
-  while( (opt=getopt(argc,argv,"f:d:p:i:n:t:l:m:w|b|h:")) != -1 ) {
+  while( (opt=getopt(argc,argv,"f:d:p:i:n:t:l:m:w|b|h:s|")) != -1 ) {
     switch(opt) {
       case 'f': /* input file */
         if(inputType>=0) return PrintUsage();
@@ -95,6 +96,9 @@ int main(int argc, char** argv) {
         break;
       case 'h': /* which helicityMC */
         whichHelicityMC = (Int_t) strtof(optarg,NULL);
+        break;
+      case 's': /* simulated (MC) data (see Asymmetry::ActivateTree()) */
+        isMC = true;
         break;
       default: return PrintUsage();
     };
@@ -182,7 +186,7 @@ int main(int argc, char** argv) {
   if(singleBinMode) {
     printf("\nCREATING TREE FILE = %s\n\n",treeFileN.Data());
     treeFile = new TFile(treeFileN,"RECREATE");
-    A->ActivateTree(); // tell the one and only A to fill its TTree
+    A->ActivateTree(isMC); // tell the one and only A to fill its TTree
     spinrootFile->cd();
   };
 
@@ -280,6 +284,7 @@ void SetDefaultArgs() {
   useWeighting = false;
   gridDim = 1;
   whichHelicityMC = 0;
+  isMC = false;
 };
 
 

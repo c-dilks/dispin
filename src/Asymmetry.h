@@ -89,7 +89,7 @@ class Asymmetry : public TObject
     void AppendData(TFile * tf);
     TString AppFileName(TFile * tf);
 
-    void ActivateTree();
+    void ActivateTree(Bool_t isMC=false);
 
     Double_t nEvents;
 
