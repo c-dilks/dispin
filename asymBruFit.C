@@ -1,5 +1,6 @@
 R__LOAD_LIBRARY(DiSpin)
-//#include "BruAsymmetry.h"
+#include "BruAsymmetry.h"
+
 void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc",
   Int_t binschemeIVtype=2,
   Int_t nbins0=-1, Int_t nbins1=-1, Int_t nbins2=-1
@@ -15,7 +16,7 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc",
   BruAsymmetry * B = new BruAsymmetry(bruDir);
 
   // build modulations
-  ///* // 7 amps (PRL)
+  /* // 7 amps (PRL)
   B->AddNumerMod(new Modulation(3,0,0));
   B->AddNumerMod(new Modulation(2,1,1));
   B->AddNumerMod(new Modulation(3,1,1));
@@ -23,8 +24,8 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc",
   B->AddNumerMod(new Modulation(2,2,2));
   B->AddNumerMod(new Modulation(3,2,2));
   B->AddNumerMod(new Modulation(3,2,-2));
-  //*/
-  /* // all 12 PWs up to L=2 (dnp2020)
+  */
+  ///* // all 12 PWs up to L=2 (dnp2020)
   B->AddNumerMod(new Modulation(3,0,0,0,true));
   B->AddNumerMod(new Modulation(3,1,0,0,true));
   B->AddNumerMod(new Modulation(2,1,1,0,true));
@@ -37,7 +38,7 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc",
   B->AddNumerMod(new Modulation(2,2,2,0,true));
   B->AddNumerMod(new Modulation(3,2,2,0,true));
   B->AddNumerMod(new Modulation(3,2,-2,0,true));
-  */
+  //*/
   /* // DSIDIS
   B->AddNumerMod(new Modulation(2,0,0,0,false,Modulation::kDSIDIS)); // sin(PhiD)
   B->AddNumerMod(new Modulation(2,0,0,1,false,Modulation::kDSIDIS)); // sin(2*PhiD)
@@ -58,15 +59,21 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc",
   B->PrintBinScheme();
 
   // load data and MC trees
-  B->LoadDataSets("spinroot/catTree.root"); // disable MC integration
-  //B->LoadDataSets("spinroot/catTree.root","catTreeMC.root"); // enable MC integration
-  //B->LoadDataSets("spinroot.proton.pion/catTree.root","catTreeMC.proton.pion.root");
+  //B->LoadDataSets("catTreeData.root"); // disable MC integration
+  //B->LoadDataSets("catTreeData.root","catTreeMC.spinAbsent.root"); // enable MC integration
+  B->LoadDataSets("catTreeData.root","catTreeMC.spin5050.root"); // enable MC integration
+  //B->LoadDataSets("catTreeData.root","catTreeMC.spinPositive.root"); // enable MC integration
+  //B->LoadDataSets("spinroot.proton.pion/catTreeData.root","catTreeMC.proton.pion.root");
 
   // MCMC settings
-  B->MCMC_iter = 5000; // number of samples
+  B->MCMC_iter = 10000; // number of samples
   B->MCMC_burnin = ((Double_t)B->MCMC_iter)/10.0; // number of initial samples to drop
-  B->MCMC_norm = 1.0 / 0.01; // 1/stepsize
+  B->MCMC_norm = 1.0 / 0.03; // 1/stepsize
 
   // perform fit
   B->Fit(minimizer);
+
+  // draw
+  TString cmd = Form(".x drawBru.C(\"%s\",\"%s\")",bruDir.Data(),minimizer.Data());
+  gROOT->ProcessLine(cmd);
 };

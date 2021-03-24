@@ -26,16 +26,21 @@ void DiffGraph(
 
 void CompareBruAsym(
   TString titleBlue="blue fit result",
-  TString bruDirBlue="bruspin.blue",
+  TString bruFileNameBlue="bruspin.blue/asym.root",
   TString titleRed="red fit result",
-  TString bruDirRed="bruspin.red"
+  TString bruFileNameRed="bruspin.red/asym.root"
 ) {
 
   // open asym.root files
   enum fileEnum {azul,rojo};
+  TString bruFileName[2] = {bruFileNameBlue,bruFileNameRed};
   TFile * bruFile[2];
-  bruFile[azul] = new TFile(bruDirBlue+"/asym.root","READ");
-  bruFile[rojo] = new TFile(bruDirRed+"/asym.root","READ");
+  for(int f=0; f<2; f++) {
+    if(!bruFileName[f].Contains(".root")) {
+      bruFileName[f]+="/asym.root"; // legacy syntax
+    };
+    bruFile[f] = new TFile(bruFileName[f],"READ");
+  };
 
   // build lists of asymmetry graphs
   TObjArray * AsymGrList[2];

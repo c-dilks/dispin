@@ -284,9 +284,9 @@ void drawBru(
   while((BBlist = (TObjArray*) nextBinList())) {
 
     // setup output file
-    outfileN = bruDir+Form("/asym_%d.root",binListCnt);
-    outFile = new TFile(outfileN,"RECREATE");
     blStr = Form("_BL%d",binListCnt); // BL = Bin List
+    outfileN = bruDir+Form("/asym_%s%s.root",minimizer_.Data(),blStr.Data());
+    outFile = new TFile(outfileN,"RECREATE");
 
     // paramter vs. bin mean graphs, for each parameter
     for(int i=0; i<nParams; i++) {

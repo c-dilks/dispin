@@ -46,6 +46,33 @@ case $setnum in
       "Minuit fa18",  "bruspin.prl.minuit.fa18"
     )'''
     ;;
+  8)
+    root CompareBruAsym.C'''(
+      "Minuit", "bruspin.mc.disabled/asym_minuit_BL0.root",
+      "MCMC",   "bruspin.mc.disabled/asym_mcmc_BL0.root"
+    )'''
+    ;;
+  9)
+    # not much different, how we exclude helicity in MC
+    root CompareBruAsym.C'''(
+      "MC int. disabled", "bruspin.mc.disabled/asym_mcmc_BL0.root",
+      "MC int., with helicity undefined", "bruspin.mc.spinAbsent/asym_mcmc_BL0.root"
+    )'''
+    ;;
+  10)
+    # effect of acceptance corrections
+    root CompareBruAsym.C'''(
+      "MC int. disabled", "bruspin.mc.disabled/asym_mcmc_BL0.root",
+      "MC int., with helicity 50/50", "bruspin.mc.spin5050/asym_mcmc_BL0.root"
+    )'''
+    ;;
+  11)
+    # all +ve helicity -> nonsense fit results
+    root CompareBruAsym.C'''(
+      "MC int. disabled", "bruspin.mc.disabled/asym_mcmc_BL0.root",
+      "MC int., with all helicity +", "bruspin.mc.spinPositive/asym_mcmc_BL0.root"
+    )'''
+    ;;
   *)
     echo "ERROR: bad set"
     ;;
