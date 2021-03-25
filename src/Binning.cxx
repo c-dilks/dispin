@@ -13,7 +13,7 @@ Binning::Binning() {
   minIV[vX] = 0;   maxIV[vX] = 1;
   minIV[vZ] = 0;   maxIV[vZ] = 1;
   minIV[vPt] = 0;  maxIV[vPt] = 2;
-  minIV[vPh] = 0;  maxIV[vPh] = 10;
+  minIV[vDY] = 0;  maxIV[vDY] = 4;
   minIV[vQ] = 0;   maxIV[vQ] = 12;
   minIV[vXF] = 0;  maxIV[vXF] = 1;
   for(int v=0; v<nIV; v++) nBins[v]=-1;
@@ -31,7 +31,7 @@ Binning::Binning() {
   IVname[vX] = "X";
   IVname[vZ] = "Z";
   IVname[vPt] = "PhPerp";
-  IVname[vPh] = "Ph";
+  IVname[vDY] = "DY";
   IVname[vQ] = "Q2";
   IVname[vXF] = "XF";
 
@@ -39,7 +39,7 @@ Binning::Binning() {
   IVtitle[vX] = "x";
   IVtitle[vZ] = "z";
   IVtitle[vPt] = "P_{h}^{perp}";
-  IVtitle[vPh] = "P_{h}";
+  IVtitle[vDY] = "#Delta Y";
   IVtitle[vQ] = "Q^{2}";
   IVtitle[vXF] = "x_{F}";
 
@@ -113,7 +113,7 @@ Int_t Binning::FindBin(EventTree * ev) {
       case vX: ivVal[d] = ev->x; break;
       case vZ: ivVal[d] = ev->Zpair; break;
       case vPt: ivVal[d] = ev->PhPerp; break;
-      case vPh: ivVal[d] = ev->Ph; break;
+      case vDY: ivVal[d] = ev->DY; break;
       case vQ: ivVal[d] = ev->Q2; break;
       case vXF: ivVal[d] = ev->xF; break;
       default: 
@@ -221,11 +221,23 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
 
   // default binning schemes for each IV, if they weren't specified as args
   Int_t nb[3];
+  TString defaultScheme = "DIS"; // <------------------ main switch
   if( nb0==-1 && nb1==-1 && nb2==-1) {
-    if(ivVar[0]==vX) nb0=12; // PRL 1D binning
-    if(ivVar[0]==vM) nb0=12; // PRL 1D binning
-    if(ivVar[0]==vZ  && ivVar[1]==vM) { nb0=6; nb1=2; }; // PRL 2D binning
-    if(ivVar[0]==vPt && ivVar[1]==vM) { nb0=6; nb1=2; }; // PRL 2D binning
+    if(defaultScheme=="DIS") { // DIS2021: RGA fa18+sp19 inbending data
+      if(ivVar[0]==vX) nb0=18;
+      if(ivVar[0]==vM) nb0=18;
+      if(ivVar[0]==vZ  && ivVar[1]==vM)  { nb0=6; nb1=3; };
+      if(ivVar[0]==vPt && ivVar[1]==vM)  { nb0=6; nb1=3; };
+      if(ivVar[0]==vX  && ivVar[1]==vDY) { nb0=6; nb1=3; };
+      if(ivVar[0]==vM  && ivVar[1]==vDY) { nb0=6; nb1=3; };
+      if(ivVar[0]==vDY) nb0=12;
+    };
+    if(defaultScheme=="PRL") { // PRL: RGA fa18 inbending data
+      if(ivVar[0]==vX) nb0=12;
+      if(ivVar[0]==vM) nb0=12;
+      if(ivVar[0]==vZ  && ivVar[1]==vM) { nb0=6; nb1=2; };
+      if(ivVar[0]==vPt && ivVar[1]==vM) { nb0=6; nb1=2; };
+    };
   };
   nb[0]=nb0; nb[1]=nb1; nb[2]=nb2;
 
@@ -242,10 +254,21 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
         case 2:
           AddBinBound(vM,0.63); // PRL 2D binning
           break;
+        case 3:
+          AddBinBound(vM,0.60); // DIS 2D binning
+          AddBinBound(vM,0.95);
+          break;
         case 4:
           AddBinBound(vM,0.4);
           AddBinBound(vM,0.6);
           AddBinBound(vM,0.9);
+          break;
+        case 6:
+          AddBinBound(vM,0.488);
+          AddBinBound(vM,0.654);
+          AddBinBound(vM,0.774);
+          AddBinBound(vM,0.895);
+          AddBinBound(vM,1.075);
           break;
         case 12:
           AddBinBound(vM,0.381); // PRL 1D binning
@@ -260,26 +283,24 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
           AddBinBound(vM,0.981);
           AddBinBound(vM,1.125);
           break;
-        case 20:
-          AddBinBound(vM,0.36);
-          AddBinBound(vM,0.41);
-          AddBinBound(vM,0.45);
-          AddBinBound(vM,0.50);
-          AddBinBound(vM,0.54);
-          AddBinBound(vM,0.59);
-          AddBinBound(vM,0.63);
-          AddBinBound(vM,0.68);
-          AddBinBound(vM,0.71);
-          AddBinBound(vM,0.74);
-          AddBinBound(vM,0.77);
-          AddBinBound(vM,0.80);
-          AddBinBound(vM,0.83);
-          AddBinBound(vM,0.87);
-          AddBinBound(vM,0.91);
-          AddBinBound(vM,0.96);
-          AddBinBound(vM,1.02);
-          AddBinBound(vM,1.10);
-          AddBinBound(vM,1.21);
+        case 18:
+          AddBinBound(vM,0.371); // DIS 1D binning
+          AddBinBound(vM,0.432);
+          AddBinBound(vM,0.488);
+          AddBinBound(vM,0.544);
+          AddBinBound(vM,0.600);
+          AddBinBound(vM,0.654);
+          AddBinBound(vM,0.702);
+          AddBinBound(vM,0.741);
+          AddBinBound(vM,0.774);
+          AddBinBound(vM,0.809);
+          AddBinBound(vM,0.849);
+          AddBinBound(vM,0.895);
+          AddBinBound(vM,0.945);
+          AddBinBound(vM,1.002);
+          AddBinBound(vM,1.075);
+          AddBinBound(vM,1.168);
+          AddBinBound(vM,1.290);
           break;
         default:
           fprintf(stderr,"ERROR: unknown nb for %s\n",GetIVname(d).Data());
@@ -289,6 +310,13 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
     else if(ivVar[d] == vX) {
       switch(nb[d]) {
         case 1: break; // single bin
+        case 6:
+          AddBinBound(vX,0.133); // DIS 2D binning
+          AddBinBound(vX,0.165);
+          AddBinBound(vX,0.199);
+          AddBinBound(vX,0.242);
+          AddBinBound(vX,0.308);
+          break;
         case 12:
           AddBinBound(vX,0.118); // PRL 1D binning
           AddBinBound(vX,0.135);
@@ -302,6 +330,25 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
           AddBinBound(vX,0.315);
           AddBinBound(vX,0.375);
           break;
+        case 18:
+          AddBinBound(vX,0.109); // DIS 1D binning
+          AddBinBound(vX,0.122);
+          AddBinBound(vX,0.133);
+          AddBinBound(vX,0.144);
+          AddBinBound(vX,0.154);
+          AddBinBound(vX,0.165);
+          AddBinBound(vX,0.175);
+          AddBinBound(vX,0.187);
+          AddBinBound(vX,0.199);
+          AddBinBound(vX,0.212);
+          AddBinBound(vX,0.226);
+          AddBinBound(vX,0.242);
+          AddBinBound(vX,0.260);
+          AddBinBound(vX,0.282);
+          AddBinBound(vX,0.308);
+          AddBinBound(vX,0.344);
+          AddBinBound(vX,0.398);
+          break;
         default:
           fprintf(stderr,"ERROR: unknown nb for %s\n",GetIVname(d).Data());
       };
@@ -311,7 +358,7 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
       switch(nb[d]) {
         case 1: break; // single bin
         case 6:
-          AddBinBound(vZ,0.445); // PRL 2D binning
+          AddBinBound(vZ,0.445); // PRL and DIS 2D binning
           AddBinBound(vZ,0.500);
           AddBinBound(vZ,0.555);
           AddBinBound(vZ,0.605);
@@ -326,7 +373,7 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
       switch(nb[d]) {
         case 1: break; // single bin
         case 6:
-          AddBinBound(vPt,0.245); // PRL 2D binning
+          AddBinBound(vPt,0.245); // PRL and DIS 2D binning
           AddBinBound(vPt,0.365);
           AddBinBound(vPt,0.480);
           AddBinBound(vPt,0.585);
@@ -336,7 +383,31 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
           fprintf(stderr,"ERROR: unknown nb for %s\n",GetIVname(d).Data());
       };
     }
-    // -- Ph -------------- // no schemes defined yet
+    // -- DY --------------
+    else if(ivVar[d] == vDY) {
+      switch(nb[d]) {
+        case 1: break; // single bin
+        case 3:
+          AddBinBound(vDY,0.3); // DIS 2D binning
+          AddBinBound(vDY,0.7);
+          break;
+        case 12:
+          AddBinBound(vDY,0.072);
+          AddBinBound(vDY,0.144);
+          AddBinBound(vDY,0.217);
+          AddBinBound(vDY,0.294);
+          AddBinBound(vDY,0.374);
+          AddBinBound(vDY,0.460);
+          AddBinBound(vDY,0.554);
+          AddBinBound(vDY,0.661);
+          AddBinBound(vDY,0.789);
+          AddBinBound(vDY,0.952);
+          AddBinBound(vDY,1.195);
+          break;
+        default:
+          fprintf(stderr,"ERROR: unknown nb for %s\n",GetIVname(d).Data());
+      };
+    }
     // -- Q2 -------------- // no schemes defined yet
     // -- xF -------------- // no schemes defined yet
     else { printf("default to single bin\n"); };

@@ -425,7 +425,7 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
       case Binning::vX: iv[d] = x; break;
       case Binning::vZ: iv[d] = z; break;
       case Binning::vPt: iv[d] = PhPerp; break;
-      case Binning::vPh: iv[d] = Ph; break;
+      case Binning::vDY: iv[d] = DY; break;
       case Binning::vQ: iv[d] = Q2; break;
       case Binning::vXF: iv[d] = xF; break;
       default: 
@@ -505,7 +505,7 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
   rfIV[Binning::vX]->setVal(ev->x);
   rfIV[Binning::vZ]->setVal(ev->Zpair);
   rfIV[Binning::vPt]->setVal(ev->PhPerp);
-  rfIV[Binning::vPh]->setVal(ev->Ph);
+  rfIV[Binning::vDY]->setVal(ev->DY);
   rfIV[Binning::vQ]->setVal(ev->Q2);
   rfIV[Binning::vXF]->setVal(ev->xF);
   // set weight

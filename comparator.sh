@@ -73,6 +73,12 @@ case $setnum in
       "MC int., with all helicity +", "bruspin.mc.spinPositive/asym_mcmc_BL0.root"
     )'''
     ;;
+  12)
+    root CompareBruAsym.C'''(
+      "MC int., with helicity undefined", "bruspin.dpwg.mh.spinAbsent/asym_minuit_BL0.root",
+      "MC int. with helicity 50/50", "bruspin.dpwg.mh/asym_minuit_BL0.root"
+    )'''
+    ;;
   *)
     echo "ERROR: bad set"
     ;;
