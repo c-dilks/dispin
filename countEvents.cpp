@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
      // full cut set
      if(ev->Valid()) {
        nValid++;
-       if(printEvents && nValid<=100) {
+       if(printEvents && nValid<=10000) {
          //PrintEvent();
          PrintEvent2();
        };

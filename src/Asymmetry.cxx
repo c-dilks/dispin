@@ -1391,10 +1391,10 @@ void Asymmetry::ActivateTree(Bool_t isMC) {
   tree->Branch("DY",&tree_DY,"DY/D");
   tree->Branch("DYsgn",&tree_DYsgn,"DYsgn/D");
   tree->Branch("Weight",&tree_Weight,"Weight/D");
-  //if(!isMC) {
+  if(!isMC) {
     tree->Branch("Spin_idx",&tree_Spin_idx,"Spin_idx/I");
     tree->Branch("Pol",&tree_Pol,"Pol/D");
-  //};
+  };
   treeActivated = true;
 };
 

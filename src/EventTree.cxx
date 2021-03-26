@@ -421,8 +421,8 @@ Int_t EventTree::SpinState() {
   else if(runnum==11) { // MC helicity
     if(!helicityMCinjected) {
       // if helicityMC has not yet been injected, then inject something here so cutHelicity==true
-      helicityMC[whichHelicityMC] = 3; // +helicity only
-      //helicityMC[whichHelicityMC] = RNG->Uniform()<0.5 ? 2:3; // 50/50 random
+      //helicityMC[whichHelicityMC] = 3; // +helicity only
+      helicityMC[whichHelicityMC] = RNG->Uniform()<0.5 ? 2:3; // 50/50 random
     };
     switch(helicityMC[whichHelicityMC]) {
       case 2: return sM;
