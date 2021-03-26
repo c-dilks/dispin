@@ -47,7 +47,7 @@ void CompareDist(TString distname) {
   dist[0]->Draw("P"); dist[1]->Draw("PSAME");
   canv->cd(2); canv->GetPad(2)->SetGrid(1,1);
   rat->Draw("E");
-  canv->Print(TString(distname)+".png");
+  canv->Print("diagplots/"+TString(distname)+".png");
 };
 
 
@@ -118,6 +118,8 @@ void CompareDiagnosticsDists(
   infile[1] = new TFile(infile1N,"READ");
   gStyle->SetOptStat(0);
   gStyle->SetPalette(kGreenPink);
+
+  gROOT->ProcessLine(".! mkdir -p diagplots");
 
 
   // get electron yields, for normalizations
