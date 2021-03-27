@@ -85,6 +85,12 @@ case $setnum in
       "#DeltaY>0.7", "bruspin.dpwg.x.yh/asym_mcmc_BL2.root"
     )'''
     ;;
+  14)
+    root CompareBruAsym.C'''(
+      "old MC (PRL)", "bruspin.dpwg.mh.MC_OLD/asym_minuit_BL0.root",
+      "new MC (BG-merged)", "bruspin.dpwg.mh.MC_NEW/asym_minuit_BL0.root"
+    )'''
+    ;;
   *)
     echo "ERROR: bad set"
     ;;

@@ -224,12 +224,12 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
   TString defaultScheme = "DIS"; // <------------------ main switch
   if( nb0==-1 && nb1==-1 && nb2==-1) {
     if(defaultScheme=="DIS") { // DIS2021: RGA fa18+sp19 inbending data
-      if(ivVar[0]==vX) nb0=18;
-      if(ivVar[0]==vM) nb0=18;
-      if(ivVar[0]==vZ  && ivVar[1]==vM)  { nb0=6; nb1=3; };
-      if(ivVar[0]==vPt && ivVar[1]==vM)  { nb0=6; nb1=3; };
-      if(ivVar[0]==vX  && ivVar[1]==vDY) { nb0=6; nb1=3; };
-      if(ivVar[0]==vM  && ivVar[1]==vDY) { nb0=6; nb1=3; };
+      if(ivVar[0]==vX) nb0=12;
+      if(ivVar[0]==vM) nb0=12;
+      if(ivVar[0]==vZ  && ivVar[1]==vM)  { nb0=4; nb1=3; };
+      if(ivVar[0]==vPt && ivVar[1]==vM)  { nb0=4; nb1=3; };
+      if(ivVar[0]==vX  && ivVar[1]==vDY) { nb0=4; nb1=3; };
+      if(ivVar[0]==vM  && ivVar[1]==vDY) { nb0=4; nb1=3; };
       if(ivVar[0]==vDY) nb0=12;
     };
     if(defaultScheme=="PRL") { // PRL: RGA fa18 inbending data
@@ -259,9 +259,9 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
           AddBinBound(vM,0.95);
           break;
         case 4:
-          AddBinBound(vM,0.4);
-          AddBinBound(vM,0.6);
-          AddBinBound(vM,0.9);
+          AddBinBound(vM,0.572);
+          AddBinBound(vM,0.774);
+          AddBinBound(vM,0.972);
           break;
         case 6:
           AddBinBound(vM,0.488);
@@ -284,7 +284,7 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
           AddBinBound(vM,1.125);
           break;
         case 18:
-          AddBinBound(vM,0.371); // DIS 1D binning
+          AddBinBound(vM,0.371);
           AddBinBound(vM,0.432);
           AddBinBound(vM,0.488);
           AddBinBound(vM,0.544);
@@ -310,6 +310,11 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
     else if(ivVar[d] == vX) {
       switch(nb[d]) {
         case 1: break; // single bin
+        case 4:
+          AddBinBound(vX,0.149);
+          AddBinBound(vX,0.199);
+          AddBinBound(vX,0.270);
+          break;
         case 6:
           AddBinBound(vX,0.133); // DIS 2D binning
           AddBinBound(vX,0.165);
@@ -331,7 +336,7 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
           AddBinBound(vX,0.375);
           break;
         case 18:
-          AddBinBound(vX,0.109); // DIS 1D binning
+          AddBinBound(vX,0.109);
           AddBinBound(vX,0.122);
           AddBinBound(vX,0.133);
           AddBinBound(vX,0.144);
@@ -357,8 +362,13 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
     else if(ivVar[d] == vZ) {
       switch(nb[d]) {
         case 1: break; // single bin
+        case 4:
+          AddBinBound(vZ,0.468);
+          AddBinBound(vZ,0.548);
+          AddBinBound(vZ,0.633);
+          break;
         case 6:
-          AddBinBound(vZ,0.445); // PRL and DIS 2D binning
+          AddBinBound(vZ,0.445); // PRL 2D binning
           AddBinBound(vZ,0.500);
           AddBinBound(vZ,0.555);
           AddBinBound(vZ,0.605);
@@ -372,8 +382,13 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
     else if(ivVar[d] == vPt) {
       switch(nb[d]) {
         case 1: break; // single bin
+        case 4:
+          AddBinBound(vPt,0.321);
+          AddBinBound(vPt,0.484);
+          AddBinBound(vPt,0.662);
+          break;
         case 6:
-          AddBinBound(vPt,0.245); // PRL and DIS 2D binning
+          AddBinBound(vPt,0.245); // PRL 2D binning
           AddBinBound(vPt,0.365);
           AddBinBound(vPt,0.480);
           AddBinBound(vPt,0.585);

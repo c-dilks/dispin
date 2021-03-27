@@ -39,10 +39,10 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc",
   B->AddNumerMod(new Modulation(3,2,2,0,true));
   B->AddNumerMod(new Modulation(3,2,-2,0,true));
   //*/
-  ///* // DSIDIS
+  /* // DSIDIS
   B->AddNumerMod(new Modulation(2,0,0,0,false,Modulation::kDSIDIS)); // sin(PhiD)
   B->AddNumerMod(new Modulation(2,0,0,1,false,Modulation::kDSIDIS)); // sin(2*PhiD)
-  //*/
+  */
   /* // denominators
   B->AddDenomMod(new Modulation(2,1,1,0,false,Modulation::kUU)); // cos(phiH-phiR)
   B->AddDenomMod(new Modulation(3,0,0,0,false,Modulation::kUU)); // cos(phiH)
@@ -60,13 +60,11 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc",
 
   // load data and MC trees
   //B->LoadDataSets("catTreeData.root"); // disable MC integration
-  B->LoadDataSets("catTreeData.root","catTreeMC.spinAbsent.root"); // enable MC integration // DIS
-  //B->LoadDataSets("catTreeData.root","catTreeMC.spin5050.root"); // enable MC integration
-  //B->LoadDataSets("catTreeData.root","catTreeMC.spinPositive.root"); // enable MC integration
+  B->LoadDataSets("catTreeData.root","catTreeMC.spinAbsent.PRL.root"); // enable MC integration // DIS
   //B->LoadDataSets("spinroot.proton.pion/catTreeData.root","catTreeMC.proton.pion.root");
 
   // MCMC settings
-  B->MCMC_iter = 5000; // number of samples
+  B->MCMC_iter = 30000; // number of samples
   B->MCMC_burnin = ((Double_t)B->MCMC_iter)/10.0; // number of initial samples to drop
   B->MCMC_norm = 1.0 / 0.03; // 1/stepsize
 

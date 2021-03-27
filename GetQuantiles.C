@@ -9,7 +9,7 @@ int i;
 Int_t Nquant;
 TString constraint;
 
-void PrintNums(TString name);
+void PrintNums(TString name,TString enumN);
 TFile * f;
 TTree * t;
 TH1D * d;
@@ -26,17 +26,17 @@ void GetQuantiles(
   f = new TFile(catTreeFile,"READ");
   t = (TTree*) f->Get("tree");
 
-  PrintNums("X");
-  PrintNums("Mh");
-  PrintNums("Z");
-  PrintNums("PhPerp");
-  PrintNums("Q2");
-  PrintNums("XF");
-  PrintNums("DY");
+  PrintNums("X","vX");
+  PrintNums("Mh","vM");
+  PrintNums("Z","vZ");
+  PrintNums("PhPerp","vPt");
+  PrintNums("Q2","vQ");
+  PrintNums("XF","vXF");
+  PrintNums("DY","vDY");
 };
 
 
-void PrintNums(TString name) {
+void PrintNums(TString name,TString enumN) {
 
   Double_t min = t->GetMinimum(name);
   Double_t max = t->GetMaximum(name);
@@ -58,6 +58,9 @@ void PrintNums(TString name) {
   };
 
   printf("%s:\n",name.Data());
-  for(i=0; i<Nquant-1; i++) printf("%.3f\n",q[i]);
+  //for(i=0; i<Nquant-1; i++) printf("%.3f\n",q[i]);
+  printf("        case %d:\n",Nquant);
+  for(i=0; i<Nquant-1; i++) printf("          AddBinBound(%s,%.3f);\n",enumN.Data(),q[i]);
+  printf("          break;\n");
   printf("\n");
 };
