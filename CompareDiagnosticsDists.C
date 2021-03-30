@@ -38,6 +38,9 @@ void CompareDist(TString distname) {
   rat->SetMarkerStyle(kFullCircle);
   rat->SetMarkerSize(0.5);
   rat->GetYaxis()->SetRangeUser(0.5,2);
+  TString ratT = rat->GetTitle();
+  ratT(TRegexp("distribution")) = "Data/MC";
+  rat->SetTitle(ratT);
 
   // draw canvas
   canv = new TCanvas(
@@ -145,10 +148,12 @@ void CompareDiagnosticsDists(
   CompareDist("piPlushadPhiHDist");
   CompareDist("piMinushadPhiHDist");
 
+  /*
   CompareDist2D("Q2vsX");
   CompareDist2D("eleVxyDist");
   CompareDist2D("eleEvsPhi");
   CompareDist2D("vzDiffEleHad");
   CompareDist2D("PhiHvsPhiR");
+  */
 
 };

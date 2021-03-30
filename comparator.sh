@@ -91,6 +91,18 @@ case $setnum in
       "new MC (BG-merged)", "bruspin.dpwg.mh.MC_NEW/asym_minuit_BL0.root"
     )'''
     ;;
+  15)
+    root CompareBruAsym.C'''(
+      "CFR",        "bruspin.long.x.yh/asym_minuit_BL2.root",
+      "CFR+DSIDIS", "bruspin.long.x.yh.dsidis/asym_minuit_BL2.root"
+    )'''
+    ;;
+  16)
+    root CompareBruAsym.C'''(
+      "xF>0",      "bruspin.XFtest.XFgt0.z.mh/asym_minuit_BL0.root",
+      "no xF cut", "bruspin.XFtest.XFfull.z.mh/asym_minuit_BL0.root"
+    )'''
+    ;;
   *)
     echo "ERROR: bad set"
     ;;

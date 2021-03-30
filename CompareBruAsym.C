@@ -191,6 +191,10 @@ void CompareBruAsym(
         mgr->Add(agr[f]->gr);
         xmin = agr[f]->gr->GetXaxis()->GetXmin();
         xmax = agr[f]->gr->GetXaxis()->GetXmax();
+        //if(!(TString(agr[f]->GetName()).Contains("Yld"))) {
+          //mgr->SetMinimum(-0.07);
+          //mgr->SetMaximum(0.07);
+        //};
       };
     };
     mgr->Draw("APE");

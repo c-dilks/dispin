@@ -221,7 +221,7 @@ void BruAsymmetry::Fit(TString minimizer) {
   // number of parallel threads
   nThreads = (Int_t) std::thread::hardware_concurrency();
   if(nThreads<1) nThreads=1;
-  if(nThreads>12) nThreads=12; // max (to not clobber shared nodes)
+  if(nThreads>6) nThreads=6; // max (to not clobber shared nodes)
   nWorkers = TMath::Min(nThreads,this->GetNbins()); // for PROOF
   printf("---- fit with %d parallel threads\n",nWorkers);
 
