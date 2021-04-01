@@ -10,7 +10,6 @@ void drawDIS2021(TString bruAsymFile="bruspin.DIS.z.mh/asym_mcmc_BL0.root") {
 
   // OPTIONS /////////////////////////////////////////////////////////////////
   Bool_t includeMeq0 = true; // include m=0 in twist 3 plots
-  Bool_t whitespaceTw2 = false; // make twist2 canvas same size as twist3
 
   Float_t asymMax = 0.07; // vertical range
   Float_t asymMin = -asymMax;
@@ -40,12 +39,7 @@ void drawDIS2021(TString bruAsymFile="bruspin.DIS.z.mh/asym_mcmc_BL0.root") {
   for(int t=0; t<2; t++) {
 
     // get number of rows and columns for canvas division
-    if(t==tw2) {
-      if(      !includeMeq0 && !whitespaceTw2 ) { nrows[t]=2; ncols[t]=2; }
-      else if(  includeMeq0 && !whitespaceTw2 ) { nrows[t]=2; ncols[t]=2; }
-      else if( !includeMeq0 &&  whitespaceTw2 ) { nrows[t]=2; ncols[t]=4; }
-      else if(  includeMeq0 &&  whitespaceTw2 ) { nrows[t]=3; ncols[t]=5; };
-    }
+    if(t==tw2) { nrows[t]=2; ncols[t]=2; }
     else if(t==tw3) {
       if( !includeMeq0 ) { nrows[t]=2; ncols[t]=4; }
       else               { nrows[t]=3; ncols[t]=5; };
@@ -63,6 +57,7 @@ void drawDIS2021(TString bruAsymFile="bruspin.DIS.z.mh/asym_mcmc_BL0.root") {
   Int_t twist,L,M,padnum;
   TPad * pad;
   TLine * zero;
+  TLatex * tex;
   Double_t xmin,xmax;
   while(TKey * key = (TKey*) nextKey()) {
 
@@ -87,26 +82,9 @@ void drawDIS2021(TString bruAsymFile="bruspin.DIS.z.mh/asym_mcmc_BL0.root") {
       // pad, counting upward going left to right)
       padnum=0;
       if(twist==tw2) {
-        if( !includeMeq0 && !whitespaceTw2 ) {
-          if     ( L==1 && M==1 ) padnum=3;
-          else if( L==2 && M==1 ) padnum=1;
-          else if( L==2 && M==2 ) padnum=2;
-        }
-        else if(  includeMeq0 && !whitespaceTw2 ) {
-          if     ( L==1 && M==1 ) padnum=3;
-          else if( L==2 && M==1 ) padnum=1;
-          else if( L==2 && M==2 ) padnum=2;
-        }
-        else if( !includeMeq0 &&  whitespaceTw2 ) {
-          if     ( L==1 && M==1 ) padnum=7;
-          else if( L==2 && M==1 ) padnum=3;
-          else if( L==2 && M==2 ) padnum=4;
-        }
-        else if(  includeMeq0 &&  whitespaceTw2 ) {
-          if     ( L==1 && M==1 ) padnum=9;
-          else if( L==2 && M==1 ) padnum=4;
-          else if( L==2 && M==2 ) padnum=5;
-        };
+        if     ( L==1 && M==1 ) padnum=3;
+        else if( L==2 && M==1 ) padnum=1;
+        else if( L==2 && M==2 ) padnum=2;
       }
       else if(twist==tw3) {
         if( !includeMeq0 ) {
@@ -148,7 +126,6 @@ void drawDIS2021(TString bruAsymFile="bruspin.DIS.z.mh/asym_mcmc_BL0.root") {
         gr->GetYaxis()->SetTitleSize(axisTitleSize);
         gr->SetMarkerSize(1.5);
 
-        //gr->GetYaxis()->SetLabelOffset(-0.04);
         gr->Draw("APE");
 
         xmin = gr->GetXaxis()->GetXmin();
@@ -159,31 +136,30 @@ void drawDIS2021(TString bruAsymFile="bruspin.DIS.z.mh/asym_mcmc_BL0.root") {
         zero->SetLineStyle(kDashed);
         zero->Draw();
 
-        if(padnum==13 || padnum==7) {
+        // hack to force axis labels to be visible, for cases where there
+        // is an empty TPad to the left of the curent one
+        // -- almost works, but it's easier to just use inkscape
+        /*
+        if( (L==0 && M==0) || (L==1 && M==-1) ) {
           printf("--- %d\n",pad->GetBBox().fX);
           Short_t lb = pad->GetBBox().fX;
-          pad->SetBBoxX1(lb-10);
-          pad->SetLeftMargin(0.118);
-
-        };
-
-        /*
-        if(padnum==13) {
-          TGraphErrors * ge = (TGraphErrors*) gr->Clone();
-          TAxis * ax = ge->GetYaxis();
-          canv[twist]->cd(0);
-          pad = (TPad*) gROOT->FindObject(Form("pad_%d",padnum-1));
-          pad->Draw();
-          pad->cd();
-          pad->Range(xmin,asymMin,xmax,asymMax);
-          ge->GetYaxis()->SetLabelOffset(-0.1);
-          ge->SetMarkerColor(kWhite);
-          //ge->SetLineColor(kWhite);
-          //ge->Draw("AXPY+");
-          //ge->Draw("A");
-          ax->DrawClone();
+          UShort_t bw = pad->GetBBox().fWidth;
+          Float_t shift = 50;
+          Float_t bump = shift/(bw+shift);
+          printf("bump=%f\n",bump);
+          pad->SetBBoxX1(lb-shift); // bump left boundary of TPad leftward
+          pad->SetLeftMargin(bump); // fudge factor for re-alignment of plot
         };
         */
+
+        tex = new TLatex(xmin+0.1*(xmax-xmin),asymMax-0.1*(asymMax-asymMin),gtitle);
+        //tex = new TLatex(0.1,0.8,"label");
+        gr->SetTitle("");
+        tex->SetTextSize(0.1);
+        //tex->SetTextAlign(30);
+        //tex->SetNDC(1);
+        tex->Draw();
+
           
 
       };
@@ -261,24 +237,11 @@ void CanvasPartition(TCanvas *C,const Int_t Nx,const Int_t Ny,
             vmaru = 0.0;
          }
 
-         int padn = Nx*j+i+1;
-         /*
-         if(padn==13 || padn==7) {
-           printf("hposl=%f\n",hposl);
-           printf("hposr=%f\n",hposr);
-           printf("hSpacing=%f\n",hSpacing);
-           printf("hStep=%f\n",hStep);
-           hposl -= 0.05;
-           hmarl = 0.233;
-         };
-         */
-
          C->cd(0);
 
          char name[16];
-         //sprintf(name,"pad_%i_%i",i,j);
+         int padn = Nx*j+i+1;
          sprintf(name,"pad_%i",padn);
-         printf("%s\n",name);
          TPad *pad = (TPad*) gROOT->FindObject(name);
          if (pad) delete pad;
          pad = new TPad(name,"",hposl,vposd,hposr,vposu);
