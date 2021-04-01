@@ -1,21 +1,19 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
-#import ROOT as root
+import ROOT as root
 
 
-# need to rebuild root with python3 for this to work!
-#infile = root.TFile("bruspin.DIS.z.mh/asym_mcmc_BL0.root","READ")
-#graph = infile.Get("gr_pwAmpT3L0Mp0Lv0P0_BL0")
-#graph.Draw("APE")
-
-
-xarr = [1,2,3,4]
-yarr = [2,4,9,16]
-earr = [3,2,1,0.5]
-
+# OPTIONS ################
 includeMeq0 = True
-twist = 3
+twist = 2
+##########################
+
+
+# open brufit result
+infileN = "bruspin.DIS.mh/asym_mcmc_BL0.root"
+infile = root.TFile(infileN,"READ")
+blStr = infileN.split('/')[-1].split('_')[-1].split('.')[0]
 
 
 # determine nrows and ncols, and plotmap
@@ -50,36 +48,54 @@ else:
     print("ERROR: bad twist",file=sys.stderr)
     exit()
 print(plotmap)
-exit()
 
 
-print("---")
-for l,lmap in plotmap.items():
-    for m,coord in lmap.items():
-        print(l,m,coord)
-        
-
-#fig,axs = plt.subplots(nrows,ncols)
-for r in range(nrows):
-    for c in range(ncols):
-        if r<nrows-1: axs[r][c].set_xticklabels([])
-        if c>0:       axs[r][c].set_yticklabels([])
+# generate grid of invisible subplots
+fig,axs = plt.subplots(
+  nrows,ncols,
+  subplot_kw=dict(visible=False)
+)
 plt.subplots_adjust(wspace=0,hspace=0)
 
-# [row][col]
-axs[0][0].errorbar(xarr, yarr, yerr=earr,
-    fmt='ok',
-    ecolor='xkcd:blue',
-    elinewidth=3,
-    capsize=4
-)
-axs[1][3].errorbar(yarr, xarr, yerr=earr,
-    fmt='ok',
-    ecolor='r',
-    elinewidth=3,
-    capsize=4
-)
 
+# loop over L and M
+for l,lmap in plotmap.items():
+    for m,[r,c] in lmap.items():
+
+        # show subplot, and delete y-axis labels if not edge
+        axs[r,c].set_visible(True)
+        if r>0 or c>0:
+            axs[r,c].sharex(axs[0,0])
+            axs[r,c].sharey(axs[0,0])
+        if   twist==2: drawY = m==1
+        elif twist==3: drawY = l==-m
+        if not drawY:
+            plt.setp(axs[r,c].get_yticklabels(),visible=False)
+
+        # get asymmetry graph from brufit asym.root
+        twStr = "T"+str(twist)
+        lStr = "L"+str(l)
+        mStr = "M"+("p" if m>=0 else "m")+str(abs(m))
+        endStr = "Lv0P0_"+blStr
+        asymN = "gr_pwAmp"+twStr+lStr+mStr+endStr
+        print(asymN)
+        asym = infile.Get(asymN)
+
+        # draw asymmetry graph to subplot
+        axs[r,c].errorbar(
+            list(asym.GetX()),
+            list(asym.GetY()),
+            yerr=list(asym.GetEY()),
+            fmt='ok',
+            ecolor='xkcd:blue',
+            elinewidth=3,
+            capsize=4
+        )
+
+
+# draw plots
 plt.show()
 
+# cleanup
+infile.Close()
 
