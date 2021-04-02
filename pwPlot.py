@@ -6,18 +6,22 @@ import ROOT as root
 
 
 # arguments ##############
-if len(sys.argv)-1 != 3:
+narg = len(sys.argv)-1
+if narg < 3:
     print(
         "USAGE: "+sys.argv[0]+" [brufit asym.root]"+
-        " [twist] [x axis title]",
+        " [twist] [Xtitle] [drawPDF(1/0,default=0)]",
         file=sys.stderr)
     exit()
 infileN = sys.argv[1]
 twist = int(sys.argv[2])
 xtitle = sys.argv[3]
+drawPDF = int(sys.argv[4]) if narg>=4 else 0
 # OPTIONS ################
-includeMeq0 = True
+includeMeq0 = False
 enableLatex = True
+asymMax = 0.085
+asymMin = -asymMax
 ##########################
 
 
@@ -26,6 +30,7 @@ enableLatex = True
 if enableLatex:
     plt.rcParams.update({
         "text.usetex": True,
+        "font.size": 14,
         #"font.family": "sans-serif",
         #"font.sans-serif": ["Helvetica"]
         "font.family": "serif",
@@ -71,6 +76,12 @@ else:
     print("ERROR: bad twist",file=sys.stderr)
     exit()
 
+# figure size and aspect ratio
+plt.rcParams.update({
+    "figure.figsize": [3*ncols,3*nrows],
+    "savefig.bbox": 'tight'
+})
+
 
 # generate grid of invisible subplots
 fig,axs = plt.subplots(
@@ -95,8 +106,11 @@ for l,lmap in plotmap.items():
             axs[r,c].sharey(axs[0,0])
         if   twist==2: drawY = m==1
         elif twist==3: drawY = l==-m
+        drawX = l==2
         if not drawY:
             plt.setp(axs[r,c].get_yticklabels(),visible=False)
+        if not drawX:
+            plt.setp(axs[r,c].get_xticklabels(),visible=False)
 
         # get asymmetry graph from brufit asym.root
         twStr = "T"+str(twist)
@@ -119,10 +133,17 @@ for l,lmap in plotmap.items():
 
         # zero line
         axs[r,c].axhline(
-          0,0,1,
-          color='xkcd:steel',
-          ls=':',
-          lw=2
+            0,0,1,
+            color='xkcd:steel',
+            ls=':',
+            lw=2
+        )
+
+        # grid
+        axs[r,c].grid(
+            True,'major','both',
+            color='xkcd:light grey',
+            linewidth=0.5
         )
 
         # axis labels
@@ -137,7 +158,7 @@ for l,lmap in plotmap.items():
         # partial wave labels
         # |l,m>
         axs[r,c].text(
-            0.1,0.9,
+            0.05,0.9,
             "$|"+str(l)+","+str(m)+"\\rangle$",
             verticalalignment='center',
             transform=axs[r,c].transAxes
@@ -162,7 +183,7 @@ for l,lmap in plotmap.items():
         diff = "$"+diffFF+"_{1,"+diffP+"}^{"+diffT+"}$"
         if enableLatex:
             axs[r,c].text(
-                0.8,0.9,
+                0.7,0.9,
                 diff,
                 verticalalignment='center',
                 transform=axs[r,c].transAxes
@@ -172,7 +193,7 @@ for l,lmap in plotmap.items():
         if enableLatex:
             if l==2 and m==2:
                 axs[r,c].text(
-                    0.1,0.1,
+                    0.02,0.1,
                     r'\textbf{\Large CLAS12 PRELIMINARY}',
                     verticalalignment='center',
                     transform=axs[r,c].transAxes
@@ -184,12 +205,18 @@ xub = list(asym.GetX())[-1]
 xlb -= 0.15*abs(xub-xlb)
 xub += 0.15*abs(xub-xlb)
 plt.xlim(xlb,xub)
-plt.ylim(-0.1,0.1)
+plt.ylim(asymMin,asymMax)
 
 
 # draw plots
-#plt.savefig('figtest')
-plt.show()
+if drawPDF==1:
+    plt.savefig(
+      "figtest.pdf",
+      orientation='portrait'
+    )
+else:
+    plt.show()
+
 
 # cleanup
 infile.Close()
