@@ -1,17 +1,40 @@
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import ROOT as root
 
 
+# arguments ##############
+if len(sys.argv)-1 != 3:
+    print(
+        "USAGE: "+sys.argv[0]+" [brufit asym.root]"+
+        " [twist] [x axis title]",
+        file=sys.stderr)
+    exit()
+infileN = sys.argv[1]
+twist = int(sys.argv[2])
+xtitle = sys.argv[3]
 # OPTIONS ################
 includeMeq0 = True
-twist = 2
+enableLatex = True
 ##########################
 
 
+# latex
+# NOTE: needed to install `dvipng` and `cm-super`
+if enableLatex:
+    plt.rcParams.update({
+        "text.usetex": True,
+        #"font.family": "sans-serif",
+        #"font.sans-serif": ["Helvetica"]
+        "font.family": "serif",
+        "font.sans-serif": ["Palatino"],
+        "text.latex.preamble": [r'\usepackage{amssymb}']
+    })
+
+
 # open brufit result
-infileN = "bruspin.DIS.mh/asym_mcmc_BL0.root"
 infile = root.TFile(infileN,"READ")
 blStr = infileN.split('/')[-1].split('_')[-1].split('.')[0]
 
@@ -47,7 +70,6 @@ elif twist==3:
 else:
     print("ERROR: bad twist",file=sys.stderr)
     exit()
-print(plotmap)
 
 
 # generate grid of invisible subplots
@@ -56,6 +78,10 @@ fig,axs = plt.subplots(
   subplot_kw=dict(visible=False)
 )
 plt.subplots_adjust(wspace=0,hspace=0)
+fig.suptitle(
+  "Twist-"+str(twist)+" $A_{LU}$ Amplitudes",
+  fontsize=24
+)
 
 
 # loop over L and M
@@ -78,7 +104,6 @@ for l,lmap in plotmap.items():
         mStr = "M"+("p" if m>=0 else "m")+str(abs(m))
         endStr = "Lv0P0_"+blStr
         asymN = "gr_pwAmp"+twStr+lStr+mStr+endStr
-        print(asymN)
         asym = infile.Get(asymN)
 
         # draw asymmetry graph to subplot
@@ -87,13 +112,83 @@ for l,lmap in plotmap.items():
             list(asym.GetY()),
             yerr=list(asym.GetEY()),
             fmt='ok',
-            ecolor='xkcd:blue',
+            ecolor='xkcd:ocean',
             elinewidth=3,
             capsize=4
         )
 
+        # zero line
+        axs[r,c].axhline(
+          0,0,1,
+          color='xkcd:steel',
+          ls=':',
+          lw=2
+        )
+
+        # axis labels
+        axs[r,c].set_xlabel(xtitle)
+        ytitle = "$A_{LU}^{|"+str(l)+",m\\rangle}$"
+        if drawY:
+            if enableLatex:
+                axs[r,c].set_ylabel(ytitle)
+            else:
+                axs[r,c].set_ylabel("$A_{LU}$")
+
+        # partial wave labels
+        # |l,m>
+        axs[r,c].text(
+            0.1,0.9,
+            "$|"+str(l)+","+str(m)+"\\rangle$",
+            verticalalignment='center',
+            transform=axs[r,c].transAxes
+        )
+        # DiFF
+        if twist==2:
+            diffFF = "G"
+            diffT = "\\perp"
+        elif twist==3:
+            diffFF = "H"
+            diffT = "\\sphericalangle" if m>0 else "\\perp"
+        if l==0:
+            diffP = "OO"
+            diffT += " ss+pp"
+        elif l==1:
+            if m==0: diffP = "OL"
+            elif abs(m)==1: diffP = "OT"
+        elif l==2:
+            if m==0: diffP = "LL"
+            elif abs(m)==1: diffP = "LT"
+            elif abs(m)==2: diffP = "TT"
+        diff = "$"+diffFF+"_{1,"+diffP+"}^{"+diffT+"}$"
+        if enableLatex:
+            axs[r,c].text(
+                0.8,0.9,
+                diff,
+                verticalalignment='center',
+                transform=axs[r,c].transAxes
+            )
+
+        # preliminary label
+        if enableLatex:
+            if l==2 and m==2:
+                axs[r,c].text(
+                    0.1,0.1,
+                    r'\textbf{\Large CLAS12 PRELIMINARY}',
+                    verticalalignment='center',
+                    transform=axs[r,c].transAxes
+                )
+
+# axis limits
+xlb = list(asym.GetX())[0]
+xub = list(asym.GetX())[-1]
+xlb -= 0.15*abs(xub-xlb)
+xub += 0.15*abs(xub-xlb)
+plt.xlim(xlb,xub)
+plt.ylim(-0.1,0.1)
+
 
 # draw plots
+#plt.savefig('figtest')
 plt.show()
 
 # cleanup
