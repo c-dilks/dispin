@@ -10,28 +10,36 @@ if narg < 3:
     print(
         "USAGE: "+sys.argv[0],
         "[brufit asym.root]",
-        "[twist]",
+        "[plot scheme]",
         "[Xtitle]",
         "[output(pdf,png;default=disabled)]",
         "[stackPlots(0/1;default=0)]",
         file=sys.stderr)
     print(" - set twist to 0 for twist3 m==0 only")
+    print(" - plot schemes:")
+    print("   - 0: twist3, m=0 only")
+    print("   - 2: twist2")
+    print("   - 3: twist3 (m=0 included if includeMeq0==True)")
+    print("   - 2000+: dump individual plot")
+    print("       digits: twist|L|M|sign(m)")
+    print("                         0:+,1:-")
     exit()
 infileName = sys.argv[1]
-twist = int(sys.argv[2])
+scheme = int(sys.argv[2])
 xtitle = sys.argv[3]
 outputEXT = sys.argv[4] if narg>=4 else "disabled"
 stackPlotsInt = int(sys.argv[5]) if narg>=5 else 0
 # OPTIONS ################
 includeMeq0 = False
 transparentBG = False
-asymMax = 0.095 if twist!=0 else 0.25
+asymMax = 0.095 if scheme!=0 else 0.25
 asymMin = -asymMax
 ##########################
 stackPlots = True if stackPlotsInt==1 else False
 if outputEXT!="png": # some features only work for png
     transparentBG = False
     stackPlots = False
+
 
 
 # latex
@@ -65,12 +73,20 @@ else:
 # determine nrows and ncols, and plotmap
 # plotmap maps L->M->[row,col], where row,col is of subplot
 plotmap = {l:{} for l in range(3)}
-if twist==2:
+if scheme==0: # twist3 m==0 states only
+    nrows,ncols = 1,3
+    twist=3
+    plotmap[0][0] = [0,0]
+    plotmap[1][0] = [0,1]
+    plotmap[2][0] = [0,2]
+elif scheme==2: # twist2
     nrows,ncols = 2,2
+    twist=2
     plotmap[1][1] = [0,0] # [l][m] = [r,c]
     plotmap[2][1] = [1,0]
     plotmap[2][2] = [1,1]
-elif twist==3:
+elif scheme==3: # twist3
+    twist=3
     if includeMeq0:
         nrows,ncols = 3,5
         plotmap[0][0]  = [0,2]
@@ -90,13 +106,15 @@ elif twist==3:
         plotmap[2][-1] = [1,1]
         plotmap[2][1]  = [1,2]
         plotmap[2][2]  = [1,3]
-elif twist==0: # twist3 m==0 states
-    nrows,ncols = 1,3
-    plotmap[0][0] = [0,0]
-    plotmap[1][0] = [0,1]
-    plotmap[2][0] = [0,2]
+elif scheme>=2000: # single plot
+    twist=int(scheme/1000)
+    ell=int(scheme%1000/100)
+    emm=int(scheme%100/10)
+    if scheme%10==1: emm*=-1
+    nrows,ncols = 1,1
+    plotmap[ell][emm]  = [0,0]
 else:
-    print("ERROR: bad twist",file=sys.stderr)
+    print("ERROR: bad scheme number",file=sys.stderr)
     exit()
 
 # figure size and aspect ratio
@@ -117,22 +135,25 @@ plt.subplots_adjust(wspace=0,hspace=0)
 
 
 # main title
-if twist==2 or twist==3:
+if scheme==2 or scheme==3:
     maintitle = "Twist-"+str(twist)+" $A_{LU}$ Amplitudes"
-elif twist==0:
-    maintitle = "Twist-3 m=0 $A_{LU}$ Amplitudes"
+elif scheme==0:
+    maintitle = "Twist-"+str(twist)+" $m=0$ $A_{LU}$ Amplitudes"
+elif scheme>=2000:
+    maintitle = "Twist-"+str(twist)+" $A_{LU}^{|"+str(ell)+","+str(emm)+"\\rangle}$"
 if not stackPlots:
     if "pt.mh" in infileName or "z.mh" in infileName:
         if blStr=="BL0": extraStr = "$M_h<0.6$ GeV"
         elif blStr=="BL1": extraStr = "$0.6<M_h<0.95$ GeV"
         elif blStr=="BL2": extraStr = "$M_h>0.95$ GeV"
         maintitle += ", "+extraStr
-fig.suptitle(maintitle,fontsize=18)
+fig.suptitle(
+    maintitle,
+    fontsize = 18 if scheme<2000 else 14
+)
 
 
-
-
-# loop over L and M
+# loop over L and M #####################################
 for l,lmap in plotmap.items():
     for m,[r,c] in lmap.items():
 
@@ -141,22 +162,24 @@ for l,lmap in plotmap.items():
         if r>0 or c>0:
             axs[r,c].sharex(axs[0,0])
             axs[r,c].sharey(axs[0,0])
-        if twist==2:
-            drawX = l==2
-            drawY = m==1
-        elif twist==3:
-            drawX = l==2
-            drawY = l==-m
-        elif twist==0:
+        if scheme==0:
             drawX = True
             drawY = l==0
+        elif scheme==2:
+            drawX = l==2
+            drawY = m==1
+        elif scheme==3:
+            drawX = l==2
+            drawY = l==-m
+        elif scheme>=2000:
+            drawX,drawY = True,True
         if not drawY:
             plt.setp(axs[r,c].get_yticklabels(),visible=False)
         if not drawX:
             plt.setp(axs[r,c].get_xticklabels(),visible=False)
 
         # get asymmetry graph from brufit asym.root file(s)
-        twStr = "T"+str(twist) if twist!=0 else "T3"
+        twStr = "T"+str(twist)
         lStr = "L"+str(l)
         mStr = "M"+("p" if m>=0 else "m")+str(abs(m))
 
@@ -167,34 +190,35 @@ for l,lmap in plotmap.items():
             asymN = "gr_pwAmp"+twStr+lStr+mStr+endStr
             asym = infile.Get(asymN)
 
-            # plot colors
-            colorErr = 'xkcd:ocean'
-            markerPt = 'o'
-            colorPt = 'k'
+            # plot formatting
+            mkrSty = 'o'
+            errCol = 'xkcd:ocean'
             if stackPlots:
                 if "pt.mh" in infileN or "z.mh" in infileN:
                     if blStr=="BL0":
-                        markerPt = 'o'
-                        colorErr = 'xkcd:red'
+                        mkrSty = 'o'
+                        errCol = 'xkcd:red'
                     elif blStr=="BL1":
-                        markerPt = '*'
-                        colorErr = 'xkcd:jungle green'
+                        mkrSty = '^'
+                        errCol = 'xkcd:jungle green'
                     elif blStr=="BL2":
-                        markerPt = 'X'
-                        colorErr = 'xkcd:true blue'
-                    colorPt = colorErr
+                        mkrSty = 'v'
+                        errCol = 'xkcd:true blue'
+            #mkrCol = 'k'
+            mkrCol = errCol
 
             # draw asymmetry graph to subplot
             axs[r,c].errorbar(
                 list(asym.GetX()),
                 list(asym.GetY()),
                 yerr=list(asym.GetEY()),
-                marker=markerPt,
-                color=colorPt,
-                ecolor=colorErr,
+                marker=mkrSty,
+                color=mkrCol,
+                ecolor=errCol,
                 linestyle='None',
-                elinewidth=3,
-                capsize=4
+                elinewidth=1,
+                markersize=3,
+                capsize=2
             )
 
             # close asym.root file
@@ -220,7 +244,9 @@ for l,lmap in plotmap.items():
 
         # axis labels
         if drawX: axs[r,c].set_xlabel(xtitle)
-        yeig = str(l)+",m" if twist!=0 else "\\ell,0"
+        if scheme==0: yeig = "\\ell,0"
+        elif scheme==2 or scheme==3: yeig = str(l)+",m"
+        elif scheme>=2000: yeig = str(l)+","+str(m)
         ytitle = "$A_{LU}^{|"+yeig+"\\rangle}$"
         if drawY:
             if enableOutput:
@@ -240,7 +266,7 @@ for l,lmap in plotmap.items():
         if twist==2:
             diffFF = "G"
             diffT = "\\perp"
-        elif twist==3 or twist==0:
+        elif twist==3:
             diffFF = "H"
             diffT = "\\sphericalangle" if m>0 else "\\perp"
         if l==0:
@@ -264,13 +290,17 @@ for l,lmap in plotmap.items():
 
         # preliminary label
         if enableOutput:
-            if l==2 and m==2:
+            if (l==2 and m==2) or (scheme>=2000) or (scheme==0 and l==1):
                 axs[r,c].text(
                     0.02,0.1,
                     r'\textbf{\Large CLAS12 PRELIMINARY}',
                     verticalalignment='center',
                     transform=axs[r,c].transAxes
                 )
+
+# END loop over L and M #####################################
+
+
 
 # axis limits
 xlb = list(asym.GetX())[0]
@@ -287,7 +317,7 @@ plt.ylim(asymMin,asymMax)
 if enableOutput:
     outfileN = infileName.replace(
         ".root",
-        "_tw"+str(twist)+"."+outputEXT
+        "_sc"+str(scheme)+"."+outputEXT
     )
     plt.savefig(
         outfileN,

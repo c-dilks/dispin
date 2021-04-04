@@ -10,9 +10,14 @@ void DrawCatTreeDists(TString infileN="catTreeData.XFgt0.root") {
     "PhPerpvsMh",
     "p_{T} vs. M_{h};M_{h} [GeV];p_{T} [GeV]",
     100,0,2.5,100,0,2);
+  TH2D * PhPerpvsZ = new TH2D(
+    "PhPerpvsZ",
+    "p_{T} vs. z_{pair};z_{pair};p_{T} [GeV]",
+    100,0.2,1,100,0,2);
 
   tree->Project("ZvsMh","Z:Mh");
   tree->Project("PhPerpvsMh","PhPerp:Mh");
+  tree->Project("PhPerpvsZ","PhPerp:Z");
 
   Float_t textSize=0.04;
   ZvsMh->GetXaxis()->SetTitleSize(textSize);
@@ -23,6 +28,10 @@ void DrawCatTreeDists(TString infileN="catTreeData.XFgt0.root") {
   PhPerpvsMh->GetXaxis()->SetLabelSize(textSize);
   PhPerpvsMh->GetYaxis()->SetTitleSize(textSize);
   PhPerpvsMh->GetYaxis()->SetLabelSize(textSize);
+  PhPerpvsZ->GetXaxis()->SetTitleSize(textSize);
+  PhPerpvsZ->GetXaxis()->SetLabelSize(textSize);
+  PhPerpvsZ->GetYaxis()->SetTitleSize(textSize);
+  PhPerpvsZ->GetYaxis()->SetLabelSize(textSize);
 
   gStyle->SetOptStat(0);
   TCanvas * canv;
@@ -41,4 +50,7 @@ void DrawCatTreeDists(TString infileN="catTreeData.XFgt0.root") {
   line->SetLineWidth(3); line->Draw();
   line = new TLine(0.95,PhPerpvsMh->GetYaxis()->GetXmin(),0.95,PhPerpvsMh->GetYaxis()->GetXmax());
   line->SetLineWidth(3); line->Draw();
+  canv = new TCanvas("PhPerpvsZ_canv","PhPerpvsZ_canv",800,700);
+  canv->SetGrid(1,1);
+  PhPerpvsZ->Draw("COLZ");
 };
