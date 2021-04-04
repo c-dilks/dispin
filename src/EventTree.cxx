@@ -336,11 +336,11 @@ void EventTree::GetEvent(Long64_t i) {
 
 
   // fragmentation region (FR) cuts
-  yhb = 0.2; // y_h bound for TFR/CFR separation
+  yhb = 0.0; // y_h bound for TFR/CFR separation
   // Breit frame rapidity cuts
   for(int h=0; h<2; h++) {
-    cutCFR[h] = hadYH[h] < -yhb;
-    cutTFR[h] = hadYH[h] > yhb;
+    cutCFR[h] = hadYH[h] > yhb;
+    cutTFR[h] = hadYH[h] < -yhb;
   };
   /*for(int h=0; h<2; h++) { // Prokudin cuts:
     cutCFR[h] = hadQt[h]<2 && Z[h]>0.2;
@@ -349,9 +349,11 @@ void EventTree::GetEvent(Long64_t i) {
   };*/
   cutFR = hadXF[qA]>0 && hadXF[qB]>0; // PRL CFR
   //cutFR = true; // bypass
-  //cutFR = cutCFR[qA] && cutTFR[qB]; // DSIDIS
-  //cutFR = cutTFR[qA] && cutTFR[qB]; // TFR
-  //cutFR = cutCFR[qA] && cutCFR[qB]; // CFR
+  //cutFR = cutCFR[qA] && cutCFR[qB]; // CFR/CFR
+  //cutFR = cutCFR[qA] && cutTFR[qB]; // CFR/TFR
+  //cutFR = cutTFR[qA] && cutCFR[qB]; // TFR/CFR
+  //cutFR = cutTFR[qA] && cutTFR[qB]; // TFR/TFR
+  //cutFR = hadXF[qA]<0 && hadXF[qB]<0; // xF<0 region
   //cutFR = cutCFR[qA]; // pi+ in CFR, pi- no cut
   //cutFR = Zpair>0.4; // try to look at decays from CFR rhos
 
