@@ -184,11 +184,16 @@ void drawBru(
   TObjArray * BBlist;
   TObjArrayIter nextBin(BruBinList);
   TObjArrayIter nextBinList(BruBinSuperList);
+  /*
+  Tools::PrintSeparator(30,"-");
+  Int_t BLn=0;
   while((BBlist = (TObjArray*) nextBinList())) {
+    printf("BINLIST %d\n",BLn++);
     nextBin = TObjArrayIter(BBlist);
     while((BB = (BruBin*) nextBin())) BB->PrintInfo();
     Tools::PrintSeparator(30,"-");
   };
+  */
 
 
   // get parameter values from results trees
@@ -287,6 +292,13 @@ void drawBru(
     blStr = Form("_BL%d",binListCnt); // BL = Bin List
     outfileN = bruDir+Form("/asym_%s%s.root",minimizer_.Data(),blStr.Data());
     outFile = new TFile(outfileN,"RECREATE");
+
+
+    Tools::PrintSeparator(30,"-");
+    printf("%s will have bins:\n",outfileN.Data());
+    nextBin = TObjArrayIter(BBlist);
+    while((BB = (BruBin*) nextBin())) BB->PrintInfo();
+    Tools::PrintSeparator(30,"-");
 
     // paramter vs. bin mean graphs, for each parameter
     for(int i=0; i<nParams; i++) {

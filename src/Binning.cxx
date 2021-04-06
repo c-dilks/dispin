@@ -230,6 +230,7 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
       if(ivVar[0]==vPt && ivVar[1]==vM)  { nb0=4; nb1=3; };
       if(ivVar[0]==vX  && ivVar[1]==vDY) { nb0=4; nb1=3; };
       if(ivVar[0]==vM  && ivVar[1]==vDY) { nb0=4; nb1=3; };
+      if(ivVar[0]==vX  && ivVar[1]==vM && ivVar[2]==vDY) { nb0=3; nb1=2; nb2=2; };
       if(ivVar[0]==vDY) nb0=12;
     };
     if(defaultScheme=="PRL") { // PRL: RGA fa18 inbending data
@@ -252,7 +253,8 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
       switch(nb[d]) {
         case 1: break; // single bin
         case 2:
-          AddBinBound(vM,0.63); // PRL 2D binning
+          //AddBinBound(vM,0.63); // PRL 2D binning
+          AddBinBound(vM,0.95); // test >M_rho region
           break;
         case 3:
           AddBinBound(vM,0.60); // DIS 2D binning
@@ -310,6 +312,10 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
     else if(ivVar[d] == vX) {
       switch(nb[d]) {
         case 1: break; // single bin
+        case 3:
+          AddBinBound(vX,0.165);
+          AddBinBound(vX,0.242);
+          break;
         case 4:
           AddBinBound(vX,0.149);
           AddBinBound(vX,0.199);
@@ -402,6 +408,9 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
     else if(ivVar[d] == vDY) {
       switch(nb[d]) {
         case 1: break; // single bin
+        case 2:
+          AddBinBound(vDY,0.7);
+          break;
         case 3:
           AddBinBound(vDY,0.3); // DIS 2D binning
           AddBinBound(vDY,0.7);

@@ -20,6 +20,7 @@ if narg < 3:
     print("   - 0: twist3, m=0 only")
     print("   - 2: twist2")
     print("   - 3: twist3 (m=0 included if includeMeq0==True)")
+    print("   - 4: DSIDIS terms")
     print("   - 2000+: dump individual plot")
     print("       digits: twist|L|M|sign(m)")
     print("                         0:+,1:-")
@@ -32,6 +33,7 @@ stackPlotsInt = int(sys.argv[5]) if narg>=5 else 0
 # OPTIONS ################
 includeMeq0 = False
 transparentBG = False
+includePrelimLabel = False
 asymMax = 0.095 if scheme!=0 else 0.25
 asymMin = -asymMax
 ##########################
@@ -65,7 +67,8 @@ else:
     infiles = [
         infileName,
         infileName.replace("BL0","BL1"),
-        infileName.replace("BL0","BL2")
+        infileName.replace("BL0","BL2"),
+        #infileName.replace("BL0","BL3"),
     ]
     
 
@@ -106,6 +109,11 @@ elif scheme==3: # twist3
         plotmap[2][-1] = [1,1]
         plotmap[2][1]  = [1,2]
         plotmap[2][2]  = [1,3]
+elif scheme==4: # DSIDIS
+    nrows,ncols = 1,2
+    twist=2
+    plotmap[1][0] = [0,0] # (does not use l and m)
+    plotmap[1][1] = [0,1]
 elif scheme>=2000: # single plot
     twist=int(scheme/1000)
     ell=int(scheme%1000/100)
@@ -139,6 +147,8 @@ if scheme==2 or scheme==3:
     maintitle = "Twist-"+str(twist)+" $A_{LU}$ Amplitudes"
 elif scheme==0:
     maintitle = "Twist-"+str(twist)+" $m=0$ $A_{LU}$ Amplitudes"
+elif scheme==4:
+    maintitle = "Twist-2 $A_{LU}$ DSIDIS Amplitudes"
 elif scheme>=2000:
     maintitle = "Twist-"+str(twist)+" $A_{LU}^{|"+str(ell)+","+str(emm)+"\\rangle}$"
 if not stackPlots:
@@ -171,6 +181,9 @@ for l,lmap in plotmap.items():
         elif scheme==3:
             drawX = l==2
             drawY = l==-m
+        elif scheme==4:
+            drawX = True
+            drawY = m==0
         elif scheme>=2000:
             drawX,drawY = True,True
         if not drawY:
@@ -188,22 +201,28 @@ for l,lmap in plotmap.items():
             blStr = infileN.split('/')[-1].split('_')[-1].split('.')[0]
             endStr = "Lv0P0_"+blStr
             asymN = "gr_pwAmp"+twStr+lStr+mStr+endStr
+            if scheme==4:
+                if m==0:   asymN = "gr_AmpT2L0Mp0Lv0P4_"+blStr
+                elif m==1: asymN = "gr_AmpT2L0Mp0Lv1P4_"+blStr
+            print("asymN =",asymN)
             asym = infile.Get(asymN)
 
             # plot formatting
             mkrSty = 'o'
             errCol = 'xkcd:ocean'
             if stackPlots:
-                if "pt.mh" in infileN or "z.mh" in infileN:
-                    if blStr=="BL0":
-                        mkrSty = 'o'
-                        errCol = 'xkcd:red'
-                    elif blStr=="BL1":
-                        mkrSty = '^'
-                        errCol = 'xkcd:jungle green'
-                    elif blStr=="BL2":
-                        mkrSty = 'v'
-                        errCol = 'xkcd:true blue'
+                if blStr=="BL0":
+                    mkrSty = 'o'
+                    errCol = 'xkcd:red'
+                elif blStr=="BL1":
+                    mkrSty = '^'
+                    errCol = 'xkcd:jungle green'
+                elif blStr=="BL2":
+                    mkrSty = 'v'
+                    errCol = 'xkcd:true blue'
+                elif blStr=="BL3":
+                    mkrSty = 's'
+                    errCol = 'xkcd:violet'
             #mkrCol = 'k'
             mkrCol = errCol
 
@@ -246,6 +265,7 @@ for l,lmap in plotmap.items():
         if drawX: axs[r,c].set_xlabel(xtitle)
         if scheme==0: yeig = "\\ell,0"
         elif scheme==2 or scheme==3: yeig = str(l)+",m"
+        elif scheme==4: yeig = "DSIDIS"
         elif scheme>=2000: yeig = str(l)+","+str(m)
         ytitle = "$A_{LU}^{|"+yeig+"\\rangle}$"
         if drawY:
@@ -256,9 +276,13 @@ for l,lmap in plotmap.items():
 
         # partial wave labels
         # |l,m>
+        ket = "$|"+str(l)+","+str(m)+"\\rangle$"
+        if scheme==4:
+            if m==0: ket="$|\sin(\Delta\phi)\\rangle$"
+            elif m==1: ket="$|\sin(2\Delta\phi)\\rangle$"
         axs[r,c].text(
             0.05,0.9,
-            "$|"+str(l)+","+str(m)+"\\rangle$",
+            ket,
             verticalalignment='center',
             transform=axs[r,c].transAxes
         )
@@ -280,7 +304,7 @@ for l,lmap in plotmap.items():
             elif abs(m)==1: diffP = "LT"
             elif abs(m)==2: diffP = "TT"
         diff = "$"+diffFF+"_{1,"+diffP+"}^{"+diffT+"}$"
-        if enableOutput:
+        if enableOutput and scheme!=4:
             axs[r,c].text(
                 0.7,0.9,
                 diff,
@@ -289,7 +313,7 @@ for l,lmap in plotmap.items():
             )
 
         # preliminary label
-        if enableOutput:
+        if enableOutput and includePrelimLabel:
             if (l==2 and m==2) or (scheme>=2000) or (scheme==0 and l==1):
                 axs[r,c].text(
                     0.02,0.1,
