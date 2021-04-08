@@ -2,11 +2,12 @@
 # builds diskim files, and subsequently, outroot files
 
 
-if [ $# -lt 1 ];then
-  echo "USAGE: $0 [train directory] [optional:data/mcrec/mcgen] [optional:skim/dst]"
+if [ $# -lt 2 ];then
+  echo "USAGE: $0 [train directory] [outroot dir] [optional:data/mcrec/mcgen] [optional:skim/dst]"
   exit
 fi
 traindir=$1
+outrootdir=$2
 datastream="data"
 hipotype="skim"
 if [ $# -ge 2 ]; then datastream="$2"; fi
@@ -34,11 +35,11 @@ joblist=jobs.${jobsuffix}.slurm
 > $joblist
 if [ "$hipotype" == "skim" ]; then
   for skimfile in ${traindir}/*.hipo; do
-    echo "./runDiskim.sh $skimfile $datastream $hipotype" >> $joblist
+    echo "./runDiskim.sh $skimfile $outrootdir $datastream $hipotype" >> $joblist
   done
 elif [ "$hipotype" == "dst" ]; then
   for rundir in `ls -d ${traindir}/*/ | sed 's/\/$//'`; do
-    echo "./runDiskim.sh $rundir $datastream $hipotype" >> $joblist
+    echo "./runDiskim.sh $rundir $outrootdir $datastream $hipotype" >> $joblist
   done
 else
   echo "ERROR: unknown hipotype"

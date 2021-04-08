@@ -40,16 +40,18 @@ int main(int argc, char** argv) {
 
   // ARGUMENTS
   TString infileN;
+  TString outrootDir = "outroot";
   TString dataStream = "data";
   TString injectStream = "injgen";
   if(argc<=1) {
-    printf("USAGE: %s [diskim file]\n",argv[0]);
+    printf("USAGE: %s [diskim file] [outrootDir(default=outroot)]\n",argv[0]);
     printf(" additional arguments for MC: [data/mcrec/mcgen] [injgen/injrec]\n");
     exit(0);
   };
   if(argc>1) infileN = TString(argv[1]);
-  if(argc>2) dataStream = TString(argv[2]);
-  if(argc>3) injectStream = TString(argv[3]);
+  if(argc>2) outrootDir = TString(argv[2]);
+  if(argc>3) dataStream = TString(argv[3]);
+  if(argc>4) injectStream = TString(argv[4]);
 
 
   // instantiate useful objects
@@ -211,7 +213,7 @@ int main(int argc, char** argv) {
 
   // define outroot file
   TString outrootFileN = infileN;
-  outrootFileN(TRegexp("^.*/")) = "outroot/";
+  outrootFileN(TRegexp("^.*/")) = outrootDir+"/";
   outrootFile = new TFile(outrootFileN,"RECREATE");
 
 
