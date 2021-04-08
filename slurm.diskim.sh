@@ -25,7 +25,6 @@ if [ ! -d $outrootdir ]; then
 fi
 
 # cleanup
-rm -vf diskim/*.root
 rm -vf $outrootdir/*.root
 
 
