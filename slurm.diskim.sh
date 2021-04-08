@@ -10,8 +10,8 @@ traindir=$1
 outrootdir=$2
 datastream="data"
 hipotype="skim"
-if [ $# -ge 2 ]; then datastream="$2"; fi
-if [ $# -ge 3 ]; then hipotype="$3"; fi
+if [ $# -ge 3 ]; then datastream="$3"; fi
+if [ $# -ge 4 ]; then hipotype="$4"; fi
 
 # check setup
 if [ -z "$DISPIN_HOME" ]; then
@@ -20,13 +20,13 @@ fi
 if [ ! -d "diskim" ]; then
   echo "ERROR: you must create or link a diskim directory"; exit;
 fi
-if [ ! -d "outroot" ]; then
+if [ ! -d $outrootdir ]; then
   echo "ERROR: you must create or link an outroot directory"; exit;
 fi
 
 # cleanup
 rm -vf diskim/*.root
-rm -vf outroot/*.root
+rm -vf $outrootdir/*.root
 
 
 # build list of files to process
