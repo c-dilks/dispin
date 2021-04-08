@@ -20,7 +20,6 @@
 #include "Trajectory.h"
 #include "FiducialCuts.h"
 #include "Dihadron.h"
-#include "Diphoton.h"
 #include "Modulation.h"
 #include "EventTree.h"
 
@@ -377,6 +376,7 @@ int main(int argc, char** argv) {
       fidu[p]->ApplyCuts(runnum,(int)Pid[p]);
     };
 
+
     // set Trajectory values (not DC trajectories, but Trajectory class)
     for(int p=0; p<nPar; p++) {
       traj[p]->Row = (Int_t) Row[p];
@@ -386,6 +386,12 @@ int main(int argc, char** argv) {
       traj[p]->chi2pid = chi2pid[p];
       traj[p]->Status = (Int_t) status[p];
       traj[p]->Beta = beta[p];
+    };
+
+    // CUT: keep only diphotons where both photons pass fiducial cuts
+    //      (to conserve disk space)
+    if( traj[kHadA]->Idx==kPhoton && traj[kHadB]->Idx==kPhoton ) {
+      if( !fidu[kHadA]->fiduCut || !fidu[kHadB]->fiduCut) continue;
     };
 
     // calculate DIS kinematics

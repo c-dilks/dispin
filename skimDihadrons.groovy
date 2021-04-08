@@ -3,6 +3,8 @@
 // spin asymmetry analysis
 //
 // some basic cuts are applied here; search for CUT (in all caps)
+
+// there may be additional an additional CUT or two in calcKinematics.cpp
 //
 
 import org.jlab.io.hipo.HipoDataSource
@@ -29,8 +31,10 @@ if(args.length>=3) inHipoType = args[2]
 def verbose = 0
 hadPIDlist = [ 211, -211 ] // list of hadron PIDs which will be paired
 hadPIDlist += [ 2212 ] // proton, antiproton
+hadPIDlist += [ 22 ] // photons (not a hadron, but to be paired for pi0s)
 //hadPIDlist += [ 321, -321 ] // kaons
 //hadPIDlist += [ 2212, -2212 ] // proton, antiproton
+def photonIdx = hadPIDlist.indexOf(22)
 ////////////////////////
 
 
@@ -121,7 +125,7 @@ def getDetectorBranch = { pidx ->
       else if(layer == DetectorLayer.EC_INNER_U) calStr = 'ecin' // layer 4
       else if(layer == DetectorLayer.EC_OUTER_U) calStr = 'ecout' // layer 7
       if(!calStr.isEmpty()) detBr[calStr] = getCalorimeterLeaves(r)
-      if(verbose) println "-> calorimeter layer $layer"
+      //if(verbose) println "-> calorimeter layer $layer"
     }
   }
 
@@ -269,11 +273,11 @@ def growParticleTree = { pidList, pid ->
   if(verbose) {
     println "- pid=$pid  found in rows $rowList"
     particleTree.each{ parBr ->
-      //print " row=" + parBr.row
+      print " row=" + parBr.row
       //print " status=" + parBr.status
       //println " chi2pid=" + parBr.chi2pid
-      //println parBr.particle
-      println pPrint(parBr)
+      println parBr.particle
+      //println pPrint(parBr)
     }
   }
 
@@ -601,8 +605,11 @@ inHipoList.each { inHipoFile ->
           // take only permutations of PIDs, with repetition allowed
           if( hadIdxB < hadIdxA ) return
 
+          // photons can only pair with other photons (e.g., for pi0s)
+          if( (hadIdxA==photonIdx) != (hadIdxB==photonIdx) ) return
+
           // proceed only if there are one or more hadrons for each PID
-          if( hadTreeA.size()==0 || hadTreeB.size==0) return;
+          if( hadTreeA.size()==0 || hadTreeB.size==0) return
 
           // loop over pairs of hadrons with the specified PIDs
           hadTreeA.each { hadA ->
@@ -672,7 +679,8 @@ inHipoList.each { inHipoFile ->
               if(verbose) { 
                 20.times{print '.'}
                 println " dihadron "+
-                  hadPIDlist[hadIdxA]+" "+hadPIDlist[hadIdxB];
+                  hadPIDlist[hadIdxA]+" "+hadPIDlist[hadIdxB]+"  rows "+
+                  hadA.row+" "+hadB.row
                 println hadA.particle
                 println hadB.particle
               }

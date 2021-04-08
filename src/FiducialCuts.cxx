@@ -43,8 +43,8 @@ void FiducialCuts::ApplyCuts(int runnum_, int pid_) {
 
   // apply cuts, depending on PID
   if(pid_==11) { // electrons
-    // PCAL cut on lv and lw
-    fcutElePCAL = this->EC_hit_position_fiducial_cut_homogeneous(0);
+    // PCAL cut on lv and lw (9cm)
+    fcutElePCAL = this->EC_hit_position_fiducial_cut_homogeneous(0,cLoose);
     // DC cuts on chi2/NDF, using straight lines on xy hit plane
     for(int r=0; r<nReg; r++) {
       fcutEleDC[r] = part_DC_Traj_found[0]>0 ?
@@ -59,6 +59,11 @@ void FiducialCuts::ApplyCuts(int runnum_, int pid_) {
         this->DC_fiducial_cut_theta_phi(0, r+1, pid_) : false;
     };
     fiduCut = fcutHadDC[0] && fcutHadDC[1] && fcutHadDC[2];
+  }
+  else if(pid_==22) { // photons
+    // PCAL cut on lv and lw (14cm)
+    fcutPhotPCAL = this->EC_hit_position_fiducial_cut_homogeneous(0,cMedium);
+    fiduCut = fcutPhotPCAL;
   }
   else {
     if(errCnt<=100) {
@@ -93,6 +98,19 @@ int FiducialCuts::determineSectorEC(int i){
 };
 
 
+void FiducialCuts::SetCutLevel(int cutLevel) {
+  tight=false;
+  medium=false;
+  loose=false;
+  switch(cutLevel) {
+    case cTight: tight=true; break;
+    case cMedium: medium=true; break;
+    case cLoose: loose=true; break;
+    default: fprintf(stderr,"ERROR: bad cutLevel\n");
+  };
+};
+
+
 
 ////////////////////////////////
 ////////////////////////////////
@@ -123,13 +141,9 @@ int FiducialCuts::determineSectorDC(int i){
 /// This is the main cut for PCAL fiducial cut of electrons.
 /// A cut is performed on v and w
 /// Different versions are available: For SDIS I use the loose versions, For cross sectiosn I would recommend the medium or tigth version.
-bool FiducialCuts::EC_hit_position_fiducial_cut_homogeneous(int j){
+bool FiducialCuts::EC_hit_position_fiducial_cut_homogeneous(int j, int cutLevel_){
 
-  ///////////////////////////
-  bool tight = false;
-  bool medium = false;
-  bool loose = true;
-  //////////////////////////
+  this->SetCutLevel(cutLevel_);
 
 // Cut using the natural directions of the scintillator bars/ fibers:
 

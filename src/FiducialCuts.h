@@ -1,5 +1,4 @@
 // Stefan Diehl's Fiducial Volume Cuts
-// version: 04/16/2020
 // changes for `dispin` analysis code:
 // -> encapsulated in a class for implementation in `dispin`
 // -> changes to Stefan's code are kept to a minimum
@@ -31,6 +30,8 @@ class FiducialCuts : public TObject {
     Bool_t fiduCut;
 
     int determineSectorEC(int i);
+    enum cutLevel_enum {cTight,cMedium,cLoose};
+    void SetCutLevel(int cutLevel);
 
     
     /********************************************************************/
@@ -43,7 +44,7 @@ class FiducialCuts : public TObject {
     /// A cut is performed on v and w
     /// Different versions are available: For SDIS I use the loose versions,
     /// For cross sectiosn I would recommend the medium or tigth version.
-    bool EC_hit_position_fiducial_cut_homogeneous(int j);
+    bool EC_hit_position_fiducial_cut_homogeneous(int j, int cutLevel_);
     /// Cut based on chi2/NDF, using polynomial border in the theta-phi plane.
     /// use the following cut for inbending hadrons:
     bool DC_fiducial_cut_theta_phi(int j, int region, int part_pid);
@@ -124,6 +125,8 @@ class FiducialCuts : public TObject {
     bool fcutElePCAL;
     bool fcutEleDC[nReg];
     bool fcutHadDC[nReg];
+    bool fcutPhotPCAL;
+    bool tight,medium,loose;
 
     int errCnt;
 
