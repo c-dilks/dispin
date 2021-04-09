@@ -60,8 +60,10 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc",
 
   // load data and MC trees
   //B->LoadDataSets("catTreeData.root"); // disable MC integration
+  //B->LoadDataSets("catTreeData.XFgt0.root","catTreeMC.spinAbsent.PRL.XFgt0.root"); // DIS
+  //B->LoadDataSets("catTreeData.0x33.XFgt0.root","catTreeMC.0x33.spinAbsent.XFgt0.root"); // pi+pi+
   //B->LoadDataSets("catTreeData.XFfull.root","catTreeMC.spinAbsent.PRL.XFfull.root"); // for rapidity studies
-  B->LoadDataSets("catTreeData.XFgt0.root","catTreeMC.spinAbsent.PRL.XFgt0.root"); // DIS
+  B->LoadDataSets("catTreeMC.spin5050.PRL.XFgt0.root"); // fit MC data, with MC integration disabled
   //B->LoadDataSets("spinroot.proton.pion/catTreeData.root","catTreeMC.proton.pion.root");
 
   // MCMC settings

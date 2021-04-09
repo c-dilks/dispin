@@ -1,3 +1,5 @@
+# draw partial wave plots, with shared axes
+
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
@@ -33,7 +35,7 @@ stackPlotsInt = int(sys.argv[5]) if narg>=5 else 0
 # OPTIONS ################
 includeMeq0 = False
 transparentBG = False
-includePrelimLabel = False
+includePrelimLabel = True
 asymMax = 0.095 if scheme!=0 else 0.25
 asymMin = -asymMax
 ##########################
@@ -235,8 +237,8 @@ for l,lmap in plotmap.items():
                 color=mkrCol,
                 ecolor=errCol,
                 linestyle='None',
-                elinewidth=1,
-                markersize=3,
+                elinewidth=2,
+                markersize=4,
                 capsize=2
             )
 
@@ -314,13 +316,12 @@ for l,lmap in plotmap.items():
 
         # preliminary label
         if enableOutput and includePrelimLabel:
-            if (l==2 and m==2) or (scheme>=2000) or (scheme==0 and l==1):
-                axs[r,c].text(
-                    0.02,0.1,
-                    r'\textbf{\Large CLAS12 PRELIMINARY}',
-                    verticalalignment='center',
-                    transform=axs[r,c].transAxes
-                )
+            axs[r,c].text(
+                0.1,0.1,
+                r'\textbf{\large CLAS12 PRELIMINARY}',
+                verticalalignment='center',
+                transform=axs[r,c].transAxes
+            )
 
 # END loop over L and M #####################################
 
