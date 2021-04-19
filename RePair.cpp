@@ -21,18 +21,18 @@ using std::cerr;
 using std::endl;
 using std::pair;
 
-TString infile;
+TString infileN;
 
 int main(int argc, char** argv) {
 
   // ARGUMENTS
-  if(argc>1) infile = TString(argv[1]);
+  if(argc>1) infileN = TString(argv[1]);
   else {
     fprintf(stderr,"USAGE: pi0analyzer.cpp outrootFile.root\n");
     return 1;
   };
 
-  Ensemble *ens = new Ensemble(infile);
+  Ensemble *ens = new Ensemble(infileN);
 
   Long64_t hi;
   Int_t qh;

@@ -45,6 +45,7 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
 
   chain->SetBranchAddress("pairType",&pairType);
   chain->SetBranchAddress("hadIdx",hadIdx);
+  chain->SetBranchAddress("hadRow",hadRow);
   chain->SetBranchAddress("hadE",hadE);
   chain->SetBranchAddress("hadP",hadP);
   chain->SetBranchAddress("hadPt",hadPt);
@@ -585,6 +586,64 @@ Bool_t EventTree::CheckHadChi2pid(Int_t had) {
   fprintf(stderr,"ERROR: unknown upper bound for hadron chi2pid cut\n");
   return false;
 };
+
+
+// check diphoton, to see if we have a pi0
+// - must be called after this->GetEvent
+Bool_t CheckDiphoton() {
+
+  // event builder pid cut
+  cutPhotPID = Tools::PairSame(hadIdx[qA],hadIdx[qB],kPhoton,kPhoton);
+
+  // beta cut
+  cutPhotBeta = TMath::Abs(hadBeta[qA]-1.0)<0.1 &&
+                TMath::Abs(hadBeta[qB]-1.0)<0.1; // 0.9<beta<1.1
+
+  // minimum energy cut
+  cutPhotEn = hadE[qA]>0.6 &&
+              hadE[qB]>0.6;
+
+  // electron cone cut (photon must be far enough away from electron)
+  eleMom.SetPtEtaPhiE(elePt,eleEta,elePhi,eleE);
+  for(int h=0; h<2; h++) {
+    photMom[h].SetPtEtaPhiE(hadPt[h],hadEta[h],hadPhi[h],hadE[h]);
+    photAng[h] = Tools::AngleSubtend(eleMom.Vect(),photMom[h].Vect());
+    photAng[h] *= 180.0 / PI;
+  };
+  cutPhotAng = photAng[qA]>8.0 &&
+               photAng[qB]>8.0;
+
+  // invariant mass cuts for pi0 and sideband
+  Mgg = Mh;
+  // TODO: move all diphoton stuff to Diphoton class (see last git diff)
+  cutMggPi0 = TMath::Abs(Mgg-PartMass(kPio))<0.1; // TODO: should be 2sigma cut
+  cutMggSB = Mgg > PartMass(kPio)+0.1 &&
+             Mgg < PartMass(kPio)+0.2; // TODO: improve this
+  if(cutMggPi0 && cutMggSB) {
+    fprintf(stderr,"ERROR: conflict of diphoton mass cuts\n");
+    diphotClass = dpIgnore;
+    return;
+  };
+
+  // classify diphoton
+  if(!cutPhotPID) diphotClass = dpNull; // not a diphoton
+  else if( cutPhotPID
+        && cutPhotBeta
+        && cutPhotEn
+        && cutPhotAng
+        ) {
+
+    // this diphoton satisifies basic cuts, now we check the mass
+    if(cutMggPi0) diphotClass = dpPi0; // pi0
+    else if(cutMggSB) diphotClass = dpSB; // sideband
+    else diphotClass = dpIgnore; // neither pi0 nor sideband
+  }
+  else {
+    diphotClass = dpIgnore; // basic diphoton cuts not satisfied
+  };
+
+};
+
 
 
 void EventTree::PrintEventVerbose() {
