@@ -89,7 +89,7 @@ Bool_t Ensemble::NextEvent() {
 
 
 void Ensemble::ResetLists() {
-  diphotList.clear();
+  diphotonList.clear();
   hadronList.clear();
   rowList.clear();
 };
@@ -101,9 +101,9 @@ Bool_t Ensemble::SameEvent() {
 
 
 void Ensemble::AppendLists(Long64_t j) {
-  // if diphoton, add to diphotList
+  // if diphoton, add to diphotonList
   if(hadIdx[qA]==kPhoton && hadIdx[qB]==kPhoton) {
-    diphotList.push_back(j);
+    diphotonList.push_back(j);
     for(int h=0; h<2; h++) rowList.push_back(hadRow[h]);
   }
   // if dihadron, add hadrons to hadronList, maintaining uniqueness

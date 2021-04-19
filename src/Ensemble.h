@@ -53,7 +53,7 @@ class Ensemble : public TObject
     Bool_t SameEvent();
 
     // add entry `e` to the lists
-    // - diphotList is a list of tree entry numbers for this ensemble's 
+    // - diphotonList is a list of tree entry numbers for this ensemble's 
     //   diphotons
     // - hadronList is a list of (tree entry numbers, hadron numbers), for
     //   each unique hadron found
@@ -64,23 +64,25 @@ class Ensemble : public TObject
 
 
     // ACCESSORS //////////////////////////////////
-    vector<Long64_t> GetDiphotList() { return diphotList; };
+    // - get relevant data from the current event ensemble
+    vector<Long64_t> GetDiphotonList() { return diphotonList; };
     vector<pair<Long64_t,Int_t>> GetHadronList() { return hadronList; };
     Long64_t GetLB() { return lb; };
     Long64_t GetUB() { return ub; };
-    // CHAIN VARS ///////////////////////////////////
-    Long64_t ENT;
-    Int_t evnum;
-    Int_t runnum;
-    Int_t hadRow[2];
-    Int_t hadIdx[2];
-    ///////////////////////////////////////////////
+    Int_t GetEvnum() { return evnumEns; };
+    Int_t GetRunnum() { return runnumEns; };
+
+    // get hadron row IDs (useful for sanity checks, if you are
+    // reading the chain from another class)
+    void GetHadRow(Long64_t i, Int_t &ha, Int_t &hb) {
+      tr->GetEntry(i); ha = hadRow[qA]; hb = hadRow[qB];
+    };
 
 
   private:
     TChain *tr;
     Long64_t lb,ub;
-    vector<Long64_t> diphotList;
+    vector<Long64_t> diphotonList;
     vector<pair<Long64_t,Int_t>> hadronList;
 
     vector<Int_t> rowList;
@@ -90,6 +92,13 @@ class Ensemble : public TObject
 
     Bool_t readForward,readBackward;
     Long64_t e,eF,eB,eNext;
+
+    // CHAIN VARS ///////////////////////////////////
+    Long64_t ENT;
+    Int_t evnum;
+    Int_t runnum;
+    Int_t hadRow[2];
+    Int_t hadIdx[2];
 
 
     ClassDef(Ensemble,1);
