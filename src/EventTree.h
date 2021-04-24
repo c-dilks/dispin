@@ -20,7 +20,7 @@
 #include "TRandom.h"
 #include "TRandomGen.h"
 
-// dihbsa
+// dispin
 #include "Constants.h"
 #include "Trajectory.h"
 #include "FiducialCuts.h"
@@ -38,6 +38,7 @@ class EventTree : public TObject
     ~EventTree();
 
     void GetEvent(Long64_t i);
+    void GetTrajectories(Long64_t i);
     Bool_t Valid();
 
     Int_t SpinState();
@@ -47,8 +48,6 @@ class EventTree : public TObject
     Bool_t CheckSampFrac();
     Bool_t CheckHadChi2pid(Int_t had);
     Bool_t CheckMissingMass();
-
-    Bool_t CheckDiphoton();
 
     void PrintEventVerbose();
     void PrintEvent();
@@ -166,27 +165,6 @@ class EventTree : public TObject
     Bool_t cutElePID;
     Bool_t cutHadPID[2];
 
-    // diphoton / pi0 cuts
-    Bool_t cutPhotPID;
-    Bool_t cutPhotBeta;
-    Bool_t cutPhotEn;
-    Bool_t cutPhotAng;
-    Bool_t cutMggPi0;
-    Bool_t cutMggSB;
-
-    // diphoton classifier
-    Int_t diphotClass;
-    enum diphotClass_enum { dpNull, dpPi0, dpSB, dpIgnore };
-    /* dpNull: not a diphoton
-     * dpPi0: likely a pi0
-     * dpSB: sideband region (for BG estimate)
-     * dpIgnore: neither pi0 or sideband, and/or did not
-     *           satisfy basic cuts, such as minimum photon E
-     */
-
-    Float_t photAng[2]; // angle subtended by electron and photon
-    Float_t Mgg; // diphoton mass
-
 
     // tree banches used for matching MCgen event
     Int_t whichHelicityMC;
@@ -252,6 +230,10 @@ class EventTree : public TObject
     Bool_t vzdiffBool;
     Float_t vzdiff[2];
 
+    // trajectories
+    Trajectory * trEle;
+    Trajectory * trHad[2];
+
   private:
     TChain * chain;
     Int_t whichHad[2];
@@ -259,16 +241,12 @@ class EventTree : public TObject
     Dihadron * objDihadron;
     Dihadron * candDih;
     DIS * objDIS;
-    Trajectory * trEle;
-    Trajectory * trHad[2];
 
     TLorentzVector hadMom[2];
     TLorentzVector eleMom;
     TLorentzVector dihMom;
     TLorentzVector qMomBreit,qMomCom;
     TVector3 boostBreit,boostCom;
-
-    TLorentzVector photMom[2];
 
     Bool_t vertexWarned;
     Bool_t sfcutDiag, sfcutSigma;

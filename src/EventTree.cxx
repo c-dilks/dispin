@@ -409,6 +409,34 @@ Bool_t EventTree::Valid() {
 /////////////////////////////////////////////////////////
 
 
+// just get trajectories (faster than GetEvent, since
+// no more kinematics are calculated, and cuts are not checked)
+// - note: do not use this in the same loop as GetEvent; 
+//   use the right function for the job
+void EventTree::GetTrajectories(Long64_t i) {
+  if(i%10000==0) printf("[+] %.2f%%\n",100*(float)i/((float)ENT));
+
+  chain->GetEntry(i);
+
+  // get electron trajectory
+  eleMom.SetPtEtaPhiE(elePt,eleEta,elePhi,eleE);
+  trEle->Momentum = eleMom;
+  trEle->Status = eleStatus;
+  trEle->chi2pid = eleChi2pid;
+  trEle->Vertex.SetXYZ(eleVertex[eX],eleVertex[eY],eleVertex[eZ]);
+
+  // get hadron trajectories
+  for(int h=0; h<2; h++) {
+    hadMom[h].SetPtEtaPhiE(hadPt[h],hadEta[h],hadPhi[h],hadE[h]);
+    trHad[h]->Momentum = hadMom[h];
+    trHad[h]->Status = hadStatus[h];
+    trHad[h]->chi2pid = hadChi2pid[h];
+    trHad[h]->Beta = hadBeta[h];
+    trHad[h]->Vertex.SetXYZ(hadVertex[h][eX],hadVertex[h][eY],hadVertex[h][eZ]);
+    trHad[h]->Idx = hadIdx[h];
+  };
+};
+
 
 // translate "helicity" to a local index for the spin
 Int_t EventTree::SpinState() {
@@ -588,64 +616,6 @@ Bool_t EventTree::CheckHadChi2pid(Int_t had) {
 };
 
 
-// check diphoton, to see if we have a pi0
-// - must be called after this->GetEvent
-Bool_t CheckDiphoton() {
-
-  // event builder pid cut
-  cutPhotPID = Tools::PairSame(hadIdx[qA],hadIdx[qB],kPhoton,kPhoton);
-
-  // beta cut
-  cutPhotBeta = TMath::Abs(hadBeta[qA]-1.0)<0.1 &&
-                TMath::Abs(hadBeta[qB]-1.0)<0.1; // 0.9<beta<1.1
-
-  // minimum energy cut
-  cutPhotEn = hadE[qA]>0.6 &&
-              hadE[qB]>0.6;
-
-  // electron cone cut (photon must be far enough away from electron)
-  eleMom.SetPtEtaPhiE(elePt,eleEta,elePhi,eleE);
-  for(int h=0; h<2; h++) {
-    photMom[h].SetPtEtaPhiE(hadPt[h],hadEta[h],hadPhi[h],hadE[h]);
-    photAng[h] = Tools::AngleSubtend(eleMom.Vect(),photMom[h].Vect());
-    photAng[h] *= 180.0 / PI;
-  };
-  cutPhotAng = photAng[qA]>8.0 &&
-               photAng[qB]>8.0;
-
-  // invariant mass cuts for pi0 and sideband
-  Mgg = Mh;
-  // TODO: move all diphoton stuff to Diphoton class (see last git diff)
-  cutMggPi0 = TMath::Abs(Mgg-PartMass(kPio))<0.1; // TODO: should be 2sigma cut
-  cutMggSB = Mgg > PartMass(kPio)+0.1 &&
-             Mgg < PartMass(kPio)+0.2; // TODO: improve this
-  if(cutMggPi0 && cutMggSB) {
-    fprintf(stderr,"ERROR: conflict of diphoton mass cuts\n");
-    diphotClass = dpIgnore;
-    return;
-  };
-
-  // classify diphoton
-  if(!cutPhotPID) diphotClass = dpNull; // not a diphoton
-  else if( cutPhotPID
-        && cutPhotBeta
-        && cutPhotEn
-        && cutPhotAng
-        ) {
-
-    // this diphoton satisifies basic cuts, now we check the mass
-    if(cutMggPi0) diphotClass = dpPi0; // pi0
-    else if(cutMggSB) diphotClass = dpSB; // sideband
-    else diphotClass = dpIgnore; // neither pi0 nor sideband
-  }
-  else {
-    diphotClass = dpIgnore; // basic diphoton cuts not satisfied
-  };
-
-};
-
-
-
 void EventTree::PrintEventVerbose() {
   printf("[---] Event Info\n");
   printf("  evnum=%d",evnum);
@@ -748,6 +718,7 @@ Dihadron * EventTree::GetDihadronObj() {
     trHad[h]->Status = hadStatus[h];
     trHad[h]->chi2pid = hadChi2pid[h];
     trHad[h]->Vertex.SetXYZ(hadVertex[h][eX],hadVertex[h][eY],hadVertex[h][eZ]);
+    trHad[h]->Idx = hadIdx[h];
   };
   this->GetDISObj();
   objDihadron->CalculateKinematics(trHad[qA],trHad[qB],objDIS);

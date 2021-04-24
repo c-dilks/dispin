@@ -8,72 +8,114 @@ using namespace std;
 Diphoton::Diphoton() {
   debug = true;
 
-  Traj = new Trajectory();
-  Traj->Idx = kDiph;
-  vecDiphoton.SetXYZM(0,0,0,0);
+  // instantiate diphoton trajectory
+  diphot = new Trajectory();
+  diphot->Idx = kDiph;
+
+  // unused trajectory variables
+  diphot->chi2pid = 0;
+  diphot->Status = 0;
+  diphot->Beta = 0;
+  diphot->Row = 0;
 
   printf("Diphoton instantiated\n");
 };
 
 
-void Diphoton::SetEvent(Trajectory * traj1, Trajectory * traj2) {
+void Diphoton::CalculateKinematics(
+  Trajectory * trajA, Trajectory * trajB, DIS * disEv) {
 
   ResetVars();
 
-  photon[0] = traj1;
-  photon[1] = traj2;
-  vecDiphoton = photon[0]->Momentum + photon[1]->Momentum;
-
-
+  photon[qA] = trajA;
+  photon[qB] = trajB;
+  diphot->Momentum = photon[qA]->Momentum + photon[qB]->Momentum;
+  
   // get photon kinematics
   for(int h=0; h<2; h++) {
-    momPhoton[h] = (photon[h]->Momentum).Vect();
-    photE[h] = (photon[h]->Momentum).E();
-    photPt[h] = (photon[h]->Momentum).Pt();
-    photEta[h] = (photon[h]->Momentum).Eta();
-    photPhi[h] = (photon[h]->Momentum).Phi();
+    photE[h] = photon[h]->Momentum.E();
+    photPt[h] = photon[h]->Momentum.Pt();
+    photEta[h] = photon[h]->Momentum.Eta();
+    photPhi[h] = photon[h]->Momentum.Phi();
     photChi2pid[h] = photon[h]->chi2pid;
-    photVertex[h][eX] = (photon[h]->Vertex).X();
-    photVertex[h][eY] = (photon[h]->Vertex).Y();
-    photVertex[h][eZ] = (photon[h]->Vertex).Z();
+    photBeta[h] = photon[h]->Beta;
+    photVertex[h][eX] = photon[h]->Vertex.X();
+    photVertex[h][eY] = photon[h]->Vertex.Y();
+    photVertex[h][eZ] = photon[h]->Vertex.Z();
   };
-  E = vecDiphoton.E();
 
-  // transverse momentum
-  Pt = vecDiphoton.Pt(); // IN LAB FRAME, wrt BEAM AXIS (maybe change to w.r.t. q?)
+  // get diphoton kinematics
+  E = diphot->Momentum.E();
+  Pt = diphot->Momentum.Pt();
+  Eta = diphot->Momentum.Eta();
+  Phi = diphot->Momentum.Phi();
+  M = diphot->Momentum.M();
+
+  // calculate energy imbalance
+  ZE = TMath::Abs(photE[qA]-photE[qB]) / E;
+
+  // calculate angle between electron and photon
+  for(int h=0; h<2; h++) {
+    photAng[h] = Tools::AngleSubtend(
+      disEv->vecElectron.Vect(),
+      photon[h]->Momentum.Vect()
+    ) * TMath::RadToDeg();
+  };
+
+  // calculate vertex difference between photons
+  VtxDiff = (photon[qA]->Vertex - photon[qB]->Vertex).Mag();
+  printf("vtxdiff = %f\n",VtxDiff);
+  // set diphoton vertex to that of leading energy photon
+  // TODO: maybe not the right thing to do; check VtxDiff
+  diphot->Vertex = photE[qA] >= photE[qB] ?
+    photon[qA]->Vertex : photon[qB]->Vertex;
+  
+};
 
 
-  // prevent dividing by 0 issues
-  if(E<=0 || Pt<=0) {
-    ResetVars();
+// classify diphoton, to see if we have a pi0,
+// and apply event selection criteria
+void Diphoton::Classify() {
+
+  // reset booleans and classifiers
+  this->ResetBools();
+
+  // beta cut // 0.9<beta<1.1
+  cutPhotBeta = TMath::Abs(photBeta[qA]-1.0)<0.1 &&
+                TMath::Abs(photBeta[qB]-1.0)<0.1;
+
+  // minimum energy cut
+  cutPhotEn = photE[qA]>0.6 &&
+              photE[qB]>0.6;
+
+  // electron cone cut
+  // photon must be far enough away from electron
+  cutPhotAng = photAng[qA]>8.0 &&
+               photAng[qB]>8.0;
+
+  // invariant mass cuts for pi0 and sideband
+  cutMassPi0 = TMath::Abs(M-PartMass(kPio))<0.1; // TODO: should be 2sigma cut
+  cutMassSB = M > PartMass(kPio)+0.1 &&
+              M < PartMass(kPio)+0.2; // TODO: improve this
+  if(cutMassPi0 && cutMassSB) {
+    fprintf(stderr,"ERROR: conflict of diphoton mass cuts\n");
+    diphotClass = dpIgnore;
     return;
   };
 
-
-  // eta and phi
-  Eta = vecDiphoton.Eta();
-  Phi = vecDiphoton.Phi();
-
-  // energy sharing
-  Z = fabs(photE[0]-photE[1]) / E;
-
-  // invariant mass
-  M = vecDiphoton.M();
-
-  // opening angle
-  Alpha = TMath::ACos(
-    momPhoton[0].Dot(momPhoton[1]) / ( momPhoton[0].Mag() * momPhoton[1].Mag() ) 
-  );
-
-
-  // set Trajectory
-  Traj->Momentum = vecDiphoton;
-
-
-  // set booleans
-  //validDiphoton = Alpha < 0.3;
-  validDiphoton = true;
-
+  // classify diphoton
+  if( cutPhotBeta
+   && cutPhotEn
+   && cutPhotAng
+  ) {
+    // basic cuts passed, now check mass cuts
+    if(cutMassPi0) diphotClass = dpPi0; // pi0
+    else if(cutMassSB) diphotClass = dpSB; // sideband
+    else diphotClass = dpIgnore; // neither pi0 nor sideband
+  }
+  else {
+    diphotClass = dpIgnore; // failed basic cuts
+  };
 
 };
 
@@ -85,19 +127,27 @@ void Diphoton::ResetVars() {
     photEta[h] = UNDEF;
     photPhi[h] = UNDEF;
     for(int c=0; c<3; c++) photVertex[h][c] = UNDEF;
+    photChi2pid[h] = UNDEF;
+    photBeta[h] = UNDEF;
+    photAng[h] = UNDEF;
   };
   E = UNDEF;
-  Z = UNDEF;
   Pt = UNDEF;
-  M = UNDEF;
-  Alpha = UNDEF;
   Eta = UNDEF;
   Phi = UNDEF;
-
-  validDiphoton = false;
+  ZE = UNDEF;
+  M = UNDEF;
+  this->ResetBools();
 };
 
-
+void Diphoton::ResetBools() {
+  cutPhotBeta = false;
+  cutPhotEn = false;
+  cutPhotAng = false;
+  cutMassPi0 = false;
+  cutMassSB = false;
+  diphotClass = dpNull;
+};
 
 
 Diphoton::~Diphoton() {

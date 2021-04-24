@@ -18,10 +18,10 @@
 #include "TMath.h"
 #include "TLorentzVector.h"
 
-// dihbsa
+// dispin
 #include "Constants.h"
 #include "Trajectory.h"
-
+#include "DIS.h"
 
 
 class Diphoton : public TObject
@@ -32,40 +32,54 @@ class Diphoton : public TObject
 
     Bool_t debug;
 
-    void SetEvent(Trajectory * traj1, Trajectory * traj2);
+    void CalculateKinematics(
+      Trajectory * trajA, Trajectory * trajB, DIS * disEv);
+    void Classify();
     void ResetVars();
+    void ResetBools();
 
+    // trajectories
     Trajectory * photon[2]; // photon trajectories
-    Trajectory * Traj; // diphoton trajectory
+    Trajectory * diphot; // diphoton trajectory
 
     // photon kinematics
-    Float_t photE[2];
-    Float_t photPt[2];
-    Float_t photEta[2];
-    Float_t photPhi[2];
+    Float_t photE[2]; // energy
+    Float_t photPt[2]; // transverse momentum (lab frame)
+    Float_t photEta[2]; // pseudorapidity
+    Float_t photPhi[2]; // azimuth
     Float_t photVertex[2][3];
     Float_t photChi2pid[2];
+    Float_t photBeta[2];
+    Float_t photAng[2]; // angle(electron,photon), in degrees
 
     // diphoton variables
     Float_t E; // energy of the pair
-    Float_t Z; // energy sharing (E1-E2)/E
-    Float_t Pt; // transverse momentum
-    Float_t M; // invariant mass
-    Float_t Alpha; // diphoton opening angle
+    Float_t Pt; // transverse momentum (lab frame)
     Float_t Eta; // pseudorapidity
     Float_t Phi; // azimuth
+    Float_t ZE; // energy imbalance (E1-E2)/E
+    Float_t M; // invariant mass
+    Float_t VtxDiff; // distance between photon verteces
 
-    // booleans
-    Bool_t validDiphoton;
+    // diphoton / pi0 cuts
+    Bool_t cutPhotBeta;
+    Bool_t cutPhotEn;
+    Bool_t cutPhotAng;
+    Bool_t cutMassPi0;
+    Bool_t cutMassSB;
 
+    // diphoton classifier
+    Int_t diphotClass;
+    enum diphotClass_enum { dpNull, dpPi0, dpSB, dpIgnore };
+    /* dpNull: not a diphoton
+     * dpPi0: likely a pi0
+     * dpSB: sideband region (for BG estimate)
+     * dpIgnore: neither pi0 or sideband, and/or did not
+     *           satisfy basic cuts, such as minimum photon E
+     */
 
 
   private:
-
-    TLorentzVector vecDiphoton;
-    TVector3 momPhoton[2];
-
-
 
   ClassDef(Diphoton,1);
 };
