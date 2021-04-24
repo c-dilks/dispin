@@ -34,6 +34,7 @@ enum particle_enum {
   kAP,
   kPhoton,
   kDiph,
+  kPioBG,
   nParticles
 };
 
@@ -51,6 +52,7 @@ static TString PartName(Int_t p) {
     case kAP: return "antiproton";
     case kPhoton: return "photon";
     case kDiph: return "diphoton";
+    case kPioBG: return "pi0bg";
     default: 
       fprintf(stderr,"ERROR: bad PartName request\n");
       return "unknown";
@@ -69,6 +71,7 @@ static TString PartTitle(Int_t p) {
     case kAP: return "p^{-}";
     case kPhoton: return "#gamma";
     case kDiph: return "#gamma#gamma";
+    case kPioBG: return "#pi^{0}_{BG}";
     default: 
       fprintf(stderr,"ERROR: bad PartTitle request\n");
       return "unknown";
@@ -89,6 +92,7 @@ static Int_t PartPID(Int_t p) {
     case kAP: return -2212;
     case kPhoton: return 22;
     case kDiph: return UNDEF; // (no PID)
+    case kPioBG: return UNDEF; // (no PID)
     default: 
       fprintf(stderr,"ERROR: bad PartPID request\n");
       return UNDEF;
@@ -108,12 +112,13 @@ static Float_t PartMass(Int_t p) {
     case kN: return 0.939565;
     case kPip: return 0.139571;
     case kPim: return 0.139571;
-    case kPio: return 0.134977;
+    case kPio: return 0.134977; // (true mass, see Diphoton class)
     case kKp: return 0.493677;
     case kKm: return 0.493677;
     case kAP: return 0.938272;
     case kPhoton: return 0.0;
     case kDiph: return UNDEF; // (use Diphoton class instead)
+    case kPioBG: return UNDEF; // (use Diphoton class instead)
     default: 
       fprintf(stderr,"ERROR: bad PartMass request\n");
       return UNDEF;
@@ -132,6 +137,7 @@ static Int_t PartCharge(Int_t p) {
     case kAP: return -1;
     case kPhoton: return 0;
     case kDiph: return 0;
+    case kPioBG: return 0;
     default: 
       fprintf(stderr,"ERROR: bad PartCharge request\n");
       return UNDEF;
@@ -152,6 +158,7 @@ static Int_t PartColor(Int_t p) {
     case kAP: return kAzure;
     case kPhoton: return kOrange;
     case kDiph: return kMagenta;
+    case kPioBG: return kViolet;
     default: 
       fprintf(stderr,"ERROR: bad PartColor request\n");
       return kBlack;
@@ -170,6 +177,7 @@ static TString PartColorName(Int_t p) {
     case kAP: return "darkBlue";
     case kPhoton: return "orange";
     case kDiph: return "magenta";
+    case kPioBG: return "violet";
     default: 
       fprintf(stderr,"ERROR: bad PartColor request\n");
       return "black";
@@ -189,6 +197,8 @@ static TString PartColorName(Int_t p) {
 enum observable_enum {
   sPip,
   sPim,
+  sPio,
+  sPioBG,
   sKp,
   sKm,
   sProt,
@@ -201,8 +211,8 @@ static Int_t OI(Int_t s) {
   switch(s) {
     case sPip: return kPip;
     case sPim: return kPim;
-    //case sDiph: return kDiph;
-    //case sDiph: return kPio; // (for if pi0s are found in HIPO files)
+    case sPio: return kPio;
+    case sPioBG: return kPioBG;
     case sKp: return kKp;
     case sKm: return kKm;
     case sProt: return kP;
@@ -217,8 +227,8 @@ static Int_t IO(Int_t s) {
   switch(s) {
     case kPip: return sPip;
     case kPim: return sPim;
-    //case kDiph: return sDiph; 
-    //case kPio: return sDiph; // (for if pi0s are found in HIPO files)
+    case kPio: return sPio;
+    case kPioBG: return sPioBG;
     case kKp: return sKp;
     case kKm: return sKm;
     case kP: return sProt;

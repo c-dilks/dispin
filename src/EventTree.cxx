@@ -413,8 +413,8 @@ Bool_t EventTree::Valid() {
 // no more kinematics are calculated, and cuts are not checked)
 // - note: do not use this in the same loop as GetEvent; 
 //   use the right function for the job
-void EventTree::GetTrajectories(Long64_t i) {
-  if(i%10000==0) printf("[+] %.2f%%\n",100*(float)i/((float)ENT));
+void EventTree::GetTrajectories(Long64_t i, Bool_t prog) {
+  if(prog && i%10000==0) printf("[+] %.2f%%\n",100*(float)i/((float)ENT));
 
   chain->GetEntry(i);
 
@@ -735,7 +735,7 @@ DIS * EventTree::GetDISObj() {
   trEle->chi2pid = eleChi2pid;
   trEle->Vertex.SetXYZ(eleVertex[eX],eleVertex[eY],eleVertex[eZ]);
 
-  objDIS->CalculateKinematics(trEle);
+  objDIS->CalculateKinematics(trEle,runnum);
   return objDIS;
 };
 

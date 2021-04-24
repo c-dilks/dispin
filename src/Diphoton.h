@@ -37,10 +37,8 @@ class Diphoton : public TObject
     void Classify();
     void ResetVars();
     void ResetBools();
-
-    // trajectories
-    Trajectory * photon[2]; // photon trajectories
-    Trajectory * diphot; // diphoton trajectory
+    Trajectory * GetDiphotonTraj() { return diphot; };
+    Trajectory * GetPhotonTraj(Int_t h) { return photon[h]; };
 
     // photon kinematics
     Float_t photE[2]; // energy
@@ -80,6 +78,11 @@ class Diphoton : public TObject
 
 
   private:
+
+    // trajectories
+    Trajectory * photon[2]; // photon trajectories
+    Trajectory * diphot; // diphoton trajectory
+
 
   ClassDef(Diphoton,1);
 };

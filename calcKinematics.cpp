@@ -397,8 +397,7 @@ int main(int argc, char** argv) {
     };
 
     // calculate DIS kinematics
-    disEv->SetBeamEnFromRun(runnum);
-    disEv->CalculateKinematics(traj[kEle]);
+    disEv->CalculateKinematics(traj[kEle],runnum);
 
 
     // calculate dihadron kinematics and obtain hadron fiducial cuts
@@ -447,7 +446,7 @@ int main(int argc, char** argv) {
         // calculate kinematics
         if(isMatch[kEle]) {
           gen_eleIsMatch = true;
-          disEvMC->CalculateKinematics(trajMC[kEle]);
+          disEvMC->CalculateKinematics(trajMC[kEle],runnum);
           gen_eleMatchDist = genMatchDist[kEle];
           if(isMatch[kHadA] && isMatch[kHadB]) {
             gen_hadIsMatch[qA] = true;

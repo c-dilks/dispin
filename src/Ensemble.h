@@ -55,6 +55,8 @@ class Ensemble : public TObject
     // add entry `e` to the lists
     // - diphotonList is a list of tree entry numbers for this ensemble's 
     //   diphotons
+    // - dihadronList is a list of tree entry numbers for this ensemble's 
+    //   dihadrons (excludes diphotons)
     // - hadronList is a list of (tree entry numbers, hadron numbers), for
     //   each unique hadron found
     // - rowList keeps track of what hadrons have been added to hadronList
@@ -66,9 +68,11 @@ class Ensemble : public TObject
     // ACCESSORS //////////////////////////////////
     // - get relevant data from the current event ensemble
     vector<Long64_t> GetDiphotonList() { return diphotonList; };
+    vector<Long64_t> GetDihadronList() { return dihadronList; };
     vector<pair<Long64_t,Int_t>> GetHadronList() { return hadronList; };
-    Long64_t GetLB() { return lb; };
-    Long64_t GetUB() { return ub; };
+    Long64_t GetLB() { return lb; }; // upper bound of ensemble
+    Long64_t GetUB() { return ub; }; // lower bound of ensemble
+    Long64_t GetEnum() { return e; }; // current entry num
     Int_t GetEvnum() { return evnumEns; };
     Int_t GetRunnum() { return runnumEns; };
 
@@ -83,6 +87,7 @@ class Ensemble : public TObject
     TChain *tr;
     Long64_t lb,ub;
     vector<Long64_t> diphotonList;
+    vector<Long64_t> dihadronList;
     vector<pair<Long64_t,Int_t>> hadronList;
 
     vector<Int_t> rowList;

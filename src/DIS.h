@@ -32,7 +32,7 @@ class DIS : public TObject
     void SetBeamEnFromRun(Int_t runnum);
     void SetElectron(Trajectory * tr);
     void CalculateKinematics();
-    void CalculateKinematics(Trajectory * tr);
+    void CalculateKinematics(Trajectory * tr, Int_t runnum);
     void PrintEvent();
 
     void ComputeBreitKinematics();

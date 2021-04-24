@@ -34,11 +34,11 @@
 class EventTree : public TObject
 {
   public:
-    EventTree(TString filelist, Int_t whichPair_);
+    EventTree(TString filelist, Int_t whichPair_=0x34);
     ~EventTree();
 
     void GetEvent(Long64_t i);
-    void GetTrajectories(Long64_t i);
+    void GetTrajectories(Long64_t i, Bool_t prog=false);
     Bool_t Valid();
 
     Int_t SpinState();
@@ -55,6 +55,8 @@ class EventTree : public TObject
 
     Dihadron * GetDihadronObj();
     DIS * GetDISObj();
+    Trajectory * GetElectronTraj() { return trEle; };
+    Trajectory * GetHadronTraj(Int_t h) { return trHad[h]; };
 
     //Float_t GetDepolarizationFactorApprox(Char_t kf);
     Float_t GetDepolarizationFactor(Char_t kf);
@@ -230,10 +232,6 @@ class EventTree : public TObject
     Bool_t vzdiffBool;
     Float_t vzdiff[2];
 
-    // trajectories
-    Trajectory * trEle;
-    Trajectory * trHad[2];
-
   private:
     TChain * chain;
     Int_t whichHad[2];
@@ -241,6 +239,8 @@ class EventTree : public TObject
     Dihadron * objDihadron;
     Dihadron * candDih;
     DIS * objDIS;
+    Trajectory * trEle;
+    Trajectory * trHad[2];
 
     TLorentzVector hadMom[2];
     TLorentzVector eleMom;

@@ -94,8 +94,9 @@ void DIS::CalculateKinematics() {
   return;
 };
 
-void DIS::CalculateKinematics(Trajectory * tr) {
+void DIS::CalculateKinematics(Trajectory * tr, Int_t runnum) {
   this->ResetVars();
+  this->SetBeamEnFromRun(runnum);
   this->SetElectron(tr);
   this->CalculateKinematics();
 };

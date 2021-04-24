@@ -20,7 +20,7 @@ $(DISPINOBJ): $(DICT) $(HEADERS) $(SOURCES)
 
 $(DICT): $(HEADERS)
 	@echo "----- generate dictionary $@ -----"
-	@rootcling -f $@ -c $(DEPS) $^
+	@rootcling -f $@ $(DEPS) $^
 
 clean:
 	$(RM) ../$(DISPINOBJ) $(DICT) $(PCM)

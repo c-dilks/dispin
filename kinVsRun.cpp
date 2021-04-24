@@ -285,31 +285,6 @@ int main(int argc, char** argv) {
 
     ev->GetEvent(i);
 
-
-    /*
-    // fill multiplicity plots
-    //------------------------
-    // fill overall particle multiplicity
-    if(ev->cutDIS) {
-      for(int p=0; p<nParticles; p++) {
-        if(ev->particleCnt[p]>0) {
-          partMultiplicityVsRun->Fill(ev->runnum,p,ev->particleCnt[p]);
-          partMultiplicityVsEPhi->Fill(ev->elePhi,p,ev->particleCnt[p]);
-        };
-      };
-    };
-    if(ev->cutDIS && ev->cutDihadronKinematics && ev->cutDiph[qA] && ev->cutDiph[qB]) {
-
-      // fill observable multiplicity
-      for(int h=0; h<2; h++) {
-        hadI[h] = IO(ev->hadIdx[h]); // observable indices
-        obsMultiplicityVsRun->Fill(ev->runnum,hadI[h]);
-        obsMultiplicityVsEPhi->Fill(ev->elePhi,hadI[h]);
-      };
-    };
-    */
-
-
     // fill DIS kinematic plots
     // ------------------------
     if(ev->cutDihadron) {

@@ -23,6 +23,9 @@ void Dihadron::CalculateKinematics(
   Trajectory * trajB,
   DIS * disEvent
 ) {
+
+  this->ResetVars();
+
   hadron[qA] = trajA;
   hadron[qB] = trajB;
   disEv = disEvent;

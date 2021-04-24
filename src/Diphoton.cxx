@@ -10,13 +10,7 @@ Diphoton::Diphoton() {
 
   // instantiate diphoton trajectory
   diphot = new Trajectory();
-  diphot->Idx = kDiph;
-
-  // unused trajectory variables
-  diphot->chi2pid = 0;
-  diphot->Status = 0;
-  diphot->Beta = 0;
-  diphot->Row = 0;
+  this->ResetVars();
 
   printf("Diphoton instantiated\n");
 };
@@ -25,7 +19,7 @@ Diphoton::Diphoton() {
 void Diphoton::CalculateKinematics(
   Trajectory * trajA, Trajectory * trajB, DIS * disEv) {
 
-  ResetVars();
+  this->ResetVars();
 
   photon[qA] = trajA;
   photon[qB] = trajB;
@@ -117,10 +111,27 @@ void Diphoton::Classify() {
     diphotClass = dpIgnore; // failed basic cuts
   };
 
+  // assign trajectory index
+  switch(diphotClass) {
+    case dpPi0: diphot->Idx = kPio; break;
+    case dpSB: diphot->Idx = kPioBG; break;
+    default: diphot->Idx = kDiph;
+  };
+
 };
 
 
 void Diphoton::ResetVars() {
+
+  // diphoton trajectory
+  diphot->Idx = kDiph;
+  // unused trajectory variables
+  diphot->chi2pid = 0;
+  diphot->Status = 0;
+  diphot->Beta = 0;
+  diphot->Row = 0;
+
+  // vars
   for(int h=0; h<2; h++) {
     photE[h] = UNDEF;
     photPt[h] = UNDEF;

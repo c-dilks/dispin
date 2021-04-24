@@ -9,8 +9,8 @@ PARTICLE_BANK = 0
 ####################################
 
 # compiler and flags
-CXX = g++ -std=c++11
-FLAGS = -g -Wno-deprecated -fPIC -m64 -fno-inline -Wno-write-strings
+CXX = g++
+FLAGS = -g -Wno-deprecated -fPIC -fno-inline -Wno-write-strings
 FLAGS += -DPARTICLE_BANK=$(PARTICLE_BANK)
 
 # extra flags for valgrind
@@ -18,7 +18,8 @@ FLAGS += -O0
 
 
 # ROOT
-DEPS = $(shell root-config --cflags)
+#DEPS = $(shell root-config --cflags) # contains deprecated flags
+DEPS = -I$(shell root-config --incdir)
 LIBS = $(shell root-config --glibs)
 LIBS += -lMinuit -lRooFitCore -lRooFit -lRooStats -lProof -lMathMore
 

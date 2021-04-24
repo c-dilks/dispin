@@ -15,6 +15,10 @@
 #include "Constants.h"
 #include "Tools.h"
 #include "Ensemble.h"
+#include "EventTree.h"
+#include "DIS.h"
+#include "Dihadron.h"
+#include "Diphoton.h"
 
 using std::cout;
 using std::cerr;
@@ -33,24 +37,82 @@ int main(int argc, char** argv) {
   };
 
   Ensemble *ens = new Ensemble(infileN);
+  EventTree *ev = new EventTree(infileN);
+  Diphoton *diphot = new Diphoton();
+  Dihadron *dihad = new Dihadron();
+  DIS *disEv = new DIS();
 
   Long64_t hi;
   Int_t qh;
   while(ens->NextEvent()) {
+
+    // get DIS event, and calculate kinematics
+    ev->GetTrajectories(ens->GetEnum());
+    disEv->CalculateKinematics(
+      ev->GetElectronTraj(),
+      ev->runnum
+    );
+
+
+    // loop over dihadrons
+    for(Long64_t di : ens->GetDihadronList()) {
+
+      // calculate dihadron kinematics
+      ev->GetTrajectories(di);
+      dihad->CalculateKinematics(
+        ev->GetHadronTraj(qA),
+        ev->GetHadronTraj(qB),
+        disEv
+      );
+
+      /* FILL */
+    }; // end dihadron loop
      
-    // loop through diphotons
+
+    // loop over diphotons, pairing each with each hadron
     cout << "event " << ens->GetEvnum() << endl;
     for(Long64_t di : ens->GetDiphotonList()) {
       cout << "  di = " << di << endl;
-    };
 
-    // loop through dihadrons
-    cout << "  nhad = " << ens->GetHadronList().size() << endl;
-    for(auto hadUID : ens->GetHadronList()) {
-      hi = hadUID.first;
-      qh = hadUID.second;
-      cout << "  had = " << hi << ", " << qh << endl;
-    };
+      // calculate diphoton kinematics
+      ev->GetTrajectories(di);
+      diphot->CalculateKinematics(
+        ev->GetHadronTraj(qA),
+        ev->GetHadronTraj(qB),
+        disEv
+      );
+      
+      // loop over hadrons
+      cout << "  nhad = " << ens->GetHadronList().size() << endl;
+      for(auto hadUID : ens->GetHadronList()) {
+        hi = hadUID.first;
+        qh = hadUID.second;
+        cout << "  had = " << hi << ", " << qh << endl;
+
+        // pair hadron with diphoton
+        ev->GetTrajectories(hi);
+        if(CorrectOrder(
+          ev->GetHadronTraj(qh)->Idx,
+          diphot->GetDiphotonTraj()->Idx
+        )) {
+          dihad->CalculateKinematics(
+            ev->GetHadronTraj(qh),
+            diphot->GetDiphotonTraj(),
+            disEv
+          );
+        } else {
+          dihad->CalculateKinematics(
+            diphot->GetDiphotonTraj(),
+            ev->GetHadronTraj(qh),
+            disEv
+          );
+        };
+
+        /* FILL */
+
+      }; // end hadron loop
+    }; // end diphoton loop
+
   };
 
 
