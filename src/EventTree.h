@@ -26,6 +26,7 @@
 #include "FiducialCuts.h"
 #include "DIS.h"
 #include "Dihadron.h"
+#include "Diphoton.h"
 #include "Tools.h"
 
 
@@ -151,6 +152,11 @@ class EventTree : public TObject
     Float_t dihPqBreit;
     Float_t dihPqCom;
     Float_t qmag;
+
+    // photon and diphoton kinematics
+    Diphoton *objDiphoton;
+    // aqui
+
 
 
     ///////////////////////////

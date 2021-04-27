@@ -96,7 +96,7 @@ class Ensemble : public TObject
     Int_t runnumEns;
 
     Bool_t readForward,readBackward;
-    Long64_t e,eF,eB,eNext;
+    Long64_t e,eF,eB,eNext,progCnt;
 
     // CHAIN VARS ///////////////////////////////////
     Long64_t ENT;

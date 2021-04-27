@@ -58,7 +58,7 @@ void Diphoton::CalculateKinematics(
 
   // calculate vertex difference between photons
   VtxDiff = (photon[qA]->Vertex - photon[qB]->Vertex).Mag();
-  printf("vtxdiff = %f\n",VtxDiff);
+  //printf("vtxdiff = %f\n",VtxDiff);
   // set diphoton vertex to that of leading energy photon
   // TODO: maybe not the right thing to do; check VtxDiff
   diphot->Vertex = photE[qA] >= photE[qB] ?
@@ -148,6 +148,7 @@ void Diphoton::ResetVars() {
   Phi = UNDEF;
   ZE = UNDEF;
   M = UNDEF;
+  VtxDiff = UNDEF;
   this->ResetBools();
 };
 

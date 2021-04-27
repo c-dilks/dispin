@@ -20,6 +20,7 @@ void Ensemble::StartOver() {
   e=-1;
   ub=-1;
   lb=-1;
+  progCnt=0;
   this->ResetLists();
 };
 
@@ -78,6 +79,8 @@ void Ensemble::Build(Long64_t i) {
 
 
 Bool_t Ensemble::NextEvent() {
+  if(++progCnt%100000==0)
+    printf("%lld ensembles analyzed\n",progCnt);
   if(e!=lb) {
     fprintf(stderr,"WARNING: e or lb has changed, you may be missing an event\n");
   };

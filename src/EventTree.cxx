@@ -434,6 +434,7 @@ void EventTree::GetTrajectories(Long64_t i, Bool_t prog) {
     trHad[h]->Beta = hadBeta[h];
     trHad[h]->Vertex.SetXYZ(hadVertex[h][eX],hadVertex[h][eY],hadVertex[h][eZ]);
     trHad[h]->Idx = hadIdx[h];
+    trHad[h]->Row = hadRow[h];
   };
 };
 
