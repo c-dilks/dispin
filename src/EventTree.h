@@ -155,8 +155,6 @@ class EventTree : public TObject
 
     // photon and diphoton kinematics
     Diphoton *objDiphoton;
-    // aqui
-
 
 
     ///////////////////////////
@@ -243,7 +241,6 @@ class EventTree : public TObject
     Int_t whichHad[2];
 
     Dihadron * objDihadron;
-    Dihadron * candDih;
     DIS * objDIS;
     Trajectory * trEle;
     Trajectory * trHad[2];

@@ -65,10 +65,12 @@ class Diphoton : public TObject
     Bool_t cutPhotAng;
     Bool_t cutMassPi0;
     Bool_t cutMassSB;
+    Bool_t cutBasic;
 
     // diphoton classifier
     Int_t diphotClass;
     enum diphotClass_enum { dpNull, dpPi0, dpSB, dpIgnore };
+    Int_t GetIdx() { return diphot->Idx; };
     /* dpNull: not a diphoton
      * dpPi0: likely a pi0
      * dpSB: sideband region (for BG estimate)

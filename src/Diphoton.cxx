@@ -97,11 +97,16 @@ void Diphoton::Classify() {
     return;
   };
 
+
+  // "basic" cuts, in the sense that they apply to all
+  // diphotons, no matter the classification; someday they
+  // may not be so basic
+  cutBasic = cutPhotBeta
+          && cutPhotEn
+          && cutPhotAng;
+
   // classify diphoton
-  if( cutPhotBeta
-   && cutPhotEn
-   && cutPhotAng
-  ) {
+  if(cutBasic) {
     // basic cuts passed, now check mass cuts
     if(cutMassPi0) diphotClass = dpPi0; // pi0
     else if(cutMassSB) diphotClass = dpSB; // sideband

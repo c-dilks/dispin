@@ -88,6 +88,23 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
   chain->SetBranchAddress("PhiRp_r",&PhiRp_r);
   chain->SetBranchAddress("PhiRp_g",&PhiRp_g);
 
+  // diphoton branches
+  objDiphoton = new Diphoton();
+  if(chain->GetBranch("diphM")) {
+    chain->SetBranchAddress("photE",objDiphoton->photE);
+    chain->SetBranchAddress("photPt",objDiphoton->photPt);
+    chain->SetBranchAddress("photEta",objDiphoton->photEta);
+    chain->SetBranchAddress("photPhi",objDiphoton->photPhi);
+    chain->SetBranchAddress("photAng",objDiphoton->photAng);
+    chain->SetBranchAddress("photBeta",objDiphoton->photBeta);
+    chain->SetBranchAddress("photChi2pid",objDiphoton->photChi2pid);
+    chain->SetBranchAddress("diphM",&(objDiphoton->M));
+    chain->SetBranchAddress("diphZE",&(objDiphoton->ZE));
+    chain->SetBranchAddress("diphVtxDiff",&(objDiphoton->VtxDiff));
+  };
+
+
+  // event-level branches
   chain->SetBranchAddress("runnum",&runnum);
   chain->SetBranchAddress("evnum",&evnum);
   chain->SetBranchAddress("helicity",&helicity);
@@ -218,7 +235,6 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
 
   // instantiate useful objects
   objDihadron = new Dihadron();
-  candDih= new Dihadron();
   objDIS = new DIS();
   trEle = new Trajectory();
   trEle->Idx = kE;
@@ -359,6 +375,33 @@ void EventTree::GetEvent(Long64_t i) {
   //cutFR = Zpair>0.4; // try to look at decays from CFR rhos
 
 
+  // diphoton cuts and classification
+  // - cuts are applied in Diphoton::Classify(), which will
+  //   assign an Idx if the diphoton passes cuts
+  //   - if cuts fail, Idx remains as kDiph
+  //   - if cuts pass, Idx is re-assigned based on
+  //     classification of pi0 or pi0-BG
+  // - later in cutDihadron, we will check the pairType; if
+  //   you asked for a pair which includes a pi0, then 
+  //   cutDihadron will only be true if the diphoton is
+  //   classified as a pi0
+  for(int h=0; h<2; h++) {
+    if( hadIdx[h]==kDiph
+     || hadIdx[h]==kPio
+     || hadIdx[h]==kPioBG
+    ) {
+      objDiphoton->Classify();
+      hadIdx[h] = objDiphoton->GetIdx();
+      // set objDiphoton variables which are not tree branches,
+      // so that we can access them from objDiphoton too
+      objDiphoton->E = hadE[h];
+      objDiphoton->Pt = hadPt[h];
+      objDiphoton->Eta = hadEta[h];
+      objDiphoton->Phi = hadPhi[h];
+    };
+  };
+
+
   // dihadron cuts
   /* (note: PairSame ensures we have the correct channel, e.g., pi+pi-) */
   cutDihadron = 
@@ -396,6 +439,7 @@ void EventTree::GetEvent(Long64_t i) {
   // check if helicity is defined
   sps = this->SpinState();
   cutHelicity = sps==sP || sps==sM;
+
 
 };
 

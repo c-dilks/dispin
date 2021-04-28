@@ -27,6 +27,8 @@ using std::pair;
 
 TString infileN;
 Int_t dataState;
+Int_t cutState;
+Int_t pairType;
 EventTree *ev;
 Ensemble *ens;
 Diphoton *diphot;
@@ -65,7 +67,7 @@ class Histos {
         "Z_{E,#gamma#gamma} Distribution;Z_{E,#gamma#gamma}",
         nbins,0,1);
       VtxDiffDist = new TH1D("VtxDiffDist",
-        "|Vtx(#gamma_1)-Vtx(#gamma2)| Distribution;|Vtx(#gamma_1)-Vtx(#gamma2)|",
+        "|Vtx(#gamma_{1})-Vtx(#gamma_{2})| Distribution;|Vtx(#gamma_{1})-Vtx(#gamma_{2})|",
         nbins,-10,10);
     };
 
@@ -89,6 +91,11 @@ class Histos {
       ZEDist->Write();
       VtxDiffDist->Write();
     };
+
+    void Warn() {
+      if(MDist->GetEntries()<1) 
+        fprintf(stderr,"WARNING: histograms are empty; is dataState wrong?\n");
+    };
       
 };
 
@@ -99,22 +106,39 @@ int main(int argc, char** argv) {
 
   // ARGUMENTS
   infileN = "outroot.root";
-  dataState = 0; // 0=notRePaired, 1=RePaired
+  dataState = 0;
+  cutState = -1;
   if(argc==1) {
-    fprintf(stderr,"USAGE: pi0analyzer.cpp [outrootFile.root] [dataState]\n");
-    fprintf(stderr,"       -dataState=0: not RePaired; one histogram entry = one unique diphoton\n");
-    fprintf(stderr,"       -dataState=1: RePaired; one histogram entry = a diphoton from a unique pair(hadron,diphoton)\n");
+    fprintf(stderr,"USAGE: pi0analyzer.cpp [outrootFile.root] [dataState] [cutState]\n");
+    fprintf(stderr,"\n");
+    fprintf(stderr," -dataState = 0: not RePaired\n");
+    fprintf(stderr,"  --- one histogram entry = one unique diphoton\n");
+    fprintf(stderr,"  --- N.B.: some events may have only diphotons, and\n");
+    fprintf(stderr,"            therefore may not be in the RePaired tree\n");
+    fprintf(stderr,"   -cutState = -1 (default): any diphoton\n");
+    fprintf(stderr,"   -cutState non-negative: pass diphoton cuts\n");
+    fprintf(stderr,"   -cutState in [0,10): classify diphoton\n");
+    fprintf(stderr,"     -cutState = %d: pi0\n",Diphoton::dpPi0);
+    fprintf(stderr,"     -cutState = %d: pi0 BG (sideband)\n",Diphoton::dpSB);
+    fprintf(stderr,"     -cutState = %d: neither pi0 nor sideband\n",Diphoton::dpIgnore);
+    fprintf(stderr,"   -cutState = 10: do not classify\n");
+    fprintf(stderr,"\n");
+    fprintf(stderr," -dataState=1: RePaired\n");
+    fprintf(stderr,"  --- one histogram entry = a diphoton from a unique pair(hadron,diphoton)\n");
+    fprintf(stderr,"   -cutState = -1 (default): any diphoton, do not use EventTree::Valid() cuts\n");
+    fprintf(stderr,"   -cutState >= 0: interpret this as pairType, and apply EventTree::Valid() cuts\n");
     return 1;
   };
   if(argc>1) infileN = TString(argv[1]);
   if(argc>2) dataState = (Int_t)strtof(argv[2],NULL);
+  if(argc>3) cutState = (Int_t)strtof(argv[3],NULL);
 
 
   // instantiations
+  pairType = dataState==1 && cutState>=0 ?
+    cutState : EncodePairType(kPhoton,kPhoton);
+  ev = new EventTree(infileN,pairType);
   ens = new Ensemble(infileN);
-  ev = new EventTree(
-    infileN,EncodePairType(kPhoton,kPhoton)
-  );
   diphot = new Diphoton();
   disEv = new DIS();
 
@@ -129,6 +153,7 @@ int main(int argc, char** argv) {
 
 
   Histos *hists = new Histos();
+  Bool_t validCut,diphotCut;
 
   // dataState 0 -- RePair has not yet been done, so diphotons are
   // in their own entries, as photon-photon "dihadrons"; we can thus
@@ -138,7 +163,7 @@ int main(int argc, char** argv) {
     Int_t hadRowEns[2];
     Long_t nEns = 0;
     while(ens->NextEvent()) {
-      if(ens->GetEnum()>1000) break; // limiter
+      //if(ens->GetEnum()>1000) break; // limiter
        
       // loop through diphotons
       for(Long64_t di : ens->GetDiphotonList()) {
@@ -168,8 +193,31 @@ int main(int argc, char** argv) {
           disEv
         );
 
+        // classify diphoton, and check cuts
+        if(cutState<0) { // don't classify or check basic cuts
+          diphotCut=true;
+        } else if(cutState<10) { // classify and check basic cuts
+          diphot->Classify();
+          diphotCut = (cutState == diphot->diphotClass);
+        } else if(cutState==10) { // just check basic cuts
+          diphot->Classify();
+          diphotCut = diphot->cutBasic;
+        } else {
+          fprintf(stderr,"ERROR: bad cutState\n");
+          return 1;
+        };
+
+        // if this event ensemble had only diphotons, and no hadrons, then
+        // these diphotons will not appear in the RePaired tree (unless
+        // diphotons are paired with other diphotons); such diphotons may have
+        // a different distribution than other diphotons; use this line to
+        // filter out such events:
+        //if(ens->GetDihadronList().size()==0) continue;
+
         // fill histograms
-        hists->FillHistograms();
+        if(diphotCut) {
+          hists->FillHistograms();
+        };
 
       };
 
@@ -182,18 +230,27 @@ int main(int argc, char** argv) {
   // be paired with all the other hadrons of that event
   else if(dataState==1) {
     for(int i=0; i<ev->ENT; i++) {
-      if(i>10000) break; // limiter
+      //if(i>10000) break; // limiter
 
       // get the whole event, so we can use EventTree::Valid() later 
       // if we want to; this will also give us Diphoton pointers, 
       // if there is one
       ev->GetEvent(i);
 
-      if(true) { // TODO: add pairType argument so we can use EventTree::Valid() here
+      // check event selection cuts
+      validCut = cutState>=0 ? ev->Valid() : true;
+      if(validCut) {
 
         // loop over the 2 hadrons in the dihadron
         for(int h=0; h<2; h++) {
-          if(ev->hadIdx[h]==kDiph) {
+
+          // is this hadron a diphoton?
+          diphotCut = ev->hadIdx[h]==kDiph
+                   || ev->hadIdx[h]==kPio
+                   || ev->hadIdx[h]==kPioBG;
+
+          // if it is a diphoton, fill histograms
+          if(diphotCut) {
             diphot = ev->objDiphoton;
             hists->FillHistograms();
           };
@@ -207,12 +264,12 @@ int main(int argc, char** argv) {
     return 1;
   };
 
-
+  // print warning, if histograms are empty
+  hists->Warn();
 
   // write to outfile
   hists->WriteHistograms(outfile);
   outfile->Close();
-
 
 
   return 0;

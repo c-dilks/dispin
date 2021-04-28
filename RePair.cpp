@@ -133,7 +133,7 @@ int main(int argc, char** argv) {
   outTr->Branch("evnum",&(ev->evnum),"evnum/I");
   outTr->Branch("helicity",&(ev->helicity),"helicity/I");
   // - photon and diphoton branches
-  outTr->Branch("photE",diphot->photE,"photE[2]/F"); // [hadron 0/1] [photon 0/1]
+  outTr->Branch("photE",diphot->photE,"photE[2]/F");
   outTr->Branch("photPt",diphot->photPt,"photPt[2]/F");
   outTr->Branch("photEta",diphot->photEta,"photEta[2]/F");
   outTr->Branch("photPhi",diphot->photPhi,"photPhi[2]/F");
