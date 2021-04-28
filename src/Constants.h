@@ -34,6 +34,7 @@ enum particle_enum {
   kAP,
   kPhoton,
   kDiph,
+  kDiphBasic,
   kPioBG,
   nParticles
 };
@@ -52,6 +53,7 @@ static TString PartName(Int_t p) {
     case kAP: return "antiproton";
     case kPhoton: return "photon";
     case kDiph: return "diphoton";
+    case kDiphBasic: return "diphotonBasic";
     case kPioBG: return "pi0bg";
     default: 
       fprintf(stderr,"ERROR: bad PartName request\n");
@@ -71,6 +73,7 @@ static TString PartTitle(Int_t p) {
     case kAP: return "p^{-}";
     case kPhoton: return "#gamma";
     case kDiph: return "#gamma#gamma";
+    case kDiphBasic: return "#gamma#gamma_{basic}";
     case kPioBG: return "#pi^{0}_{BG}";
     default: 
       fprintf(stderr,"ERROR: bad PartTitle request\n");
@@ -92,6 +95,7 @@ static Int_t PartPID(Int_t p) {
     case kAP: return -2212;
     case kPhoton: return 22;
     case kDiph: return UNDEF; // (no PID)
+    case kDiphBasic: return UNDEF; // (no PID)
     case kPioBG: return UNDEF; // (no PID)
     default: 
       fprintf(stderr,"ERROR: bad PartPID request\n");
@@ -118,6 +122,7 @@ static Float_t PartMass(Int_t p) {
     case kAP: return 0.938272;
     case kPhoton: return 0.0;
     case kDiph: return UNDEF; // (use Diphoton class instead)
+    case kDiphBasic: return UNDEF; // (use Diphoton class instead)
     case kPioBG: return UNDEF; // (use Diphoton class instead)
     default: 
       fprintf(stderr,"ERROR: bad PartMass request\n");
@@ -137,6 +142,7 @@ static Int_t PartCharge(Int_t p) {
     case kAP: return -1;
     case kPhoton: return 0;
     case kDiph: return 0;
+    case kDiphBasic: return 0;
     case kPioBG: return 0;
     default: 
       fprintf(stderr,"ERROR: bad PartCharge request\n");
@@ -158,6 +164,7 @@ static Int_t PartColor(Int_t p) {
     case kAP: return kAzure;
     case kPhoton: return kOrange;
     case kDiph: return kMagenta;
+    case kDiphBasic: return kMagenta;
     case kPioBG: return kViolet;
     default: 
       fprintf(stderr,"ERROR: bad PartColor request\n");
@@ -177,6 +184,7 @@ static TString PartColorName(Int_t p) {
     case kAP: return "darkBlue";
     case kPhoton: return "orange";
     case kDiph: return "magenta";
+    case kDiphBasic: return "magenta";
     case kPioBG: return "violet";
     default: 
       fprintf(stderr,"ERROR: bad PartColor request\n");

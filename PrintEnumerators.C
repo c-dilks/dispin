@@ -9,11 +9,12 @@ void PrintEnumerators(Bool_t printAllPairs=false) {
   printf("particles\n");
   printf("---------\n");
   for(int p=0; p<nParticles; p++) {
-    printf("%d = %s  (pid=%d)\n",p,PartName(p).Data(),PartPID(p));
+    printf("0x%x = %s  (pid=%d)\n",p,PartName(p).Data(),PartPID(p));
   };
   printf("\n");
 
   // print pair types
+  /*
   printf("dihadron pair types\n");
   printf("-------------------\n");
   Int_t pa,pb;
@@ -37,5 +38,6 @@ void PrintEnumerators(Bool_t printAllPairs=false) {
   printf("---------------------------------------------------------\n");
   printf("pairType==0x34 && Q2>1 && W>2 && y<0.8 && xF>0 && Mmiss>1.5 && ");
   printf("Z[0]>0.1 && Z[1]>0.1 && hadP[0]>1.25 && hadP[1]>1.25\n");
+  */
 };
 

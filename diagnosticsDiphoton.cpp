@@ -126,7 +126,11 @@ int main(int argc, char** argv) {
     fprintf(stderr," -dataState=1: RePaired\n");
     fprintf(stderr,"  --- one histogram entry = a diphoton from a unique pair(hadron,diphoton)\n");
     fprintf(stderr,"   -cutState = -1 (default): any diphoton, do not use EventTree::Valid() cuts\n");
-    fprintf(stderr,"   -cutState >= 0: interpret this as pairType, and apply EventTree::Valid() cuts\n");
+    fprintf(stderr,"   -cutState >= 0: interpret this as pairType, and apply EventTree::Valid() cuts;\n");
+    fprintf(stderr,"    the diphoton will be classified, and pairType will filter for the class you want\n");
+    fprintf(stderr,"   -N.B. if you want to see the full mass spectrum, with EventTree::Valid() cuts\n");
+    fprintf(stderr,"         and diphoton basic cuts enabled, use kDiphBasic in pairType; this spectrum\n");
+    fprintf(stderr,"         is what should be fitted for pi0 signal purity\n");
     return 1;
   };
   if(argc>1) infileN = TString(argv[1]);
@@ -247,7 +251,8 @@ int main(int argc, char** argv) {
           // is this hadron a diphoton?
           diphotCut = ev->hadIdx[h]==kDiph
                    || ev->hadIdx[h]==kPio
-                   || ev->hadIdx[h]==kPioBG;
+                   || ev->hadIdx[h]==kPioBG
+                   || ev->hadIdx[h]==kDiphBasic;
 
           // if it is a diphoton, fill histograms
           if(diphotCut) {
