@@ -9,8 +9,7 @@
 #include "TROOT.h"
 #include "TRegexp.h"
 #include "TH1.h"
-#include "TCanvas.h"
-#include "TGraph.h"
+#include "TTree.h"
 
 // Dispin
 #include "Constants.h"
@@ -34,6 +33,7 @@ Ensemble *ens;
 Diphoton *diphot;
 DIS *disEv;
 const Int_t nbins = 300;
+TTree * diphTr;
 
 
 // histograms class
@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
   dataState = 0;
   cutState = -1;
   if(argc==1) {
-    fprintf(stderr,"USAGE: pi0analyzer.cpp [outrootFile.root] [dataState] [cutState]\n");
+    fprintf(stderr,"USAGE: %s [outrootFile.root] [dataState] [cutState]\n",argv[0]);
     fprintf(stderr,"\n");
     fprintf(stderr," -dataState = 0: not RePaired\n");
     fprintf(stderr,"  --- one histogram entry = one unique diphoton\n");
@@ -117,20 +117,25 @@ int main(int argc, char** argv) {
     fprintf(stderr,"            therefore may not be in the RePaired tree\n");
     fprintf(stderr,"   -cutState = -1 (default): any diphoton\n");
     fprintf(stderr,"   -cutState non-negative: pass diphoton cuts\n");
-    fprintf(stderr,"   -cutState in [0,10): classify diphoton\n");
-    fprintf(stderr,"     -cutState = %d: pi0\n",Diphoton::dpPi0);
-    fprintf(stderr,"     -cutState = %d: pi0 BG (sideband)\n",Diphoton::dpSB);
-    fprintf(stderr,"     -cutState = %d: neither pi0 nor sideband\n",Diphoton::dpIgnore);
-    fprintf(stderr,"   -cutState = 10: do not classify\n");
+    fprintf(stderr,"     -cutState in [0,10): classify diphoton\n");
+    fprintf(stderr,"       -cutState = %d: pi0\n",Diphoton::dpPi0);
+    fprintf(stderr,"       -cutState = %d: pi0 BG (sideband)\n",Diphoton::dpSB);
+    fprintf(stderr,"       -cutState = %d: neither pi0 nor sideband\n",Diphoton::dpIgnore);
+    fprintf(stderr,"     -cutState = 10: do not classify\n");
     fprintf(stderr,"\n");
     fprintf(stderr," -dataState=1: RePaired\n");
     fprintf(stderr,"  --- one histogram entry = a diphoton from a unique pair(hadron,diphoton)\n");
     fprintf(stderr,"   -cutState = -1 (default): any diphoton, do not use EventTree::Valid() cuts\n");
-    fprintf(stderr,"   -cutState >= 0: interpret this as pairType, and apply EventTree::Valid() cuts;\n");
-    fprintf(stderr,"    the diphoton will be classified, and pairType will filter for the class you want\n");
-    fprintf(stderr,"   -N.B. if you want to see the full mass spectrum, with EventTree::Valid() cuts\n");
-    fprintf(stderr,"         and diphoton basic cuts enabled, use kDiphBasic in pairType; this spectrum\n");
-    fprintf(stderr,"         is what should be fitted for pi0 signal purity\n");
+    fprintf(stderr,"   -cutState >= 0: interpret this as pairType, and apply EventTree::Valid()\n");
+    fprintf(stderr,"    cuts; the diphoton will be classified, and pairType will filter for the\n");
+    fprintf(stderr,"    class you want\n");
+    fprintf(stderr,"   -N.B. if you want to see the full M_gg spectrum, with EventTree::Valid()\n");
+    fprintf(stderr,"         cuts and diphoton basic cuts enabled, use kDiphBasic in pairType;\n");
+    fprintf(stderr,"         this spectrum is what should be fitted for pi0 signal purity\n");
+    fprintf(stderr,"\n");
+    fprintf(stderr,"         EXAMPLE for (pi+,diphoton) M_gg spectrum:\n");
+    fprintf(stderr,"           %s 1 0x%x\n",argv[0],EncodePairType(kPip,kDiphBasic));
+    fprintf(stderr,"\n\n");
     return 1;
   };
   if(argc>1) infileN = TString(argv[1]);
@@ -154,6 +159,32 @@ int main(int argc, char** argv) {
   cout << "outfileN = " << outfileN << endl;
   gROOT->ProcessLine(".! mkdir -p diagDiphot");
   TFile *outfile = new TFile(outfileN,"RECREATE");
+
+
+  // output tree, to be used for binning Mh distributions for fits
+  if(dataState==1) {
+    diphTr = new TTree("diphTr","diphTr");
+    // event level
+    diphTr->Branch("runnum",&(ev->runnum),"runnum/I");
+    diphTr->Branch("evnum",&(ev->evnum),"evnum/I");
+    // Binning IVs (branch names match catTree tree from
+    // Asymmetry::ActivateTree)
+    diphTr->Branch("X",&(ev->x),"X/F");
+    diphTr->Branch("Mh",&(ev->Mh),"Mh/F");
+    diphTr->Branch("Z",&(ev->Zpair),"Z/F");
+    diphTr->Branch("PhPerp",&(ev->PhPerp),"PhPerp/F");
+    diphTr->Branch("DY",&(ev->DY),"DY/F");
+    diphTr->Branch("Q2",&(ev->Q2),"Q2/F");
+    diphTr->Branch("XF",&(ev->xF),"XF/F");
+    // diphoton vars
+    diphTr->Branch("diphM",&(ev->objDiphoton->M),"diphM/F");
+    diphTr->Branch("diphE",&(ev->objDiphoton->E),"diphE/F");
+    diphTr->Branch("diphPt",&(ev->objDiphoton->Pt),"diphPt/F");
+    diphTr->Branch("diphEta",&(ev->objDiphoton->Eta),"diphEta/F");
+    diphTr->Branch("diphPhi",&(ev->objDiphoton->Phi),"diphPhi/F");
+    diphTr->Branch("diphZE",&(ev->objDiphoton->ZE),"diphZE/F");
+    diphTr->Branch("diphVtxDiff",&(ev->objDiphoton->VtxDiff),"diphVtxDiff/F");
+  };
 
 
   Histos *hists = new Histos();
@@ -234,7 +265,7 @@ int main(int argc, char** argv) {
   // be paired with all the other hadrons of that event
   else if(dataState==1) {
     for(int i=0; i<ev->ENT; i++) {
-      //if(i>10000) break; // limiter
+      //if(i>50000) break; // limiter
 
       // get the whole event, so we can use EventTree::Valid() later 
       // if we want to; this will also give us Diphoton pointers, 
@@ -254,10 +285,11 @@ int main(int argc, char** argv) {
                    || ev->hadIdx[h]==kPioBG
                    || ev->hadIdx[h]==kDiphBasic;
 
-          // if it is a diphoton, fill histograms
+          // if it is a diphoton, fill histograms and output tree
           if(diphotCut) {
             diphot = ev->objDiphoton;
             hists->FillHistograms();
+            diphTr->Fill();
           };
         };
       };
@@ -273,6 +305,7 @@ int main(int argc, char** argv) {
   hists->Warn();
 
   // write to outfile
+  if(dataState==1) diphTr->Write();
   hists->WriteHistograms(outfile);
   outfile->Close();
 

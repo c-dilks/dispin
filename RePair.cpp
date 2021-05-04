@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
     infileN = TString(argv[1]);
     outdirN = TString(argv[2]);
   } else {
-    fprintf(stderr,"USAGE: pi0analyzer.cpp [outrootFile.root] [outputDir]\n");
+    fprintf(stderr,"USAGE: RePair.cpp [outrootFile.root] [outputDir]\n");
     return 1;
   };
 
