@@ -162,30 +162,45 @@ int main(int argc, char** argv) {
 
 
   // output tree, to be used for binning Mh distributions for fits
+  Double_t X_tr;
+  Double_t Mh_tr;
+  Double_t Z_tr;
+  Double_t PhPerp_tr;
+  Double_t DY_tr;
+  Double_t Q2_tr;
+  Double_t XF_tr;
+  Double_t diphM_tr;
+  Double_t diphE_tr;
+  Double_t diphPt_tr;
+  Double_t diphEta_tr;
+  Double_t diphPhi_tr;
+  Double_t diphZE_tr;
+  Double_t diphVtxDiff_tr;
   if(dataState==1) {
     diphTr = new TTree("diphTr","diphTr");
     // event level
     diphTr->Branch("runnum",&(ev->runnum),"runnum/I");
     diphTr->Branch("evnum",&(ev->evnum),"evnum/I");
     // Binning IVs (branch names match catTree tree from
-    // Asymmetry::ActivateTree)
-    diphTr->Branch("X",&(ev->x),"X/F");
-    diphTr->Branch("Mh",&(ev->Mh),"Mh/F");
-    diphTr->Branch("Z",&(ev->Zpair),"Z/F");
-    diphTr->Branch("PhPerp",&(ev->PhPerp),"PhPerp/F");
-    diphTr->Branch("DY",&(ev->DY),"DY/F");
-    diphTr->Branch("Q2",&(ev->Q2),"Q2/F");
-    diphTr->Branch("XF",&(ev->xF),"XF/F");
+    // Asymmetry::ActivateTree); they must be converted
+    // to doubles, since practically everything in EventTree
+    // is floats...
+    diphTr->Branch("X",&X_tr,"X/D");
+    diphTr->Branch("Mh",&Mh_tr,"Mh/D");
+    diphTr->Branch("Z",&Z_tr,"Z/D");
+    diphTr->Branch("PhPerp",&PhPerp_tr,"PhPerp/D");
+    diphTr->Branch("DY",&DY_tr,"DY/D");
+    diphTr->Branch("Q2",&Q2_tr,"Q2/D");
+    diphTr->Branch("XF",&XF_tr,"XF/D");
     // diphoton vars
-    diphTr->Branch("diphM",&(ev->objDiphoton->M),"diphM/F");
-    diphTr->Branch("diphE",&(ev->objDiphoton->E),"diphE/F");
-    diphTr->Branch("diphPt",&(ev->objDiphoton->Pt),"diphPt/F");
-    diphTr->Branch("diphEta",&(ev->objDiphoton->Eta),"diphEta/F");
-    diphTr->Branch("diphPhi",&(ev->objDiphoton->Phi),"diphPhi/F");
-    diphTr->Branch("diphZE",&(ev->objDiphoton->ZE),"diphZE/F");
-    diphTr->Branch("diphVtxDiff",&(ev->objDiphoton->VtxDiff),"diphVtxDiff/F");
+    diphTr->Branch("diphM",&diphM_tr,"diphM/D");
+    diphTr->Branch("diphE",&diphE_tr,"diphE/D");
+    diphTr->Branch("diphPt",&diphPt_tr,"diphPt/D");
+    diphTr->Branch("diphEta",&diphEta_tr,"diphEta/D");
+    diphTr->Branch("diphPhi",&diphPhi_tr,"diphPhi/D");
+    diphTr->Branch("diphZE",&diphZE_tr,"diphZE/D");
+    diphTr->Branch("diphVtxDiff",&diphVtxDiff_tr,"diphVtxDiff/D");
   };
-
 
   Histos *hists = new Histos();
   Bool_t validCut,diphotCut;
@@ -265,7 +280,7 @@ int main(int argc, char** argv) {
   // be paired with all the other hadrons of that event
   else if(dataState==1) {
     for(int i=0; i<ev->ENT; i++) {
-      //if(i>50000) break; // limiter
+      //if(i>100000) break; // limiter
 
       // get the whole event, so we can use EventTree::Valid() later 
       // if we want to; this will also give us Diphoton pointers, 
@@ -287,8 +302,28 @@ int main(int argc, char** argv) {
 
           // if it is a diphoton, fill histograms and output tree
           if(diphotCut) {
+
+            // fill histograms
             diphot = ev->objDiphoton;
             hists->FillHistograms();
+
+            // typecast floats to doubles (for compatability with catTree)
+            X_tr = (Double_t) ev->x;
+            Mh_tr = (Double_t) ev->Mh;
+            Z_tr = (Double_t) ev->Zpair;
+            PhPerp_tr = (Double_t) ev->PhPerp;
+            DY_tr = (Double_t) ev->DY;
+            Q2_tr = (Double_t) ev->Q2;
+            XF_tr = (Double_t) ev->xF;
+            diphM_tr = (Double_t) diphot->M;
+            diphE_tr = (Double_t) diphot->E;
+            diphPt_tr = (Double_t) diphot->Pt;
+            diphEta_tr = (Double_t) diphot->Eta;
+            diphPhi_tr = (Double_t) diphot->Phi;
+            diphZE_tr = (Double_t) diphot->ZE;
+            diphVtxDiff_tr = (Double_t) diphot->VtxDiff;
+
+            // fill tree
             diphTr->Fill();
           };
         };
