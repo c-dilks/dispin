@@ -3,14 +3,15 @@
 #include <map>
 
 // ROOT
-#include "TFile.h"
-#include "TString.h"
-#include "TMath.h"
-#include "TSystem.h"
-#include "TROOT.h"
-#include "TRegexp.h"
-#include "TH1.h"
-#include "TTree.h"
+#include <TFile.h>
+#include <TString.h>
+#include <TMath.h>
+#include <TSystem.h>
+#include <TROOT.h>
+#include <TRegexp.h>
+#include <TH1.h>
+#include <TTree.h>
+#include <TIterator.h>
 
 // RooFit
 #include <RooGlobalFunc.h>
@@ -52,7 +53,9 @@ Long64_t ENT;
 class FitBin {
   public:
     TH1D *Mdist;
+    TH1D *IVdist;
     Int_t binnum;
+    TString binStr;
     RooFitResult *modelFit;
     RooPlot *plotFrame;
     TCanvas *fitCanv;
@@ -60,9 +63,12 @@ class FitBin {
     // constructor -------------------------------------
     FitBin(Int_t binn) {
       binnum = binn;
-      Mdist = new TH1D(
-        Form("Mdist_%d",binnum),Form("Mdist_%d",binnum),
-        100,0.04,0.45);
+      binStr = Form("_%d",binnum);
+      Mdist = new TH1D("Mdist"+binStr,"Mdist"+binStr,
+          100,0.04,0.45
+          );
+      IVdist = new TH1D("IVdist"+binStr,"IVdist"+binStr,
+          500,BS->minIV[BS->ivVar[0]],BS->maxIV[BS->ivVar[0]]);
     };
 
     // fit algorithm -----------------------------------
@@ -70,42 +76,42 @@ class FitBin {
       for(int i=0; i<3; i++) Tools::PrintSeparator(60,"=");
       cout << "[+++++] call fit on bin " << binnum << endl;
 
-      RooRealVar mass("Mgg","M_{#gamma#gamma}",0,3,"GeV");
+      RooRealVar mass(("Mgg"+binStr).Data(),"M_{#gamma#gamma}",0,3,"GeV");
       TString massdistN = "roo_" + TString(Mdist->GetName());
       RooDataHist massdist(massdistN.Data(),massdistN.Data(),
           mass,RooFit::Import(*Mdist));
 
       // pi0 signal
       Double_t nmax = (Double_t)ENT;
-      RooRealVar pi0n("pi0n","pi0n", nmax/2.0, 0, nmax);
-      RooRealVar pi0mu("pi0mu","pi0mu", 0.135, 0, 2);
-      RooRealVar pi0sigma("pi0sigma","pi0sigma", 0.02, 0.001, 0.1);
-      RooGaussian pi0model("pi0model","pi0model",mass,pi0mu,pi0sigma);
+      RooRealVar pi0n(("pi0n"+binStr).Data(),"pi0n", nmax/2.0, 0, nmax);
+      RooRealVar pi0mu(("pi0mu"+binStr).Data(),"pi0mu", 0.135, 0, 2);
+      RooRealVar pi0sigma(("pi0sigma"+binStr).Data(),"pi0sigma", 0.02, 0.001, 0.1);
+      RooGaussian pi0model(("pi0model"+binStr).Data(),"pi0model",mass,pi0mu,pi0sigma);
 
       // background
-      RooRealVar bgN("bgN","bgN", 0, nmax);
-      RooRealVar bgP0("bgP0","bgP0", -1, 1);
-      RooRealVar bgP1("bgP1","bgP1", -1, 1);
-      RooRealVar bgP2("bgP2","bgP2", -1, 1);
-      RooRealVar bgP3("bgP3","bgP3", -1, 1);
-      RooRealVar bgP4("bgP4","bgP4", -1, 1);
-      RooPolynomial bgModel("bgModel","bgModel",mass,RooArgSet(bgP0,bgP1,bgP2));
-      //RooChebychev bgModel("bgModel","bgModel",mass,RooArgSet(bgP0,bgP1,bgP2,bgP3));
-      //RooChebychev bgModel("bgModel","bgModel",mass,RooArgSet(bgP0,bgP1,bgP2,bgP3,bgP4));
+      RooRealVar bgN(("bgN"+binStr).Data(),"bgN", 0, nmax);
+      RooRealVar bgP0(("bgP0"+binStr).Data(),"bgP0", -1, 1);
+      RooRealVar bgP1(("bgP1"+binStr).Data(),"bgP1", -1, 1);
+      RooRealVar bgP2(("bgP2"+binStr).Data(),"bgP2", -1, 1);
+      RooRealVar bgP3(("bgP3"+binStr).Data(),"bgP3", -1, 1);
+      RooRealVar bgP4(("bgP4"+binStr).Data(),"bgP4", -1, 1);
+      RooPolynomial bgModel(("bgModel"+binStr).Data(),"bgModel",mass,RooArgSet(bgP0,bgP1,bgP2));
+      //RooChebychev bgModel(("bgModel"+binStr).Data(),"bgModel",mass,RooArgSet(bgP0,bgP1,bgP2,bgP3));
+      //RooChebychev bgModel(("bgModel"+binStr).Data(),"bgModel",mass,RooArgSet(bgP0,bgP1,bgP2,bgP3,bgP4));
 
       // signal+bg
-      RooAddPdf model("model","model",
+      RooAddPdf model(("model"+binStr).Data(),"model",
           RooArgList(pi0model,bgModel),
           RooArgList(pi0n,bgN)
           );
 
       // fit range
-      mass.setRange("fitRange", 0.08, 0.4);
+      mass.setRange(("fitRange"+binStr).Data(), 0.08, 0.4);
 
       // perform fit
       modelFit = model.fitTo(
           massdist,
-          RooFit::Range("fitRange"),
+          RooFit::Range(("fitRange"+binStr).Data()),
           RooFit::Extended(kTRUE),
           RooFit::Save(kTRUE)
           );
@@ -115,34 +121,34 @@ class FitBin {
           RooFit::Title("M_{#gamma#gamma} distribution")
           );
       massdist.plotOn(plotFrame,
-          RooFit::Name("massdistPlot"),
+          RooFit::Name(("massdistPlot"+binStr).Data()),
           RooFit::LineWidth(0),
           RooFit::LineColor(kWhite), /* invisible (to set a frame) */
           RooFit::XErrorSize(0)
           );
       model.plotOn(plotFrame,
-          RooFit::Name("modelPlot"),
-          RooFit::Range("fitRange"),
+          RooFit::Name(("modelPlot"+binStr).Data()),
+          RooFit::Range(("fitRange"+binStr).Data()),
           RooFit::LineColor(kBlack),
           RooFit::LineWidth(4)
           );
       model.plotOn(plotFrame,
-          RooFit::Name("pi0modelPlot"),
-          RooFit::Components("pi0model"),
-          RooFit::Range("fitRange"),
+          RooFit::Name(("pi0modelPlot"+binStr).Data()),
+          RooFit::Components(("pi0model"+binStr).Data()),
+          RooFit::Range(("fitRange"+binStr).Data()),
           RooFit::LineColor(kCyan+1),
           RooFit::LineWidth(4)
           );
       model.plotOn(plotFrame,
-          RooFit::Name("bgModelPlot"),
-          RooFit::Components("bgModel"),
-          RooFit::Range("fitRange"),
+          RooFit::Name(("bgModelPlot"+binStr).Data()),
+          RooFit::Components(("bgModel"+binStr).Data()),
+          RooFit::Range(("fitRange"+binStr).Data()),
           RooFit::LineColor(kGray+1),
           RooFit::LineWidth(4),
           RooFit::LineStyle(9)
           );
       fitCanv = new TCanvas(
-          Form("fitCanv_%d",binnum),Form("fitCanv_%d",binnum),
+          "fitCanv"+binStr,"fitCanv"+binStr,
           1200,800);
       plotFrame->Draw();
       Mdist->SetMarkerStyle(kFullCircle);
@@ -235,18 +241,44 @@ int main(int argc, char** argv) {
       continue;
     };
 
-    // fill Mgg dist
+    // fill histograms
     fb->Mdist->Fill(Mgg);
+    fb->IVdist->Fill(ivVal[0]);
   };
+
 
   // fit histograms
   for(Int_t bn : BS->binVec) FitBinList.at(bn)->Fit();
 
+
+  // get fit parameters 
+  for(int i=0; i<3; i++) Tools::PrintSeparator(60,"=");
+  Tools::PrintTitleBox("FIT RESULTS");
+  for(Int_t bn : BS->binVec) {
+    fb = FitBinList.at(bn);
+    cout << "BIN " << fb->binnum
+         << " -- " << BS->IVname[0]
+         << " = " << fb->IVdist->GetMean()
+         << endl;
+    auto parList = fb->modelFit->floatParsFinal();
+    parList.sort();
+    TIterator *nextPar = parList.createIterator();
+    while(RooRealVar *par = (RooRealVar*) (*nextPar)()) {
+      cout << "  " << par->GetName() << " = "
+                   << par->getVal() << " +/- "
+                   << par->getError()
+                   << endl;
+    };
+  };
+
+
+
   // write
   outfile->cd();
   for(Int_t bn : BS->binVec) {
-    FitBinList.at(bn)->Mdist->Write();
-    FitBinList.at(bn)->fitCanv->Write();
+    fb = FitBinList.at(bn);
+    fb->Mdist->Write();
+    fb->fitCanv->Write();
   };
 
 
