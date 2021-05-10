@@ -38,8 +38,8 @@ Binning::Binning() {
   IVtitle[vM] = "M_{h}";
   IVtitle[vX] = "x";
   IVtitle[vZ] = "z";
-  IVtitle[vPt] = "P_{h}^{perp}";
-  IVtitle[vDY] = "#Delta Y";
+  IVtitle[vPt] = "P_{h,T}";
+  IVtitle[vDY] = "|#Delta Y|";
   IVtitle[vQ] = "Q^{2}";
   IVtitle[vXF] = "x_{F}";
 
@@ -414,6 +414,13 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
         case 3:
           AddBinBound(vDY,0.3); // DIS 2D binning
           AddBinBound(vDY,0.7);
+          break;
+        case 6:
+          AddBinBound(vDY,0.128);
+          AddBinBound(vDY,0.264);
+          AddBinBound(vDY,0.416);
+          AddBinBound(vDY,0.604);
+          AddBinBound(vDY,0.878);
           break;
         case 12:
           AddBinBound(vDY,0.072);
