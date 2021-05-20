@@ -43,7 +43,7 @@ using std::pair;
 
 TString infileN, outfileN;
 TFile *infile, *outfile;
-TTree *tr;
+TTree *intr, *outtr;
 Int_t ivType;
 Int_t numBin[3];
 
@@ -92,7 +92,7 @@ class FitBin {
       // WARNING: do not use underscores in param names
       Double_t nmax = (Double_t)ENT;
       nmax /= BS->GetNbinsTotal();
-      RooRealVar pi0n(("pi0n"+binStr).Data(),"#pi^{0} N", nmax/2.0, 0, nmax);
+      RooRealVar pi0N(("pi0N"+binStr).Data(),"#pi^{0} N", nmax/2.0, 0, nmax);
       RooRealVar pi0mu(("pi0mu"+binStr).Data(),"#pi^{0} M", PartMass(kPio), 0, 2);
       RooRealVar pi0sigma(("pi0sigma"+binStr).Data(),"#pi^{0} #sigma", 0.02, 0.001, 0.1);
       RooGaussian pi0Model(("pi0Model"+binStr).Data(),"pi0Model",mass,pi0mu,pi0sigma);
@@ -113,7 +113,7 @@ class FitBin {
       modelN = "model"+binStr;
       RooAddPdf fullModel(modelN.Data(),"model",
           RooArgList(pi0Model,bgModel),
-          RooArgList(pi0n,bgN)
+          RooArgList(pi0N,bgN)
           );
 
       // fit range
@@ -162,18 +162,30 @@ class FitBin {
       Int_t pi0LBbin = Mdist->FindBin(pi0LB);
       Int_t pi0UBbin = Mdist->FindBin(pi0UB);
       Double_t MdistInt = Mdist->Integral(pi0LBbin,pi0UBbin);
-      // purity
-      Double_t purity1 = pi0n.getVal() * pi0ModelInt / MdistInt; // pure, divide data
-      Double_t purity2 = pi0n.getVal() * pi0ModelInt / fullModelInt; // pure, divide model
-      Double_t purity3 = 1 - bgN.getVal() * bgModelInt / MdistInt; // 1-impurity, divide data
-      Double_t purity4 = 1 - bgN.getVal() * bgModelInt / fullModelInt; // 1-impurity, divide model
-      pi0purity = purity3; // <--- decide which purity calculation
-      cout << "purity deltas: " /* print calculation differences */
+      // - yields
+      Double_t pi0Y = pi0N.getVal();
+      Double_t bgY = bgN.getVal();
+      Double_t fullY = pi0Y + bgY;
+      // - purity calculation options
+      Double_t purity1 = pi0Y * pi0ModelInt / MdistInt; // pure, divide data
+      Double_t purity2 = pi0Y * pi0ModelInt / (fullY * fullModelInt); // pure, divide model
+      Double_t purity3 = 1 - bgY * bgModelInt / MdistInt; // 1-impurity, divide data
+      Double_t purity4 = 1 - bgY * bgModelInt / (fullY * fullModelInt); // 1-impurity, divide model
+      // - decide which purity calculation to use
+      pi0purity = purity3;
+      // - print calculation differences, etc. 
+      cout << "purity deltas: "
            << " " << pi0purity - purity1
            << " " << pi0purity - purity2
            << " " << pi0purity - purity3
            << " " << pi0purity - purity4
            << endl;
+      /*cout << " pi0N=" << pi0N.getVal()
+           << " bgN=" << bgN.getVal()
+           << " pi0ModelInt=" << pi0ModelInt
+           << " bgModelInt=" << bgModelInt
+           << " fullModelInt=" << fullModelInt
+           << endl;*/
 
 
       // plot
@@ -258,15 +270,25 @@ int main(int argc, char** argv) {
   outfile = new TFile(outfileN,"RECREATE");
 
 
-  // open tree
+  // open input tree
   Double_t ivVal[3] = {0,0,0};
   Double_t Mgg;
-  tr = (TTree*)infile->Get("diphTr");
+  intr = (TTree*)infile->Get("diphTr");
   for(int d=0; d<BS->dimensions; d++) {
     cout << "IV " << d << " is " << BS->GetIVname(d) << endl;
-    tr->SetBranchAddress(BS->GetIVname(d),&ivVal[d]);
+    intr->SetBranchAddress(BS->GetIVname(d),&ivVal[d]);
   };
-  tr->SetBranchAddress("diphM",&Mgg);
+  intr->SetBranchAddress("diphM",&Mgg);
+
+
+  // define output tree
+  outtr = new TTree("purTr","purTr");
+  Int_t purBinnum;
+  Double_t purPurity,purPi0LB,purPi0UB;
+  outtr->Branch("binnum",&purBinnum,"binnum/I");
+  outtr->Branch("purity",&purPurity,"purity/D");
+  outtr->Branch("pi0LB",&purPi0LB,"pi0LB/D");
+  outtr->Branch("pi0UB",&purPi0UB,"pi0UB/D");
 
 
   // create FitBin object for each bin
@@ -278,10 +300,10 @@ int main(int argc, char** argv) {
 
   // loop through tree
   FitBin *fb;
-  ENT = tr->GetEntries();
+  ENT = intr->GetEntries();
   for(Long64_t e=0; e<ENT; e++) {
     if(e%10000==0) printf("[+] %.2f%%\n",100*(float)e/((float)ENT));
-    tr->GetEntry(e);
+    intr->GetEntry(e);
 
     // find bin, and set FitBin pointer
     try {
@@ -403,7 +425,7 @@ int main(int argc, char** argv) {
   // fit quality assessment
   // -chi2/ndf
   TGraph *chi2gr = new TGraph;
-  TCanvas *chi2grCanv = new TCanvas("chi2grCanv","chi2grCanv",800,600);
+  TCanvas *chi2Canv = new TCanvas("chi2Canv","chi2Canv",800,600);
   ptCnt=0;
   for(Int_t bn : BS->binVec) {
     fb = FitBinList.at(bn);
@@ -445,9 +467,24 @@ int main(int argc, char** argv) {
     pullFrame->Draw();
     pad++;
   };
+  // - purity
+  TGraph *purityGr = new TGraph;
+  TCanvas *purityCanv = new TCanvas("purityCanv","purityCanv",800,600);
+  ptCnt=0;
+  for(Int_t bn : BS->binVec) {
+    fb = FitBinList.at(bn);
+    purityGr->SetPoint(
+        ptCnt++,
+        fb->IVdist->GetMean(),
+        fb->pi0purity
+        );
+  };
+  purityGr->SetTitle("#pi^{0} purity vs. "+BS->GetIVtitle(0));
+  purityGr->SetMarkerStyle(kFullCircle);
+  purityGr->Draw("AP");
 
 
-  // print pi0 purity results
+  // fill purity tree
   cout << "----- pi0 purity -----" << endl;
   for(Int_t bn : BS->binVec) {
     fb = FitBinList.at(bn);
@@ -455,6 +492,11 @@ int main(int argc, char** argv) {
     cout << "  pi0 window: "
          << fb->pi0LB << " to " << fb->pi0UB << endl;
     cout << "  pi0 purity: " << fb->pi0purity << endl;
+    purBinnum = bn;
+    purPurity = fb->pi0purity;
+    purPi0LB = fb->pi0LB;
+    purPi0UB = fb->pi0UB;
+    outtr->Fill();
   };
 
 
@@ -462,7 +504,8 @@ int main(int argc, char** argv) {
   outfile->cd();
   fitCanv->Write();
   paramCanv->Write();
-  chi2grCanv->Write();
+  purityCanv->Write();
+  chi2Canv->Write();
   residCanv->Write();
   pullCanv->Write();
   outfile->mkdir("singlePlots");
@@ -472,12 +515,14 @@ int main(int argc, char** argv) {
     fb->Mdist->Write();
   };
   outfile->cd("/");
+  outtr->Write();
 
 
   // print canvas (for quick look)
   fitCanv->Print("diphotonFitResultCanv.png");
   paramCanv->Print("diphotonFitParamCanv.png");
-  chi2grCanv->Print("diphotonFitChi2.png");
+  purityCanv->Print("diphotonFitPurity.png");
+  chi2Canv->Print("diphotonFitChi2.png");
   residCanv->Print("diphotonFitResiduals.png");
   pullCanv->Print("diphotonFitPulls.png");
 

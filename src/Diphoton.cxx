@@ -88,9 +88,10 @@ void Diphoton::Classify() {
                photAng[qB]>8.0;
 
   // invariant mass cuts for pi0 and sideband
-  cutMassPi0 = TMath::Abs(M-PartMass(kPio))<0.1; // TODO: should be 2sigma cut
-  cutMassSB = M > PartMass(kPio)+0.1 &&
-              M < PartMass(kPio)+0.2; // TODO: improve this
+  cutMassPi0 = M > 0.106801 &&
+               M < 0.152718; // hard-coded 2sigma; see diphotonFit.cpp
+  cutMassSB = M > 0.17 &&
+              M < 0.4; // hard-coded; above pi0 region, below eta region
   if(cutMassPi0 && cutMassSB) {
     fprintf(stderr,"ERROR: conflict of diphoton mass cuts\n");
     diphotClass = dpIgnore;

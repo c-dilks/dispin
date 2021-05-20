@@ -18,13 +18,15 @@ log="logfiles"
 mkdir -p $log
 rm -vf ${log}/${exe}.*
 
-mkdir -p diagDiphot
-echo "check if diagDiphot directory is empty..."
-if [ -z "$(ls diagDiphot/*.root)" ]; then
+outdir="diagdiph/set"
+
+mkdir -p $outdir
+echo "check if $outdir directory is empty..."
+if [ -z "$(ls $outdir/*.root)" ]; then
   echo "... yes"
 else
   echo "... no"
-  echo "ERROR: you must empty diagDiphot directory"
+  echo "ERROR: you must empty $outdir directory"
   exit 1
 fi
 
@@ -56,9 +58,8 @@ sleep 5
 
 waitForCondor.sh
 
-catFile="diagDiphotCat/cat__$(echo $indir | sed 's/\//_/g')__$(echo $opts | sed 's/ /__/g').root"
+catFile="diagdiph/cat__$(echo $indir | sed 's/\//_/g')__$(echo $opts | sed 's/ /__/g').root"
 echo $catFile
-mkdir -p diagDiphotCat
 touch $catFile; rm $catFile
-hadd $catFile diagDiphot/*.root
+hadd $catFile $outdir/*.root
 

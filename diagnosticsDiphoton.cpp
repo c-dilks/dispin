@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
     fprintf(stderr,"       -cutState = %d: neither pi0 nor sideband\n",Diphoton::dpIgnore);
     fprintf(stderr,"     -cutState = 10: do not classify\n");
     fprintf(stderr,"\n");
-    fprintf(stderr," -dataState=1: RePaired\n");
+    fprintf(stderr," -dataState = 1: RePaired\n");
     fprintf(stderr,"  --- one histogram entry = a diphoton from a unique pair(hadron,diphoton)\n");
     fprintf(stderr,"   -cutState = -1 (default): any diphoton, do not use EventTree::Valid() cuts\n");
     fprintf(stderr,"   -cutState >= 0: interpret this as pairType, and apply EventTree::Valid()\n");
@@ -155,9 +155,9 @@ int main(int argc, char** argv) {
   // output file
   TString outfileN = infileN;
   outfileN(TRegexp("^.*/")) = "";
-  outfileN = "diagDiphot/" + outfileN;
+  outfileN = "diagdiph/set/" + outfileN;
   cout << "outfileN = " << outfileN << endl;
-  gROOT->ProcessLine(".! mkdir -p diagDiphot");
+  gROOT->ProcessLine(".! mkdir -p diagdiph/set");
   TFile *outfile = new TFile(outfileN,"RECREATE");
 
 
@@ -280,7 +280,7 @@ int main(int argc, char** argv) {
   // be paired with all the other hadrons of that event
   else if(dataState==1) {
     for(int i=0; i<ev->ENT; i++) {
-      //if(i>100000) break; // limiter
+      //if(i>50000) break; // limiter
 
       // get the whole event, so we can use EventTree::Valid() later 
       // if we want to; this will also give us Diphoton pointers, 
