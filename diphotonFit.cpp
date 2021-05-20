@@ -31,6 +31,7 @@
 
 // dispin
 #include <Binning.h>
+#include <Constants.h>
 #include <Tools.h>
 
 
@@ -57,6 +58,7 @@ class FitBin {
     TH1D *IVdist;
     Int_t binnum;
     TString binStr,boundStr,massdistN,modelN;
+    Double_t pi0LB,pi0UB,pi0purity;
     RooFitResult *modelFit;
     RooPlot *plotFrame;
     RooRealVar mass;
@@ -80,6 +82,7 @@ class FitBin {
       for(int i=0; i<3; i++) Tools::PrintSeparator(60,"=");
       cout << "[+++++] call fit on bin " << binnum << endl;
 
+      // diphoton mass variable
       mass = RooRealVar(("Mgg"+binStr).Data(),"M_{#gamma#gamma}",0,3,"GeV");
       massdistN = "roo_" + TString(Mdist->GetName());
       RooDataHist massdist(massdistN.Data(),massdistN.Data(),
@@ -90,9 +93,9 @@ class FitBin {
       Double_t nmax = (Double_t)ENT;
       nmax /= BS->GetNbinsTotal();
       RooRealVar pi0n(("pi0n"+binStr).Data(),"#pi^{0} N", nmax/2.0, 0, nmax);
-      RooRealVar pi0mu(("pi0mu"+binStr).Data(),"#pi^{0} M", 0.135, 0, 2);
+      RooRealVar pi0mu(("pi0mu"+binStr).Data(),"#pi^{0} M", PartMass(kPio), 0, 2);
       RooRealVar pi0sigma(("pi0sigma"+binStr).Data(),"#pi^{0} #sigma", 0.02, 0.001, 0.1);
-      RooGaussian pi0model(("pi0model"+binStr).Data(),"pi0model",mass,pi0mu,pi0sigma);
+      RooGaussian pi0Model(("pi0Model"+binStr).Data(),"pi0Model",mass,pi0mu,pi0sigma);
 
       // background
       RooRealVar bgN(("bgN"+binStr).Data(),"BG N", 0, nmax);
@@ -102,26 +105,76 @@ class FitBin {
       RooRealVar bgP3(("bgP3"+binStr).Data(),"BG p_{3}", -1, 1);
       RooRealVar bgP4(("bgP4"+binStr).Data(),"BG p_{4}", -1, 1);
       //RooPolynomial bgModel(("bgModel"+binStr).Data(),"bgModel",mass,RooArgSet(bgP0,bgP1,bgP2));
-      RooChebychev bgModel(("bgModel"+binStr).Data(),"bgModel",mass,RooArgSet(bgP0,bgP1,bgP2,bgP3));
-      //RooChebychev bgModel(("bgModel"+binStr).Data(),"bgModel",mass,RooArgSet(bgP0,bgP1,bgP2,bgP3,bgP4));
+      //RooChebychev bgModel(("bgModel"+binStr).Data(),"bgModel",mass,RooArgSet(bgP0,bgP1,bgP2));
+      //RooChebychev bgModel(("bgModel"+binStr).Data(),"bgModel",mass,RooArgSet(bgP0,bgP1,bgP2,bgP3));
+      RooChebychev bgModel(("bgModel"+binStr).Data(),"bgModel",mass,RooArgSet(bgP0,bgP1,bgP2,bgP3,bgP4));
 
       // signal+bg
       modelN = "model"+binStr;
-      RooAddPdf model(modelN.Data(),"model",
-          RooArgList(pi0model,bgModel),
+      RooAddPdf fullModel(modelN.Data(),"model",
+          RooArgList(pi0Model,bgModel),
           RooArgList(pi0n,bgN)
           );
 
       // fit range
-      mass.setRange(("fitRange"+binStr).Data(), 0.08, 0.4);
+      // - get maximum diphoton mass bin with nonzero entries
+      //   (trying to fit beyond that point will cause problems)
+      Int_t bb = Mdist->FindBin(PartMass(kPio));
+      while(Mdist->GetBinContent(bb)>0 && bb<=Mdist->GetNbinsX()) bb++;
+      Double_t MggMax = Mdist->GetBinCenter(bb);
+      // - set fit range
+      mass.setRange(("fitRange"+binStr).Data(),
+          0.08,
+          TMath::Min( 0.4, 0.95*MggMax) /* ensure we're below eta region */
+          );
 
       // perform fit
-      modelFit = model.fitTo(
+      modelFit = fullModel.fitTo(
           massdist,
           RooFit::Range(("fitRange"+binStr).Data()),
           RooFit::Extended(kTRUE),
           RooFit::Save(kTRUE)
           );
+
+
+      // determine pi0 signal range
+      Int_t nsigma = 2;
+      pi0LB = pi0mu.getVal() - nsigma * pi0sigma.getVal();
+      pi0UB = pi0mu.getVal() + nsigma * pi0sigma.getVal();
+      // OVERRIDE signal range (fix pi0 cuts for all bins)
+      pi0LB = 0.106801; // from single-bin fit
+      pi0UB = 0.152718;
+      mass.setRange("pi0range",pi0LB,pi0UB);
+
+      
+      // calculate pi0 purity
+      // - integrate PDFs
+      RooAbsReal *pi0ModelIntObj = pi0Model.createIntegral(
+          mass,RooFit::NormSet(mass),RooFit::Range("pi0range"));
+      RooAbsReal *bgModelIntObj = bgModel.createIntegral(
+          mass, RooFit::NormSet(mass),RooFit::Range("pi0range"));
+      RooAbsReal *fullModelIntObj = fullModel.createIntegral(
+          mass,RooFit::NormSet(mass),RooFit::Range("pi0range"));
+      Double_t pi0ModelInt  = pi0ModelIntObj->getVal();
+      Double_t bgModelInt   = bgModelIntObj->getVal();
+      Double_t fullModelInt = fullModelIntObj->getVal();
+      // - integrate data histogram
+      Int_t pi0LBbin = Mdist->FindBin(pi0LB);
+      Int_t pi0UBbin = Mdist->FindBin(pi0UB);
+      Double_t MdistInt = Mdist->Integral(pi0LBbin,pi0UBbin);
+      // purity
+      Double_t purity1 = pi0n.getVal() * pi0ModelInt / MdistInt; // pure, divide data
+      Double_t purity2 = pi0n.getVal() * pi0ModelInt / fullModelInt; // pure, divide model
+      Double_t purity3 = 1 - bgN.getVal() * bgModelInt / MdistInt; // 1-impurity, divide data
+      Double_t purity4 = 1 - bgN.getVal() * bgModelInt / fullModelInt; // 1-impurity, divide model
+      pi0purity = purity3; // <--- decide which purity calculation
+      cout << "purity deltas: " /* print calculation differences */
+           << " " << pi0purity - purity1
+           << " " << pi0purity - purity2
+           << " " << pi0purity - purity3
+           << " " << pi0purity - purity4
+           << endl;
+
 
       // plot
       TString massdistT = "M_{#gamma#gamma} distribution"+boundStr;
@@ -132,20 +185,20 @@ class FitBin {
           RooFit::Name(("massdistPlot"+binStr).Data()),
           RooFit::Invisible(kTRUE)
           );
-      model.plotOn(plotFrame,
+      fullModel.plotOn(plotFrame,
           RooFit::Name(("modelPlot"+binStr).Data()),
           RooFit::Range(("fitRange"+binStr).Data()),
           RooFit::LineColor(kRed),
           RooFit::LineWidth(2)
           );
-      model.plotOn(plotFrame,
-          RooFit::Name(("pi0modelPlot"+binStr).Data()),
-          RooFit::Components(("pi0model"+binStr).Data()),
+      fullModel.plotOn(plotFrame,
+          RooFit::Name(("pi0ModelPlot"+binStr).Data()),
+          RooFit::Components(("pi0Model"+binStr).Data()),
           RooFit::Range(("fitRange"+binStr).Data()),
           RooFit::LineColor(kGreen+1),
           RooFit::LineWidth(2)
           );
-      model.plotOn(plotFrame,
+      fullModel.plotOn(plotFrame,
           RooFit::Name(("bgModelPlot"+binStr).Data()),
           RooFit::Components(("bgModel"+binStr).Data()),
           RooFit::Range(("fitRange"+binStr).Data()),
@@ -301,7 +354,7 @@ int main(int argc, char** argv) {
   };
 
   // parameter canvas
-  Int_t ncols = 4;
+  Int_t ncols = 3;
   Int_t nrows = (nParam-1)/ncols+1;
   TCanvas *paramCanv = new TCanvas("paramCanv","paramCanv",800*ncols,600*nrows);
   paramCanv->Divide(ncols,nrows);
@@ -318,10 +371,13 @@ int main(int argc, char** argv) {
   // fit results canvas
   nrows = (BS->GetNbinsTotal()-1)/ncols+1;
   TCanvas *fitCanv = new TCanvas("fitCanv","fitCanv",800*ncols,600*nrows);
+  TLine *pi0Bline[2];
   fitCanv->Divide(ncols,nrows);
   pad=1;
+  Double_t mx;
   for(Int_t bn : BS->binVec) {
     fb = FitBinList.at(bn);
+
     fitCanv->cd(pad);
     fitCanv->GetPad(pad)->SetBottomMargin(0.15);
     fitCanv->GetPad(pad)->SetLeftMargin(0.15);
@@ -330,6 +386,16 @@ int main(int argc, char** argv) {
     fb->Mdist->SetLineColor(kBlack);
     fb->Mdist->SetMarkerSize(0.0);
     fb->Mdist->Draw("ESAME");
+
+    mx = fb->Mdist->GetMaximum();
+    pi0Bline[0] = new TLine(fb->pi0LB,0,fb->pi0LB,mx);
+    pi0Bline[1] = new TLine(fb->pi0UB,0,fb->pi0UB,mx);
+    for(int l=0; l<2; l++) {
+      pi0Bline[l]->SetLineWidth(3);
+      pi0Bline[l]->SetLineColor(kPink-9);
+      pi0Bline[l]->Draw();
+    };
+    
     pad++;
   };
 
@@ -380,6 +446,16 @@ int main(int argc, char** argv) {
     pad++;
   };
 
+
+  // print pi0 purity results
+  cout << "----- pi0 purity -----" << endl;
+  for(Int_t bn : BS->binVec) {
+    fb = FitBinList.at(bn);
+    cout << "bin " << bn << endl;
+    cout << "  pi0 window: "
+         << fb->pi0LB << " to " << fb->pi0UB << endl;
+    cout << "  pi0 purity: " << fb->pi0purity << endl;
+  };
 
 
   // write
