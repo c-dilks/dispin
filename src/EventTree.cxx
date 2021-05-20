@@ -392,7 +392,10 @@ void EventTree::GetEvent(Long64_t i) {
     ) {
       // classify diphoton
       objDiphoton->Classify();
-      hadIdx[h] = objDiphoton->GetIdx();
+      // assign hadIdx; note that if whichHad is kDiph, we
+      // don't want to do this, since we're interested in
+      // all diphotons
+      if(whichHad[h]!=kDiph) hadIdx[h] = objDiphoton->GetIdx();
       // set objDiphoton variables which are not tree branches,
       // so that we can access them from objDiphoton too
       objDiphoton->E = hadE[h];
@@ -402,7 +405,7 @@ void EventTree::GetEvent(Long64_t i) {
       // if you want to see the full M_{gamma,gamma}
       // spectrum with EventTree::Valid() cuts and basic
       // cuts enabled, use pairType with kDiphBasic
-      if(whichHad[qA]==kDiphBasic || whichHad[qB]==kDiphBasic) {
+      if(whichHad[h]==kDiphBasic) {
         // classify as kDiphBasic iff basic cuts satisfied
         if(objDiphoton->cutBasic) hadIdx[h] = kDiphBasic;
       };

@@ -17,12 +17,15 @@ TString infiles;
 Int_t whichPair;
 Int_t whichHad[2];
 EventTree * ev;
+void PrintCount(TString cntName,Long64_t numer,Long64_t denom);
 void PrintEvent();
 void PrintEvent2();
 Bool_t first;
+Bool_t hasDiphoton;
 
 int main(int argc, char** argv) {
 
+   /////////////////////
    // ARGUMENTS
    infiles = "outroot/*.root";
    whichPair = EncodePairType(kPip,kPim);
@@ -31,8 +34,11 @@ int main(int argc, char** argv) {
    DecodePairType(whichPair,whichHad[qA],whichHad[qB]);
 
    // OPTIONS
-   Bool_t printEvents = true;
+   Bool_t printEvents = false;
+   /////////////////////
 
+
+   // yields for each cut
    Long_t nTotal=0;
    Long_t nValid=0;
    Long_t nCutDIS=0;
@@ -41,7 +47,25 @@ int main(int argc, char** argv) {
    Long_t nCutFiducial=0;
    Long_t nCutPID=0;
    Long_t nCutVertex=0;
+
+   // yields including diphoton cuts
+   hasDiphoton = false; // true if whichPair has diphoton
+   for(int h=0; h<2; h++) {
+     if(  whichHad[h]==kPio
+       || whichHad[h]==kDiph
+       || whichHad[h]==kDiphBasic
+       || whichHad[h]==kPioBG
+     ) hasDiphoton = true;
+   };
+   Long64_t nCutdiphPhotBeta = 0;
+   Long64_t nCutdiphPhotEn = 0;
+   Long64_t nCutdiphPhotAng = 0;
+   Long64_t nCutdiphMassPi0 = 0;
+   Long64_t nCutdiphMassSB = 0;
+   Long64_t nCutdiphBasic = 0;
+
    
+   // open tree
    ev = new EventTree(infiles,whichPair);
    first = true;
 
@@ -61,12 +85,22 @@ int main(int argc, char** argv) {
      // counts for each cut
      if(Tools::PairSame(ev->hadIdx[qA],ev->hadIdx[qB],whichHad[qA],whichHad[qB])) {
        nTotal++;
+       // main cuts
        if(ev->cutDIS) nCutDIS++;
        if(ev->cutDihadron) nCutDihadron++;
        if(ev->cutHelicity) nCutHelicity++;
        if(ev->cutFiducial) nCutFiducial++;
        if(ev->cutPID) nCutPID++;
        if(ev->cutVertex) nCutVertex++;
+       // diphoton cuts
+       if(hasDiphoton) {
+         if(ev->objDiphoton->cutPhotBeta) nCutdiphPhotBeta++;
+         if(ev->objDiphoton->cutPhotEn) nCutdiphPhotEn++;
+         if(ev->objDiphoton->cutPhotAng) nCutdiphPhotAng++;
+         if(ev->objDiphoton->cutMassPi0) nCutdiphMassPi0++;
+         if(ev->objDiphoton->cutMassSB) nCutdiphMassSB++;
+         if(ev->objDiphoton->cutBasic) nCutdiphBasic++;
+       };
      };
 
    };
@@ -74,23 +108,35 @@ int main(int argc, char** argv) {
    printf("total number of %s pairs = %ld\n",
      PairName(whichHad[qA],whichHad[qB]).Data(),
      nTotal);
-   printf("total number which satisfies all cuts = %ld  (%.3f%%)\n",
-     nValid,100*(Double_t)nValid/nTotal);
-   printf("nCutDIS = %ld  (%.3f%%)\n",
-     nCutDIS,100*(Double_t)nCutDIS/nTotal);
-   printf("nCutDihadron = %ld  (%.3f%%)\n",
-     nCutDihadron,100*(Double_t)nCutDihadron/nTotal);
-   printf("nCutHelicity = %ld  (%.3f%%)\n",
-     nCutHelicity,100*(Double_t)nCutHelicity/nTotal);
-   printf("nCutFiducial = %ld  (%.3f%%)\n",
-     nCutFiducial,100*(Double_t)nCutFiducial/nTotal);
-   printf("nCutPID = %ld  (%.3f%%)\n",
-     nCutPID,100*(Double_t)nCutPID/nTotal);
-   printf("nCutVertex = %ld  (%.3f%%)\n",
-     nCutVertex,100*(Double_t)nCutVertex/nTotal);
+   PrintCount("total number which satisfies all cuts",nValid,nTotal);
+   PrintCount("nCutDIS",nCutDIS,nTotal);
+   PrintCount("nCutDihadron",nCutDihadron,nTotal);
+   PrintCount("nCutHelicity",nCutHelicity,nTotal);
+   PrintCount("nCutFiducial",nCutFiducial,nTotal);
+   PrintCount("nCutPID",nCutPID,nTotal);
+   PrintCount("nCutVertex",nCutVertex,nTotal);
+   if(hasDiphoton) {
+     printf("diphoton cuts:\n");
+     PrintCount("  nCutdiphPhotBeta",nCutdiphPhotBeta,nTotal);
+     PrintCount("  nCutdiphPhotEn",nCutdiphPhotEn,nTotal);
+     PrintCount("  nCutdiphPhotAng",nCutdiphPhotAng,nTotal);
+     PrintCount("  nCutdiphMassPi0",nCutdiphMassPi0,nTotal);
+     PrintCount("  nCutdiphMassSB",nCutdiphMassSB,nTotal);
+     PrintCount("  nCutdiphBasic",nCutdiphBasic,nTotal);
+   };
+
 
    if(printEvents) 
      printf("\n!! events printed to eventTable.txt (no more than 10000 printed) !!\n\n");
+};
+
+
+// print counts
+void PrintCount(TString cntName,Long64_t numer,Long64_t denom) {
+  printf("%s = %ld  (%.3f%%)\n",
+      cntName.Data(),
+      numer,100*(Double_t)numer/denom
+      );
 };
 
 
