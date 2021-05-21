@@ -23,9 +23,23 @@ fi
 if [ ! -d $outrootdir ]; then
   echo "ERROR: you must create or link an outroot directory"; exit;
 fi
+echo "check if $outrootdir directory is empty..."
+if [ -z "$(ls $outrootdir/*.root)" ]; then
+  echo "... yes"
+else
+  echo "... no"
+  echo "ERROR: you must empty $outrootdir directory"
+  exit 1
+fi
 
-# cleanup
-rm -vf $outrootdir/*.root
+# check if hipo files are cached
+if [ "$hipotype" == "skim" ]; then
+  checkIfCached.sh $traindir
+  if [ -s tmp/difflist ]; then
+    echo "stopping. (comment out to override this check)"
+    exit 1
+  fi
+fi
 
 
 # build list of files to process
@@ -60,7 +74,7 @@ app "#SBATCH --account=clas12"
 app "#SBATCH --partition=production"
 
 app "#SBATCH --mem-per-cpu=2000"
-app "#SBATCH --time=16:00:00"
+app "#SBATCH --time=24:00:00"
 
 app "#SBATCH --array=1-$(cat $joblist | wc -l)"
 app "#SBATCH --ntasks=1"
