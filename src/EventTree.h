@@ -251,7 +251,6 @@ class EventTree : public TObject
     TLorentzVector qMomBreit,qMomCom;
     TVector3 boostBreit,boostCom;
 
-    Bool_t vertexWarned;
     Bool_t sfcutDiag, sfcutSigma;
     Float_t dfA;
 

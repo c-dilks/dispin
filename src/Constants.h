@@ -426,4 +426,91 @@ static TString SpinTitle(Int_t s) {
 };
 
 
+// run dependent settings and numbers
+//---------------------------------------------------
+
+// torus setting
+enum torus_enum {
+  kInbending = -1,
+  kOutbending = 1
+};
+static Int_t RundepTorus(Int_t run) {
+  if     (run>= 5032 && run<= 5419) return kInbending;  // rga_inbending_fa18
+  else if(run>= 5422 && run<= 5666) return kOutbending; // rga_outbending_fa18
+  else if(run>= 6616 && run<= 6783) return kInbending;  // rga_inbending_sp19
+  else if(run>= 6156 && run<= 6603) return kInbending;  // rgb_inbending_sp19
+  else if(run>=11093 && run<=11283) return kOutbending; // rgb_outbending_fa19
+  else if(run>=11284 && run<=11300) return kInbending;  // rgb_BAND_inbending_fa19
+  else if(run>=11323 && run<=11571) return kInbending;  // rgb_inbending_wi20
+  else if(run==11) return kInbending; // MC for RGA inbending
+  else {
+    fprintf(stderr,"ERROR: RundepTorus unknown for run %d\n",run);
+    return kInbending;
+  };
+};
+
+
+// beam energy
+static Float_t RundepBeamEn(Int_t run) {
+  if     (run>= 5032 && run<= 5666) return 10.6041; // rga fall 18
+  else if(run>= 6616 && run<= 6783) return 10.1998; // rga spring 19
+  else if(run>= 6120 && run<= 6399) return 10.5986; // rgb spring 19
+  else if(run>= 6409 && run<= 6604) return 10.1998; // rgb spring 19
+  else if(run>=11093 && run<=11283) return 10.4096; // rgb fall 19
+  else if(run>=11284 && run<=11300) return 4.17179; // rgb fall BAND_FT 19
+  else if(run>=11323 && run<=11571) return 10.3894; // rgb winter 20 (RCDB may still be incorrect)
+  else if(run==11)                  return 10.6041; // MC for RGA inbending
+  else {
+    fprintf(stderr,"ERROR: RundepBeamEn unknown for run %d\n",run);
+    return 0.0;
+  };
+};
+
+
+// helicity flip
+static Bool_t RundepHelicityFlip(Int_t run) {
+  if     (run>= 5032 && run<= 5666) return true;  // rga fall 18
+  else if(run>= 6616 && run<= 6783) return true;  // rga spring 19
+  else if(run>= 6120 && run<= 6399) return true;  // rgb spring 19
+  else if(run>= 6409 && run<= 6604) return true;  // rgb spring 19
+  else if(run>=11093 && run<=11283) return false; // rgb fall 19
+  else if(run>=11284 && run<=11300) return true;  // rgb fall BAND_FT 19
+  else if(run>=11323 && run<=11571) return false; // rgb winter 20
+  else {
+    fprintf(stderr,"ERROR: RundepHelicityFlip unknown for run %d\n",run);
+    return false;
+  };
+};
+
+
+// polarization
+// - set `v` to `false` to return polarization error
+static Float_t RundepPolarization(Int_t run, Bool_t v=true) {
+  /* RGA */
+  if     (run>= 5032 && run<= 5332) return v? 0.8592 : 0.01290; // rga_fa18, before Wien angle change
+  else if(run>= 5333 && run<= 5666) return v? 0.8922 : 0.02509; // rga_fa18, after Wien angle change
+  else if(run>= 6616 && run<= 6783) return v? 0.8453 : 0.01474; // rga_sp19 https://logbooks.jlab.org/entry/3677077
+  /* RGB */
+  else if(run>= 6142 && run<= 6149) return v? 0.81132 : 0.01505; // rgb_sp19
+  else if(run>= 6150 && run<= 6188) return v? 0.82137 : 0.01491; // https://clasweb.jlab.org/wiki/images/c/ca/Moller_Runs_15Jan.pdf
+  else if(run>= 6189 && run<= 6260) return v? 0.83598 : 0.01475;
+  else if(run>= 6261 && run<= 6339) return v? 0.80770 : 0.01449;
+  else if(run>= 6340 && run<= 6342) return v? 0.85536 : 0.01484;
+  else if(run>= 6344 && run<= 6399) return v? 0.87038 : 0.01474;
+  else if(run>= 6420 && run<= 6476) return v? 0.88214 : 0.01502;
+  else if(run>= 6479 && run<= 6532) return v? 0.86580 : 0.01460;
+  else if(run>= 6533 && run<= 6598) return v? 0.87887 : 0.01454;
+  else if(run>=11013 && run<=11309) return v? 0.84983 : 0.02929; // rgb_fa19
+  else if(run>=11324 && run<=11334) return v? 0.87135 : 0.01464; // rgb_wi20
+  else if(run>=11335 && run<=11387) return v? 0.85048 : 0.01530;
+  else if(run>=11389 && run<=11571) return v? 0.84262 : 0.01494; // CAUTION: table last updated 1/15/2020, but run ended on 1/30
+  /* MC */
+  else if(run==11) return v? 0.86 : 0.0; // MC
+  else {
+    fprintf(stderr,"ERROR: RundepPolarization unknown for run %d\n",run);
+    return 0.0;
+  };
+};
+
+
 #endif

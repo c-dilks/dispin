@@ -16,6 +16,9 @@
 // ROOT
 #include "TObject.h"
 
+// Dispin
+#include "Constants.h"
+
 
 class FiducialCuts : public TObject {
   public:

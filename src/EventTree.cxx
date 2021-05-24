@@ -243,7 +243,6 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
     trHad[h]->Idx = dihHadIdx(whichHad[qA],whichHad[qB],h);
   };
   whichHelicityMC = 0;
-  vertexWarned = false;
 
   RNG = new TRandomMixMax(14972); // seed
 
@@ -496,18 +495,28 @@ void EventTree::GetTrajectories(Long64_t i, Bool_t prog) {
 
 // translate "helicity" to a local index for the spin
 Int_t EventTree::SpinState() {
-  if( (runnum>=5032 && runnum<=5666) || (runnum>=6616 && runnum<=6783) ) {
-    // RGA convention
-    switch(helicity) {
-      case 1: return sM;
-      case -1: return sP;
-      case 0: return UNDEF;
-      default: fprintf(stderr,"WARNING: bad SpinState request: %d\n",helicity);
+  
+  if(runnum!=11) { // data run
+    if(RundepHelicityFlip(runnum)) { // helicity flipped
+      switch(helicity) {
+        case  1: return sM;
+        case -1: return sP;
+        case  0: return UNDEF;
+      };
+    } else { // helicity not flipped
+      switch(helicity) {
+        case  1: return sP;
+        case -1: return sM;
+        case  0: return UNDEF;
+      };
     };
+    fprintf(stderr,"WARNING: bad SpinState request: %d\n",helicity);
+    return UNDEF;
   }
-  else if(runnum==11) { // MC helicity
+
+  else { // MC run
     if(!helicityMCinjected) {
-      // if helicityMC has not yet been injected, then inject something here so cutHelicity==true
+      // if helicityMC has not yet been injected, inject something here so cutHelicity==true
       //helicityMC[whichHelicityMC] = 3; // +helicity only
       helicityMC[whichHelicityMC] = RNG->Uniform()<0.5 ? 2:3; // 50/50 random
     };
@@ -517,20 +526,14 @@ Int_t EventTree::SpinState() {
       case 0: return UNDEF;
       default: fprintf(stderr,"WARNING: bad SpinState request: %d\n",helicityMC[whichHelicityMC]);
     };
-  }
-  else fprintf(stderr,"WARNING: runnum %d not in EventTree::SpinState\n",runnum);
+  };
   return UNDEF;
 };
 
 
 // return polarization, which can depend on the run number
 Float_t EventTree::Polarization() {
-  if(runnum>=5032 && runnum<5333)       return 0.8592; // +-0.0129
-  else if(runnum>=5333 && runnum<=5666) return 0.8922; // +-0.02509
-  else if(runnum>=6616 && runnum<=6783) return 0.8453; // +-0.01474 // from Moller run https://logbooks.jlab.org/entry/3677077
-  else if(runnum==11) return 0.86; // MC
-  fprintf(stderr,"WARNING: runnum %d not in EventTree::Polarization\n",runnum);
-  return UNDEF;
+  return RundepPolarization(runnum);
 };
 
 // return relative luminosity, which can depend on HWP position
@@ -543,19 +546,10 @@ Float_t EventTree::Rellum() {
 Bool_t EventTree::CheckVertex() {
 
   // electron Vz cuts
-  if((runnum>=5032 && runnum<=5419) || (runnum>=6616 && runnum<=6783)) {
-    vzBoolEle = -13 < eleVertex[eZ] && eleVertex[eZ] < 12; // inbending (fall18, spring19)
-  } else if(runnum>=5422 && runnum<=5666) {
-    vzBoolEle = -18 < eleVertex[eZ] && eleVertex[eZ] < 10; // outbending
-  } else if(runnum==11) {
-    vzBoolEle = -13 < eleVertex[eZ] && eleVertex[eZ] < 12; // inbending MC
+  if(RundepTorus(runnum)==kInbending) {
+    vzBoolEle = -13 < eleVertex[eZ] && eleVertex[eZ] < 12; // inbending
   } else {
-    if(!vertexWarned) {
-      fprintf(stderr,"WARNING: run neither inbending or outbending\n");
-      fprintf(stderr,"         electron vertex cut disabled\n");
-      vertexWarned = true;
-    };
-    vzBoolEle = true;
+    vzBoolEle = -18 < eleVertex[eZ] && eleVertex[eZ] < 10; // outbending
   };
 
   // | had_Vz - ele_Vz | cut

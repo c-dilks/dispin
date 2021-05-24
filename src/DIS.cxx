@@ -28,15 +28,7 @@ DIS::DIS() {
 };
 
 void DIS::SetBeamEnFromRun(Int_t runnum) {
-  if(runnum>=5032 && runnum<=5666) BeamEn=10.6041; // rga fall 18
-  else if(runnum>=6616 && runnum<=6783) BeamEn=10.1998; // rga spring 19
-  else if(runnum>=6120 && runnum<=6399) BeamEn = 10.5986; // rgb spring
-  else if(runnum>=6409 && runnum<=6604) BeamEn = 10.1998; // rgb spring
-  else if(runnum>=11093 && runnum<=11283) BeamEn = 10.4096; // rgb fall
-  else if(runnum>=11284 && runnum<=11300) BeamEn = 4.17179; // rgb fall BAND_FT
-  else if(runnum>=11323 && runnum<=11571) BeamEn = 10.3894; // rgb winter (RCDB may still be incorrect)
-  else if(runnum==11) BeamEn=10.6041; // MC
-  else fprintf(stderr,"ERROR: unknown runnum in DIS::SetBeamEnFromRun\n");
+  BeamEn = RundepBeamEn(runnum);
   vecBeam.SetPz(Tools::EMtoP(BeamEn,PartMass(kE)));
   vecBeam.SetE(BeamEn);
   return;

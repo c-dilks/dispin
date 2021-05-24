@@ -133,7 +133,7 @@ int main(int argc, char** argv) {
 
 // print counts
 void PrintCount(TString cntName,Long64_t numer,Long64_t denom) {
-  printf("%s = %ld  (%.3f%%)\n",
+  printf("%s = %lld  (%.3f%%)\n",
       cntName.Data(),
       numer,100*(Double_t)numer/denom
       );
