@@ -23,11 +23,19 @@ FiducialCuts::FiducialCuts() {
 void FiducialCuts::ApplyCuts(int runnum_, int pid_) {
 
   // use runnumber to determine torus setting
-  if(runnum_>=5032 && runnum_<=5419) {
+  if(runnum_>=5032 && runnum_<=5419) { // rga_inbending_fa18
     inbending=true; outbending=false;
-  } else if(runnum_>=5422 && runnum_<=5666) {
+  } else if(runnum_>=5422 && runnum_<=5666) { // rga_outbending_fa18
     inbending=false; outbending=true;
-  } else if(runnum_>=6616 && runnum_<=6783) {
+  } else if(runnum_>=6616 && runnum_<=6783) { // rga_inbending_sp19
+    inbending=true; outbending=false;
+  } else if(runnum_>=6156 && runnum_<=6603) { // rgb_inbending_sp19
+    inbending=true; outbending=false;
+  } else if(runnum_>=11093 && runnum_<=11283) { // rgb_outbending_fa19
+    inbending=false; outbending=true;
+  } else if(runnum_>=11284 && runnum_<=11300) { // rgb_BAND_inbending_fa19
+    inbending=true; outbending=false;
+  } else if(runnum_>=11323 && runnum_<=11571) { // rgb_inbending_wi20
     inbending=true; outbending=false;
   } else if(runnum_==11) { // MC
     inbending=true; outbending=false;
