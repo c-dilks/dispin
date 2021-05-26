@@ -58,7 +58,7 @@ class FitBin {
     TH1D *IVdist;
     Int_t binnum;
     TString binStr,boundStr,massdistN,modelN;
-    Double_t pi0LB,pi0UB,pi0purity;
+    Double_t pi0LB,pi0UB,pi0purity,pi0purityErr;
     RooFitResult *modelFit;
     RooPlot *plotFrame;
     RooRealVar mass;
@@ -173,6 +173,8 @@ class FitBin {
       Double_t purity4 = 1 - bgY * bgModelInt / (fullY * fullModelInt); // 1-impurity, divide model
       // - decide which purity calculation to use
       pi0purity = purity3;
+      // - purity error
+      pi0purityErr = 0; // TODO
       // - print calculation differences, etc. 
       cout << "purity deltas: "
            << " " << pi0purity - purity1
@@ -284,9 +286,11 @@ int main(int argc, char** argv) {
   // define output tree
   outtr = new TTree("purTr","purTr");
   Int_t purBinnum;
-  Double_t purPurity,purPi0LB,purPi0UB;
+  Double_t purIV,purPurity,purPurityErr,purPi0LB,purPi0UB;
   outtr->Branch("binnum",&purBinnum,"binnum/I");
+  outtr->Branch("iv",&purIV,"iv/D");
   outtr->Branch("purity",&purPurity,"purity/D");
+  outtr->Branch("purityErr",&purPurityErr,"purityErr/D");
   outtr->Branch("pi0LB",&purPi0LB,"pi0LB/D");
   outtr->Branch("pi0UB",&purPi0UB,"pi0UB/D");
 
@@ -494,8 +498,10 @@ int main(int argc, char** argv) {
     cout << "  pi0 purity: " << fb->pi0purity << endl;
     purBinnum = bn;
     purPurity = fb->pi0purity;
+    purPurityErr = fb->pi0purityErr;
     purPi0LB = fb->pi0LB;
     purPi0UB = fb->pi0UB;
+    purIV = fb->IVdist->GetMean();
     outtr->Fill();
   };
 
@@ -516,6 +522,7 @@ int main(int argc, char** argv) {
   };
   outfile->cd("/");
   outtr->Write();
+  BS->Write("BS");
 
 
   // print canvas (for quick look)

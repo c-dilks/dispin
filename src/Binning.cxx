@@ -566,4 +566,21 @@ Int_t Binning::UnhashBinNum(Int_t bn, Int_t dim) {
   return retnum;
 };
 
+// 3-digit hex bin number -> brufit bin numbers, which are:
+// - I = bin number for IV0, minus 1, (TGraph point #)
+// - BL = Bin List number, used in brufit draw code
+void Binning::BinNumToIBL(Int_t bn_, Int_t &I_, Int_t &BL_) {
+  Int_t bb[3] = {-1,-1,-1};
+  for(int d=0; d<dimensions; d++) bb[d] = this->UnhashBinNum(bn_,d);
+  I_ = bb[0];
+  switch(dimensions) {
+    case 1: BL_ = 0; break;
+    case 2: BL_ = bb[1]; break;
+    case 3: BL_ = (bb[2])*this->GetNbins(1) + bb[1]; break;
+    default:
+      fprintf(stderr,"ERROR: bad dimensions in BinNumToIBL\n");
+      BL_ = -1;
+  };
+};
+
 Binning::~Binning() {};

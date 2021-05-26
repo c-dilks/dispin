@@ -92,6 +92,7 @@ class Binning : public TObject
     Bool_t CheckDim(Int_t dim_);
     Int_t HashBinNum(Int_t bin0, Int_t bin1=-1, Int_t bin2=-1);
     Int_t UnhashBinNum(Int_t bn, Int_t dim);
+    void BinNumToIBL(Int_t bn_, Int_t &I_, Int_t &BL_);
 
     // extra variables, used for Asymmetry
     // (it would be nicer to just stream Asymmetry objects to a root file,
