@@ -28,6 +28,17 @@ if [ "$dataType" == "mc" ]; then args="$args -s"; fi
 echo "args = $args"
 
 
+# build output filename
+if [ "$dataType" == "data" ]; then suffix="Data"
+elif [ "$dataType" == "mc" ]; then suffix="MC"
+else suffix=""; fi
+pairtype="$(echo $args | grep '\-p' | sed 's/^.*-p//g' | awk '{print $1}')"
+if [ -n "$pairtype" ]; then pairtype=".$pairtype"; fi
+suffix="${suffix}.$(echo $outrootDir | sed 's/outroot\.//g' | sed 's/\/$//')$pairtype"
+outfile=catTree${suffix}.root
+echo "outfile=$outfile"
+
+
 # call buildSpinroot.exe on condor or slurm
 if [[ $(hostname) =~ "ifarm" ]]; then
   echo "on ifarm, will use SLURM"
@@ -41,6 +52,8 @@ else
   waitForCondor.sh
 fi
 
+
 # concatenate spinroot files to catTree.root
 sleep 3
-${ROOTSYS}/bin/hadd spinroot/catTree.root spinroot/tree*.root
+touch $outfile; rm $outfile
+${ROOTSYS}/bin/hadd $outfile spinroot/tree*.root

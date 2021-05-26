@@ -280,7 +280,7 @@ int main(int argc, char** argv) {
   // be paired with all the other hadrons of that event
   else if(dataState==1) {
     for(int i=0; i<ev->ENT; i++) {
-      //if(i>50000) break; // limiter
+      //if(i>500000) break; // limiter
 
       // get the whole event, so we can use EventTree::Valid() later 
       // if we want to; this will also give us Diphoton pointers, 

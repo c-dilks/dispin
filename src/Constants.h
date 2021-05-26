@@ -499,11 +499,11 @@ static Float_t RundepPolarization(Int_t run, Bool_t v=true) {
   else if(run>= 6344 && run<= 6399) return v? 0.87038 : 0.01474;
   else if(run>= 6420 && run<= 6476) return v? 0.88214 : 0.01502;
   else if(run>= 6479 && run<= 6532) return v? 0.86580 : 0.01460;
-  else if(run>= 6533 && run<= 6598) return v? 0.87887 : 0.01454;
+  else if(run>= 6533 && run<= 6603) return v? 0.87887 : 0.01454;
   else if(run>=11013 && run<=11309) return v? 0.84983 : 0.02929; // rgb_fa19
-  else if(run>=11324 && run<=11334) return v? 0.87135 : 0.01464; // rgb_wi20
+  else if(run>=11323 && run<=11334) return v? 0.87135 : 0.01464; // rgb_wi20
   else if(run>=11335 && run<=11387) return v? 0.85048 : 0.01530;
-  else if(run>=11389 && run<=11571) return v? 0.84262 : 0.01494; // CAUTION: table last updated 1/15/2020, but run ended on 1/30
+  else if(run>=11389 && run<=11571) return v? 0.84262 : 0.01494; // TODO: table last updated 1/15/2020, but run ended on 1/30
   /* MC */
   else if(run==11) return v? 0.86 : 0.0; // MC
   else {

@@ -403,8 +403,10 @@ void EventTree::GetEvent(Long64_t i) {
       objDiphoton->Phi = hadPhi[h];
       // if you want to see the full M_{gamma,gamma}
       // spectrum with EventTree::Valid() cuts and basic
-      // cuts enabled, use pairType with kDiphBasic
-      if(whichHad[h]==kDiphBasic) {
+      // cuts enabled, use pairType with kDiphBasic; we
+      // check both whichHad[qA] and whichHad[qB], since
+      // pairType order may not equal hadron order
+      if(whichHad[qA]==kDiphBasic || whichHad[qB]==kDiphBasic) {
         // classify as kDiphBasic iff basic cuts satisfied
         if(objDiphoton->cutBasic) hadIdx[h] = kDiphBasic;
       };
