@@ -16,7 +16,7 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc",
   BruAsymmetry * B = new BruAsymmetry(bruDir);
 
   // build modulations
-  /* // 7 amps (PRL)
+  ///* // 7 amps (PRL)
   B->AddNumerMod(new Modulation(3,0,0));
   B->AddNumerMod(new Modulation(2,1,1));
   B->AddNumerMod(new Modulation(3,1,1));
@@ -24,8 +24,8 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc",
   B->AddNumerMod(new Modulation(2,2,2));
   B->AddNumerMod(new Modulation(3,2,2));
   B->AddNumerMod(new Modulation(3,2,-2));
-  */
-  ///* // all 12 PWs up to L=2 (dnp2020)
+  //*/
+  /* // all 12 PWs up to L=2 (dnp2020)
   B->AddNumerMod(new Modulation(3,0,0,0,true));
   B->AddNumerMod(new Modulation(3,1,0,0,true));
   B->AddNumerMod(new Modulation(2,1,1,0,true));
@@ -38,7 +38,7 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc",
   B->AddNumerMod(new Modulation(2,2,2,0,true));
   B->AddNumerMod(new Modulation(3,2,2,0,true));
   B->AddNumerMod(new Modulation(3,2,-2,0,true));
-  //*/
+  */
   /* // DSIDIS
   B->AddNumerMod(new Modulation(2,0,0,0,false,Modulation::kDSIDIS)); // sin(PhiD)
   B->AddNumerMod(new Modulation(2,0,0,1,false,Modulation::kDSIDIS)); // sin(2*PhiD)
@@ -59,12 +59,22 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc",
   B->PrintBinScheme();
 
   // load data and MC trees
+  /* pi+, pi- */
   //B->LoadDataSets("catTreeData.root"); // disable MC integration
-  B->LoadDataSets("catTreeData.XFgt0.root","catTreeMC.spinAbsent.PRL.XFgt0.root"); // DIS
-  //B->LoadDataSets("catTreeData.0x33.XFgt0.root","catTreeMC.0x33.spinAbsent.XFgt0.root"); // pi+pi+
+  //B->LoadDataSets("catTreeData.XFgt0.root","catTreeMC.spinAbsent.PRL.XFgt0.root"); // DIS
   //B->LoadDataSets("catTreeData.XFfull.root","catTreeMC.spinAbsent.PRL.XFfull.root"); // for rapidity studies
   //B->LoadDataSets("catTreeMC.spin5050.PRL.XFgt0.root"); // fit MC data, with MC integration disabled
+  /* pi+, pi+ */
+  //B->LoadDataSets("catTreeData.0x33.XFgt0.root","catTreeMC.0x33.spinAbsent.XFgt0.root"); // pi+pi+
+  /* pi+, p */
   //B->LoadDataSets("spinroot.proton.pion/catTreeData.root","catTreeMC.proton.pion.root");
+  /* pi+, pi0 */
+  //B->LoadDataSets("catTreeData.rga_inbending_fa18.0x35.root","catTreeMC.0x35.root"); // signal, rga_inbending_fa18
+  //B->LoadDataSets("catTreeData.rga_inbending_fa18.0x3c.root","catTreeMC.0x3c.root"); // background, rga_inbending_fa18
+  //B->LoadDataSets("catTreeData.rga_inbending_sp19.0x35.root","catTreeMC.0x35.root"); // signal, rga_inbending_sp19
+  //B->LoadDataSets("catTreeData.rga_inbending_sp19.0x3c.root","catTreeMC.0x3c.root"); // background, rga_inbending_sp19
+  //B->LoadDataSets("catTreeData.rga_inbending_ALL.0x35.root","catTreeMC.0x35.root"); // signal, rga_inbending_ALL
+  B->LoadDataSets("catTreeData.rga_inbending_ALL.0x3c.root","catTreeMC.0x3c.root"); // background, rga_inbending_ALL
 
   // MCMC settings
   B->MCMC_iter = 10000; // number of samples

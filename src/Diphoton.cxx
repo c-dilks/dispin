@@ -88,8 +88,8 @@ void Diphoton::Classify() {
                photAng[qB]>8.0;
 
   // invariant mass cuts for pi0 and sideband
-  cutMassPi0 = M > 0.106801 &&
-               M < 0.152718; // hard-coded 2sigma; see diphotonFit.cpp
+  cutMassPi0 = M > 0.108201 &&
+               M < 0.155011; // hard-coded 2sigma from RGA inbending data; see diphotonFit.cpp
   cutMassSB = M > 0.17 &&
               M < 0.4; // hard-coded; above pi0 region, below eta region
   if(cutMassPi0 && cutMassSB) {

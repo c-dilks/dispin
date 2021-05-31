@@ -142,8 +142,10 @@ class FitBin {
       pi0LB = pi0mu.getVal() - nsigma * pi0sigma.getVal();
       pi0UB = pi0mu.getVal() + nsigma * pi0sigma.getVal();
       // OVERRIDE signal range (fix pi0 cuts for all bins)
-      pi0LB = 0.106801; // from single-bin fit
-      pi0UB = 0.152718;
+      //pi0LB = 0.106801; // from single-bin fit to rga_inbending_sp19
+      //pi0UB = 0.152718;
+      pi0LB = 0.108201; // from single-bin fit to rga_inbending_ALL
+      pi0UB = 0.155011;
       mass.setRange("pi0range",pi0LB,pi0UB);
 
       
@@ -200,8 +202,16 @@ class FitBin {
           RooFit::Invisible(kTRUE)
           );
       fullModel.plotOn(plotFrame,
+          RooFit::Name(("modelPlotErr"+binStr).Data()),
+          RooFit::Range(("fitRange"+binStr).Data()),
+          RooFit::Components(modelN.Data()),
+          RooFit::VisualizeError(*modelFit),
+          RooFit::FillColor(kOrange)
+          );
+      fullModel.plotOn(plotFrame,
           RooFit::Name(("modelPlot"+binStr).Data()),
           RooFit::Range(("fitRange"+binStr).Data()),
+          RooFit::Components(modelN.Data()),
           RooFit::LineColor(kRed),
           RooFit::LineWidth(2)
           );
@@ -526,12 +536,14 @@ int main(int argc, char** argv) {
 
 
   // print canvas (for quick look)
-  fitCanv->Print("diphotonFitResultCanv.png");
-  paramCanv->Print("diphotonFitParamCanv.png");
-  purityCanv->Print("diphotonFitPurity.png");
-  chi2Canv->Print("diphotonFitChi2.png");
-  residCanv->Print("diphotonFitResiduals.png");
-  pullCanv->Print("diphotonFitPulls.png");
+  TString pngdir = "diagdiph/png";
+  gROOT->ProcessLine(".! mkdir -p "+pngdir);
+  fitCanv->Print(pngdir+"/diphotonFitResultCanv.png");
+  paramCanv->Print(pngdir+"/diphotonFitParamCanv.png");
+  purityCanv->Print(pngdir+"/diphotonFitPurity.png");
+  chi2Canv->Print(pngdir+"/diphotonFitChi2.png");
+  residCanv->Print(pngdir+"/diphotonFitResiduals.png");
+  pullCanv->Print(pngdir+"/diphotonFitPulls.png");
 
 
   // cleanup
