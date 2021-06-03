@@ -35,6 +35,7 @@ Int_t whichPair;
 Int_t whichHad[2];
 TString hadName[2];
 TString hadTitle[2];
+TString dihTitle;
 
 int main(int argc, char** argv) {
 
@@ -42,6 +43,10 @@ int main(int argc, char** argv) {
    infiles = "outroot/*.root";
    outfileN = "plots.root";
    whichPair = EncodePairType(kPip,kPim);
+   if(argc==1) {
+     fprintf(stderr,"USAGE: %s [outroot file(s)] [output plots.root file] [pairType]\n",argv[0]);
+     return 1;
+   };
    if(argc>1) infiles = TString(argv[1]);
    if(argc>2) outfileN = TString(argv[2]);
    if(argc>3) whichPair = (Int_t)strtof(argv[3],NULL);
@@ -56,6 +61,7 @@ int main(int argc, char** argv) {
      printf("hadron %d:  idx=%d  name=%s  title=%s\n",
        h,dihHadIdx(whichHad[qA],whichHad[qB],h),hadName[h].Data(),hadTitle[h].Data());
    };
+   dihTitle = PairTitle(whichPair);
 
    EventTree * ev = new EventTree(infiles,whichPair);
 
@@ -266,6 +272,7 @@ int main(int argc, char** argv) {
    TH2D * XFvsMh[2];
    TH2D * PperpvsMh[2];
    TH2D * hadPperpVsYH[2];
+   TH2D * dihPhiHvsHadPhiH[2];
    for(int h=0; h<2; h++) {
      thetaVsZ[h] = new TH2D(TString("thetaVsZ_"+hadName[h]),
        TString("#theta vs. "+hadTitle[h]+" z;z;#theta"),
@@ -303,6 +310,9 @@ int main(int argc, char** argv) {
      hadPperpVsYH[h] = new TH2D(TString("hadPperpVsYH_"+hadName[h]),
        TString(hadTitle[h]+" p_{perp} vs. Y_{h};Y_{h};p_{perp}"),
        NBINS,-4,4,NBINS,0,2);
+     dihPhiHvsHadPhiH[h] = new TH2D(TString("dihPhiH_vs_"+hadName[h]+"PhiH"),
+       TString(dihTitle+" #phi_{h} vs. "+hadTitle[h]+" #phi_{h};"+hadTitle[h]+" #phi_{h};"+dihTitle+" #phi_{h}"),
+       NBINS,-PIe,PIe,NBINS,-PIe,PIe);
    };
 
 
@@ -640,6 +650,7 @@ int main(int argc, char** argv) {
          XFvsMh[h]->Fill(ev->Mh,ev->hadXF[h]);
          PperpvsMh[h]->Fill(ev->Mh,ev->hadPperp[h]);
          hadPperpVsYH[h]->Fill(ev->hadYH[h],ev->hadPperp[h]);
+         dihPhiHvsHadPhiH[h]->Fill(ev->hadPhiH[h],ev->PhiH);
        };
        
        alphaDeg = ev->alpha*TMath::RadToDeg();
@@ -711,6 +722,7 @@ int main(int argc, char** argv) {
    for(int h=0; h<2; h++) XFvsMh[h]->Write();
    for(int h=0; h<2; h++) PperpvsMh[h]->Write();
    for(int h=0; h<2; h++) hadPperpVsYH[h]->Write();
+   for(int h=0; h<2; h++) dihPhiHvsHadPhiH[h]->Write();
    for(int h=0; h<2; h++) hadPhiHDist[h]->Write();
    PhPerpVsMh->Write(); 
    YHVsMh->Write(); 

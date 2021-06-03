@@ -13,8 +13,8 @@ const Int_t NBINS = 100;
 void CompareDist(TString varname);
 
 void CompareCatTreeDists(
-  TString infile0N="catTreeData.rga_inbending_fa18.0x35.root", /*green*/
-  TString infile1N="catTreeData.rga_inbending_fa18.0x3c.root"  /*purple*/
+  TString infile0N="catTreeData.rga_inbending_ALL.0x35.root", /*green*/
+  TString infile1N="catTreeData.rga_inbending_ALL.0x3c.root"  /*purple*/
 ) {
   infile[0] = new TFile(infile0N,"READ");
   infile[1] = new TFile(infile1N,"READ");
@@ -73,7 +73,7 @@ void CompareDist(TString varname) {
     dist[f]->Scale(1/normalizer[f]); // normalization
     //dist[f]->Sumw2(); // (already done, redundant)
     dist[f]->SetMarkerStyle(f==0?kFullTriangleUp:kFullTriangleDown);
-    dist[f]->SetMarkerSize(1.0);
+    dist[f]->SetMarkerSize(2.0);
     dist[f]->SetMarkerColor(f==0?kGreen+1:kViolet+2);
     dist[f]->SetLineColor(f==0?kGreen+1:kViolet+2);
     dist[f]->SetLineWidth(2);
@@ -89,8 +89,8 @@ void CompareDist(TString varname) {
   rat->SetLineColor(kBlack);
   rat->SetMarkerColor(kBlack);
   rat->SetMarkerStyle(kFullCircle);
-  rat->SetMarkerSize(0.5);
-  rat->GetYaxis()->SetRangeUser(0.0,5);
+  rat->SetMarkerSize(1.0);
+  rat->GetYaxis()->SetRangeUser(0.0,2);
   TString ratT = rat->GetTitle();
   ratT(TRegexp("distribution")) = "Data/MC";
   rat->SetTitle(ratT);

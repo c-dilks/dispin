@@ -93,17 +93,17 @@ class FitBin {
       Double_t nmax = (Double_t)ENT;
       nmax /= BS->GetNbinsTotal();
       RooRealVar pi0N(("pi0N"+binStr).Data(),"#pi^{0} N", nmax/2.0, 0, nmax);
-      RooRealVar pi0mu(("pi0mu"+binStr).Data(),"#pi^{0} M", PartMass(kPio), 0, 2);
+      RooRealVar pi0mu(("pi0mu"+binStr).Data(),"#pi^{0} #mu", PartMass(kPio), 0, 2);
       RooRealVar pi0sigma(("pi0sigma"+binStr).Data(),"#pi^{0} #sigma", 0.02, 0.001, 0.1);
       RooGaussian pi0Model(("pi0Model"+binStr).Data(),"pi0Model",mass,pi0mu,pi0sigma);
 
       // background
       RooRealVar bgN(("bgN"+binStr).Data(),"BG N", 0, nmax);
-      RooRealVar bgP0(("bgP0"+binStr).Data(),"BG p_{0}", -1, 1);
-      RooRealVar bgP1(("bgP1"+binStr).Data(),"BG p_{1}", -1, 1);
-      RooRealVar bgP2(("bgP2"+binStr).Data(),"BG p_{2}", -1, 1);
-      RooRealVar bgP3(("bgP3"+binStr).Data(),"BG p_{3}", -1, 1);
-      RooRealVar bgP4(("bgP4"+binStr).Data(),"BG p_{4}", -1, 1);
+      RooRealVar bgP0(("bgP0"+binStr).Data(),"BG b_{0}", -1, 1);
+      RooRealVar bgP1(("bgP1"+binStr).Data(),"BG b_{1}", -1, 1);
+      RooRealVar bgP2(("bgP2"+binStr).Data(),"BG b_{2}", -1, 1);
+      RooRealVar bgP3(("bgP3"+binStr).Data(),"BG b_{3}", -1, 1);
+      RooRealVar bgP4(("bgP4"+binStr).Data(),"BG b_{4}", -1, 1);
       //RooPolynomial bgModel(("bgModel"+binStr).Data(),"bgModel",mass,RooArgSet(bgP0,bgP1,bgP2));
       //RooChebychev bgModel(("bgModel"+binStr).Data(),"bgModel",mass,RooArgSet(bgP0,bgP1,bgP2));
       //RooChebychev bgModel(("bgModel"+binStr).Data(),"bgModel",mass,RooArgSet(bgP0,bgP1,bgP2,bgP3));
