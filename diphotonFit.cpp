@@ -90,24 +90,21 @@ class FitBin {
 
       // pi0 signal
       // WARNING: do not use underscores in param names
-      Double_t nmax = (Double_t)ENT;
-      nmax /= BS->GetNbinsTotal();
+      Double_t nmax = Mdist->GetEntries();
       RooRealVar pi0N(("pi0N"+binStr).Data(),"#pi^{0} N", nmax/2.0, 0, nmax);
       RooRealVar pi0mu(("pi0mu"+binStr).Data(),"#pi^{0} #mu", PartMass(kPio), 0, 2);
       RooRealVar pi0sigma(("pi0sigma"+binStr).Data(),"#pi^{0} #sigma", 0.02, 0.001, 0.1);
       RooGaussian pi0Model(("pi0Model"+binStr).Data(),"pi0Model",mass,pi0mu,pi0sigma);
 
       // background
-      RooRealVar bgN(("bgN"+binStr).Data(),"BG N", 0, nmax);
-      RooRealVar bgP0(("bgP0"+binStr).Data(),"BG b_{0}", -1, 1);
-      RooRealVar bgP1(("bgP1"+binStr).Data(),"BG b_{1}", -1, 1);
-      RooRealVar bgP2(("bgP2"+binStr).Data(),"BG b_{2}", -1, 1);
-      RooRealVar bgP3(("bgP3"+binStr).Data(),"BG b_{3}", -1, 1);
-      RooRealVar bgP4(("bgP4"+binStr).Data(),"BG b_{4}", -1, 1);
-      //RooPolynomial bgModel(("bgModel"+binStr).Data(),"bgModel",mass,RooArgSet(bgP0,bgP1,bgP2));
-      //RooChebychev bgModel(("bgModel"+binStr).Data(),"bgModel",mass,RooArgSet(bgP0,bgP1,bgP2));
-      //RooChebychev bgModel(("bgModel"+binStr).Data(),"bgModel",mass,RooArgSet(bgP0,bgP1,bgP2,bgP3));
-      RooChebychev bgModel(("bgModel"+binStr).Data(),"bgModel",mass,RooArgSet(bgP0,bgP1,bgP2,bgP3,bgP4));
+      RooArgSet bgArgs("bgArgs");
+      RooRealVar bgN(("bgN"+binStr).Data(),"BG N", nmax/2.0, 0, nmax);
+      RooRealVar bgP1(("bgP1"+binStr).Data(),"BG b_{1}", -1, 1); bgArgs.add(bgP1); // b1*x
+      RooRealVar bgP2(("bgP2"+binStr).Data(),"BG b_{2}", -1, 1); bgArgs.add(bgP2); // b2*(2x^2-1)
+      //RooRealVar bgP3(("bgP3"+binStr).Data(),"BG b_{3}", -1, 1); bgArgs.add(bgP3);
+      //RooRealVar bgP4(("bgP4"+binStr).Data(),"BG b_{4}", -1, 1); bgArgs.add(bgP4);
+      //RooRealVar bgP5(("bgP5"+binStr).Data(),"BG b_{5}", -1, 1); bgArgs.add(bgP5);
+      RooChebychev bgModel(("bgModel"+binStr).Data(),"bgModel",mass,bgArgs);
 
       // signal+bg
       modelN = "model"+binStr;
@@ -125,7 +122,7 @@ class FitBin {
       // - set fit range
       mass.setRange(("fitRange"+binStr).Data(),
           0.08,
-          TMath::Min( 0.4, 0.95*MggMax) /* ensure we're below eta region */
+          TMath::Min( 0.2, 0.95*MggMax) /* stay low, don't overfit */
           );
 
       // perform fit
@@ -390,7 +387,7 @@ int main(int argc, char** argv) {
   };
 
   // parameter canvas
-  Int_t ncols = 3;
+  Int_t ncols = 4;
   Int_t nrows = (nParam-1)/ncols+1;
   TCanvas *paramCanv = new TCanvas("paramCanv","paramCanv",800*ncols,600*nrows);
   paramCanv->Divide(ncols,nrows);
