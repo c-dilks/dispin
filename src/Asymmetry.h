@@ -128,6 +128,7 @@ class Asymmetry : public TObject
     Float_t xF;
     Float_t YH[2];
     Float_t DY,DYsgn;
+    Float_t diphM;
     Float_t theta;
     Int_t spinn;
     Float_t pol;
@@ -304,6 +305,7 @@ class Asymmetry : public TObject
     Double_t tree_Q2;
     Double_t tree_XF;
     Double_t tree_DY,tree_DYsgn;
+    Double_t tree_diphM;
     Double_t tree_Weight;
     Int_t tree_Spin_idx;
 

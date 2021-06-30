@@ -187,7 +187,7 @@ int main(int argc, char** argv) {
    TH1D * MmissDist = new TH1D("MmissDist","M_{X} distribution;M_{X}",NBINS,-2,6);
 
    TH1D * MmissDistZoom = new TH1D("MmissDistZoom","M_{X} distribution;M_{X}",
-     2*NBINS,0.5,3);
+     3*NBINS,0.5,3);
    TH1D * YHDist = new TH1D("YHDist","Y_{hh} distribution;Y_{hh}",NBINS,-3,3);
 
 
@@ -500,6 +500,13 @@ int main(int argc, char** argv) {
        NBINS,-PIe,PIe,NBINS,kfRange[k][0],kfRange[k][1]);
    };
 
+   
+   // diphoton distributions
+   TH1D * diphMdist = new TH1D(
+      "diphMdist",
+      "M_{#gamma#gamma} distribution;M_{#gamma#gamma}",
+      3*NBINS,0,1);
+
      
    // event-level distributions
    TH1D * helicityDist = new TH1D("helicityDist","helicity",5,-2,3);
@@ -706,6 +713,9 @@ int main(int argc, char** argv) {
 
        helicityDist->Fill(ev->helicity);
 
+       diphMdist->Fill(ev->objDiphoton->M);
+
+
      };
 
 
@@ -872,6 +882,8 @@ int main(int argc, char** argv) {
    for(int h=0; h<2; h++) betaVsP[h]->Write();
    helicityDist->Write();
    dihadronCntDist->Write();
+
+   diphMdist->Write();
 
 
    outfile->mkdir("depolarizationFactors");

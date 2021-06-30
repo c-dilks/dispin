@@ -139,10 +139,8 @@ class FitBin {
       pi0LB = pi0mu.getVal() - nsigma * pi0sigma.getVal();
       pi0UB = pi0mu.getVal() + nsigma * pi0sigma.getVal();
       // OVERRIDE signal range (fix pi0 cuts for all bins)
-      //pi0LB = 0.106801; // from single-bin fit to rga_inbending_sp19
-      //pi0UB = 0.152718;
-      pi0LB = 0.108201; // from single-bin fit to rga_inbending_ALL
-      pi0UB = 0.155011;
+      pi0LB = 0.107071; // from single-bin fit to rga_inbending_ALL
+      pi0UB = 0.155837;
       mass.setRange("pi0range",pi0LB,pi0UB);
 
       

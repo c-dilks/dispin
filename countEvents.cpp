@@ -59,7 +59,8 @@ int main(int argc, char** argv) {
    };
    Long64_t nCutdiphPhotBeta = 0;
    Long64_t nCutdiphPhotEn = 0;
-   Long64_t nCutdiphPhotAng = 0;
+   Long64_t nCutdiphPhotEleAng = 0;
+   Long64_t nCutdiphPhotTheta = 0;
    Long64_t nCutdiphMassPi0 = 0;
    Long64_t nCutdiphMassSB = 0;
    Long64_t nCutdiphBasic = 0;
@@ -96,7 +97,8 @@ int main(int argc, char** argv) {
        if(hasDiphoton) {
          if(ev->objDiphoton->cutPhotBeta) nCutdiphPhotBeta++;
          if(ev->objDiphoton->cutPhotEn) nCutdiphPhotEn++;
-         if(ev->objDiphoton->cutPhotAng) nCutdiphPhotAng++;
+         if(ev->objDiphoton->cutPhotEleAng) nCutdiphPhotEleAng++;
+         if(ev->objDiphoton->cutPhotTheta) nCutdiphPhotTheta++;
          if(ev->objDiphoton->cutMassPi0) nCutdiphMassPi0++;
          if(ev->objDiphoton->cutMassSB) nCutdiphMassSB++;
          if(ev->objDiphoton->cutBasic) nCutdiphBasic++;
@@ -119,7 +121,8 @@ int main(int argc, char** argv) {
      printf("diphoton cuts:\n");
      PrintCount("  nCutdiphPhotBeta",nCutdiphPhotBeta,nTotal);
      PrintCount("  nCutdiphPhotEn",nCutdiphPhotEn,nTotal);
-     PrintCount("  nCutdiphPhotAng",nCutdiphPhotAng,nTotal);
+     PrintCount("  nCutdiphPhotEleAng",nCutdiphPhotEleAng,nTotal);
+     PrintCount("  nCutdiphPhotTheta",nCutdiphPhotTheta,nTotal);
      PrintCount("  nCutdiphMassPi0",nCutdiphMassPi0,nTotal);
      PrintCount("  nCutdiphMassSB",nCutdiphMassSB,nTotal);
      PrintCount("  nCutdiphBasic",nCutdiphBasic,nTotal);

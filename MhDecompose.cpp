@@ -181,6 +181,7 @@ int main(int argc, char** argv) {
   dataDists.insert(pair<TString,TH1D*>("PhiH",(TH1D*)plotsFile->Get("PhiHDist")));
   dataDists.insert(pair<TString,TH1D*>("PhiR",(TH1D*)plotsFile->Get("PhiRDist")));
   dataDists.insert(pair<TString,TH1D*>("theta",(TH1D*)plotsFile->Get("thetaDist")));
+  dataDists.insert(pair<TString,TH1D*>("diphM",(TH1D*)plotsFile->Get("diphMdist")));
 
   // format data dists
   for(auto const & kv : dataDists) {
@@ -278,6 +279,7 @@ int main(int argc, char** argv) {
         par.dists.at("PhiH")->Fill(ev->PhiH);
         par.dists.at("PhiR")->Fill(ev->PhiR);
         par.dists.at("theta")->Fill(ev->theta);
+        par.dists.at("diphM")->Fill(ev->objDiphoton->M);
       };
 
     };

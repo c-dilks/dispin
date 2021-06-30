@@ -82,14 +82,19 @@ void Diphoton::Classify() {
   cutPhotEn = photE[qA]>0.6 &&
               photE[qB]>0.6;
 
+  // photon polar angle cut
+  for(int h=0; h<2; h++) photTheta[h] = Tools::EtaToTheta(photEta[h]);
+  cutPhotTheta = 5<photTheta[qA] && photTheta[qA]<35 &&
+                 5<photTheta[qB] && photTheta[qB]<35;
+
   // electron cone cut
   // photon must be far enough away from electron
-  cutPhotAng = photAng[qA]>8.0 &&
-               photAng[qB]>8.0;
+  cutPhotEleAng = photAng[qA]>8.0 &&
+                  photAng[qB]>8.0;
 
   // invariant mass cuts for pi0 and sideband
-  cutMassPi0 = M > 0.108201 &&
-               M < 0.155011; // hard-coded 2sigma from RGA inbending data; see diphotonFit.cpp
+  cutMassPi0 = M > 0.107071 &&
+               M < 0.155837; // hard-coded 2sigma from RGA inbending data; see diphotonFit.cpp
   cutMassSB = M > 0.17 &&
               M < 0.4; // hard-coded; above pi0 region, below eta region
   if(cutMassPi0 && cutMassSB) {
@@ -104,7 +109,8 @@ void Diphoton::Classify() {
   // may not be so basic
   cutBasic = cutPhotBeta
           && cutPhotEn
-          && cutPhotAng;
+          && cutPhotTheta
+          && cutPhotEleAng;
 
   // classify diphoton
   if(cutBasic) {
@@ -161,7 +167,8 @@ void Diphoton::ResetVars() {
 void Diphoton::ResetBools() {
   cutPhotBeta = false;
   cutPhotEn = false;
-  cutPhotAng = false;
+  cutPhotTheta = false;
+  cutPhotEleAng = false;
   cutMassPi0 = false;
   cutMassSB = false;
   diphotClass = dpNull;

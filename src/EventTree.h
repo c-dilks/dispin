@@ -258,6 +258,9 @@ class EventTree : public TObject
     TRandom * RNG;
     Int_t sps;
 
+    Bool_t isDiphoton[2];
+    Float_t minP[2];
+
 
   ClassDef(EventTree,1);
 };

@@ -406,6 +406,7 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
   Q2 = ev->Q2;
   xF = ev->xF;
   theta = ev->theta;
+  diphM = ev->objDiphoton->M;
 
   for(int h=0; h<2; h++) YH[h] = ev->hadYH[h];
   DYsgn = ev->DYsgn;
@@ -535,6 +536,7 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
     tree_XF = (Double_t)(xF);
     tree_DY = (Double_t)(DY);
     tree_DYsgn = (Double_t)(DYsgn);
+    tree_diphM = (Double_t)(diphM);
     tree_Weight = (Double_t)(weight);
     tree_Spin_idx = (Int_t)(SpinInt(spinn));
     tree->Fill();
@@ -1209,6 +1211,7 @@ void Asymmetry::ResetVars() {
   for(int h=0; h<2; h++) YH[h]=UNDEF;
   DY = UNDEF;
   DYsgn = UNDEF;
+  diphM = UNDEF;
   theta = UNDEF;
   spinn = UNDEF;
   for(int d=0; d<3; d++) iv[d]=UNDEF;
@@ -1390,6 +1393,7 @@ void Asymmetry::ActivateTree(Bool_t isMC) {
   tree->Branch("XF",&tree_XF,"XF/D");
   tree->Branch("DY",&tree_DY,"DY/D");
   tree->Branch("DYsgn",&tree_DYsgn,"DYsgn/D");
+  tree->Branch("diphM",&tree_diphM,"diphM/D");
   tree->Branch("Weight",&tree_Weight,"Weight/D");
   if(!isMC) {
     tree->Branch("Spin_idx",&tree_Spin_idx,"Spin_idx/I");

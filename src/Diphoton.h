@@ -62,7 +62,8 @@ class Diphoton : public TObject
     // diphoton / pi0 cuts
     Bool_t cutPhotBeta;
     Bool_t cutPhotEn;
-    Bool_t cutPhotAng;
+    Bool_t cutPhotTheta;
+    Bool_t cutPhotEleAng;
     Bool_t cutMassPi0;
     Bool_t cutMassSB;
     Bool_t cutBasic;
@@ -84,6 +85,8 @@ class Diphoton : public TObject
     // trajectories
     Trajectory * photon[2]; // photon trajectories
     Trajectory * diphot; // diphoton trajectory
+
+    Float_t photTheta[2]; // polar scattering angle
 
 
   ClassDef(Diphoton,1);

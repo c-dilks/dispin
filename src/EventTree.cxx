@@ -339,6 +339,10 @@ void EventTree::GetEvent(Long64_t i) {
   }
 
 
+  // take absolute value of Mmiss (rarely, it can be negative; see Dihadron.cxx)
+  if(Mmiss<0) Mmiss *= -1;
+
+
 
   /**************************************/
   /* cut definitions                    */
@@ -385,10 +389,14 @@ void EventTree::GetEvent(Long64_t i) {
   //   cutDihadron will only be true if the diphoton is
   //   classified as a pi0
   for(int h=0; h<2; h++) {
-    if( hadIdx[h]==kDiph
-     || hadIdx[h]==kPio
-     || hadIdx[h]==kPioBG
+    if( hadIdx[h]==kDiph    /* if it's a diphoton, hadIdx is likely */
+     || hadIdx[h]==kPio     /* only kDiph, but good to check the    */
+     || hadIdx[h]==kPioBG   /* others, just in case...              */
+     || hadIdx[h]==kDiphBasic
     ) {
+      // mark this hadron as being a diphoton of some type,
+      // since cuts below need to know this
+      isDiphoton[h] = true;
       // classify diphoton
       objDiphoton->Classify();
       // assign hadIdx; note that if whichHad is kDiph, we
@@ -410,7 +418,8 @@ void EventTree::GetEvent(Long64_t i) {
         // classify as kDiphBasic iff basic cuts satisfied
         if(objDiphoton->cutBasic) hadIdx[h] = kDiphBasic;
       };
-    };
+    }
+    else isDiphoton[h] = false;
   };
 
 
@@ -440,9 +449,10 @@ void EventTree::GetEvent(Long64_t i) {
     CheckSampFrac(); /* sampling fraction cuts (diagonal cut and (mu,std) cut) */
   // -- pions
   for(int h=0; h<2; h++) {
+    minP[h] = isDiphoton[h] ? 0.0 : 1.25;
     cutHadPID[h] = 
       hadTheta[h]>5 && hadTheta[h]<35 &&
-      hadP[h] > 1.25 &&
+      hadP[h] > minP[h] && /* minimum P cut only for charged hadrons */
       CheckHadChi2pid(h); /* refined hadron chi2pid cut */
   };
   cutPID = cutElePID && cutHadPID[qA] && cutHadPID[qB];
@@ -573,9 +583,11 @@ Bool_t EventTree::CheckVertex() {
 // check missing mass cut (which can depend on channel)
 Bool_t EventTree::CheckMissingMass() {
   if(Tools::PairSame(hadIdx[qA],hadIdx[qB],kPip,kPim))
-    return Mmiss>1.5; // pi+ pi-
+    return Mmiss>1.5; // pi+,pi-
   else if(Tools::PairSame(hadIdx[qA],hadIdx[qB],kP,kPip))
-    return Mmiss>0.6; // p pi+
+    return Mmiss>0.6; // p,pi+
+  else if(isDiphoton[qA] || isDiphoton[qB])
+    return true; // diphoton,anything (valid only for anything==pi+/-)
   return Mmiss>1.5; // default
 };
 
@@ -629,6 +641,10 @@ Bool_t EventTree::CheckSampFrac() {
 // PID refinement cut for pions; the upper bound cut at high momentum
 // helps reduce kaon contamination
 Bool_t EventTree::CheckHadChi2pid(Int_t had) {
+
+  // this cut should only apply to charged hadrons; bypass this
+  // cut if it's a diphoton
+  if(isDiphoton[had]) return true;
 
   // corrected stddev of chi2pid
   Float_t sigma;
