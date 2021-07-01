@@ -241,6 +241,8 @@ int main(int argc, char** argv) {
   if(argc<=2) {
     cerr << "USAGE: " << argv[0] << " [tree file] [IV type] [num bins]" << endl;
     BS = new Binning();
+    cout << " - tree file can either be one from diagnosticsDiphoton.cpp" << endl;
+    cout << "   or a catTree from Asymmetry.cxx" << endl;
     cout << " - IV types:" << endl
          << "    1, 2, or 3 digit number specifying binning scheme;" << endl
          << "    available vars:" << endl;
@@ -269,18 +271,24 @@ int main(int argc, char** argv) {
   BS = new Binning();
   BS->SetScheme(ivType,numBin[0],numBin[1],numBin[2]);
 
+  // determine which tree is being read
+  // isCatTree = true if from single-bin cat tree (see Asymmetry.cxx)
+  //           = false if from diagnosticsDiphoton.cpp
+  Bool_t isCatTree = infileN.Contains("catTree");
 
-  // open TFiles
+
+  // open TFile
   infile = new TFile(infileN,"READ");
   outfileN = infileN;
-  outfileN(TRegexp("cat__")) = "fit__";
+  if(isCatTree) outfileN = "diagdiph/fit__"+infileN;
+  else outfileN(TRegexp("cat__")) = "fit__";
   outfile = new TFile(outfileN,"RECREATE");
 
 
   // open input tree
   Double_t ivVal[3] = {0,0,0};
   Double_t Mgg;
-  intr = (TTree*)infile->Get("diphTr");
+  intr = (TTree*)infile->Get(isCatTree?"tree":"diphTr");
   for(int d=0; d<BS->dimensions; d++) {
     cout << "IV " << d << " is " << BS->GetIVname(d) << endl;
     intr->SetBranchAddress(BS->GetIVname(d),&ivVal[d]);
@@ -385,7 +393,7 @@ int main(int argc, char** argv) {
   };
 
   // parameter canvas
-  Int_t ncols = 4;
+  Int_t ncols = 3;
   Int_t nrows = (nParam-1)/ncols+1;
   TCanvas *paramCanv = new TCanvas("paramCanv","paramCanv",800*ncols,600*nrows);
   paramCanv->Divide(ncols,nrows);

@@ -10,6 +10,8 @@ Int_t binnum_tr;
 Double_t purity_tr,purityErr_tr,iv_tr;
 Int_t bl;
 Bool_t mismatchBins;
+Double_t asymMin = -0.1;
+Double_t asymMax = 0.1;
 
 //..................................................//
 
@@ -41,20 +43,10 @@ void Corrector(
 // - fitFile:     pi0 fit results (from diphotonFit.cpp)
 // NB: all three files must have the same binning!
 void bgCorrector(
-  /*
-  TString bruFileMeas="bruspin.0x35.fa18/asym_minuit_BL0.root",
-  TString bruFileBG="bruspin.0x3c.fa18/asym_minuit_BL0.root",
-  TString fitFileN="diagdiph/fit__outroot.rga_inbending_fa18__1__0x3b.root"
-  */
-  /*
-  TString bruFileMeas="bruspin.0x35.sp19/asym_minuit_BL0.root",
-  TString bruFileBG="bruspin.0x3c.sp19/asym_minuit_BL0.root",
-  TString fitFileN="diagdiph/fit__outroot.rga_inbending_sp19__1__0x3b.root"
-  */
   ///*
-  TString bruFileMeas="bruspin.0x35.ALL/asym_minuit_BL0.root",
-  TString bruFileBG="bruspin.0x3c.ALL/asym_minuit_BL0.root",
-  TString fitFileN="diagdiph/fit__outroot.rga_inbending_ALL__1__0x3b.root"
+  TString bruFileMeas="bruspin.pi0.sig.pt/asym_minuit_BL0.root",
+  TString bruFileBG="bruspin.pi0.bg.pt/asym_minuit_BL0.root",
+  TString fitFileN="diagdiph/fit__catTreeData.rga_inbending_all.0x3b.root"
   //*/
 ) {
 
@@ -192,9 +184,9 @@ void bgCorrector(
 
 
   // format graphs
-  gStyle->SetTitleSize(0.08,"T");
-  gStyle->SetLabelSize(0.08,"X");
-  gStyle->SetLabelSize(0.08,"Y");
+  gStyle->SetTitleSize(0.06,"T");
+  gStyle->SetLabelSize(0.06,"X");
+  gStyle->SetLabelSize(0.06,"Y");
   Color_t color[2] = {kRed,kBlue};
   Style_t style[2] = {kFullTriangleUp,kFullTriangleDown};
   for(f=0; f<2; f++) {
@@ -212,8 +204,8 @@ void bgCorrector(
   Int_t nRow = (nLinks-1)/nCol+1;
   TMultiGraph *mgr;
   TGraphErrors *corrGr;
-  TCanvas *compCanv = new TCanvas("compCanv","compCanv",600*nCol,300*nRow);
-  TCanvas *corrCanv = new TCanvas("corrCanv","corrCanv",600*nCol,300*nRow);
+  TCanvas *compCanv = new TCanvas("compCanv","compCanv",400*nCol,300*nRow);
+  TCanvas *corrCanv = new TCanvas("corrCanv","corrCanv",400*nCol,300*nRow);
   compCanv->Divide(nCol,nRow);
   corrCanv->Divide(nCol,nRow);
   TString gTitle,xTitle,yTitle;
@@ -267,7 +259,8 @@ void bgCorrector(
     zeroLine->SetLineStyle(kDashed);
     zeroLine->Draw();
     mgr->GetXaxis()->SetLimits(xmin,xmax);
-
+    mgr->SetMinimum(asymMin);
+    mgr->SetMaximum(asymMax);
 
   };
 

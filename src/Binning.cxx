@@ -12,7 +12,7 @@ Binning::Binning() {
   minIV[vM] = 0;   maxIV[vM] = 3;
   minIV[vX] = 0;   maxIV[vX] = 1;
   minIV[vZ] = 0;   maxIV[vZ] = 1;
-  minIV[vPt] = 0;  maxIV[vPt] = 2;
+  minIV[vPt] = 0;  maxIV[vPt] = 3;
   minIV[vDY] = 0;  maxIV[vDY] = 4;
   minIV[vQ] = 0;   maxIV[vQ] = 12;
   minIV[vXF] = 0;  maxIV[vXF] = 1;
