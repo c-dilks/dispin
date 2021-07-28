@@ -254,8 +254,8 @@ void BruAsymmetry::Fit(TString minimizer) {
 
 
   // perform the fit
-  //HS::FIT::PROCESS::Here::Go(FM);
-  HS::FIT::PROCESS::Proof::Go(FM,nWorkers);
+  //HS::FIT::PROCESS::Here::Go(FM); // do not use PROOF
+  HS::FIT::PROCESS::Proof::Go(FM,nWorkers); // use PROOF
 };
 
 

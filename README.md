@@ -56,6 +56,9 @@ dihadron spin asymmetry analysis
 ## brufit
 - build instructions: see `deps/brufit` readme
 - source `./env.sh` will set `$BRUFIT`, which is needed to compile `brufit`
+  - if you build on `ifarm`, you may need to run
+    `module load [a newer version of cmake]` and build with
+    `-DCMAKE_C_COMPILER=/path/to/newer/gcc`
 
 
 # Usage
