@@ -61,10 +61,15 @@ class BruAsymmetry : public TObject
       gSystem->RedirectOutput(0);
     };
 
-    // MCMC settings
+    // hyperparameters
+    // - MCMC settings
     Int_t MCMC_iter; // number of MCMC MH steps
     Int_t MCMC_burnin; // discard the first `MCMC_burnin` steps ("burn-in")
     Float_t MCMC_norm; // ~ 1/stepSize
+    // - 2nd MCMC settings, with covariance from 1st chain (for MCMCthenCov algorithm)
+    Int_t MCMC_cov_iter; // number of MCMC MH steps
+    Int_t MCMC_cov_burnin; // discard the first `MCMC_burnin` steps ("burn-in")
+    Float_t MCMC_cov_norm; // ~ 1/stepSize
 
     
     HS::FIT::FitManager * FM;

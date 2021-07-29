@@ -30,10 +30,13 @@ BruAsymmetry::BruAsymmetry(TString outdir_) {
   FM->SetUp().SetIDBranchName("Idx");
 
 
-  // MCMC settings
+  // default MCMC settings
   MCMC_iter = 1000;
   MCMC_burnin = 200;
-  MCMC_norm= 200;
+  MCMC_norm = 200;
+  MCMC_cov_iter = 1000;
+  MCMC_cov_burnin = 200;
+  MCMC_cov_norm = 200;
 
 
   // misc vars
@@ -227,14 +230,29 @@ void BruAsymmetry::Fit(TString minimizer) {
 
 
   // set minimizer algorithm
-  if(minimizer=="mcmc") {
+  if(minimizer.CompareTo("mcmc",TString::kIgnoreCase)==0) {
     FM->SetMinimiser( new HS::FIT::RooMcmcSeq(
-      MCMC_iter,MCMC_burnin,MCMC_norm ) );
+      MCMC_iter, MCMC_burnin, MCMC_norm ) );
     this->PrintLog("");
+    this->PrintLog("OPTIMIZER: MCMC");
     this->PrintLog(
       Form("MCMC iter,burnin,stepsize = %d, %d, %f",
             MCMC_iter,MCMC_burnin,1.0/MCMC_norm));
-  } else if(minimizer=="minuit") {
+  } else if(minimizer.CompareTo("mcmcthencov",TString::kIgnoreCase)==0) {
+    FM->SetMinimiser( new HS::FIT::RooMcmcSeqThenCov(
+      MCMC_iter,     MCMC_burnin,     MCMC_norm,
+      MCMC_cov_iter, MCMC_cov_burnin, MCMC_cov_norm ) );
+    this->PrintLog("");
+    this->PrintLog("OPTIMIZER: MCMCthenCov");
+    this->PrintLog(
+      Form("MCMC chain 1 iter,burnin,stepsize = %d, %d, %f",
+            MCMC_iter,MCMC_burnin,1.0/MCMC_norm));
+    this->PrintLog(
+      Form("MCMC chain 2 iter,burnin,stepsize = %d, %d, %f",
+            MCMC_cov_iter,MCMC_cov_burnin,1.0/MCMC_cov_norm));
+  } else if(minimizer.CompareTo("minuit",TString::kIgnoreCase)==0) {
+    this->PrintLog("");
+    this->PrintLog("OPTIMIZER: Minuit");
     FM->SetMinimiser(new HS::FIT::Minuit2());
   } else {
     fprintf(stderr,"ERROR: unknown minimizer in BruAsymmetry::Fit()\n");
