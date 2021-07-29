@@ -222,6 +222,11 @@ void CompareBruAsym(
       zeroLine->Draw();
     };
   };
+
+  // print images
+  canvLegend->Print("compare_asym_legend.png");
+  compCanv->Print("compare_asym_amps.png");
+  diffCanv->Print("compare_asym_diffs.png");
 };
 
 

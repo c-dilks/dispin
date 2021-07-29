@@ -87,16 +87,21 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc",
 
   // hyperparameters
   // - MCMC settings
-  B->MCMC_iter = 1000; // number of samples
-  B->MCMC_burnin = ((Double_t)B->MCMC_iter)/10.0; // number of initial samples to drop
-  B->MCMC_norm = 1.0 / 0.03; // ~ 1/stepsize
+  B->MCMC_iter        = 1000; // number of samples
+  B->MCMC_burnin      = 0.1 * ((Double_t)B->MCMC_iter); // number to burn
+  B->MCMC_norm        = 1.0 / 0.03; // ~ 1/stepsize
   // - 2nd MCMC settings (if using MCMCthenCov algorithm)
-  B->MCMC_cov_iter = 1000; // number of samples
-  B->MCMC_cov_burnin = ((Double_t)B->MCMC_iter)/10.0; // number of initial samples to drop
-  B->MCMC_cov_norm = 1.0 / 0.03; // ~ 1/stepSize
+  B->MCMC_cov_iter    = 5000; // number of samples
+  B->MCMC_cov_burnin  = 0.1 * ((Double_t)B->MCMC_iter); // number to burn
+  B->MCMC_cov_norm    = 1.0 / 0.03; // ~ 1/stepSize
 
   // perform fit
   B->Fit(minimizer);
+
+  // print acceptance rates
+  gSystem->RedirectOutput(B->GetLogName());
+  gROOT->ProcessLine(".! mcmcAcceptanceRate.sh");
+  gSystem->RedirectOutput(0);
 
   // draw
   TString cmd = Form(".x drawBru.C(\"%s\",\"%s\")",bruDir.Data(),minimizer.Data());

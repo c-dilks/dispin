@@ -26,7 +26,7 @@ Float_t asymPlotMin;
 Float_t asymPlotMax;
 Float_t axisTitleSize;
 Int_t minimizer;
-enum minimEnum { mkMCMC, mkMinuit };
+enum minimEnum { mkMCMC, mkMCMCthenCov, mkMinuit };
 TString hTitle,vTitle,pName;
 TString resultFileN;
 
@@ -77,12 +77,13 @@ class BruBin : public TObject {
 
       // open result file, and read trees
       switch(minimizer) {
-        case mkMCMC: resultFileN="ResultsHSRooMcmcSeq.root"; break;
-        case mkMinuit: resultFileN="ResultsHSMinuit2.root"; break;
+        case mkMCMC:        resultFileN="ResultsHSRooMcmcSeq.root"; break;
+        case mkMCMCthenCov: resultFileN="ResultsHSRooMcmcSeqThenCov.root"; break;
+        case mkMinuit:      resultFileN="ResultsHSMinuit2.root"; break;
       };
       resultFile = new TFile(bruDir+"/"+name+"/"+resultFileN,"READ");
       resultTree = (TTree*) resultFile->Get("ResultTree");
-      if(minimizer==mkMCMC) {
+      if(minimizer==mkMCMC || minimizer==mkMCMCthenCov) {
         mcmcTree = (TTree*) resultFile->Get("MCMCTree");
         nSamples = (Int_t) mcmcTree->GetEntries();
         for(int i=0; i<nParamsMax; i++) {
@@ -128,8 +129,9 @@ void drawBru(
   gStyle->SetOptStat(0);
 
   // get minimizer type
-  if(minimizer_=="mcmc") minimizer=mkMCMC;
-  else if(minimizer_=="minuit") minimizer=mkMinuit;
+  if(minimizer_.CompareTo("mcmc",TString::kIgnoreCase)==0) minimizer=mkMCMC;
+  else if(minimizer_.CompareTo("mcmcthencov",TString::kIgnoreCase)==0) minimizer=mkMCMCthenCov;
+  else if(minimizer_.CompareTo("minuit",TString::kIgnoreCase)==0) minimizer=mkMinuit;
   else { fprintf(stderr,"ERROR: unknown minimizer type\n"); return; };
 
 
@@ -161,7 +163,7 @@ void drawBru(
       bnMax[i] = ax[i].GetNbins();
     } else bnMax[i] = 1;
   };
-  hTitle = ax[0].GetName(); // TODO: use dispin Binning to convert to proper title
+  hTitle = ax[0].GetName(); // TODO [low priority]: use dispin Binning to convert to proper title
   // -- create BruBin objects, and fill TObjArrays
   TVectorD binCoord(nDim);
   BruBinSuperList = new TObjArray();
@@ -242,7 +244,7 @@ void drawBru(
       };
 
       // if MCMC was used, fill param vs sample graphs
-      if(minimizer==mkMCMC) {
+      if(minimizer==mkMCMC || minimizer==mkMCMCthenCov) {
         BB->mcmcTree->SetBranchAddress("entry",&entry);
         BB->mcmcTree->SetBranchAddress("nll_MarkovChain_local_",&nll);
         for(int i=0; i<nParams; i++) {
@@ -354,7 +356,7 @@ void drawBru(
     paramCanv->Write();
 
     // parameter vs. sample
-    if(minimizer==mkMCMC) {
+    if(minimizer==mkMCMC || minimizer==mkMCMCthenCov) {
       nrow=nParams/ncol+1; // (update for NLL)
       nextBin = TObjArrayIter(BBlist);
       while((BB = (BruBin*) nextBin())) {

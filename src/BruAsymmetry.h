@@ -60,6 +60,7 @@ class BruAsymmetry : public TObject
       printf("%s\n",logString.Data());
       gSystem->RedirectOutput(0);
     };
+    TString GetLogName() { return outlog; };
 
     // hyperparameters
     // - MCMC settings
