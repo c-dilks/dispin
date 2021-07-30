@@ -2,13 +2,16 @@
 
 ClassImp(BruAsymmetry)
 
-BruAsymmetry::BruAsymmetry(TString outdir_) {
+BruAsymmetry::BruAsymmetry(TString outdir_, TString minimizer_)
+  : outdir(outdir_)
+  , minimizer(minimizer_)
+{
 
   printf("construct BruAsymmetry\n");
   FM = new HS::FIT::FitManager();
   outdir = outdir_;
   FM->SetUp().SetOutDir(outdir); // calls mkdir automatically
-  outlog = outdir+"/out.log";
+  outlog = outdir+"/out."+minimizer+".log";
   gSystem->RedirectOutput(outlog,"w");
   gSystem->RedirectOutput(0);
 
@@ -219,7 +222,7 @@ void BruAsymmetry::Bin(Binning * binscheme) {
 };
 
 // perform the fit
-void BruAsymmetry::Fit(TString minimizer) {
+void BruAsymmetry::Fit() {
 
   // number of parallel threads
   nThreads = (Int_t) std::thread::hardware_concurrency();

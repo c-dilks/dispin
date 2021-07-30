@@ -39,7 +39,7 @@
 class BruAsymmetry : public TObject
 {
   public:
-    BruAsymmetry(TString outdir_);
+    BruAsymmetry(TString outdir_, TString minimizer_);
     ~BruAsymmetry();
 
     void AddNumerMod(Modulation * modu);
@@ -48,7 +48,7 @@ class BruAsymmetry : public TObject
     void LoadDataSets(
       TString dataFileN, TString mcFileN="", TString treename="tree");
     void Bin(Binning * binscheme);
-    void Fit(TString minimizer);
+    void Fit();
     void PrintFitter() { FM->SetUp().WS().Print("v"); };
 
     Int_t GetNdim();
@@ -78,6 +78,7 @@ class BruAsymmetry : public TObject
   private:
 
     TString outdir;
+    TString minimizer;
     TString outlog;
 
     TFile * infile[2];

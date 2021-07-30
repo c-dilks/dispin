@@ -29,7 +29,7 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc",
     Form("%s:%s",gROOT->GetMacroPath(),(macpath).Data()));
 
   // instantiate brufit
-  BruAsymmetry * B = new BruAsymmetry(bruDir);
+  BruAsymmetry * B = new BruAsymmetry(bruDir,minimizer);
 
   // build modulations
   /* // 7 amps (PRL)
@@ -76,13 +76,13 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc",
 
   // load data and MC trees
   /* pi+, pi- */
-  //B->LoadDataSets("catTreeData.rga_inbending_all.0x34.root","catTreeMC.mc.PRL.0x34.root"); // DIS
+  B->LoadDataSets("catTreeData.rga_inbending_all.0x34.root","catTreeMC.mc.PRL.0x34.root"); // DIS
   /* pi+, pi+ */
   //B->LoadDataSets("catTreeData.0x33.XFgt0.root","catTreeMC.0x33.spinAbsent.XFgt0.root"); // pi+pi+
   /* pi+, p */
   //B->LoadDataSets("spinroot.proton.pion/catTreeData.root","catTreeMC.proton.pion.root");
   /* pi+, pi0 */
-  B->LoadDataSets("catTreeData.rga_inbending_all.0x35.root","catTreeMC.mc.PRL.0x35.root"); // pi0 sig window
+  //B->LoadDataSets("catTreeData.rga_inbending_all.0x35.root","catTreeMC.mc.PRL.0x35.root"); // pi0 sig window
   //B->LoadDataSets("catTreeData.rga_inbending_all.0x3c.root","catTreeMC.mc.PRL.0x3c.root"); // pi0 bg window
 
   // hyperparameters
@@ -91,12 +91,12 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc",
   B->MCMC_burnin      = 0.1 * ((Double_t)B->MCMC_iter); // number to burn
   B->MCMC_norm        = 1.0 / 0.03; // ~ 1/stepsize
   // - 2nd MCMC settings (if using MCMCthenCov algorithm)
-  B->MCMC_cov_iter    = 5000; // number of samples
+  B->MCMC_cov_iter    = 1000; // number of samples
   B->MCMC_cov_burnin  = 0.1 * ((Double_t)B->MCMC_iter); // number to burn
   B->MCMC_cov_norm    = 1.0 / 0.03; // ~ 1/stepSize
 
   // perform fit
-  B->Fit(minimizer);
+  B->Fit();
 
   // print acceptance rates
   gSystem->RedirectOutput(B->GetLogName());
