@@ -282,6 +282,7 @@ void drawBru(
   TCanvas * paramCanv;
   TCanvas * paramVsSampleCanv;
   TCanvas * cornerCanv;
+  TCanvas * autocorrCanv;
   Float_t xMin,xMax,yMin,yMax;
   TLine * zeroLine;
   Int_t nrow,ncol;
@@ -382,6 +383,9 @@ void drawBru(
         cornerCanv = (TCanvas*) BB->resultFile->Get("Corner Full Plot")->Clone();
         //cornerCanv = (TCanvas*) BB->resultFile->Get("Corner Plot")->Clone();
         cornerCanv->Write(Form("cornerCanv_%d"+blStr,BB->idx));
+
+        autocorrCanv = (TCanvas*) BB->resultFile->Get("Autocorrelation Plot")->Clone();
+        autocorrCanv->Write(Form("autocorrCanv_%d"+blStr,BB->idx));
       };
     };
 
