@@ -41,7 +41,7 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc",
   B->AddNumerMod(new Modulation(3,2,2));
   B->AddNumerMod(new Modulation(3,2,-2));
   */
-  ///* // all 12 PWs up to L=2 (dnp2020)
+  ///* // all 12 PWs up to L=2
   B->AddNumerMod(new Modulation(3,0,0,0,true));
   B->AddNumerMod(new Modulation(3,1,0,0,true));
   B->AddNumerMod(new Modulation(2,1,1,0,true));
@@ -76,7 +76,8 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc",
 
   // load data and MC trees
   /* pi+, pi- */
-  B->LoadDataSets("catTreeData.rga_inbending_all.0x34.root","catTreeMC.mc.PRL.0x34.root"); // DIS
+  //B->LoadDataSets("catTreeData.rga_inbending_all.0x34.root","catTreeMC.mc.PRL.0x34.root"); // RGA
+  B->LoadDataSets("catTreeData.rgb_inbending_all.0x34.root","catTreeMC.mc.PRL.0x34.root"); // RGB
   /* pi+, pi+ */
   //B->LoadDataSets("catTreeData.0x33.XFgt0.root","catTreeMC.0x33.spinAbsent.XFgt0.root"); // pi+pi+
   /* pi+, p */
@@ -87,11 +88,11 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc",
 
   // hyperparameters
   // - MCMC settings
-  B->MCMC_iter        = 1000; // number of samples
+  B->MCMC_iter        = 5000; // number of samples
   B->MCMC_burnin      = 0.1 * ((Double_t)B->MCMC_iter); // number to burn
   B->MCMC_norm        = 1.0 / 0.03; // ~ 1/stepsize
   // - 2nd MCMC settings (if using MCMCthenCov algorithm)
-  B->MCMC_cov_iter    = 1000; // number of samples
+  B->MCMC_cov_iter    = 5000; // number of samples
   B->MCMC_cov_burnin  = 0.1 * ((Double_t)B->MCMC_iter); // number to burn
   B->MCMC_cov_norm    = 1.0 / 0.03; // ~ 1/stepSize
 

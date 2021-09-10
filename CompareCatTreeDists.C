@@ -14,13 +14,11 @@ Bool_t drawRatioPlot;
 void CompareDist(TString varname, TString vartitle);
 
 void CompareCatTreeDists(
-  //TString infile0N="catTreeData.rga_inbending_all.0x35.root", /*green*/
-  //TString infile1N="catTreeData.rga_inbending_all.0x3c.root",  /*purple*/
-  //TString infile0N="catTreeData.rga_inbending_all.0x35.root", /*green*/
-  //TString infile1N="catTreeMC.mc.PRL.0x35.root",              /*purple*/
-  //TString infile0N="catTreeData.rga_inbending_all.0x3c.root", /*green*/
-  //TString infile1N="catTreeMC.mc.PRL.0x3c.root",              /*purple*/
-  TString infile0N="catTreeData.rga_inbending_all.0x34.root", /*green*/
+  //TString infile0N="catTreeData.rga_inbending_all.0x34.root", /*green*/
+  //TString infile1N="catTreeData.rgb_inbending_all.0x34.root", /*purple*/
+  //TString infile0N="catTreeData.rgb_inbending_sp19.0x34.root", /*green*/
+  //TString infile1N="catTreeData.rgb_inbending_wi20.0x34.root", /*purple*/
+  TString infile0N="catTreeData.rgb_inbending_all.0x34.root", /*green*/
   TString infile1N="catTreeMC.mc.PRL.0x34.root",              /*purple*/
   Bool_t drawRatioPlot_ = true
 ) {

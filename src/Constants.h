@@ -471,8 +471,7 @@ static Float_t RundepBeamEn(Int_t run) {
 static Bool_t RundepHelicityFlip(Int_t run) {
   if     (run>= 5032 && run<= 5666) return true;  // rga fall 18
   else if(run>= 6616 && run<= 6783) return true;  // rga spring 19
-  else if(run>= 6120 && run<= 6399) return true;  // rgb spring 19
-  else if(run>= 6409 && run<= 6604) return true;  // rgb spring 19
+  else if(run>= 6120 && run<= 6604) return true;  // rgb spring 19
   else if(run>=11093 && run<=11283) return false; // rgb fall 19
   else if(run>=11284 && run<=11300) return true;  // rgb fall BAND_FT 19
   else if(run>=11323 && run<=11571) return false; // rgb winter 20
@@ -503,7 +502,7 @@ static Float_t RundepPolarization(Int_t run, Bool_t v=true) {
   else if(run>=11013 && run<=11309) return v? 0.84983 : 0.02929; // rgb_fa19
   else if(run>=11323 && run<=11334) return v? 0.87135 : 0.01464; // rgb_wi20
   else if(run>=11335 && run<=11387) return v? 0.85048 : 0.01530;
-  else if(run>=11389 && run<=11571) return v? 0.84262 : 0.01494; // TODO: table last updated 1/15/2020, but run ended on 1/30
+  else if(run>=11389 && run<=11571) return v? 0.84262 : 0.01494; // NOTE: table last updated 1/15/2020, but run ended on 1/30
   /* MC */
   else if(run==11) return v? 0.86 : 0.0; // MC
   else {

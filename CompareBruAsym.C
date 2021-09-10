@@ -271,7 +271,20 @@ void DiffGraph(
     ey1 = g1->GetErrorY(i);
     ey2 = g2->GetErrorY(i);
     ydiff = y1-y2; // difference
-    eydiff = TMath::Sqrt(TMath::Abs(ey1*ey1-ey2*ey2)); // correlated error
+    int whichError = 1;
+    switch(whichError) {
+      case 1: 
+        cout << "ASSUMING COMPLETELY UNCORRELATED ERRORS (datasets are disjoint)" << endl;
+        eydiff = TMath::Sqrt(ey1*ey1+ey2*ey2); // uncorrelated error
+        break;
+      case 2: 
+        cout << "ASSUMING COMPLETELY CORRELATED ERRORS (one set is subset of other)" << endl;
+        eydiff = TMath::Sqrt(TMath::Abs(ey1*ey1-ey2*ey2)); // correlated error
+        break;
+      default:
+        cerr << "ERROR: unknown whichError" << endl;
+        eydiff = 0;
+    };
     diff->SetPoint(i,x1,ydiff);
     diff->SetPointError(i,0,eydiff);
     g2->SetPoint(i,x2+bump,y2); // bump g2 point to the right
