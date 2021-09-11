@@ -1,6 +1,7 @@
 #ifndef TOOLS_H_GUARD
 #define TOOLS_H_GUARD
 
+#include "TSystem.h"
 #include "TString.h"
 #include "TRegexp.h"
 #include "TMath.h"
@@ -154,6 +155,29 @@ class Tools {
     // so I made my own)
     static void GlobalRegexp(TString & str, TRegexp re, TString rep) {
       while(str.Contains(re)) { str(re)=rep; };
+    };
+
+
+    // print out latex code for images
+    static void LatexImage(
+        TString latexFile,
+        TString imgFile,
+        TString caption,
+        TString label,
+        TString format="t",
+        Float_t widthScale=0.8
+        )
+    {
+      caption+="."; caption(TRegexp("\\.\\.$"))="."; // add a period (if forgotten)
+      gSystem->RedirectOutput(latexFile,"a");
+      printf("\\begin{figure}[%s]\n",format.Data());
+      printf("\\centering\n");
+      printf("\\includegraphics[width=%f\\textwidth]{%s}\n",widthScale,imgFile.Data());
+      printf("\\caption{%s}\n",caption.Data());
+      printf("\\label{%s}\n",label.Data());
+      printf("%%~\\\\\n"); // uncomment this and comment out next 2 lines for 'connected' figures
+      printf("\\end{figure}\n");
+      gSystem->RedirectOutput(0);
     };
 
     ClassDef(Tools,1);

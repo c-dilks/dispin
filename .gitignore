@@ -35,3 +35,4 @@ myb2b*
 *.old
 pairs.list
 tmp/*
+*.tex

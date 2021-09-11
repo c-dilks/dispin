@@ -110,7 +110,7 @@ int main(int argc, char** argv) {
    TH2D * hadXFCorr = new TH2D("hadXFCorr",corrTitle("x_{F}"), NBINS,-1,1,NBINS,-1,1);
    TH2D * hadYHCorr = new TH2D("hadYHCorr",corrTitle("Y_{h}"), NBINS,-4,4,NBINS,-4,4);
    TH2D * hadPhiHCorr = new TH2D("hadPhiHCorr",corrTitle("#phi_{h}"), NBINS,-4,4,NBINS,-4,4);
-   TH2D * hadVzCorr = new TH2D("hadVzCorr",corrTitle("V_{z}"), NBINS,-20,20,NBINS,-20,20);
+   TH2D * hadVzCorr = new TH2D("hadVzCorr",corrTitle("V_{z}"), NBINS,-30,30,NBINS,-30,30);
    
    // dihadron's hadron kinematics
    TH1D * hadEDist[2];
@@ -154,7 +154,7 @@ int main(int argc, char** argv) {
        NBINS,-PIe,PIe);
      hadVzDist[h] = new TH1D(TString(hadName[h]+"hadVzDist"),
        distTitle("V_{z}"),
-       NBINS,-20,20);
+       NBINS,-30,30);
      hadVxyDist[h] = new TH2D(TString("hadVxyDist_"+hadName[h]),
        TString(hadTitle[h]+" V_{y} vs. V_{x}"),
        3*NBINS,-6,6,3*NBINS,-6,6);
@@ -410,7 +410,7 @@ int main(int argc, char** argv) {
      NBINS,0,1.3,NBINS,-PIe,PIe);
    TH1D * vzDiffHadHad = new TH1D("vzDiffHadHad",
      TString("V_{z}("+hadTitle[qA]+")-V_{z}("+hadTitle[qB]+") distribution"),
-     NBINS,-20,20);
+     NBINS,-30,30);
    TH2D * vzDiffEleHad = new TH2D("vzDiffEleHad",
      TString("V_{z}("+
        hadTitle[qA]+")-V_{z}(e^{-}) vs. V_{z}("+
@@ -722,40 +722,6 @@ int main(int argc, char** argv) {
    }; // eo event loop
    dihadronCntDist->Fill(dihadronCnt); // (count last event's dihadrons)
 
-   for(int h=0; h<2; h++) YHvsYCM[h]->Write();
-   for(int h=0; h<2; h++) YHvsXF[h]->Write();
-   for(int h=0; h<2; h++) YCMvsXF[h]->Write();
-   for(int h=0; h<2; h++) YHvsZ[h]->Write();
-   for(int h=0; h<2; h++) YCMvsZ[h]->Write();
-   for(int h=0; h<2; h++) XFvsZ[h]->Write();
-   for(int h=0; h<2; h++) YHvsMh[h]->Write();
-   for(int h=0; h<2; h++) XFvsMh[h]->Write();
-   for(int h=0; h<2; h++) PperpvsMh[h]->Write();
-   for(int h=0; h<2; h++) hadPperpVsYH[h]->Write();
-   for(int h=0; h<2; h++) dihPhiHvsHadPhiH[h]->Write();
-   for(int h=0; h<2; h++) hadPhiHDist[h]->Write();
-   PhPerpVsMh->Write(); 
-   YHVsMh->Write(); 
-   MhVsAlpha->Write();
-
-   MhVsYHcorr->Write();
-   MhVsXFcorr->Write();
-   MhVsPperpcorr->Write();
-   MhVsPtVsYh->Write();
-   MhVsThetaVsAlpha->Write();
-   MhVsPhiHVsPhiR->Write();
-   MhVsPhiDVsPhiR->Write();
-
-   AlphaVsYHcorr->Write();
-   AlphaVsPperpcorr->Write();
-
-   PhiDVsPhiR->Write();
-   SinPhiDVsPhiR->Write();
-   PhiDVsPhiHR->Write();
-   SinPhiDVsPhiHR->Write();
-   PhiDVsPhiHR2->Write();
-   SinPhiDVsPhiHR2->Write();
-
    WDist->Write();
    XDist->Write();
    Q2Dist->Write();
@@ -823,6 +789,7 @@ int main(int argc, char** argv) {
    hadEVsPhiCanv->Write();
    hadPtVsPhiCanv->Write();
 
+   // vertex
    hadVzCanv->Write();
    hadVxyDist[qA]->Write();
    hadVxyDist[qB]->Write();
@@ -884,6 +851,42 @@ int main(int argc, char** argv) {
    dihadronCntDist->Write();
 
    diphMdist->Write();
+
+   for(int h=0; h<2; h++) PperpvsMh[h]->Write();
+   for(int h=0; h<2; h++) dihPhiHvsHadPhiH[h]->Write();
+   for(int h=0; h<2; h++) hadPhiHDist[h]->Write();
+   PhPerpVsMh->Write(); 
+   MhVsPperpcorr->Write();
+   MhVsAlpha->Write();
+   MhVsThetaVsAlpha->Write();
+   MhVsPhiHVsPhiR->Write();
+   MhVsPhiDVsPhiR->Write();
+   AlphaVsPperpcorr->Write();
+   PhiDVsPhiR->Write();
+   SinPhiDVsPhiR->Write();
+   PhiDVsPhiHR->Write();
+   SinPhiDVsPhiHR->Write();
+   PhiDVsPhiHR2->Write();
+   SinPhiDVsPhiHR2->Write();
+
+   outfile->mkdir("rapidity");
+   outfile->cd("rapidity");
+   for(int h=0; h<2; h++) YHvsYCM[h]->Write();
+   for(int h=0; h<2; h++) YHvsXF[h]->Write();
+   for(int h=0; h<2; h++) YCMvsXF[h]->Write();
+   for(int h=0; h<2; h++) YHvsZ[h]->Write();
+   for(int h=0; h<2; h++) YCMvsZ[h]->Write();
+   for(int h=0; h<2; h++) XFvsZ[h]->Write();
+   for(int h=0; h<2; h++) YHvsMh[h]->Write();
+   for(int h=0; h<2; h++) XFvsMh[h]->Write();
+   for(int h=0; h<2; h++) hadPperpVsYH[h]->Write();
+   YHVsMh->Write(); 
+   MhVsYHcorr->Write();
+   MhVsXFcorr->Write();
+   MhVsPtVsYh->Write();
+   AlphaVsYHcorr->Write();
+   outfile->cd("/");
+
 
 
    outfile->mkdir("depolarizationFactors");
