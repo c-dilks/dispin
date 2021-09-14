@@ -83,6 +83,7 @@ int main(int argc, char** argv) {
    
    // electron kinematics
    TH1D * eleEDist = new TH1D("eleEDist","e^{-} E distribution",NBINS,0,12);
+   TH1D * elePDist = new TH1D("elePDist","e^{-} p distribution",NBINS,0,12);
    TH1D * elePtDist = new TH1D("elePtDist","e^{-} p_{T} distribution",NBINS,0,4);
    TH1D * eleEtaDist = new TH1D("eleEtaDist","e^{-} #eta distribution",NBINS,-3,6);
    TH1D * eleThetaDist = new TH1D("eleThetaDist","e^{-} #theta distribution",NBINS,0,40);
@@ -111,6 +112,7 @@ int main(int argc, char** argv) {
    TH2D * hadYHCorr = new TH2D("hadYHCorr",corrTitle("Y_{h}"), NBINS,-4,4,NBINS,-4,4);
    TH2D * hadPhiHCorr = new TH2D("hadPhiHCorr",corrTitle("#phi_{h}"), NBINS,-4,4,NBINS,-4,4);
    TH2D * hadVzCorr = new TH2D("hadVzCorr",corrTitle("V_{z}"), NBINS,-30,30,NBINS,-30,30);
+   TH2D * hadEleVzDiffCorr = new TH2D("hadEleVzDiffCorr",corrTitle("V_{z}(had)-V_{z}(e^{-})"), NBINS,-40,40,NBINS,-40,40);
    
    // dihadron's hadron kinematics
    TH1D * hadEDist[2];
@@ -125,6 +127,8 @@ int main(int argc, char** argv) {
    TH1D * hadYHDist[2];
    TH1D * hadPhiHDist[2];
    TH1D * hadVzDist[2];
+   TH1D * hadEleVzDiffDist[2];
+   TH1D * hadChi2pidDist[2];
    TH2D * hadVxyDist[2];
    TH2D * hadEtaVsPhi[2];
    TH2D * hadEVsPhi[2];
@@ -155,6 +159,11 @@ int main(int argc, char** argv) {
      hadVzDist[h] = new TH1D(TString(hadName[h]+"hadVzDist"),
        distTitle("V_{z}"),
        NBINS,-30,30);
+     hadEleVzDiffDist[h] = new TH1D(TString(hadName[h]+"hadEleVzDiffDist"),
+       distTitle("V_{z}(had)-V_{z}(e^{-})"),
+       NBINS,-40,40);
+     hadChi2pidDist[h] = new TH1D(TString(hadName[h]+"hadChi2pidDist"),distTitle("#chi^{2}_{pid}"),
+       NBINS,-5,5);
      hadVxyDist[h] = new TH2D(TString("hadVxyDist_"+hadName[h]),
        TString(hadTitle[h]+" V_{y} vs. V_{x}"),
        3*NBINS,-6,6,3*NBINS,-6,6);
@@ -411,11 +420,6 @@ int main(int argc, char** argv) {
    TH1D * vzDiffHadHad = new TH1D("vzDiffHadHad",
      TString("V_{z}("+hadTitle[qA]+")-V_{z}("+hadTitle[qB]+") distribution"),
      NBINS,-30,30);
-   TH2D * vzDiffEleHad = new TH2D("vzDiffEleHad",
-     TString("V_{z}("+
-       hadTitle[qA]+")-V_{z}(e^{-}) vs. V_{z}("+
-       hadTitle[qB]+")-V_{z}(e^{-})"),
-     NBINS,-40,40,NBINS,-40,40);
 
    TH2D * betaVsP[2];
    for(int h=0; h<2; h++) {
@@ -423,6 +427,15 @@ int main(int argc, char** argv) {
        TString("betaVsP_"+hadName[h]),dist2Title(hadTitle[h],"p","#beta"),
        5*NBINS,0,10,5*NBINS,0.7,1.2);
    };
+
+
+   // sampling fraction (for electrons)
+   TH1D * elePCALenDist = new TH1D("elePCALenDist","electron PCAL energy",NBINS,0,2);
+   TH1D * eleECINenDist = new TH1D("eleECINenDist","electron EC_{in} energy",NBINS,0,2);
+   TH1D * eleECOUTenDist = new TH1D("eleECOUTenDist","electron EC_{out} energy",NBINS,0,2);
+   TH1D * eleSampFracDist = new TH1D("eleSampFracDist","electron sampling fraction",3*NBINS,0,1);
+   TH2D * eleDiagonalSFdist = new TH2D("eleDiagonalSFdist","eleECINen/eleP vs. elePCALen/eleP;elePCALen/eleP;eleECINen/eleP",
+     3*NBINS,0,1,3*NBINS,0,1);
 
    // kinematic factor distributions
    enum KF_enum {kfA, kfB, kfC, kfV, kfW, kfWA, kfVA, kfCA, kfBA, Nkf};
@@ -546,6 +559,7 @@ int main(int argc, char** argv) {
        YDist->Fill(ev->y);
 
        eleEDist->Fill(ev->eleE);
+       elePDist->Fill(ev->eleP);
        elePtDist->Fill(ev->elePt);
        eleEtaDist->Fill(ev->eleEta);
        eleThetaDist->Fill(ev->eleTheta);
@@ -574,6 +588,8 @@ int main(int argc, char** argv) {
        hadYHCorr->Fill(ev->hadYH[qB],ev->hadYH[qA]);
        hadPhiHCorr->Fill(ev->hadPhiH[qB],ev->hadPhiH[qA]);
        hadVzCorr->Fill(ev->hadVertex[qB][eZ],ev->hadVertex[qA][eZ]);
+       hadEleVzDiffCorr->Fill(ev->hadVertex[qB][eZ]-ev->eleVertex[eZ],
+                              ev->hadVertex[qA][eZ]-ev->eleVertex[eZ]);
 
        for(int h=0; h<2; h++) {
          hadEDist[h]->Fill(ev->hadE[h]);
@@ -588,6 +604,8 @@ int main(int argc, char** argv) {
          hadYHDist[h]->Fill(ev->hadYH[h]);
          hadPhiHDist[h]->Fill(ev->hadPhiH[h]);
          hadVzDist[h]->Fill(ev->hadVertex[h][eZ]);
+         hadEleVzDiffDist[h]->Fill(ev->hadVertex[h][eZ] - ev->eleVertex[eZ]);
+         hadChi2pidDist[h]->Fill(ev->hadChi2pid[h]);
          hadVxyDist[h]->Fill(ev->hadVertex[h][eX],ev->hadVertex[h][eY]);
 
          hadEtaVsPhi[h]->Fill(ev->hadPhi[h],ev->hadEta[h]);
@@ -595,8 +613,6 @@ int main(int argc, char** argv) {
          hadPtVsPhi[h]->Fill(ev->hadPhi[h],ev->hadPt[h]);
        };
        vzDiffHadHad->Fill(ev->hadVertex[qA][eZ]-ev->hadVertex[qB][eZ]);
-       vzDiffEleHad->Fill(ev->hadVertex[qB][eZ]-ev->eleVertex[eZ],
-                          ev->hadVertex[qA][eZ]-ev->eleVertex[eZ]);
 
        deltaPhi = Tools::AdjAngle(ev->hadPhi[qA] - ev->hadPhi[qB]);
        deltaPhiDist->Fill(deltaPhi);
@@ -689,6 +705,13 @@ int main(int argc, char** argv) {
          betaVsP[h]->Fill(ev->hadP[h],ev->hadBeta[h]);
        };
 
+       elePCALenDist->Fill(ev->elePCALen);
+       eleECINenDist->Fill(ev->eleECINen);
+       eleECOUTenDist->Fill(ev->eleECOUTen);
+       eleSampFracDist->Fill(ev->eleSampFrac);
+       if(ev->eleP>0) eleDiagonalSFdist->Fill( ev->elePCALen / ev->eleP,  ev->eleECINen / ev->eleP );
+       else eleDiagonalSFdist->Fill(-10000,-10000);
+
        kfVal[kfA] = ev->GetDepolarizationFactor('A');
        kfVal[kfB] = ev->GetDepolarizationFactor('B');
        kfVal[kfC] = ev->GetDepolarizationFactor('C');
@@ -730,12 +753,11 @@ int main(int argc, char** argv) {
    YDist->Write();
 
    eleEDist->Write();
+   elePDist->Write();
    elePtDist->Write();
    eleEtaDist->Write();
    eleThetaDist->Write();
    elePhiDist->Write();
-   eleVzDist->Write();
-   eleVxyDist->Write();
 
    eleEtaVsPhi->Write();
    eleEVsPhi->Write();
@@ -754,6 +776,7 @@ int main(int argc, char** argv) {
    TCanvas * hadYHCanv = new TCanvas("hadYHCanv","hadYHCanv",1000,800);
    TCanvas * hadPhiHCanv = new TCanvas("hadPhiHCanv","hadPhiHCanv",1000,800);
    TCanvas * hadVzCanv = new TCanvas("hadVzCanv","hadVzCanv",1000,800);
+   TCanvas * hadEleVzDiffCanv = new TCanvas("hadEleVzDiffCanv","hadEleVzDiffCanv",1000,800);
    TCanvas * hadEtaVsPhiCanv = new TCanvas("hadEtaVsPhiCanv","hadEtaVsPhiCanv",1000,800);
    TCanvas * hadEVsPhiCanv = new TCanvas("hadEVsPhiCanv","hadEVsPhiCanv",1000,800);
    TCanvas * hadPtVsPhiCanv = new TCanvas("hadPtVsPhiCanv","hadPtVsPhiCanv",1000,800);
@@ -770,6 +793,7 @@ int main(int argc, char** argv) {
    HadronCompareCanv(hadYHCanv, hadYHDist, hadYHCorr);
    HadronCompareCanv(hadPhiHCanv, hadPhiHDist, hadPhiHCorr);
    HadronCompareCanv(hadVzCanv, hadVzDist, hadVzCorr);
+   HadronCompareCanv(hadEleVzDiffCanv, hadEleVzDiffDist, hadEleVzDiffCorr);
    Hadron2dCanv(hadEtaVsPhiCanv, hadEtaVsPhi[qA], hadEtaVsPhi[qB]);
    Hadron2dCanv(hadEVsPhiCanv, hadEVsPhi[qA], hadEVsPhi[qB]);
    Hadron2dCanv(hadPtVsPhiCanv, hadPtVsPhi[qA], hadPtVsPhi[qB]);
@@ -790,11 +814,14 @@ int main(int argc, char** argv) {
    hadPtVsPhiCanv->Write();
 
    // vertex
+   hadEleVzDiffCanv->Write();
+   eleVzDist->Write();
+   for(int h=0; h<2; h++) hadEleVzDiffDist[h]->Write();
    hadVzCanv->Write();
-   hadVxyDist[qA]->Write();
+   for(int h=0; h<2; h++) hadVxyDist[h]->Write();
    hadVxyDist[qB]->Write();
    vzDiffHadHad->Write();
-   vzDiffEleHad->Write();
+   eleVxyDist->Write();
 
    deltaPhiDist->Write();
 
@@ -808,6 +835,7 @@ int main(int argc, char** argv) {
    MmissDistZoom->Write();
    YHDist->Write();
    for(int h=0; h<2; h++) hadYHDist[h]->Write();
+   for(int h=0; h<2; h++) hadXFDist[h]->Write();
 
    MmissVsMh->Write();
 
@@ -868,6 +896,18 @@ int main(int argc, char** argv) {
    SinPhiDVsPhiHR->Write();
    PhiDVsPhiHR2->Write();
    SinPhiDVsPhiHR2->Write();
+
+   outfile->mkdir("pidRefinementDists");
+   outfile->cd("pidRefinementDists");
+   elePCALenDist->Write();
+   eleECINenDist->Write();
+   eleECOUTenDist->Write();
+   eleSampFracDist->Write();
+   eleDiagonalSFdist->Write();
+   for(int h=0; h<2; h++) hadThetaDist[h]->Write();
+   for(int h=0; h<2; h++) hadPDist[h]->Write();
+   for(int h=0; h<2; h++) hadChi2pidDist[h]->Write();
+   outfile->cd("/");
 
    outfile->mkdir("rapidity");
    outfile->cd("rapidity");
