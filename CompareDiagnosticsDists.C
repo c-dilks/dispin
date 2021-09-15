@@ -4,6 +4,7 @@ R__LOAD_LIBRARY(DiSpin)
 // - useful for presentations
 
 TFile * infile[2];
+TString infileT[2];
 TCanvas * canv;
 Float_t textSize=0.04;
 int f;
@@ -11,6 +12,7 @@ Double_t electronCnt[2];
 TString dataName[2];
 TString latexFile;
 TH1D * dist[2];
+TString outDir;
 
 /* `distName` is the name of the distribution (no need to specify path);
  *  if empty, it will instead use whatever's currently at the `dist[]` pointers
@@ -27,23 +29,29 @@ void CompareDist(TString distName, TString varTex, TString distTitle="") {
     printf("compare %s\n",distName.Data());
     if(dist[f]==NULL) { printf("...not found...\n"); return; };
     distName(TRegexp("^.*/"))="";
-    if(distTitle!="") dist[f]->SetTitle(distTitle);
+    if(distTitle!="") {
+      dist[f]->SetTitle(distTitle+" distribution");
+      dist[f]->GetXaxis()->SetTitle(distTitle);
+    };
     dist[f]->Scale(1/electronCnt[f]); // normalize by electron yield
     //dist[f]->Sumw2(); // (already done, redundant)
-    dist[f]->SetMarkerStyle(f==0?kFullTriangleUp:kFullTriangleDown);
-    dist[f]->SetMarkerSize(2.0);
-    dist[f]->SetMarkerColor(f==0?kGreen+1:kViolet+2);
-    dist[f]->SetLineColor(f==0?kGreen+1:kViolet+2);
+    dist[f]->SetMarkerStyle(kFullCircle/*f==0?kFullTriangleUp:kFullTriangleDown*/);
+    dist[f]->SetMarkerSize(0.5);
+    dist[f]->SetMarkerColor(f==0?kRed-7:kBlue+3);
+    dist[f]->SetLineColor(f==0?kRed-7:kBlue+3);
     dist[f]->SetLineWidth(2);
     dist[f]->GetXaxis()->SetTitleSize(textSize);
     dist[f]->GetXaxis()->SetLabelSize(textSize);
     dist[f]->GetYaxis()->SetTitleSize(textSize);
     dist[f]->GetYaxis()->SetLabelSize(textSize);
+
+    if(TString(dist[f]->GetName()).Contains("ECOUT")) dist[f]->GetXaxis()->SetRangeUser(0.1,0.4);
+    if(TString(dist[f]->GetName()).Contains("SampFrac")) dist[f]->GetXaxis()->SetRangeUser(0.1,0.4);
   };
 
   // ratio
   rat = (TH1D*) dist[0]->Clone();
-  rat->Divide(dist[1]); // dist[0] / dist[1]
+  rat->Divide(dist[1]); // dist[0] / dist[1], assumes UNCORRELATED DATA for error bars
   rat->SetLineColor(kBlack);
   rat->SetMarkerColor(kBlack);
   rat->SetMarkerStyle(kFullCircle);
@@ -57,20 +65,23 @@ void CompareDist(TString distName, TString varTex, TString distTitle="") {
   canv = new TCanvas(
     TString(distName+"_canv"),TString(distName+"_canv"),1600,800);
   canv->Divide(2,1);
-  canv->cd(1); canv->GetPad(1)->SetGrid(1,1);
-  dist[0]->Draw("P"); dist[1]->Draw("PSAME");
-  canv->cd(2); canv->GetPad(2)->SetGrid(1,1);
-  rat->Draw("E");
-  TString imgFile = "diagcomp/"+TString(distName)+".png";
+  for(int pad=1; pad<=2; pad++) {
+    canv->GetPad(pad)->SetBottomMargin(0.15);
+    canv->GetPad(pad)->SetLeftMargin(0.15);
+    canv->GetPad(pad)->SetGrid(1,1);
+  };
+  canv->cd(1); dist[0]->Draw("P"); dist[1]->Draw("PSAME");
+  canv->cd(2); rat->Draw("E");
+  TString imgFile = outDir+"/"+TString(distName)+".png";
   canv->Print(imgFile);
 
   // latex code
   Tools::LatexImage(
       latexFile,
       "img/"+imgFile,
-      "Left panel: comparison of " + varTex + " distributions for data sets ``" +
-        dataName[0]+"'' (green upward triangles) and ``" +
-        dataName[1]+"'' (purple downward triangles). " +
+      "Left panel: comparison of " + varTex + " distributions from data sets ``" +
+        dataName[0]+"'' (light red points) and ``" +
+        dataName[1]+"'' (dark blue points). " +
         "Right panel: ratio of data sets."
         ,
       "diagnosticComp_"+distName,
@@ -124,7 +135,7 @@ void CompareDist2D(TString distName) {
   canv->cd(1); canv->GetPad(1)->SetGrid(1,1); dist[0]->Draw("COLZ");
   canv->cd(2); canv->GetPad(2)->SetGrid(1,1); dist[1]->Draw("COLZ");
   canv->cd(3); canv->GetPad(3)->SetGrid(1,1); rat->Draw("COLZ");
-  TString imgFile = "diagcomp/"+TString(distName)+".png";
+  TString imgFile = outDir+"/"+TString(distName)+".png";
   canv->Print(imgFile);
 };
 
@@ -157,26 +168,35 @@ void DrawCanv(TString distName) {
   
 void CompareDiagnosticsDists(
   TString infile0N="plots.inbending.root",
-  TString infile1N="plots.rga_spring19.root"
+  TString infile1N="plots.rga_spring19.root",
+  TString outDir_="diagcomp",
+  TString infileTitle0="",
+  TString infileTitle1=""
 ) {
   infile[0] = new TFile(infile0N,"READ");
   infile[1] = new TFile(infile1N,"READ");
+  infileT[0] = infileTitle0;
+  infileT[1] = infileTitle1;
   gStyle->SetOptStat(0);
   gStyle->SetPalette(kGreenPink);
 
-  TString outdir="diagcomp";
-  gROOT->ProcessLine(".! mkdir -p "+outdir);
-  latexFile = outdir+"/img.tex";
+  outDir=outDir_;
+  gROOT->ProcessLine(".! mkdir -p "+outDir);
+  latexFile = outDir+"/img.tex";
   gSystem->RedirectOutput(latexFile,"w");
   printf("%% ############ begin generated tex ############\n");
   gSystem->RedirectOutput(0);
 
   // get data set name
   for(f=0;f<2;f++) {
-    dataName[f] = infile[f]->GetName();
-    dataName[f](TRegexp("^plots\\."))="";
-    dataName[f](TRegexp("\\.root$"))="";
-    printf("dataName %d = %s\n",f,dataName[f].Data());
+    if(infileT[f]=="") {
+      dataName[f] = infile[f]->GetName();
+      dataName[f](TRegexp("^plots\\."))="";
+      dataName[f](TRegexp("\\.root$"))="";
+      printf("dataName %d = %s\n",f,dataName[f].Data());
+    } else {
+      dataName[f] = infileT[f];
+    };
   };
   
 
@@ -185,23 +205,65 @@ void CompareDiagnosticsDists(
     electronCnt[f] = ((TH1D*)infile[f]->Get("dihadronCntDist"))->GetEntries();
   };
 
-  CompareDist("Q2Dist","$Q^2$");
-  CompareDist("XDist","$x$");
-  CompareDist("WDist","$W$");
 
-  CompareDist("MhDist","$M_h$");
-  CompareDist("ZpairDist","$z$");
-  CompareDist("PhPerpDist","$P_h^\\perp$");
-  CompareDist("thetaDist","$\\theta$");
-  CompareDist("MmissDist","$M_X$");
+  // local function for running `CompareDist` over two hadrons of the dihadron
+  auto CompareDistHadron = [&](
+      TString distN,
+      TString varLatex,
+      TString varRoot,
+      TString varLatexExtra="",
+      TString varRootExtra=""
+      ) {
+    TString had_name[2] = {"piPlus","piMinus"};
+    TString had_latex[2] = {"\\pi^+","\\pi^-"};
+    TString had_root[2] = {"#pi^{+}","#pi^{-}"};
+    for(int h=0; h<2; h++) {
+      CompareDist(
+          had_name[h] + distN,
+          TString("$") + varLatex + TString("\\left(") + had_latex[h] + TString("\\right)") + varLatexExtra + TString("$"),
+          varRoot + TString("(") + had_root[h] + TString(")") + varRootExtra
+          );
+    };
+  };
 
-  CompareDist("PhiHDist","$\\phi_h$");
-  CompareDist("PhiRDist","$\\phi_R$");
 
-  CompareDist("piPlushadPhiHDist",  "$\\phi_h(\\pi^+)$",  "#phi_{h}(#pi^{+}) distribution");
-  CompareDist("piMinushadPhiHDist", "$\\phi_h(\\pi^-)$",  "#phi_{h}(#pi^{-}) distribution");
 
-  CompareDist("eleVzDist","electron $v_z$");
+  // make comparison plots ////////////////////////////
+
+  // DIS
+  CompareDist("Q2Dist","$Q^2$","Q^{2}");
+  CompareDist("XDist","$x$","x");
+  CompareDist("WDist","$W$","W");
+  CompareDist("YDist","$y$","y");
+
+  // dihadron
+  CompareDist("MhDist","$M_h$","M_{h}");
+  CompareDist("ZpairDist","$z$","z_{pair}");
+  CompareDist("PhPerpDist","$P_h^\\perp$","p_{T}");
+  CompareDist("MmissDist","$M_X$","M_{X}");
+  CompareDist("PhiHDist","$\\phi_h$","#phi_{h}");
+  CompareDist("PhiRDist","$\\phi_R$","#phi_{R}");
+  CompareDist("thetaDist","$\\theta$","#theta");
+  CompareDistHadron("hadPhiHDist","\\phi_h","#phi_{h}");
+
+  // fragmentation region
+  CompareDistHadron("hadXFDist","x_F","x_{F}");
+
+  // vertex
+  CompareDist("eleVzDist","$v_z\\left(e^-\\right)$","v_{z}(e^{-})");
+  CompareDistHadron("hadEleVzDiffDist","v_z","v_{z}","-v_z\\left(e^-\\right)","-v_{z}(e^{-})");
+
+  // PID
+  CompareDist("eleThetaDist","$\\theta_{lab}\\left(e^-\\right)$","#theta_{lab}(e^{-})");
+  CompareDist("elePDist","$p\\left(e^-\\right)$","p(e^{-})");
+  CompareDist("elePCALenDist","$E_{PCAL}\\left(e^-\\right)$","E_{PCAL}(e^{-})");
+  CompareDist("eleECINenDist","$E_{ECIN}\\left(e^-\\right)$","E_{ECIN}(e^{-})");
+  CompareDist("eleECOUTenDist","$E_{ECOUT}\\left(e^-\\right)$","E_{ECOUT}(e^{-})");
+  CompareDist("eleSampFracDist","electron sampling fraction","S.F.(e^{-})");
+  CompareDistHadron("hadThetaDist","\\theta_{lab}","#theta_{lab}");
+  CompareDistHadron("hadPDist","p","p");
+  CompareDistHadron("hadChi2pidDist","\\chipid","#chi^{2}_{pid}");
+
 
   /*
   CompareDist2Dproj(

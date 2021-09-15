@@ -172,7 +172,7 @@ class Tools {
       gSystem->RedirectOutput(latexFile,"a");
       printf("\\begin{figure}[%s]\n",format.Data());
       printf("\\centering\n");
-      printf("\\includegraphics[width=%f\\textwidth]{%s}\n",widthScale,imgFile.Data());
+      printf("\\includegraphics[width=%.1f\\textwidth]{%s}\n",widthScale,imgFile.Data());
       printf("\\caption{%s}\n",caption.Data());
       printf("\\label{%s}\n",label.Data());
       printf("%%~\\\\\n"); // uncomment this and comment out next 2 lines for 'connected' figures
