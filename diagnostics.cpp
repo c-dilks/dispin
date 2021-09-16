@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
 
 
    // DIS kinematics
-   TH1D * WDist = new TH1D("WDist","W distribution;W",NBINS,0,6);
+   TH1D * WDist = new TH1D("WDist","W distribution;W",NBINS,1,5);
    TH1D * XDist = new TH1D("XDist","x distribution;x",NBINS,0,1);
    TH1D * Q2Dist = new TH1D("Q2Dist","Q^{2} distribution;Q^{2}",NBINS,0,12);
    TH2D * Q2vsW = new TH2D("Q2vsW","Q^{2} vs. W;W;Q^{2}",
@@ -82,8 +82,8 @@ int main(int argc, char** argv) {
    TH1D * YDist = new TH1D("YDist","y distribution;y",NBINS,0,1);
    
    // electron kinematics
-   TH1D * eleEDist = new TH1D("eleEDist","e^{-} E distribution",NBINS,0,12);
-   TH1D * elePDist = new TH1D("elePDist","e^{-} p distribution",NBINS,0,12);
+   TH1D * eleEDist = new TH1D("eleEDist","e^{-} E distribution",NBINS,0,11);
+   TH1D * elePDist = new TH1D("elePDist","e^{-} p distribution",NBINS,0,11);
    TH1D * elePtDist = new TH1D("elePtDist","e^{-} p_{T} distribution",NBINS,0,4);
    TH1D * eleEtaDist = new TH1D("eleEtaDist","e^{-} #eta distribution",NBINS,-3,6);
    TH1D * eleThetaDist = new TH1D("eleThetaDist","e^{-} #theta distribution",NBINS,0,40);
@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
    TH2D * elePtVsPhi = new TH2D("elePtvsPhi","e^{-} p_{T} vs #phi;#phi;#p_{T}",
      NBINS,-PIe,PIe,NBINS,0,4);
    TH1D * eleVzDist = new TH1D("eleVzDist","e^{-} V_{z} distribution",
-     NBINS,-20,20);
+     3*NBINS,-40,40);
    TH2D * eleVxyDist = new TH2D("eleVxyDist","e^{-} V_{y} vs. V_{x}",
      3*NBINS,-6,6,3*NBINS,-6,6);
 
@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
    TH2D * hadYHCorr = new TH2D("hadYHCorr",corrTitle("Y_{h}"), NBINS,-4,4,NBINS,-4,4);
    TH2D * hadPhiHCorr = new TH2D("hadPhiHCorr",corrTitle("#phi_{h}"), NBINS,-4,4,NBINS,-4,4);
    TH2D * hadVzCorr = new TH2D("hadVzCorr",corrTitle("V_{z}"), NBINS,-30,30,NBINS,-30,30);
-   TH2D * hadEleVzDiffCorr = new TH2D("hadEleVzDiffCorr",corrTitle("V_{z}(had)-V_{z}(e^{-})"), NBINS,-40,40,NBINS,-40,40);
+   TH2D * hadEleVzDiffCorr = new TH2D("hadEleVzDiffCorr",corrTitle("V_{z}(had)-V_{z}(e^{-})"), NBINS,-100,100,NBINS,-100,100);
    
    // dihadron's hadron kinematics
    TH1D * hadEDist[2];
@@ -129,6 +129,7 @@ int main(int argc, char** argv) {
    TH1D * hadVzDist[2];
    TH1D * hadEleVzDiffDist[2];
    TH1D * hadChi2pidDist[2];
+   TH2D * hadChi2pidVsP[2];
    TH2D * hadVxyDist[2];
    TH2D * hadEtaVsPhi[2];
    TH2D * hadEVsPhi[2];
@@ -137,7 +138,7 @@ int main(int argc, char** argv) {
      hadEDist[h] = new TH1D(TString(hadName[h]+"hadEDist"),distTitle("E"),
        NBINS,0,10);
      hadPDist[h] = new TH1D(TString(hadName[h]+"hadPDist"),distTitle("p"),
-       NBINS,0,10);
+       NBINS,0,8);
      hadPtDist[h] = new TH1D(TString(hadName[h]+"hadPtDist"),distTitle("p_{T}"),
        NBINS,0,4);
      hadPperpDist[h] = new TH1D(TString(hadName[h]+"hadPperpDist"),distTitle("p_{perp}"),
@@ -161,9 +162,12 @@ int main(int argc, char** argv) {
        NBINS,-30,30);
      hadEleVzDiffDist[h] = new TH1D(TString(hadName[h]+"hadEleVzDiffDist"),
        distTitle("V_{z}(had)-V_{z}(e^{-})"),
-       NBINS,-40,40);
+       6*NBINS,-100,100);
      hadChi2pidDist[h] = new TH1D(TString(hadName[h]+"hadChi2pidDist"),distTitle("#chi^{2}_{pid}"),
-       NBINS,-5,5);
+       NBINS,-6,6);
+     hadChi2pidVsP[h] = new TH2D(TString(hadName[h]+"hadChi2pidVsP"),hadTitle[h]+" #chi^{2}_{pid} vs. p;p;#chi^{2}_{pid}",
+       NBINS,0,8, NBINS,-6,6);
+
      hadVxyDist[h] = new TH2D(TString("hadVxyDist_"+hadName[h]),
        TString(hadTitle[h]+" V_{y} vs. V_{x}"),
        3*NBINS,-6,6,3*NBINS,-6,6);
@@ -193,7 +197,7 @@ int main(int argc, char** argv) {
    TH1D * ZpairDist = new TH1D("ZpairDist","z_{pair} distribution;z_{pair}",NBINS,0,1);
    TH1D * zetaDist = new TH1D("zetaDist","#zeta distribution;#zeta",NBINS,-1,1);
    TH1D * xFDist = new TH1D("xFDist","x_{F} distribution;x_{F}",NBINS,-2,2);
-   TH1D * MmissDist = new TH1D("MmissDist","M_{X} distribution;M_{X}",NBINS,-2,6);
+   TH1D * MmissDist = new TH1D("MmissDist","M_{X} distribution;M_{X}",2*NBINS,-1,4);
 
    TH1D * MmissDistZoom = new TH1D("MmissDistZoom","M_{X} distribution;M_{X}",
      3*NBINS,0.5,3);
@@ -429,13 +433,16 @@ int main(int argc, char** argv) {
    };
 
 
-   // sampling fraction (for electrons)
-   TH1D * elePCALenDist = new TH1D("elePCALenDist","electron PCAL energy",NBINS,0,2);
-   TH1D * eleECINenDist = new TH1D("eleECINenDist","electron EC_{in} energy",NBINS,0,2);
-   TH1D * eleECOUTenDist = new TH1D("eleECOUTenDist","electron EC_{out} energy",NBINS,0,2);
-   TH1D * eleSampFracDist = new TH1D("eleSampFracDist","electron sampling fraction",3*NBINS,0,1);
+   // ECAL energy, sampling fraction (for electrons)
+   TH1D * elePCALenDist = new TH1D("elePCALenDist","electron PCAL energy",NBINS,0,1.8);
+   TH1D * eleECINenDist = new TH1D("eleECINenDist","electron EC_{in} energy",NBINS,0,1.5);
+   TH1D * eleECOUTenDist = new TH1D("eleECOUTenDist","electron EC_{out} energy",NBINS,0,0.6);
+   TH2D * eleECALvsPCALedep = new TH2D("eleECALvsPCALedep","E_{ECIN}+E_{ECOUT} vs. E_{PCAL};E_{PCAL};E_{ECIN}+E_{ECOUT}",
+     2*NBINS, 0, 1.5, 2*NBINS, 0, 1.0);
+   TH1D * eleSampFracDist = new TH1D("eleSampFracDist","electron sampling fraction",2*NBINS,0,0.4);
+   TH2D * eleSFvsP = new TH2D("eleSFvsP","electron S.F. vs. p;p;S.F.", NBINS,0,11, 2*NBINS,0,0.4);
    TH2D * eleDiagonalSFdist = new TH2D("eleDiagonalSFdist","eleECINen/eleP vs. elePCALen/eleP;elePCALen/eleP;eleECINen/eleP",
-     3*NBINS,0,1,3*NBINS,0,1);
+     NBINS,0,0.35, NBINS,0,0.35);
 
    // kinematic factor distributions
    enum KF_enum {kfA, kfB, kfC, kfV, kfW, kfWA, kfVA, kfCA, kfBA, Nkf};
@@ -606,6 +613,7 @@ int main(int argc, char** argv) {
          hadVzDist[h]->Fill(ev->hadVertex[h][eZ]);
          hadEleVzDiffDist[h]->Fill(ev->hadVertex[h][eZ] - ev->eleVertex[eZ]);
          hadChi2pidDist[h]->Fill(ev->hadChi2pid[h]);
+         hadChi2pidVsP[h]->Fill(ev->hadP[h],ev->hadChi2pid[h]);
          hadVxyDist[h]->Fill(ev->hadVertex[h][eX],ev->hadVertex[h][eY]);
 
          hadEtaVsPhi[h]->Fill(ev->hadPhi[h],ev->hadEta[h]);
@@ -708,7 +716,9 @@ int main(int argc, char** argv) {
        elePCALenDist->Fill(ev->elePCALen);
        eleECINenDist->Fill(ev->eleECINen);
        eleECOUTenDist->Fill(ev->eleECOUTen);
+       eleECALvsPCALedep->Fill( ev->elePCALen, ev->eleECINen + ev->eleECOUTen );
        eleSampFracDist->Fill(ev->eleSampFrac);
+       eleSFvsP->Fill(ev->eleP,ev->eleSampFrac);
        if(ev->eleP>0) eleDiagonalSFdist->Fill( ev->elePCALen / ev->eleP,  ev->eleECINen / ev->eleP );
        else eleDiagonalSFdist->Fill(-10000,-10000);
 
@@ -902,11 +912,14 @@ int main(int argc, char** argv) {
    elePCALenDist->Write();
    eleECINenDist->Write();
    eleECOUTenDist->Write();
+   eleECALvsPCALedep->Write();
    eleSampFracDist->Write();
+   eleSFvsP->Write();
    eleDiagonalSFdist->Write();
    for(int h=0; h<2; h++) hadThetaDist[h]->Write();
    for(int h=0; h<2; h++) hadPDist[h]->Write();
    for(int h=0; h<2; h++) hadChi2pidDist[h]->Write();
+   for(int h=0; h<2; h++) hadChi2pidVsP[h]->Write();
    outfile->cd("/");
 
    outfile->mkdir("rapidity");

@@ -44,9 +44,6 @@ void CompareDist(TString distName, TString varTex, TString distTitle="") {
     dist[f]->GetXaxis()->SetLabelSize(textSize);
     dist[f]->GetYaxis()->SetTitleSize(textSize);
     dist[f]->GetYaxis()->SetLabelSize(textSize);
-
-    if(TString(dist[f]->GetName()).Contains("ECOUT")) dist[f]->GetXaxis()->SetRangeUser(0.1,0.4);
-    if(TString(dist[f]->GetName()).Contains("SampFrac")) dist[f]->GetXaxis()->SetRangeUser(0.1,0.4);
   };
 
   // ratio
@@ -61,7 +58,7 @@ void CompareDist(TString distName, TString varTex, TString distTitle="") {
   ratT(TRegexp("distribution")) = dataName[0]+"/"+dataName[1];
   rat->SetTitle(ratT);
 
-  // draw canvas
+  // define canvas
   canv = new TCanvas(
     TString(distName+"_canv"),TString(distName+"_canv"),1600,800);
   canv->Divide(2,1);
@@ -70,6 +67,14 @@ void CompareDist(TString distName, TString varTex, TString distTitle="") {
     canv->GetPad(pad)->SetLeftMargin(0.15);
     canv->GetPad(pad)->SetGrid(1,1);
   };
+
+  // specific adjustments for specific histogram
+  for(f=0;f<2;f++) {
+    if(TString(dist[f]->GetName()).Contains("eleVzDist")) canv->GetPad(1)->SetLogy(1);
+    if(TString(dist[f]->GetName()).Contains("hadEleVzDiff")) canv->GetPad(1)->SetLogy(1);
+  };
+
+  // draw
   canv->cd(1); dist[0]->Draw("P"); dist[1]->Draw("PSAME");
   canv->cd(2); rat->Draw("E");
   TString imgFile = outDir+"/"+TString(distName)+".png";
