@@ -72,6 +72,9 @@ void CompareDist(TString distName, TString varTex, TString distTitle="") {
   for(f=0;f<2;f++) {
     if(TString(dist[f]->GetName()).Contains("eleVzDist")) canv->GetPad(1)->SetLogy(1);
     if(TString(dist[f]->GetName()).Contains("hadEleVzDiff")) canv->GetPad(1)->SetLogy(1);
+    if(TString(dist[f]->GetName()).Contains("elePCALenDist")) canv->GetPad(1)->SetLogy(1);
+    if(TString(dist[f]->GetName()).Contains("eleECINenDist")) canv->GetPad(1)->SetLogy(1);
+    if(TString(dist[f]->GetName()).Contains("eleECOUTenDist")) canv->GetPad(1)->SetLogy(1);
   };
 
   // draw
@@ -91,7 +94,7 @@ void CompareDist(TString distName, TString varTex, TString distTitle="") {
         ,
       "diagnosticComp_"+distName,
       "h",
-      0.7
+      1.0
       );
 };
 
@@ -109,13 +112,31 @@ void CompareDist2Dproj(TString distName, TString xvarTex, TString yvarTex, TStri
 };
 
 
+// add a profile to 2D dist (cf. Tools::ApplyProfile)
+TProfile *MakeProfile(TH2D * histo, Int_t whichAxis, Int_t id) {
+  TProfile * prof;
+  TString profN = Form("%s_%d_pf",histo->GetName(),id);
+  switch(whichAxis) {
+    case 1: prof = histo->ProfileX(profN); break;
+    case 2: prof = histo->ProfileY(profN); break;
+    default: 
+            fprintf(stderr,"ERROR: bad whichAxis in MakeProfile\n");
+            return nullptr;
+  };
+  prof->SetLineColor(kBlack);
+  prof->SetLineWidth(3);
+  return prof;
+};
 
-void CompareDist2D(TString distName) {
+
+
+void CompareDist2D(TString distName, TString varTexX, TString varTexY) {
   TH2D * dist[2];
   TH2D * rat;
   printf("compare %s\n",distName.Data());
 
   // distributions
+  TString distT[2];
   for(f=0;f<2;f++) {
     dist[f] = (TH2D*) infile[f]->FindObjectAny(distName);
     if(dist[f]==NULL) { printf("...not found...\n"); return; };
@@ -126,22 +147,66 @@ void CompareDist2D(TString distName) {
     dist[f]->GetXaxis()->SetLabelSize(textSize);
     dist[f]->GetYaxis()->SetTitleSize(textSize);
     dist[f]->GetYaxis()->SetLabelSize(textSize);
+    distT[f] = dist[f]->GetTitle();
+    dist[f]->SetTitle(distT[f]+" :: "+dataName[f]);
   };
 
   // ratio
   rat = (TH2D*) dist[0]->Clone();
+  rat->SetTitle("ratio "+dataName[0]+" / "+dataName[1]);
   rat->Divide(dist[1]); // dist[0] / dist[1]
   rat->GetZaxis()->SetRangeUser(0.1,2.1);
 
   // draw canvas
   canv = new TCanvas(
-    TString(distName+"_canv"),TString(distName+"_canv"),2400,800);
-  canv->Divide(3,1);
-  canv->cd(1); canv->GetPad(1)->SetGrid(1,1); dist[0]->Draw("COLZ");
-  canv->cd(2); canv->GetPad(2)->SetGrid(1,1); dist[1]->Draw("COLZ");
-  canv->cd(3); canv->GetPad(3)->SetGrid(1,1); rat->Draw("COLZ");
+    TString(distName+"_canv"),TString(distName+"_canv"),2000,1600);
+  canv->Divide(2,2);
+  for(int pad=1; pad<=4; pad++) {
+    canv->GetPad(pad)->SetBottomMargin(0.15);
+    canv->GetPad(pad)->SetLeftMargin(0.15);
+    canv->GetPad(pad)->SetRightMargin(0.15);
+    canv->GetPad(pad)->SetGrid(1,1);
+  };
+  TProfile *distProf[2];
+  for(int f=0;f<2;f++) {
+    canv->cd(f+1);
+    dist[f]->Draw("COLZ");
+    distProf[f] = MakeProfile(dist[f],1,f);
+    distProf[f]->Draw("SAME");
+  };
+  canv->cd(3); rat->Draw("COLZ");
+  canv->cd(4); 
+  TProfile *distProfClone[2];
+  TString distProfT[2];
+  for(int f=0;f<2;f++) {
+    distProfClone[f] = (TProfile*)distProf[f]->Clone();
+    distProfT[f] = TString("average ")+distProfClone[f]->GetTitle();
+    distProfT[f](TRegexp(" ::.*$")) = "";
+    distProfClone[f]->SetTitle(distProfT[f]);
+  };
+  distProfClone[0]->SetLineColor(kRed-7);
+  distProfClone[1]->SetLineColor(kBlue+3);
+  distProfClone[1]->SetLineWidth(1);
+  distProfClone[0]->Draw();
+  distProfClone[1]->Draw("SAME");
   TString imgFile = outDir+"/"+TString(distName)+".png";
   canv->Print(imgFile);
+
+  // latex code
+  Tools::LatexImage(
+      latexFile,
+      "img/"+imgFile,
+      "Distribution of " + varTexY + " vs. " + varTexX + " from data set ``" +
+      dataName[0]+"'' (top-left) and data set ``" +
+      dataName[1]+"'' (top-right). Profiles are given by black points. The ratio " +
+      "of the distributions is given in the bottom-left, and the comparison of the " +
+      "profiles is in the bottom-right, where light red and dark blue respectively correspond to " +
+      "the top-left and top-right profiles."
+      ,
+      "diagnosticComp_"+distName,
+      "h",
+      1.0
+      );
 };
 
 /*
@@ -268,7 +333,11 @@ void CompareDiagnosticsDists(
   CompareDistHadron("hadThetaDist","\\theta_{lab}","#theta_{lab}");
   CompareDistHadron("hadPDist","p","p");
   CompareDistHadron("hadChi2pidDist","\\chipid","#chi^{2}_{pid}");
-
+  CompareDist2D("eleDiagonalSFdist","$E_{\\mbox{PCAL}}/p$","$E_{\\mbox{ECIN}}/p$");
+  CompareDist2D("eleSFvsP","$p$","electron sampling fraction");
+  CompareDist2D("eleECALvsPCALedep","$E_{\\mbox{PCAL}}$","$E_{\\mbox{ECAL}}$");
+  CompareDist2D("piPlushadChi2pidVsP","$p$","$\\pi^+~\\chi^2_{\\mbox{pid}}$");
+  CompareDist2D("piMinushadChi2pidVsP","$p$","$\\pi^-~\\chi^2_{\\mbox{pid}}$");
 
   /*
   CompareDist2Dproj(

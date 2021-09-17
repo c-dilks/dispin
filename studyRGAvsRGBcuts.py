@@ -21,8 +21,8 @@ cutSetList = [
     "cut_fragmentation_region_disabled",
     "cut_PID_disabled",
     "cut_vertex_disabled",
-    "cut_missing_mass_disabled"
-    "cut_fiducial_volume_disabled"
+    "cut_missing_mass_disabled",
+    "cut_fiducial_volume_disabled",
 ]
 
 # loop through data and cuts
