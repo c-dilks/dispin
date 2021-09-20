@@ -6,7 +6,7 @@ export BRUFIT=${DISPIN_HOME}/deps/brufit
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${BRUFIT}/lib
 
 # PROOF logs (your path may be different)
-jobdir=$(echo $DISPIN_HOME | sed 's,'"$HOME/"',,' | sed 's,\/,-,')
+jobdir=$(echo $DISPIN_HOME | sed 's,'"$HOME/"',,' | sed 's,\/,-,g')
 export PROOF_LOG=${HOME}/.proof/${jobdir}/last-lite-session
 
 # set dependency environment variables
@@ -29,3 +29,5 @@ env|grep --color -w LD_LIBRARY_PATH
 env|grep --color -w JYPATH
 env|grep --color -w PROOF_LOG
 
+# brufit alias
+alias brufit="root $BRUFIT/macros/LoadBru.C"
