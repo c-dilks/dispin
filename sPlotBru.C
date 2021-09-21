@@ -1,5 +1,8 @@
 R__LOAD_LIBRARY(DiSpin)
-// run with `brufit sPlotBru.C`
+#include "GraphParameters.C" // $BRUFIT/macros
+//
+// IMPORTANT: run with `brufit sPlotBru.C`
+//
 
 void sPlotBru(
     TString outDir="splot",
@@ -102,4 +105,7 @@ void sPlotBru(
 
   // make sure weighted tree is written properly
   SP.DeleteWeightedTree();
+
+  // draw parameters vs. bin
+  for(int d=0; d<BS->dimensions; d++) GraphParameters(outDir+"/",BS->GetIVname(d));
 };
