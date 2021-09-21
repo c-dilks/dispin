@@ -76,15 +76,15 @@ void asymBruFit(TString bruDir="bruspin", TString minimizer="mcmc",
 
   // load data and MC trees
   /* pi+, pi- */
-  //B->LoadDataSets("catTreeData.rga_inbending_all.0x34.root","catTreeMC.mc.PRL.0x34.root"); // RGA
-  B->LoadDataSets("catTreeData.rgb_inbending_all.0x34.root","catTreeMC.mc.PRL.0x34.root"); // RGB
+  //B->LoadDataSets("catTreeData.rga_inbending_all.0x34.idx.root","catTreeMC.mc.PRL.0x34.idx.root"); // RGA
+  B->LoadDataSets("catTreeData.rgb_inbending_all.0x34.idx.root","catTreeMC.mc.PRL.0x34.idx.root"); // RGB
   /* pi+, pi+ */
-  //B->LoadDataSets("catTreeData.0x33.XFgt0.root","catTreeMC.0x33.spinAbsent.XFgt0.root"); // pi+pi+
+  //B->LoadDataSets("catTreeData.0x33.XFgt0.idx.root","catTreeMC.0x33.spinAbsent.XFgt0.idx.root"); // pi+pi+
   /* pi+, p */
-  //B->LoadDataSets("spinroot.proton.pion/catTreeData.root","catTreeMC.proton.pion.root");
+  //B->LoadDataSets("spinroot.proton.pion/catTreeData.idx.root","catTreeMC.proton.pion.idx.root");
   /* pi+, pi0 */
-  //B->LoadDataSets("catTreeData.rga_inbending_all.0x35.root","catTreeMC.mc.PRL.0x35.root"); // pi0 sig window
-  //B->LoadDataSets("catTreeData.rga_inbending_all.0x3c.root","catTreeMC.mc.PRL.0x3c.root"); // pi0 bg window
+  //B->LoadDataSets("catTreeData.rga_inbending_all.0x35.idx.root","catTreeMC.mc.PRL.0x35.idx.root"); // pi0 sig window
+  //B->LoadDataSets("catTreeData.rga_inbending_all.0x3c.idx.root","catTreeMC.mc.PRL.0x3c.idx.root"); // pi0 bg window
 
   // hyperparameters
   // - MCMC settings

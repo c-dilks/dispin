@@ -10,31 +10,15 @@ void sPlotBru(
     Int_t nbins0=-1, Int_t nbins1=-1, Int_t nbins2=-1
     ) {
 
-  // input file name
-  TString inFileN="catTreeData.rga_inbending_all.0x3b.root";
-
-  // add unique index `Idx` to tree; the tree will be cloned and stored
-  // in `outDir`, with the same file name as `inFileN`
-  gROOT->ProcessLine(".! mkdir -p "+outDir);
-  TFile *inFile = new TFile(inFileN,"READ");
+  // input file name and tree name
+  TString infileN="catTreeData.rga_inbending_all.0x3b.idx.root";
   TString treeName = "tree";
-  TTree *inTr = (TTree*) inFile->Get(treeName);
-  TString catTreeFileN = inFileN;
-  catTreeFileN(TRegexp("^.*/")) = "";
-  catTreeFileN = outDir + "/" + catTreeFileN;
-  cout << "indexed tree will be written to: " << catTreeFileN << endl;
-  TFile *catTreeFile = new TFile(catTreeFileN,"RECREATE");
-  TTree *outTr = inTr->CloneTree();
-  Double_t Idx;
-  auto IdxBr = outTr->Branch("Idx",&Idx,"Idx/D");
-  cout << "Indexing tree..." << endl;
-  Long64_t ENT = outTr->GetEntries();
-  for(Long64_t i=0; i<ENT; i++) { IdxBr->Fill(); Idx+=1; };
-  cout << "DONE Indexing tree." << endl;
 
   // determine fit range
+  TFile *infile = new TFile(infileN,"READ");
+  TTree *inTr = (TTree*) infile->Get(treeName);
   TH1D * Mdist = new TH1D("Mdist","Mdist",100,0.04,0.45);
-  outTr->Project("Mdist","diphM");
+  inTr->Project("Mdist","diphM");
   // - lower bound: somewhere between pi0 window and low-M peak
   Double_t fitLB = 0.08;
   // - upper bound: get maximum diphoton mass bin with nonzero entries (trying
@@ -44,11 +28,7 @@ void sPlotBru(
   Double_t MggMax = Mdist->GetBinCenter(bb);
   Double_t fitUB = TMath::Min( 0.2, 0.95*MggMax); // stay low, don't overfit
   cout << "FIT RANGE: " << fitLB << " < diphM < " << fitUB << endl;
-
-  // write and close TFiles
-  outTr->Write(treeName);
-  catTreeFile->Close();
-  inFile->Close();
+  infile->Close();
 
   // setup sPlot
   sPlot SP;
@@ -84,7 +64,7 @@ void sPlotBru(
   };
 
   // load data tree (which includes `Idx`)
-  SP.LoadData(treeName,catTreeFileN);
+  SP.LoadData(treeName,infileN);
 
   // determine how many parallel threads (PROOF)
   Int_t nThreads = (Int_t) std::thread::hardware_concurrency();

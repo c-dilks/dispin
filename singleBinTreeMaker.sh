@@ -57,3 +57,6 @@ fi
 sleep 3
 touch $outfile; rm $outfile
 ${ROOTSYS}/bin/hadd $outfile spinroot/tree*.root
+
+# add index variable
+root -b -q IndexCatTree.C'("'$outfile'")'
