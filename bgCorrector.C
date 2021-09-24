@@ -44,8 +44,8 @@ void Corrector(
 // NB: all three files must have the same binning!
 void bgCorrector(
   ///*
-  TString bruFileMeas="bruspin.pi0.sig.pt/asym_minuit_BL0.root",
-  TString bruFileBG="bruspin.pi0.bg.pt/asym_minuit_BL0.root",
+  TString bruFileMeas="bruspin.pi0.sig.m/asym_minuit_BL0.root",
+  TString bruFileBG="bruspin.pi0.bg.m/asym_minuit_BL0.root",
   TString fitFileN="diagdiph/fit__catTreeData.rga_inbending_all.0x3b.root"
   //*/
 ) {
@@ -55,6 +55,12 @@ void bgCorrector(
   TString bruFileN[2] = {bruFileMeas,bruFileBG};
   TFile *bruFile[2];
   for(f=0; f<2; f++) bruFile[f] = new TFile(bruFileN[f],"READ");
+
+  // open output file (filename modified from `bruFileMeas`)
+  TString outfileN = bruFileMeas;
+  outfileN(TRegexp("\\/asym_")) = "/asymBGcorr_";
+  cout << "outfileN = " << outfileN << endl;
+  TFile *outfile = new TFile(outfileN,"RECREATE");
 
   // get binlist (BL) number by parsing file names
   TString blStr[2];
@@ -204,8 +210,8 @@ void bgCorrector(
   Int_t nRow = (nLinks-1)/nCol+1;
   TMultiGraph *mgr;
   TGraphErrors *corrGr;
-  TCanvas *compCanv = new TCanvas("compCanv","compCanv",400*nCol,300*nRow);
-  TCanvas *corrCanv = new TCanvas("corrCanv","corrCanv",400*nCol,300*nRow);
+  TCanvas *compCanv = new TCanvas("compCanv","compCanv",600*nCol,300*nRow);
+  TCanvas *corrCanv = new TCanvas("corrCanv","corrCanv",600*nCol,300*nRow);
   compCanv->Divide(nCol,nRow);
   corrCanv->Divide(nCol,nRow);
   TString gTitle,xTitle,yTitle;
@@ -234,24 +240,31 @@ void bgCorrector(
     // perform BG correction
     if(links[n][ms]>=0 && links[n][bg]>=0) {
       corrCanv->cd(n+1);
-      corrCanv->GetPad(n+1)->SetGrid(0,1);
+      corrCanv->GetPad(n+1)->SetGrid(1,1);
       for(f=0; f<2; f++)
         agr[f] = (AsymGr*) AsymGrList[f]->At(links[n][f]);
       corrGr = new TGraphErrors();
       Corrector(agr[ms]->gr,agr[bg]->gr,corrGr);
       mgr->Add(corrGr); // add bg-corrected graph to comparison multigraph
       corrGr->Draw("APE");
+      corrGr->GetYaxis()->SetRangeUser(asymMin,asymMax);
       zeroLine = new TLine(
         corrGr->GetXaxis()->GetXmin(),0,corrGr->GetXaxis()->GetXmax(),0);
       zeroLine->SetLineColor(kBlack);
       zeroLine->SetLineWidth(2);
       zeroLine->SetLineStyle(kDashed);
       zeroLine->Draw();
+      // write
+      outfile->cd();
+      TString corrGrWriteN = corrGr->GetName();
+      corrGrWriteN(TRegexp("^corr_")) = "";
+      corrGr->SetName(corrGrWriteN);
+      corrGr->Write(corrGrWriteN);
     };
 
     // draw comparison multigraph
     compCanv->cd(n+1);
-    compCanv->GetPad(n+1)->SetGrid(0,1);
+    compCanv->GetPad(n+1)->SetGrid(1,1);
     mgr->Draw("APE");
     zeroLine = new TLine(xmin,0,xmax,0);
     zeroLine->SetLineColor(kBlack);
@@ -264,17 +277,28 @@ void bgCorrector(
 
   };
 
+  // print warning if there could be mis-matching bins
   if(mismatchBins) {
     fprintf(stderr,"\n\nWARNING WARNING WARNING: diphoton fit file binning may not match\n");
     fprintf(stderr,"                         that of asymmetry graphs !!!!!\n");
+    fprintf(stderr,"                         ... most likely the BG and signal region distributions are different\n");
     fprintf(stderr,"                         ... or maybe pairType differs between the files\n");
     fprintf(stderr,"\n\n");
 
   };
 
+  // write canvases
+  outfile->cd();
+  compCanv->Write();
+  corrCanv->Write("canvAsym");
+
+
   // cleanup
   for(f=0; f<2; f++) bruFile[f]->Close();
   fitFile->Close();
+  outfile->Close();
+  cout << outfileN << " written;\n these are the BG-corected asymmetries" << endl;
+  cout << "(run this script without `-b -q` to see TCanvases and comparison plots)" << endl;
 };
 
 //..................................................//

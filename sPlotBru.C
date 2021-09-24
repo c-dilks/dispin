@@ -1,7 +1,7 @@
 R__LOAD_LIBRARY(DiSpin)
 #include "GraphParameters.C" // $BRUFIT/macros
 //
-// IMPORTANT: run with `brufit sPlotBru.C`
+// IMPORTANT: run with `brufit -b -q sPlotBru.C`
 //
 
 void sPlotBru(

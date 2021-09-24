@@ -256,10 +256,11 @@ void DiffGraph(
   diff->SetMarkerColor(kRed);
   diff->SetLineColor(kRed);
 
-  // calculate amount to shift g2 to the right
+  // calculate amount to shift (offset) g2 to the right
   Double_t bump =
     TMath::Abs(g2->GetXaxis()->GetXmax() - g2->GetXaxis()->GetXmin()) /
     ( g2->GetN() * 8 );
+  bump = 0; // <--- DISABLE bump
 
   // compute difference and correlated error (assumes datasets
   // are equal, or at least one is a subset of the other)
@@ -271,7 +272,7 @@ void DiffGraph(
     ey1 = g1->GetErrorY(i);
     ey2 = g2->GetErrorY(i);
     ydiff = y1-y2; // difference
-    int whichError = 1;
+    int whichError = 2;
     switch(whichError) {
       case 1: 
         cout << "ASSUMING COMPLETELY UNCORRELATED ERRORS (datasets are disjoint)" << endl;

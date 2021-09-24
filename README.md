@@ -93,8 +93,9 @@ dihadron spin asymmetry analysis
 
 ## brufit sequence
 - `singleBinTreeMaker.sh [outroot dir]`: do this for data and MC; for MC, `mv spinroot/catTree.root ./catTreeMC.root`
-- `root -b -q asymBruFit.C`
+- `brufit -b -q asymBruFit.C`
   - if using proof, monitor with:
     - `tail -F ~/.proof/j-dispin/last-lite-session/*.log` (your path may be different)
     - `htop`
-- `root -b -q drawBru.C`
+    - use `errorPrintProof.sh` to quickly check for errors
+- `root -b -q drawBru.C` (probably called automatically by `asymBruFit.C`)
