@@ -26,8 +26,7 @@ BruAsymmetry::BruAsymmetry(TString outdir_, TString minimizer_)
   FM->SetUp().LoadVariable(TString("Depol3")+Form("[%f,%f]",0.0,2.5));
 
   // category for spin
-  FM->SetUp().LoadCategory(
-    TString("Spin_idx") + Form("[SpinP=%d,SpinM=%d]",1,-1) );
+  FM->SetUp().LoadCategory("Spin_idx[SpinP=1,SpinM=-1,SpinOff=0]");
   
   // unique ID variable
   FM->SetUp().SetIDBranchName("Idx");

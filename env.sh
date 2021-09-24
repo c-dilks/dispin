@@ -30,5 +30,5 @@ env|grep --color -w JYPATH
 env|grep --color -w PROOF_LOG
 
 # brufit alias
-alias brufit="root $BRUFIT/macros/LoadBru.C"
-alias brufitq="brufit -b -q"
+function brufit { root $BRUFIT/macros/LoadBru.C $*; }
+function brufitq { brufit -b -q $*; }
