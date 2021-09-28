@@ -8,6 +8,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TProfile.h"
+#include "TVirtualPad.h"
 #include "TLorentzVector.h"
 #include "Constants.h"
 
@@ -27,6 +28,34 @@ class Tools {
       PrintSeparator(outprint.Length()+4);
       printf("| %s |\n",outprint.Data());
       PrintSeparator(outprint.Length()+4);
+    };
+
+    
+    // zoom out the vertical scale for the case where multiple
+    // `TH1`s have been drawn with the "SAME" option, but the y-axis
+    // range is improperly zoomed
+    // - example: `UnzoomVertical(canvas->GetPad(3))`
+    // - optionally specify a new title 
+    static void UnzoomVertical(TVirtualPad *pad, TString title="") {
+      Double_t max=-1e6;
+      Double_t min=1e6;
+      Double_t maxTmp,minTmp;
+      for(auto obj : *pad->GetListOfPrimitives()) {
+        if(obj->InheritsFrom(TH1::Class())) {
+          maxTmp = ((TH1*)obj)->GetMaximum();
+          minTmp = ((TH1*)obj)->GetMinimum();
+          max = maxTmp > max ? maxTmp : max;
+          min = minTmp < min ? minTmp : min;
+        };
+      };
+      max += 0.05*(max-min);
+      //min -= 0.05*(max-min);
+      for(auto obj : *pad->GetListOfPrimitives()) {
+        if(obj->InheritsFrom(TH1::Class())) {
+          ((TH1*)obj)->GetYaxis()->SetRangeUser(min,max);
+          if(title!="") ((TH1*)obj)->SetTitle(title);
+        };
+      };
     };
 
 

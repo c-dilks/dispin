@@ -16,12 +16,17 @@ for iv in 1 2 3 4; do
 
 
   # USE SFIT FOR BG CORRECTION #########################
+
+  # -- fit diphM and calculate sWeights
   splotdir="splot.$varName"
-  brudir="bruspin.sfit.$varName"
   mkdir -p $splotdir
-  mkdir -p $brudir
-  rm -r $splotdir $brudir
+  rm -r $splotdir
   brufit -b -q sPlotBru.C'("'$splotdir'",'$iv',6)'
+  
+  # -- perform sFit
+  brudir="bruspin.sfit.$varName"
+  mkdir -p $brudir
+  rm -r $brudir
   brufit -b -q asymBruFit.C'("'$brudir'","minuit","'$splotdir'",'$iv',6)'
   errorPrintProof.sh | tee $brudir/ERRORS.log
 

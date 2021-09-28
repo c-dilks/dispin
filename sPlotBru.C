@@ -28,7 +28,6 @@ void sPlotBru(
   Double_t MggMax = Mdist->GetBinCenter(bb);
   Double_t fitUB = TMath::Min( 0.2, 0.95*MggMax); // stay low, don't overfit
   cout << "FIT RANGE: " << fitLB << " < diphM < " << fitUB << endl;
-  infile->Close();
 
   // setup sPlot
   sPlot SP;
@@ -77,15 +76,68 @@ void sPlotBru(
   //Here::Go(&SP); // single-thread
   Proof::Go(&SP,nWorkers); // PROOF
 
-  // draw result
-  new TCanvas;
-  SP.DrawWeighted("diphM>>(100,0,1)","Signal");
-  //compare to true signal
-  //FiledTree::Read("MyModel","Data.root")->Tree()->Draw("M1","Sig==1","same");
+  // draw sWeighted distributions
+  TCanvas *canv;
+  TString canvN;
+  Int_t canv_colors[4] = {kBlack,kGreen-3,kRed+2,kAzure+10};
+  TCut cut = Form("%f<diphM && diphM<%f",fitLB,fitUB);
+  gStyle->SetPalette(4,canv_colors);
+  gStyle->SetOptStat(0);
+  TString bounds,varTitle;
+  Double_t varMin,varMax,varRange;
+  // - loop through variables for distributions
+  for(TString varName : {"X","Mh","Z","PhPerp","Q2","XF","DY","DYsgn","PhiH","PhiR","Theta","Depol2","Depol3","diphM"}) {
+    cout << "draw sWeighted " << varName << endl;
+
+    // prepare canvas
+    canvN = varName+"canv"; 
+    canv = new TCanvas(canvN,canvN,1600,700);
+    canv->Divide(2,1);
+    for(int p=1; p<=2; p++) canv->GetPad(p)->SetGrid(1,1);
+
+    // histogram range and binning
+    varMin=inTr->GetMinimum(varName);   varMax=inTr->GetMaximum(varName);
+    varRange=varMax-varMin;  varMin-=0.05*varRange;  varMax += 0.05*varRange;
+    if(varName=="diphM") { varMin=fitLB; varMax=fitUB; };
+    bounds = Form("_%s(200,%f,%f)",varName.Data(),varMin,varMax);
+
+    // draw unweighted dists
+    canv->cd(1);
+    inTr->Draw(varName+">>swM"+bounds,cut,"PLC"); // fit region, black line
+    if(varName!="diphM") inTr->Draw(varName+">>swSB"+bounds,"0.17<diphM && diphM<0.4","SAME PLC"); // sideband region, gray line
+
+    // draw sWeighted dists
+    SP.DrawWeighted(varName+">>swS"+bounds,"Signal","","SAME PLC"); // signal, green points
+    SP.DrawWeighted(varName+">>swB"+bounds,"BG","","SAME PLC"); // background, blue points
+
+    // draw correlation
+    varTitle = varName;
+    if(varTitle=="diphM") varTitle="M_{#gamma#gamma}";
+    if(varTitle=="Mh") varTitle="M_{h}";
+    if(varTitle=="PhPerp") varTitle="p_{T}";
+    if(varTitle=="Q2") varTitle="Q^{2}";
+    if(varName!="diphM") {
+      canv->cd(2);
+      TH2D *corr = new TH2D("corr_"+varName,varTitle+" vs. M_{#gamma#gamma}",70,0.07,0.2,70,varMin,varMax);
+      inTr->Project(corr->GetName(),varName+":diphM","");
+      corr->Draw("BOX");
+      Tools::ApplyProfile(corr,1);
+    };
+
+    // save output canvas
+    Tools::UnzoomVertical(canv->GetPad(1),varTitle+" comparison");
+    canv->SaveAs(outDir+"/fitcanv__sWeighted_"+varName+".png");
+    canv->SaveAs(outDir+"/sWeighted__"+varName+"__dist.root");
+  };
 
   // make sure weighted tree is written properly
   SP.DeleteWeightedTree();
 
   // draw parameters vs. bin
   for(int d=0; d<BS->dimensions; d++) GraphParameters(outDir+"/",BS->GetIVname(d));
+
+  // cleanup
+  infile->Close();
+
 };
+
