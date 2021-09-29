@@ -17,10 +17,10 @@ BruAsymmetry::BruAsymmetry(TString outdir_, TString minimizer_)
 
 
   // variables
-  FM->SetUp().LoadVariable(TString("PhiH")+Form("[%f,%f]",-PIe,PIe));
-  FM->SetUp().LoadVariable(TString("PhiR")+Form("[%f,%f]",-PIe,PIe));
-  FM->SetUp().LoadVariable(TString("PhiD")+Form("[%f,%f]",-PIe,PIe));
-  FM->SetUp().LoadVariable(TString("Theta")+Form("[%f,%f]",-0.1,PIe));
+  FM->SetUp().LoadVariable(TString("PhiH")+Form("[%f,%f]",-PI,PI));
+  FM->SetUp().LoadVariable(TString("PhiR")+Form("[%f,%f]",-PI,PI));
+  FM->SetUp().LoadVariable(TString("PhiD")+Form("[%f,%f]",-PI,PI));
+  FM->SetUp().LoadVariable(TString("Theta")+Form("[%f,%f]",-0.1,PI));
   FM->SetUp().LoadVariable(TString("Pol")+Form("[%f,%f]",-1.0,1.0));
   FM->SetUp().LoadVariable(TString("Depol2")+Form("[%f,%f]",0.0,2.5));
   FM->SetUp().LoadVariable(TString("Depol3")+Form("[%f,%f]",0.0,2.5));
@@ -247,9 +247,11 @@ void BruAsymmetry::Fit() {
 
   // fit settings:
   // -optimize: calculate and cache formulas; suitable for RooComponentsPDF
-  // -number of parellel threads
+  // -number of parellel threads for the likelihood calculation (choose either
+  //  this multi-threading method, or use PROOF below for one fit = one thread; don't
+  //  choose both methods, unless you have a lot of threads available)
   FM->SetUp().AddFitOption(RooFit::Optimize(1));
-  FM->SetUp().AddFitOption(RooFit::NumCPU(nWorkers));
+  //FM->SetUp().AddFitOption(RooFit::NumCPU(nWorkers));
 
 
   // MINOS uncertainty estimation

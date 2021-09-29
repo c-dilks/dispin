@@ -98,8 +98,16 @@ void asymBruFit(
   gROOT->ProcessLine(".! mcmcAcceptanceRate.sh");
   gSystem->RedirectOutput(0);
 
+  // draw residuals and pulls for each bin
+  TString cmd;
+  for(int d=0; d<BS->dimensions; d++) {
+    cmd = Form(".x deps/brufit/macros/DrawResiduals.C(\"%s/\",\"%s\")",bruDir.Data(),BS->GetIVname(d).Data());
+    printf("\nEXECUTE: %s\n\n",cmd.Data());
+    gROOT->ProcessLine(cmd);
+  };
+
   // draw
-  TString cmd = Form(".x drawBru.C(\"%s\",\"%s\")",bruDir.Data(),minimizer.Data());
+  cmd = Form(".x drawBru.C(\"%s\",\"%s\")",bruDir.Data(),minimizer.Data());
   printf("\nEXECUTE: %s\n\n",cmd.Data());
   gROOT->ProcessLine(cmd);
 };

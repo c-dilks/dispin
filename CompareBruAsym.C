@@ -166,8 +166,8 @@ void CompareBruAsym(
   Int_t nRow = (nLinks-1)/nCol+1;
   TMultiGraph * mgr;
   TGraphErrors * diffGr;
-  TCanvas * compCanv = new TCanvas("compCanv","compCanv",600*nCol,300*nRow);
-  TCanvas * diffCanv = new TCanvas("diffCanv","diffCanv",600*nCol,300*nRow);
+  TCanvas * compCanv = new TCanvas("compCanv","compCanv",400*nCol,300*nRow);
+  TCanvas * diffCanv = new TCanvas("diffCanv","diffCanv",400*nCol,300*nRow);
   compCanv->Divide(nCol,nRow);
   diffCanv->Divide(nCol,nRow);
   TString gTitle,xTitle,yTitle;
@@ -178,6 +178,8 @@ void CompareBruAsym(
     // draw comparison
     compCanv->cd(n+1);
     compCanv->GetPad(n+1)->SetGrid(0,1);
+    compCanv->GetPad(n+1)->SetLeftMargin(0.15);
+    compCanv->GetPad(n+1)->SetBottomMargin(0.15);
     mgr = new TMultiGraph();
     for(int f=0; f<2; f++) {
       if(links[n][f]>=0) {
@@ -209,6 +211,8 @@ void CompareBruAsym(
     if(links[n][azul]>=0 && links[n][rojo]>=0) {
       diffCanv->cd(n+1);
       diffCanv->GetPad(n+1)->SetGrid(0,1);
+      diffCanv->GetPad(n+1)->SetLeftMargin(0.20);
+      diffCanv->GetPad(n+1)->SetBottomMargin(0.15);
       for(int f=0; f<2; f++)
         agr[f] = (AsymGr*) AsymGrList[f]->At(links[n][f]);
       diffGr = new TGraphErrors();

@@ -8,9 +8,15 @@ fi
 varName=$1
 
 minimizer="minuit"
+
 bluefile="bruspin.sfit.${varName}/asym_${minimizer}_BL0.root"
 redfile="bruspin.pi0.sig.${varName}/asymBGcorr_${minimizer}_BL0.root"
 bluetitle="sFit method"
 redtitle="sideband method"
+
+#bluefile="bruspin.sbg.${varName}/asym_${minimizer}_BL0.root"
+#redfile="bruspin.pi0.bg.${varName}/asym_${minimizer}_BL0.root"
+#bluetitle="sFit using BG weights"
+#redtitle="regular fit of sideband data"
 
 root -l CompareBruAsym.C'("'"$bluetitle"'","'$bluefile'","'"$redtitle"'","'$redfile'")'
