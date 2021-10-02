@@ -14,6 +14,10 @@ Trajectory::Trajectory() {
   chi2pid = UNDEF;
   Status = UNDEF;
   Beta = UNDEF;
+  gen_parentPid = UNDEF;
+  gen_parentIdx = UNDEF;
+  gen_isMatch = false;
+  gen_matchDist = UNDEF;
   if(debug) printf("Trajectory instantiated\n");
 };
 

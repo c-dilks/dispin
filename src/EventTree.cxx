@@ -504,6 +504,11 @@ void EventTree::GetTrajectories(Long64_t i, Bool_t prog) {
     trHad[h]->Vertex.SetXYZ(hadVertex[h][eX],hadVertex[h][eY],hadVertex[h][eZ]);
     trHad[h]->Idx = hadIdx[h];
     trHad[h]->Row = hadRow[h];
+    // MC
+    trHad[h]->gen_parentIdx = gen_hadParentIdx[h];
+    trHad[h]->gen_parentPid = gen_hadParentPid[h];
+    trHad[h]->gen_isMatch = gen_hadIsMatch[h];
+    trHad[h]->gen_matchDist = gen_hadMatchDist[h];
   };
 };
 

@@ -144,6 +144,8 @@ int main(int argc, char** argv) {
   outTr->Branch("diphZE",&(diphot->ZE),"diphZE/F");
   outTr->Branch("diphVtxDiff",&(diphot->VtxDiff),"diphVtxDiff/F");
   // - MC branches // TODO
+  outTr->Branch("diphMCpi0",&(diphot->IsMCpi0),"diphMCpi0/O"); // true iff MC pi0 decay
+  outTr->Branch("diphMCmatchDist",&(diphot->MCmatchDist),"diphMCmatchDist/D"); // hypot( photon1_matchDist, photon2_matchDist )
 
 
 
@@ -151,7 +153,7 @@ int main(int argc, char** argv) {
   Long64_t hi;
   Int_t qh;
   while(ens->NextEvent()) {
-    //if(ens->GetEnum()>1000) break; // limiter
+    //if(ens->GetEnum()>50000) break; // limiter
 
     // get DIS event, and calculate kinematics
     ev->GetTrajectories(ens->GetEnum());

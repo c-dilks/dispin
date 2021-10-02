@@ -37,6 +37,11 @@ class Trajectory
     Int_t Status;
     Float_t Beta;
     Int_t Row;
+    // MC
+    Int_t gen_parentPid;
+    Int_t gen_parentIdx;
+    Bool_t gen_isMatch;
+    Float_t gen_matchDist;
 
 
     // use Idx to set what type of particle this is, which

@@ -69,6 +69,8 @@ class Diphoton : public TObject
     Bool_t cutBasic;
 
     // diphoton classifier
+    Bool_t IsMCpi0; // if true, definitely a pi0 from MC
+    Double_t MCmatchDist;
     Int_t diphotClass;
     enum diphotClass_enum { dpNull, dpPi0, dpSB, dpIgnore };
     Int_t GetIdx() { return diphot->Idx; };

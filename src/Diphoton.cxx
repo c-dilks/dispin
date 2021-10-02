@@ -63,7 +63,25 @@ void Diphoton::CalculateKinematics(
   // TODO: maybe not the right thing to do; check VtxDiff
   diphot->Vertex = photE[qA] >= photE[qB] ?
     photon[qA]->Vertex : photon[qB]->Vertex;
-  
+
+  // determine if it's from a MC pi0 decay
+  // - NOTE: likely you want to cut on `MCmatchDist` too; we do not
+  //   apply such a cut on `IsMCpi0` here, for more flexibility downstream,
+  //   since the exact cut value should be determined from the distribution
+  //   of `MCmatchDist` (with `IsMCpi0==true`)
+  IsMCpi0 = false;
+  MCmatchDist = 10000;
+  if( photon[qA]->gen_parentPid == PartPID(kPio) &&
+      photon[qB]->gen_parentPid == PartPID(kPio) &&
+      photon[qA]->gen_parentIdx == photon[qB]->gen_parentIdx &&
+      photon[qA]->gen_isMatch &&
+      photon[qB]->gen_isMatch
+    )
+  {
+    IsMCpi0 = true;
+    MCmatchDist = TMath::Hypot( photon[qA]->gen_matchDist, photon[qB]->gen_matchDist );
+  };
+
 };
 
 
@@ -161,10 +179,12 @@ void Diphoton::ResetVars() {
   ZE = UNDEF;
   M = UNDEF;
   VtxDiff = UNDEF;
+  MCmatchDist = 10000;
   this->ResetBools();
 };
 
 void Diphoton::ResetBools() {
+  IsMCpi0 = false;
   cutPhotBeta = false;
   cutPhotEn = false;
   cutPhotTheta = false;
