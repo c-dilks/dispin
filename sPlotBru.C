@@ -1,5 +1,4 @@
 R__LOAD_LIBRARY(DiSpin)
-#include "GraphParameters.C" // $BRUFIT/macros
 //
 // IMPORTANT: run with `brufit -b -q sPlotBru.C`
 //
@@ -11,10 +10,11 @@ void sPlotBru(
     ) {
 
   // input file name and tree name
-  TString infileN="catTreeData.rga_inbending_all.0x3b.idx.root";
+  TString infileN="catTreeData.rga_inbending_all.0x3b.idx.trimmed.root";
   TString treeName = "tree";
 
   // determine fit range
+  // IMPORTANT: must match that in `TrimCatTree.C`
   TFile *infile = new TFile(infileN,"READ");
   TTree *inTr = (TTree*) infile->Get(treeName);
   TH1D * Mdist = new TH1D("Mdist","Mdist",100,0.04,0.45);
@@ -23,10 +23,13 @@ void sPlotBru(
   Double_t fitLB = 0.08;
   // - upper bound: get maximum diphoton mass bin with nonzero entries (trying
   //   to fit beyond that point will cause problems)
+  /*
   Int_t bb = Mdist->FindBin(0.135);
   while(Mdist->GetBinContent(bb)>0 && bb<=Mdist->GetNbinsX()) bb++;
   Double_t MggMax = Mdist->GetBinCenter(bb);
   Double_t fitUB = TMath::Min( 0.2, 0.95*MggMax); // stay low, don't overfit
+  */
+  Double_t fitUB = 0.2; // use fixed upper bound instead
   cout << "FIT RANGE: " << fitLB << " < diphM < " << fitUB << endl;
 
   // setup sPlot
@@ -133,8 +136,13 @@ void sPlotBru(
   // make sure weighted tree is written properly
   SP.DeleteWeightedTree();
 
-  // draw parameters vs. bin
-  for(int d=0; d<BS->dimensions; d++) GraphParameters(outDir+"/",BS->GetIVname(d));
+  // draw parameters vs. bin, and fit results
+  TString cmd;
+  for(int d=0; d<BS->dimensions; d++) {
+    cmd = Form(".x deps/brufit/macros/GraphParameters.C(\"%s/\",\"%s\")",outDir.Data(),BS->GetIVname(d).Data());
+    printf("\nEXECUTE: %s\n\n",cmd.Data());
+    gROOT->ProcessLine(cmd);
+  };
 
   // cleanup
   infile->Close();

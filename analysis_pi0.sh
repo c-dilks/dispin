@@ -1,9 +1,20 @@
 #!/bin/bash
 # analyze pi0 pi+ dihadrons for chosen binning
 
+# brufit alias
 function brufit { root -b -q $BRUFIT/macros/LoadBru.C $*; }
 
-for iv in 1 2 3 4; do
+
+# single-bin sPlot
+#splotdir="splot.singlebin"
+#mkdir -p $splotdir
+#rm -r $splotdir
+#brufit -b -q sPlotBru.C'("'$splotdir'",1,1)'
+
+
+# loop over binning schemes
+#for iv in 1 2 3 4; do
+for iv in 1; do
 
   # convert iv number to variable name string
   case $iv in
@@ -24,7 +35,7 @@ for iv in 1 2 3 4; do
   brufit -b -q sPlotBru.C'("'$splotdir'",'$iv',6)'
   
   # -- perform sFit
-  brudir="bruspin.sfit.$varName"
+  brudir="bruspin.sfitTEST.$varName"
   mkdir -p $brudir
   rm -r $brudir
   brufit -b -q asymBruFit.C'("'$brudir'","minuit","'$splotdir'",'$iv',6)'

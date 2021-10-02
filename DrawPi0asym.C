@@ -10,7 +10,7 @@ void DrawPi0asym(TString infileN="bruspin.sfit.x/asym_minuit_BL0.root",TString a
   Double_t asymMin = -asymMax;
 
   const int N=3;
-  TCanvas *canv = new TCanvas("asym","asym",N*800,600);
+  TCanvas *canv = new TCanvas("asym","asym",N*800,800);
   canv->Divide(N,1);
 
   for(TString grN :
@@ -22,7 +22,7 @@ void DrawPi0asym(TString infileN="bruspin.sfit.x/asym_minuit_BL0.root",TString a
   {
     canv->cd(++cnt);
     canv->GetPad(cnt)->SetBottomMargin(0.15);
-    //canv->GetPad(cnt)->SetLeftMargin(0.15);
+    canv->GetPad(cnt)->SetLeftMargin(0.15);
     gr = (TGraphErrors*) infile->Get(grN);
     TString grT = gr->GetTitle();
     Tools::GlobalRegexp(grT,"X","x");
@@ -44,6 +44,7 @@ void DrawPi0asym(TString infileN="bruspin.sfit.x/asym_minuit_BL0.root",TString a
     gr->SetMarkerSize(2);
     gr->SetLineWidth(2);
     gr->GetYaxis()->SetRangeUser(asymMin,asymMax);
+    if(xT.Contains("z")) gr->GetXaxis()->SetNdivisions(5);
     gr->Draw("APE");
     zeroLine = new TLine(
         gr->GetXaxis()->GetXmin(),0,

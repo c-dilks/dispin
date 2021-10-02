@@ -13,7 +13,7 @@ R__LOAD_LIBRARY(DiSpin)
 
 void asymBruFit(
     TString bruDir="bruspin", // output directory; several files will be written
-    TString minimizer="mcmc", // minimizer (see comments above)
+    TString minimizer="minuit", // minimizer (see comments above)
     TString sPlotDir="", // sPlot directory (leave empty string if not using, otherwise use outDir from `sPlotBru.C`)
     Int_t binschemeIVtype=2, // binning scheme (execute `buildSpinroot.exe` and see usage of `-i`)
     Int_t nbins0=-1, Int_t nbins1=-1, Int_t nbins2=-1 // number of bins for each dimension
@@ -77,8 +77,15 @@ void asymBruFit(
   /* pi+, pi0 */
   //B->LoadDataSets("catTreeData.rga_inbending_all.0x35.idx.root","catTreeMC.mc.PRL.0x35.idx.root"); // pi0 sig window
   //B->LoadDataSets("catTreeData.rga_inbending_all.0x3c.idx.root","catTreeMC.mc.PRL.0x3c.idx.root"); // pi0 bg window
-  B->LoadDataSets("catTreeData.rga_inbending_all.0x3b.idx.root","catTreeMC.mc.PRL.0x3b.idx.root",
-      sPlotDir+"/Tweights.root","Signal"); // pi0 sWeighted
+  /* pi+, pi0 sFit
+   * - NOTE: use `TrimCatTree.C` and `sPlotBru.C` to produce the required files
+   */
+  B->LoadDataSets(
+      "catTreeData.rga_inbending_all.0x3b.idx.trimmed.root",
+      "catTreeMC.mc.PRL.0x3b.idx.trimmed.root",
+      sPlotDir+"/Tweights.root",
+      "Signal"
+      );
 
   // hyperparameters
   // - MCMC settings

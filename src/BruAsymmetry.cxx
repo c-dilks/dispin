@@ -20,7 +20,7 @@ BruAsymmetry::BruAsymmetry(TString outdir_, TString minimizer_)
   FM->SetUp().LoadVariable(TString("PhiH")+Form("[%f,%f]",-PI,PI));
   FM->SetUp().LoadVariable(TString("PhiR")+Form("[%f,%f]",-PI,PI));
   FM->SetUp().LoadVariable(TString("PhiD")+Form("[%f,%f]",-PI,PI));
-  FM->SetUp().LoadVariable(TString("Theta")+Form("[%f,%f]",-0.1,PI));
+  FM->SetUp().LoadVariable(TString("Theta")+Form("[%f,%f]",0.0,PI));
   FM->SetUp().LoadVariable(TString("Pol")+Form("[%f,%f]",-1.0,1.0));
   FM->SetUp().LoadVariable(TString("Depol2")+Form("[%f,%f]",0.0,2.5));
   FM->SetUp().LoadVariable(TString("Depol3")+Form("[%f,%f]",0.0,2.5));

@@ -36,7 +36,8 @@ class Tools {
     // range is improperly zoomed
     // - example: `UnzoomVertical(canvas->GetPad(3))`
     // - optionally specify a new title 
-    static void UnzoomVertical(TVirtualPad *pad, TString title="") {
+    // - set `min0` to true if you want to lock the minimum at zero
+    static void UnzoomVertical(TVirtualPad *pad, TString title="", Bool_t min0=false) {
       Double_t max=-1e6;
       Double_t min=1e6;
       Double_t maxTmp,minTmp;
@@ -52,7 +53,7 @@ class Tools {
       //min -= 0.05*(max-min);
       for(auto obj : *pad->GetListOfPrimitives()) {
         if(obj->InheritsFrom(TH1::Class())) {
-          ((TH1*)obj)->GetYaxis()->SetRangeUser(min,max);
+          ((TH1*)obj)->GetYaxis()->SetRangeUser(min0?0:min,max);
           if(title!="") ((TH1*)obj)->SetTitle(title);
         };
       };
