@@ -1,7 +1,7 @@
 // filter catTree, in particular, cut `diphM`, the diphoton invariant
 // mass, in preparation of an sFit
 //
-void TrimCatTree(TString infileN, TString treeName="tree") {
+void TrimCatTree(TString infileN="catTreeMC.mc.PRL.0x3b.idx.root", TString treeName="tree") {
 
   // open input tree
   TFile *infile = new TFile(infileN,"READ");
@@ -18,8 +18,9 @@ void TrimCatTree(TString infileN, TString treeName="tree") {
   TFile * outfile = new TFile(outfileN,"RECREATE");
 
   // clone input tree
-  TTree * outtree = intree->CopyTree("0.08<diphM && diphM<0.2"); // must match sPlotBru.C
-
+  //TCut trimCut = "0.08<diphM && diphM<0.2"; // match sPlotBru.C fit range
+  TCut trimCut = "diphMCmatchDist<0.02 && diphIsMCpi0 && diphM>0.108 && diphM<0.160"; // MC pi0 decays
+  TTree * outtree = intree->CopyTree(trimCut);
   // write and close
   outtree->Write(treeName);
   outfile->Close();
