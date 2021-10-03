@@ -101,6 +101,8 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
     chain->SetBranchAddress("diphM",&(objDiphoton->M));
     chain->SetBranchAddress("diphZE",&(objDiphoton->ZE));
     chain->SetBranchAddress("diphVtxDiff",&(objDiphoton->VtxDiff));
+    chain->SetBranchAddress("diphMCpi0",&(objDiphoton->IsMCpi0));
+    chain->SetBranchAddress("diphMCmatchDist",&(objDiphoton->MCmatchDist));
   };
 
 

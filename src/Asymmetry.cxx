@@ -396,6 +396,7 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
 
   // set kinematic vars
   Mh = ev->Mh;
+  Mmiss = ev->Mmiss;
   x = ev->x;
   z = ev->Zpair;
   PhiH = ev->PhiH;
@@ -530,6 +531,7 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
     tree_Rellum = (Double_t)(rellum);
     tree_X = (Double_t)(x);
     tree_Mh = (Double_t)(Mh);
+    tree_Mmiss = (Double_t)(Mmiss);
     tree_Z = (Double_t)(z);
     tree_PhPerp = (Double_t)(PhPerp);
     tree_Q2 = (Double_t)(Q2);
@@ -539,6 +541,8 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
     tree_diphM = (Double_t)(diphM);
     tree_Weight = (Double_t)(weight);
     tree_Spin_idx = (Int_t)(SpinInt(spinn));
+    tree_diphIsMCpi0 = ev->objDiphoton->IsMCpi0;
+    tree_diphMCmatchDist = ev->objDiphoton->MCmatchDist;
     tree->Fill();
   };
 
@@ -1199,6 +1203,7 @@ Float_t Asymmetry::MeanDepolarization(Int_t amp) {
  
 void Asymmetry::ResetVars() {
   Mh = UNDEF;
+  Mmiss = UNDEF;
   x = UNDEF;
   z = UNDEF;
   PhiH = UNDEF;
@@ -1387,6 +1392,7 @@ void Asymmetry::ActivateTree(Bool_t isMC) {
   tree->Branch("Rellum",&tree_Rellum,"Rellum/D");
   tree->Branch("X",&tree_X,"X/D");
   tree->Branch("Mh",&tree_Mh,"Mh/D");
+  tree->Branch("Mmiss",&tree_Mmiss,"Mmiss/D");
   tree->Branch("Z",&tree_Z,"Z/D");
   tree->Branch("PhPerp",&tree_PhPerp,"PhPerp/D");
   tree->Branch("Q2",&tree_Q2,"Q2/D");
@@ -1398,6 +1404,9 @@ void Asymmetry::ActivateTree(Bool_t isMC) {
   if(!isMC) {
     tree->Branch("Spin_idx",&tree_Spin_idx,"Spin_idx/I");
     tree->Branch("Pol",&tree_Pol,"Pol/D");
+  } else {
+    tree->Branch("diphIsMCpi0",&tree_diphIsMCpi0,"diphIsMCpi0/O");
+    tree->Branch("diphMCmatchDist",&tree_diphMCmatchDist,"diphMCmatchDist/D");
   };
   treeActivated = true;
 };

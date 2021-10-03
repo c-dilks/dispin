@@ -117,6 +117,7 @@ class Asymmetry : public TObject
 
     // event-level variables -- these must be set for each event
     Float_t Mh;
+    Float_t Mmiss;
     Float_t x;
     Float_t z;
     Float_t PhiH;
@@ -300,6 +301,7 @@ class Asymmetry : public TObject
     Double_t tree_Rellum;
     Double_t tree_X;
     Double_t tree_Mh;
+    Double_t tree_Mmiss;
     Double_t tree_Z;
     Double_t tree_PhPerp;
     Double_t tree_Q2;
@@ -308,6 +310,8 @@ class Asymmetry : public TObject
     Double_t tree_diphM;
     Double_t tree_Weight;
     Int_t tree_Spin_idx;
+    Bool_t tree_diphIsMCpi0;
+    Double_t tree_diphMCmatchDist;
 
     Bool_t treeActivated;
 

@@ -180,11 +180,11 @@ void Diphoton::ResetVars() {
   M = UNDEF;
   VtxDiff = UNDEF;
   MCmatchDist = 10000;
+  IsMCpi0 = false;
   this->ResetBools();
 };
 
 void Diphoton::ResetBools() {
-  IsMCpi0 = false;
   cutPhotBeta = false;
   cutPhotEn = false;
   cutPhotTheta = false;

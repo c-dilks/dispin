@@ -201,6 +201,7 @@ int main(int argc, char** argv) {
 
   printf("begin loop through %lld events...\n",ev->ENT);
   for(int i=0; i<ev->ENT; i++) {
+    //if(i>1000000) break; // limiter
 
     ev->GetEvent(i);
     if(ev->Valid()) {
