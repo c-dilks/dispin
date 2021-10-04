@@ -19,4 +19,4 @@ redtitle="sideband method"
 #bluetitle="sFit using BG weights"
 #redtitle="regular fit of sideband data"
 
-root -l CompareBruAsym.C'("'"$bluetitle"'","'$bluefile'","'"$redtitle"'","'$redfile'")'
+root -l -b -q CompareBruAsym.C'("'"$bluetitle"'","'$bluefile'","'"$redtitle"'","'$redfile'")'

@@ -18,8 +18,13 @@ void TrimCatTree(TString infileN="catTreeMC.mc.PRL.0x3b.idx.root", TString treeN
   TFile * outfile = new TFile(outfileN,"RECREATE");
 
   // clone input tree
-  //TCut trimCut = "0.08<diphM && diphM<0.2"; // match sPlotBru.C fit range
-  TCut trimCut = "diphMCmatchDist<0.02 && diphIsMCpi0 && diphM>0.108 && diphM<0.160"; // MC pi0 decays
+  TCut trimCut;
+  if(infileN.Contains("catTreeMC")) {
+    trimCut = "diphMCmatchDist<0.02 && diphIsMCpi0 && diphM>0.108 && diphM<0.160"; // MC pi0 decays
+    //trimCut = "diphMCmatchDist<0.02 && diphIsMCpi0"; // MC pi0 decays, no diphM cut
+  } else {
+    trimCut = "0.08<diphM && diphM<0.2"; // match sPlotBru.C fit range
+  };
   TTree * outtree = intree->CopyTree(trimCut);
   // write and close
   outtree->Write(treeName);
