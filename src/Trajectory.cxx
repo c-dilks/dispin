@@ -18,6 +18,7 @@ Trajectory::Trajectory() {
   gen_parentIdx = UNDEF;
   gen_isMatch = false;
   gen_matchDist = UNDEF;
+  gen_E = UNDEF;
   if(debug) printf("Trajectory instantiated\n");
 };
 

@@ -153,7 +153,7 @@ int main(int argc, char** argv) {
   Long64_t hi;
   Int_t qh;
   while(ens->NextEvent()) {
-    //if(ens->GetEnum()>50000) break; // limiter
+    //if(ens->GetEnum()>500000) break; // limiter
 
     // get DIS event, and calculate kinematics
     ev->GetTrajectories(ens->GetEnum());

@@ -511,6 +511,7 @@ void EventTree::GetTrajectories(Long64_t i, Bool_t prog) {
     trHad[h]->gen_parentPid = gen_hadParentPid[h];
     trHad[h]->gen_isMatch = gen_hadIsMatch[h];
     trHad[h]->gen_matchDist = gen_hadMatchDist[h];
+    trHad[h]->gen_E = gen_hadE[h];
   };
 };
 

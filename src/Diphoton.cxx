@@ -71,11 +71,14 @@ void Diphoton::CalculateKinematics(
   //   of `MCmatchDist` (with `IsMCpi0==true`)
   IsMCpi0 = false;
   MCmatchDist = 10000;
-  if( photon[qA]->gen_parentPid == PartPID(kPio) &&
+  if( photon[qA]->gen_parentPid == PartPID(kPio) && // parent PID is pi0
       photon[qB]->gen_parentPid == PartPID(kPio) &&
-      photon[qA]->gen_parentIdx == photon[qB]->gen_parentIdx &&
-      photon[qA]->gen_isMatch &&
-      photon[qB]->gen_isMatch
+      photon[qA]->gen_parentIdx == photon[qB]->gen_parentIdx && // photons have same parent
+      photon[qA]->gen_isMatch && // pass "zeroth" level matching cut (existence of a match)
+      photon[qB]->gen_isMatch &&
+      photon[qA]->gen_E>0.6 && photon[qB]->gen_E>0.6 && // minimum energy of generated photons (cf. `cutPhotEn`) 
+      TMath::Abs(photE[qA]-photon[qA]->gen_E)<0.5 && // |E_gen - E_rec| < 0.5
+      TMath::Abs(photE[qB]-photon[qB]->gen_E)<0.5
     )
   {
     IsMCpi0 = true;

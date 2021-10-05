@@ -37,11 +37,14 @@ class Trajectory
     Int_t Status;
     Float_t Beta;
     Int_t Row;
-    // MC
+    // MC:
+    // TODO - may be more practical to have Trajectory store another
+    // Trajectory pointer, which will hold information about the generated particle
     Int_t gen_parentPid;
     Int_t gen_parentIdx;
     Bool_t gen_isMatch;
     Float_t gen_matchDist;
+    Float_t gen_E;
 
 
     // use Idx to set what type of particle this is, which
