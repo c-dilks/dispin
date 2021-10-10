@@ -12,13 +12,13 @@ minimizer="minuit"
 
 case $testNum in
   1)
-    bluetitle="sFit method"
+    bluetitle="sWeight method"
     redtitle="sideband method"
     bluefile="bruspin.sfit.${varName}/asym_${minimizer}_BL0.root"
     redfile="bruspin.pi0.sig.${varName}/asymBGcorr_${minimizer}_BL0.root"
     ;;
   2)
-    bluetitle="sFit method"
+    bluetitle="sWeight method"
     redtitle="no BG correction"
     bluefile="bruspin.sfit.${varName}/asym_${minimizer}_BL0.root"
     redfile="bruspin.pi0.sig.${varName}/asym_${minimizer}_BL0.root"
@@ -30,7 +30,7 @@ case $testNum in
     redfile="bruspin.pi0.sig.${varName}/asym_${minimizer}_BL0.root"
     ;;
   4)
-    bluetitle="sFit using BG weights"
+    bluetitle="fit using BG sWeights"
     redtitle="regular fit of sideband data"
     bluefile="bruspin.sbg.${varName}/asym_${minimizer}_BL0.root"
     redfile="bruspin.pi0.bg.${varName}/asym_${minimizer}_BL0.root"

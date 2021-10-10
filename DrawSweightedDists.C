@@ -1,6 +1,10 @@
 R__LOAD_LIBRARY(DiSpin)
 // draw sWeighted distributions (for making presentation plots)
 // (cf. draw code in sPlotBru.C, which makes more detailed plots)
+//
+// output will be in `splotDir/kindist*.png`
+// - `kindist1*.png`: unweighted, signal-sWeighted, BG-sweighted
+// - `kindist2*.png`: signal-sWeighted, MC-trimmed
 
 TTree *splotTr;
 TTree *mcTr;
@@ -58,7 +62,9 @@ void Draw(TString varN, TString varT, TString units, Int_t nbins, Double_t lb, D
   canv2->SaveAs(splotDir+"/kindist2_"+varN+".png");
 };
 
-
+/////////////////////////////////////
+/////////////////////////////////////
+/////////////////////////////////////
 
 void DrawSweightedDists(
   TString splotDir_="splot.singlebin",

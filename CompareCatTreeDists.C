@@ -10,6 +10,7 @@ int f;
 Double_t normalizer[2];
 const Int_t NBINS = 100;
 Bool_t drawRatioPlot;
+TCut extraCut;
 
 void CompareDist(TString varname, TString vartitle);
 
@@ -18,14 +19,18 @@ void CompareCatTreeDists(
   //TString infile1N="catTreeData.rgb_inbending_all.0x34.root", /*purple*/
   //TString infile0N="catTreeData.rgb_inbending_sp19.0x34.root", /*green*/
   //TString infile1N="catTreeData.rgb_inbending_wi20.0x34.root", /*purple*/
-  TString infile0N="catTreeData.rgb_inbending_all.0x34.root", /*green*/
-  TString infile1N="catTreeMC.mc.PRL.0x34.root",              /*purple*/
-  Bool_t drawRatioPlot_ = true
+  //TString infile0N="catTreeData.rgb_inbending_all.0x34.root", /*green*/
+  //TString infile1N="catTreeMC.mc.PRL.0x34.root",              /*purple*/
+  TString infile0N="catTreeData.rga_inbending_all.0x3b.idx.root", /*green*/
+  TString infile1N="catTreeMC.mc.PRL.0x3b.idx.root",              /*purple*/
+  Bool_t drawRatioPlot_ = true,
+  TCut extraCut_ = "" /* add any additional cuts here */
 ) {
   infile[0] = new TFile(infile0N,"READ");
   infile[1] = new TFile(infile1N,"READ");
   for(f=0;f<2;f++) tr[f] = (TTree*)infile[f]->Get("tree");
   drawRatioPlot = drawRatioPlot_;
+  extraCut = extraCut_;
 
 
   gStyle->SetOptStat(0);
@@ -36,7 +41,7 @@ void CompareCatTreeDists(
   // set normalization
   for(f=0;f<2;f++) {
     //normalizer[f] = ((TH1D*)infile[f]->Get("dihadronCntDist"))->GetEntries();// electron yield
-    normalizer[f] = (Double_t)tr[f]->GetEntries();
+    normalizer[f] = (Double_t)tr[f]->GetEntries(extraCut);
     //normalizer[f] = 1;
   };
 
@@ -50,6 +55,7 @@ void CompareCatTreeDists(
   CompareDist("Theta","#theta");
   CompareDist("XF","x_{F}");
   CompareDist("DYsgn","#Delta Y_{h}");
+  CompareDist("diphM","M_{#gamma#gamma} [GeV]");
 };
 
 
@@ -71,6 +77,14 @@ void CompareDist(TString varname, TString vartitle) {
       TMath::Min(varmin[0],varmin[1])
       );
   Double_t distmax = TMath::Max(varmax[0],varmax[1]);
+  Int_t numBins = NBINS;
+  if(varname=="diphM") { // overrides -- make sure `extraCut_` matches
+    numBins*=2;
+    //distmin = 0.05; // avoid low diphM
+    //distmax = 0.05; // low diphM
+    //distmin = 0.05; distmax = 0.4; // pi0
+    //distmin = 0.35; distmax = 0.7; // eta
+  };
 
   // distributions
   TString distT = vartitle;
@@ -80,8 +94,8 @@ void CompareDist(TString varname, TString vartitle) {
   ratT += " ratio;"+vartitle;
   for(f=0;f<2;f++) {
     distN[f] = Form("%sDist%d",varname.Data(),f);
-    dist[f] = new TH1D(distN[f],distT,NBINS,distmin,distmax);
-    tr[f]->Project(distN[f],varname);
+    dist[f] = new TH1D(distN[f],distT,numBins,distmin,distmax);
+    tr[f]->Project(distN[f],varname,extraCut);
     dist[f]->Scale(1/normalizer[f]); // normalization
     //dist[f]->Sumw2(); // (already done, redundant)
     dist[f]->SetMarkerStyle(f==0?kFullTriangleUp:kFullTriangleDown);
@@ -96,7 +110,7 @@ void CompareDist(TString varname, TString vartitle) {
   };
 
   // ratio
-  rat = new TH1D(varname+"Rat",ratT,NBINS,distmin,distmax);
+  rat = new TH1D(varname+"Rat",ratT,numBins,distmin,distmax);
   rat->Divide(dist[0],dist[1]); // dist[0] / dist[1]
   rat->SetLineColor(kBlack);
   rat->SetMarkerColor(kBlack);
