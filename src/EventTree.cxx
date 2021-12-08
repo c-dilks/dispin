@@ -101,8 +101,10 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
     chain->SetBranchAddress("diphM",&(objDiphoton->M));
     chain->SetBranchAddress("diphZE",&(objDiphoton->ZE));
     chain->SetBranchAddress("diphVtxDiff",&(objDiphoton->VtxDiff));
-    chain->SetBranchAddress("diphMCpi0",&(objDiphoton->IsMCpi0));
-    chain->SetBranchAddress("diphMCmatchDist",&(objDiphoton->MCmatchDist));
+    if(chain->GetBranch("diphMCpi0")) {
+      chain->SetBranchAddress("diphMCpi0",&(objDiphoton->IsMCpi0));
+      chain->SetBranchAddress("diphMCmatchDist",&(objDiphoton->MCmatchDist));
+    };
   };
 
 
@@ -618,28 +620,84 @@ Bool_t EventTree::CheckSampFrac() {
   if(eleSector>=1 && eleSector<=6) {
 
     // parameters for SF mu(p) and sigma(p) functions
-    Double_t e_cal_sampl_mu[3][6] = {
-      {0.2531, 0.2550, 0.2514, 0.2494, 0.2528, 0.2521},
-      {-0.6502, -0.7472, -0.7674, -0.4913, -0.3988, -0.703},
-      {4.939, 5.350, 5.102, 6.440, 6.149, 4.957}
+    Double_t sfMu[3][6];
+    Double_t sfSigma[3][6];
+
+    if( (runnum>=5032 && runnum<=5666) || (runnum>=6616 && runnum<=6783) ) { // RGA
+      sfMu[0][0] = 0.2531;
+      sfMu[0][1] = 0.2550;
+      sfMu[0][2] = 0.2514;
+      sfMu[0][3] = 0.2494;
+      sfMu[0][4] = 0.2528;
+      sfMu[0][5] = 0.2521;
+
+      sfMu[1][0] = -0.6502;
+      sfMu[1][1] = -0.7472;
+      sfMu[1][2] = -0.7674;
+      sfMu[1][3] = -0.4913;
+      sfMu[1][4] = -0.3988;
+      sfMu[1][5] = -0.703;
+
+      sfMu[2][0] = 4.939;
+      sfMu[2][1] = 5.350;
+      sfMu[2][2] = 5.102;
+      sfMu[2][3] = 6.440;
+      sfMu[2][4] = 6.149;
+      sfMu[2][5] = 4.957;
+
+      sfSigma[0][0] = 0.002726;
+      sfSigma[0][1] = 0.004157;
+      sfSigma[0][2] = 0.005222;
+      sfSigma[0][3] = 0.005398;
+      sfSigma[0][4] = 0.008453;
+      sfSigma[0][5] = 0.006553;
+
+      sfSigma[1][0] = 1.062;
+      sfSigma[1][1] = 0.859;
+      sfSigma[1][2] = 0.5564;
+      sfSigma[1][3] = 0.6576;
+      sfSigma[1][4] = 0.3242;
+      sfSigma[1][5] = 0.4423;
+
+      sfSigma[2][0] = -4.089;
+      sfSigma[2][1] = -3.318;
+      sfSigma[2][2] = -2.078;
+      sfSigma[2][3] = -2.565;
+      sfSigma[2][4] = -0.8223;
+      sfSigma[2][5] = -1.274;
+    }
+    else if( (runnum>= 6120 && runnum<= 6604) || (runnum>=11093 && runnum<=11283) || (runnum>=11323 && runnum<=11571) ) { // RGB
+      fprintf(stderr,"ERROR: RGB does not yet have sampling fraction band cuts\n");
+      return false;
+    }
+    else if(runnum==11) { // MC
+      for(int s=0; s<6; s++) {
+        sfMu[0][s] = 0.248605;
+        sfMu[1][s] = -0.844221;
+        sfMu[2][s] = 4.87777;
+        sfSigma[0][s] = 0.00741575;
+        sfSigma[1][s] = 0.215861;
+        sfSigma[2][s] = -0.319801;
+      };
+    }
+    else {
+      fprintf(stderr,"ERROR: unknown run for sampling fraction band cut\n");
+      return false;
     };
-    Double_t e_cal_sampl_sigma[3][6] = {
-      {0.002726, 0.004157, 0.005222, 0.005398, 0.008453, 0.006553}, 
-      {1.062, 0.859, 0.5564, 0.6576, 0.3242, 0.4423}, 
-      {-4.089, -3.318, -2.078, -2.565, -0.8223, -1.274}
-    };
+
 
     // calculate mu(p)
     Double_t mu =
-      e_cal_sampl_mu[0][eleSector-1] + 
-      (e_cal_sampl_mu[1][eleSector-1]/1000)*
-      TMath::Power(eleP-e_cal_sampl_mu[2][eleSector-1],2);
+      sfMu[0][eleSector-1] + 
+      (sfMu[1][eleSector-1]/1000)*
+      TMath::Power(eleP-sfMu[2][eleSector-1],2);
     // calculate sigma(p)
     Double_t sigma =
-      e_cal_sampl_sigma[0][eleSector-1] + e_cal_sampl_sigma[1][eleSector-1] / 
-      (10 * (eleP-e_cal_sampl_sigma[2][eleSector-1]));
+      sfSigma[0][eleSector-1] + sfSigma[1][eleSector-1] / 
+      (10 * (eleP-sfSigma[2][eleSector-1]));
     // SF must be within 3.5 sigma of mean; here SF is from PCAL+ECAL+ECIN
     sfcutSigma = TMath::Abs(eleSampFrac-mu) < 3.5*sigma;
+
   } else {
     sfcutSigma = false;
   };
