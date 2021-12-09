@@ -666,7 +666,7 @@ Bool_t EventTree::CheckSampFrac() {
       sfSigma[2][4] = -0.8223;
       sfSigma[2][5] = -1.274;
     }
-    else if( (runnum>= 6120 && runnum<= 6604) || (runnum>=11093 && runnum<=11283) || (runnum>=11323 && runnum<=11571) ) { // RGB
+    else if( (runnum>= 6120 && runnum<= 6604) || (runnum>=11093 && runnum<=11300) || (runnum>=11323 && runnum<=11571) ) { // RGB
       fprintf(stderr,"ERROR: RGB does not yet have sampling fraction band cuts\n");
       return false;
     }
@@ -685,17 +685,11 @@ Bool_t EventTree::CheckSampFrac() {
       return false;
     };
 
+    // calculate mu(p) and sigma(p), where p=`eleP`
+    Double_t mu    = sfMu[0][eleSector-1] + (sfMu[1][eleSector-1]/1000) * TMath::Power(eleP-sfMu[2][eleSector-1],2);
+    Double_t sigma = sfSigma[0][eleSector-1] + sfSigma[1][eleSector-1] / (10 * (eleP-sfSigma[2][eleSector-1]));
 
-    // calculate mu(p)
-    Double_t mu =
-      sfMu[0][eleSector-1] + 
-      (sfMu[1][eleSector-1]/1000)*
-      TMath::Power(eleP-sfMu[2][eleSector-1],2);
-    // calculate sigma(p)
-    Double_t sigma =
-      sfSigma[0][eleSector-1] + sfSigma[1][eleSector-1] / 
-      (10 * (eleP-sfSigma[2][eleSector-1]));
-    // SF must be within 3.5 sigma of mean; here SF is from PCAL+ECAL+ECIN
+    // SF must be within 3.5 sigma of mean; here SF is from PCAL+ECAL+ECIN/eleP
     sfcutSigma = TMath::Abs(eleSampFrac-mu) < 3.5*sigma;
 
   } else {
