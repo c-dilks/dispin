@@ -619,7 +619,7 @@ Bool_t EventTree::CheckSampFrac() {
   // need defined EC sector to apply SF cut
   if(eleSector>=1 && eleSector<=6) {
 
-    // parameters for SF mu(p) and sigma(p) functions
+    // parameters for SF mu(p) and sigma(p) functions ///////   from F.X. and RGA common analysis note
     Double_t sfMu[3][6];
     Double_t sfSigma[3][6];
 
@@ -667,8 +667,47 @@ Bool_t EventTree::CheckSampFrac() {
       sfSigma[2][5] = -1.274;
     }
     else if( (runnum>= 6120 && runnum<= 6604) || (runnum>=11093 && runnum<=11300) || (runnum>=11323 && runnum<=11571) ) { // RGB
-      fprintf(stderr,"ERROR: RGB does not yet have sampling fraction band cuts\n");
-      return false;
+      sfMu[0][0] = 0.2520;
+      sfMu[0][1] = 0.2520;
+      sfMu[0][2] = 0.2479;
+      sfMu[0][3] = 0.2444;
+      sfMu[0][4] = 0.2463;
+      sfMu[0][5] = 0.2478;
+
+      sfMu[1][0] = -0.8615;
+      sfMu[1][1] = -0.8524;
+      sfMu[1][2] = -0.6848;
+      sfMu[1][3] = -0.5521;
+      sfMu[1][4] = -0.5775;
+      sfMu[1][5] = -0.7327;
+
+      sfMu[2][0] = 5.596;
+      sfMu[2][1] = 6.522;
+      sfMu[2][2] = 5.752;
+      sfMu[2][3] = 5.278;
+      sfMu[2][4] = 6.430;
+      sfMu[2][5] = 5.795;
+
+      sfSigma[0][0] = -0.02963;
+      sfSigma[0][1] = -0.1058;
+      sfSigma[0][2] = -0.05087;
+      sfSigma[0][3] = -0.04524;
+      sfSigma[0][4] = -0.02951;
+      sfSigma[0][5] = -0.01769;
+
+      sfSigma[1][0] = 20.4;
+      sfSigma[1][1] = 129.3;
+      sfSigma[1][2] = 0.6191;
+      sfSigma[1][3] = 0.6817;
+      sfSigma[1][4] = 20.84;
+      sfSigma[1][5] = 8.44;
+
+      sfSigma[2][0] = -41.44;
+      sfSigma[2][1] = -101.6;
+      sfSigma[2][2] = -2.673;
+      sfSigma[2][3] = -2.606;
+      sfSigma[2][4] = -42.67;
+      sfSigma[2][5] = -21.73;
     }
     else if(runnum==11) { // MC
       for(int s=0; s<6; s++) {
