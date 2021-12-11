@@ -14,6 +14,7 @@
 #pragma link C++ class Ensemble+;
 #pragma link C++ class Binning+;
 #pragma link C++ class Modulation+;
+#pragma link C++ class InjectionModel+;
 #pragma link C++ class Asymmetry+;
 #pragma link C++ class BruAsymmetry+;
 

@@ -24,23 +24,12 @@ void injectAsymModel(
   TH1D *maxAdist = new TH1D("maxAdist","max amp dist",200,-1,1);
   TH1D *minAdist = new TH1D("minAdist","min amp dist",200,-1,1);
   TH2D *maxVsMin = new TH2D("maxVsMin","max amp vs min amp;min amp;max amp",200,-1,1,200,-1,1);
-  Binning *BS = new Binning();
-  BS->SetScheme(ivType,1,1,1);
 
-  // modulations list
-  std::vector<Modulation*> moduList;
-  std::map<TString,TObjArray*> models;
-  for(int tw=2; tw<=3; tw++) {
-    for(int l=0; l<=2; l++) {
-      for(int m=-l; m<=l; m++) {
-        if(tw==2 && m<=0) continue;
-        if(verbose) printf("modulation %d %d %d\n",tw,l,m);
-        auto modu = new Modulation(tw,l,m,0,true,Modulation::kLU);
-        moduList.push_back(modu);
-        models.insert(std::pair<TString,TObjArray*>(modu->AmpName(),new TObjArray()));
-      };
-    };
-  };
+  // injection model
+  InjectionModel *IM = new InjectionModel();
+  IM->FillModuList(0);
+  IM->SetIVtype(ivType);
+  Binning *BS = IM->GetBinning();
 
   // RNG; fix seed for reproducibility
   auto RNG = new TRandomMixMax(50314);
@@ -51,7 +40,7 @@ void injectAsymModel(
   TF1 *F;
   for(int i=0; i<numInjections; i++) { // injection loop
     if(verbose) printf("injection %d formulas:\n",i);
-    for(auto modu : moduList) { // modulation loop
+    for(auto modu : IM->GetModuList()) { // modulation loop
 
       // random a0, the value of the asymmetry at IV==0 (for each dimension)
       a0 = RNG->Uniform(-asymMax,asymMax);
@@ -68,7 +57,7 @@ void injectAsymModel(
       }
       Tools::GlobalRegexp(formu,TRegexp("\\+-"),"-");
 
-      // create TF1 and insert into `models`
+      // create amplitude model TF1 and insert into IM
       // - TF1 ranges are used later by GetMin/Maximum methods
       TString FN = modu->AmpName() + Form("__%d",i);
       if(verbose) printf("- %s\t%s\n",FN.Data(),formu.Data());
@@ -95,7 +84,7 @@ void injectAsymModel(
               );
           break;
       }
-      models.at(modu->AmpName())->AddLast(F);
+      IM->AddAmplitudeModel(modu,F);
 
       // fill min/maxA dists
       minAdist->Fill(F->GetMinimum());
@@ -105,10 +94,7 @@ void injectAsymModel(
   }
 
   // write output
-  for(auto kv : models) {
-    kv.second->Write(kv.first,TObject::kSingleKey);
-  }
-  BS->Write();
+  IM->WriteOut();
   maxAdist->Write();
   minAdist->Write();
   maxVsMin->Write();

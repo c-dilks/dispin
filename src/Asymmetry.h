@@ -48,7 +48,7 @@
 #include <RooMinuit.h>
 
 
-// dihbsa
+// dispin
 #include "Constants.h"
 #include "Tools.h"
 #include "Modulation.h"
@@ -56,6 +56,7 @@
 #include "DIS.h"
 #include "Binning.h"
 #include "EventTree.h"
+#include "InjectionModel.h"
 
 
 class Asymmetry : public TObject
@@ -89,7 +90,7 @@ class Asymmetry : public TObject
     void AppendData(TFile * tf);
     TString AppFileName(TFile * tf);
 
-    void ActivateTree(Bool_t isMC=false);
+    void ActivateTree(Bool_t isMC=false, InjectionModel *IM_=nullptr);
 
     Double_t nEvents;
 
@@ -315,8 +316,8 @@ class Asymmetry : public TObject
 
     Bool_t treeActivated;
 
-
-
+    InjectionModel *IM;
+    Bool_t injectAsym;
 
   ClassDef(Asymmetry,1);
 };

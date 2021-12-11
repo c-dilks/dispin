@@ -19,10 +19,14 @@ class Modulation : public TObject
 
     enum polarization_enum { kLU, kUU, kLL, kUT, kDSIDIS, nPOL };
 
-    Modulation(Int_t tw_, Int_t l_, Int_t m_,
-               Int_t level_ = 0,
-               Bool_t enablePW_ = false,
-               Int_t polarization_ = kLU);
+    Modulation(
+        Int_t tw_           = 3,
+        Int_t l_            = 0,
+        Int_t m_            = 0,
+        Int_t level_        = 0,
+        Bool_t enablePW_    = false,
+        Int_t polarization_ = kLU
+        );
     Modulation(TString ampStr);
     ~Modulation();
 
