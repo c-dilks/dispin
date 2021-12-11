@@ -22,6 +22,7 @@
 // dispin
 #include "Binning.h"
 #include "Modulation.h"
+#inlcude "EventTree.h"
 
 class InjectionModel : public TObject
 {
@@ -47,6 +48,10 @@ class InjectionModel : public TObject
     void AddAmplitudeModel(Modulation *modu, TObject *model);
     // count the number of models, checking if all modulations have the same number 
     void CountAmplitudeModels();
+
+    // injection ---
+    // assign helicity, biased toward selected model
+    Int_t InjectHelicity(EventTree *ev, int modelNum);
 
     // write to TFile; in addition to writing `this`, also write the models, for TBrowser convenience
     void WriteOut();

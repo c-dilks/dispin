@@ -224,6 +224,7 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
     gen_RPerp = UNDEF;
     gen_RT = UNDEF;
     gen_PhiH = UNDEF;
+    gen_PhiR = UNDEF;
     gen_PhiRq = UNDEF;
     gen_PhiRp = UNDEF;
     gen_PhiRp_r = UNDEF;
@@ -262,6 +263,7 @@ void EventTree::GetEvent(Long64_t i) {
 
   // set preferred PhiR angle
   PhiR = PhiRp; // preferred definition by Bacchetta (see Dihadron.cxx)
+  gen_PhiR = gen_PhiRp;
 
   PhiHR = Tools::AdjAngle( PhiH - PhiR );
 

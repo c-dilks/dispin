@@ -218,6 +218,7 @@ class EventTree : public TObject
     Float_t gen_RPerp;
     Float_t gen_RT;
     Float_t gen_PhiH;
+    Float_t gen_PhiR;
     Float_t gen_PhiRq;
     Float_t gen_PhiRp;
     Float_t gen_PhiRp_r;

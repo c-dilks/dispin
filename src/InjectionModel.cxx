@@ -54,6 +54,46 @@ void InjectionModel::CountAmplitudeModels() {
   }
 }
 
+Int_t InjectionModel::InjectHelicity(EventTree *ev, int modelNum) {
+  Float_t iv[3] = {0,0,0};
+  for(int d=0; d<BS->dimensions; d++) {
+    TString ivN = BS->GetIVname(d);
+    if(ivN=="Mh")          iv[d] = ev->gen_Mh;
+    else if(ivN=="X")      iv[d] = ev->gen_x;
+    else if(ivN=="Z")      iv[d] = ev->gen_Zpair;
+    else if(ivN=="PhPerp") iv[d] = ev->gen_PhPerp;
+    else if(ivN=="Q2")     iv[d] = ev->gen_Q2;
+    else if(ivN=="XF")     iv[d] = ev->gen_xF;
+    else {
+      fprintf(stderr,"ERROR: %s not mapped in InjectionModel::InjectHelicity\n");
+      return UNDEF;
+    }
+  }
+  Float_t phiH,phiR,theta;
+  phiH  = ev->gen_PhiH;
+  phiR  = ev->gen_PhiR;
+  theta = ev->gen_theta;
+  
+  // AQUI /////////////////////////
+  TObject *modl;
+  Float_t amp,moduVal;
+  Float_t asymInj = 0;
+  for(auto modu : moduList) {
+    modl = model.at(modu->AmpName())->At(modelNum);
+    switch(BS->dimensions) {
+      case 1: amp = ((TF1*)modl)->Eval(iv[0]);             break;
+      case 2: amp = ((TF2*)modl)->Eval(iv[0],iv[1]);       break;
+      case 3: amp = ((TF3*)modl)->Eval(iv[0],iv[1],iv[2]); break;
+    };
+    moduVal = modu->Evaluate(phiR,phiH,theta);
+    asymInj += amp * moduVal;
+  };
+
+  asymInj *= polarization; // TODO
+  asymInj *= depolarization; // TODO
+
+}
+
 void InjectionModel::WriteOut() {
   this->CountAmplitudeModels();
   this->Write("IM");
