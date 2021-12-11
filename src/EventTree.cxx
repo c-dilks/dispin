@@ -170,15 +170,17 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
     chain->SetBranchAddress("gen_hadParentPid",gen_hadParentPid);
     // - helicityMC
     if(chain->GetBranch("helicityMC")) {
+      chain->SetBranchAddress("NhelicityMC",&NhelicityMC);
       chain->SetBranchAddress("helicityMC",helicityMC);
       helicityMCinjected = true;
     } else {
-      for(int hh=0; hh<NhelicityMC; hh++) helicityMC[hh]=0;
+      NhelicityMC = 0;
+      for(int hh=0; hh<NumInjectionsMax; hh++) helicityMC[hh]=0;
       helicityMCinjected = false;
     };
   } else { 
     MCrecMode = false;
-    for(int hh=0; hh<NhelicityMC; hh++) helicityMC[hh]=0; 
+    for(int hh=0; hh<NumInjectionsMax; hh++) helicityMC[hh]=0; 
     helicityMCinjected = false;
     gen_W = UNDEF;
     gen_Q2 = UNDEF;
@@ -544,6 +546,10 @@ Int_t EventTree::SpinState() {
       // if helicityMC has not yet been injected, inject something here so cutHelicity==true
       //helicityMC[whichHelicityMC] = 3; // +helicity only
       helicityMC[whichHelicityMC] = RNG->Uniform()<0.5 ? 2:3; // 50/50 random
+    };
+    if(whichHelicityMC<0||whichHelicityMC>NhelicityMC) {
+      fprintf(stderr,"ERROR: bad whichHelicityMC\n");
+      return UNDEF;
     };
     switch(helicityMC[whichHelicityMC]) {
       case 2: return sM;

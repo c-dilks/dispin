@@ -128,8 +128,9 @@ class EventTree : public TObject
     // event-level branches
     Int_t evnum,runnum;
     Int_t helicity;
-    static const Int_t NhelicityMC = 73;
-    Int_t helicityMC[NhelicityMC];
+    static const Int_t NumInjectionsMax = 256;
+    Int_t NhelicityMC;
+    Int_t helicityMC[NumInjectionsMax];
 
     // PhiR 
     Float_t PhiR; // set to the preferred one
