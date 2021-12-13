@@ -61,6 +61,7 @@ class EventTree : public TObject
 
     //Float_t GetDepolarizationFactorApprox(Char_t kf);
     Float_t GetDepolarizationFactor(Char_t kf);
+    Float_t GetDepolarizationRatio(Int_t twist);
     void CalculateRapidity(
       TLorentzVector momentumVec_,
       TVector3 boostVec, TVector3 zAxis,

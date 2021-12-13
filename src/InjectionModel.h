@@ -13,6 +13,8 @@
 #include "TSystem.h"
 #include "TObject.h"
 #include "TString.h"
+#include "TRandom.h"
+#include "TRandomGen.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TF1.h"
@@ -22,7 +24,7 @@
 // dispin
 #include "Binning.h"
 #include "Modulation.h"
-#inlcude "EventTree.h"
+#include "EventTree.h"
 
 class InjectionModel : public TObject
 {
@@ -41,11 +43,13 @@ class InjectionModel : public TObject
     std::vector<Modulation*> GetModuList() { return moduList; };
 
     // amplitude models ---
-    // get the number of amplitude models
+    // get the number of amplitude models, per Modulation
     Int_t GetNumModels() { return numModels; }
     // add an amplitude model to a specific `Modulation`; it is the caller's responsibility
     // to make sure all modulations in `moduList` get the same number of amplitude models
     void AddAmplitudeModel(Modulation *modu, TObject *model);
+    // get list of models for a given Modulation
+    TObjArray *GetAmplitudeModelList(Modulation *modu);
     // count the number of models, checking if all modulations have the same number 
     void CountAmplitudeModels();
 
@@ -62,6 +66,7 @@ class InjectionModel : public TObject
     std::vector<Modulation*> moduList;
     std::map<TString,TObjArray*> models;
     Binning *BS;
+    TRandom * RNG;
 
   ClassDef(InjectionModel,1);
 };

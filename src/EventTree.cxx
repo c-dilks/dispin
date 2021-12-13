@@ -926,6 +926,16 @@ Float_t EventTree::GetDepolarizationFactor(Char_t kf) {
     return 0;
   };
 };
+// - get depolarization factor ratio, which depends on twist (for LU polarization only!!!)
+Float_t EventTree::GetDepolarizationRatio(Int_t twist) {
+  switch(twist) {
+    case 2: return GetDepolarizationFactor('C') / GetDepolarizationFactor('A'); break;
+    case 3: return GetDepolarizationFactor('W') / GetDepolarizationFactor('A'); break;
+    default:
+            fprintf(stderr,"ERROR: unknown twist %d for depolarization factor ratio; return 0\n",twist);
+            return 0;
+  }
+}
 
 // general method to calculate rapidity
 // - calculate the rapidity of `momentumVec`, where `momentumVec` is boosted by
