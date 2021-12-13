@@ -313,6 +313,7 @@ class Asymmetry : public TObject
     Int_t tree_Spin_idx;
     Bool_t tree_diphIsMCpi0;
     Double_t tree_diphMCmatchDist;
+    Int_t tree_SpinMC_idx[EventTree::NumInjectionsMax];
 
     Bool_t treeActivated;
 

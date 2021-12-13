@@ -60,6 +60,9 @@ void InjectionModel::CountAmplitudeModels() {
       break;
     }
   }
+  if(numModels>EventTree::NumInjectionsMax) {
+    fprintf(stderr,"WARNING: defined more than EventTree::NumInjectionsMax injection models; downstream code may fail\n");
+  }
 }
 
 Int_t InjectionModel::InjectHelicity(EventTree *ev, int modelNum) {
@@ -120,9 +123,9 @@ Int_t InjectionModel::InjectHelicity(EventTree *ev, int modelNum) {
     asymInj += amp * moduVal * ev->Polarization() * ev->GetDepolarizationRatio(modu->GetTw()); // TODO [low prio]: depol ratio should be calculated from generated kinematics
   }
 
-  // calculate helicity: 2=spin-, 3=spin+
+  // calculate helicity
   Float_t rn = RNG->Uniform(); // generate random number within [0,1]
-  return (rn<0.5*(1+asymInj)) ? 3 : 2;
+  return (rn<0.5*(1+asymInj)) ? 1 : -1;
 }
 
 

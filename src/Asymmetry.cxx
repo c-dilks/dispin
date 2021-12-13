@@ -542,6 +542,12 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
     tree_Spin_idx        = (Int_t)(SpinInt(spinn));
     tree_diphIsMCpi0     = ev->objDiphoton->IsMCpi0;
     tree_diphMCmatchDist = ev->objDiphoton->MCmatchDist;
+    for(int i=0; i<EventTree::NumInjectionsMax; i++) tree_SpinMC_idx[i]=0;
+    if(injectAsym) {
+      for(int i=0; i<IM->GetNumModels(); i++) {
+        tree_SpinMC_idx[i] = IM->InjectHelicity(ev,i);
+      };
+    };
     tree->Fill();
   };
 
@@ -1411,6 +1417,11 @@ void Asymmetry::ActivateTree(Bool_t isMC, InjectionModel *IM_) {
   } else {
     tree->Branch("diphIsMCpi0",&tree_diphIsMCpi0,"diphIsMCpi0/O");
     tree->Branch("diphMCmatchDist",&tree_diphMCmatchDist,"diphMCmatchDist/D");
+  };
+  if(injectAsym) {
+    for(int i=0; i<IM->GetNumModels(); i++) {
+      tree->Branch(Form("SpinMC_%d_idx",i),&(tree_SpinMC_idx[i]),Form("SpinMC_%d_idx/I",i)); // one branch per injected asymmetry model
+    };
   };
   treeActivated = true;
 };
