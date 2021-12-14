@@ -543,7 +543,7 @@ Int_t EventTree::SpinState() {
     return UNDEF;
   }
 
-  else { // MC run
+  else { // MC run - use injected helicity (DEPRECATED by `InjectionModel`)
     if(!helicityMCinjected) {
       // if helicityMC has not yet been injected, inject something here so cutHelicity==true
       //helicityMC[whichHelicityMC] = 3; // +helicity only

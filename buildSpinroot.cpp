@@ -342,10 +342,11 @@ int PrintUsage() {
 
   printf(" -b\tbin in 2D azimuthal space (for multi-amplitude chi2 minimization)\n\n");
 
-  printf("extra options for MC usage:\n\n");
-  printf(" -s\ttell Asymmetry::ActivateTree() this is MC data\n\n");
-  printf(" -j\tinjection model file, for MC asymmetry injection studies\n\n");
-  printf(" -h\tselect which helicityMC to use (DEPRECATED)\n\n");
+  printf("extra options for MC usage (in single-bin mode):\n");
+  printf(" -s\ttell Asymmetry::ActivateTree() this is MC data\n");
+  printf(" -j\tinjection model file, for MC asymmetry injection studies\n");
+  printf(" -h\tselect which helicityMC to use (DEPRECATED)\n");
+  printf("\n");
 
   return 0;
 };

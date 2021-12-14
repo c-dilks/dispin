@@ -373,6 +373,7 @@ Asymmetry::Asymmetry(Binning * binScheme, Int_t binNum) {
 
   treeActivated = false;
   injectAsym = false;
+  IM = nullptr;
 
   if(debug) {
     printf("whichDim = %d\n",whichDim);
