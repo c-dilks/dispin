@@ -631,7 +631,7 @@ Bool_t EventTree::CheckSampFrac() {
       sfSigma[1][0] = 1.062;    sfSigma[1][1] = 0.859;    sfSigma[1][2] = 0.5564;   sfSigma[1][3] = 0.6576;   sfSigma[1][4] = 0.3242;   sfSigma[1][5] = 0.4423;
       sfSigma[2][0] = -4.089;   sfSigma[2][1] = -3.318;   sfSigma[2][2] = -2.078;   sfSigma[2][3] = -2.565;   sfSigma[2][4] = -0.8223;  sfSigma[2][5] = -1.274;
     }
-    else if( (runnum>= 6120 && runnum<= 6604) || (runnum>=11093 && runnum<=11300) || (runnum>=11323 && runnum<=11571) ) { // RGB
+    else if( runnum>=6120 && runnum<=6604 ) { // RGB spring 2019
       // based on runs 6472, 6474, and 6479
       sfMu[0][0]    = 0.2520;   sfMu[0][1]    = 0.2520;  sfMu[0][2]    = 0.2479;   sfMu[0][3]    = 0.2444;   sfMu[0][4]    = 0.2463;   sfMu[0][5]    = 0.2478;
       sfMu[1][0]    = -0.8615;  sfMu[1][1]    = -0.8524; sfMu[1][2]    = -0.6848;  sfMu[1][3]    = -0.5521;  sfMu[1][4]    = -0.5775;  sfMu[1][5]    = -0.7327;
@@ -639,6 +639,48 @@ Bool_t EventTree::CheckSampFrac() {
       sfSigma[0][0] = -0.02963; sfSigma[0][1] = -0.1058; sfSigma[0][2] = -0.05087; sfSigma[0][3] = -0.04524; sfSigma[0][4] = -0.02951; sfSigma[0][5] = -0.01769;
       sfSigma[1][0] = 20.4;     sfSigma[1][1] = 129.3;   sfSigma[1][2] = 0.6191;   sfSigma[1][3] = 0.6817;   sfSigma[1][4] = 20.84;    sfSigma[1][5] = 8.44;
       sfSigma[2][0] = -41.44;   sfSigma[2][1] = -101.6;  sfSigma[2][2] = -2.673;   sfSigma[2][3] = -2.606;   sfSigma[2][4] = -42.67;   sfSigma[2][5] = -21.73;
+    }
+    else if( runnum>=11093 && runnum<=11300 ) { // RGB fall 2019
+      fprintf(stderr,"ERROR: RGB fall2019 sampling fraction cuts not yet implemented; ask FX\n");
+      return false;
+    }
+    else if( runnum>=11323 && runnum<=11571 ) { // RGB winter 2020
+      // based on run 11375
+      sfMu[0][0]    = 0.2427;  sfMu[0][1]    = 0.2417;  sfMu[0][2]    = 0.2409;  sfMu[0][3]    = 0.2482;  sfMu[0][4]    = 0.2414;  sfMu[0][5]    = 0.2450;
+      sfMu[1][0]    = -0.7625; sfMu[1][1]    = -1.0297; sfMu[1][2]    = -1.1490; sfMu[1][3]    = -0.5120; sfMu[1][4]    = -0.6389; sfMu[1][5]    = -0.8967;
+      sfMu[2][0]    = 5.2105;  sfMu[2][1]    = 4.4726;  sfMu[2][2]    = 4.4601;  sfMu[2][3]    = 5.9110;  sfMu[2][4]    = 5.5941;  sfMu[2][5]    = 4.8921;
+      sfSigma[0][0] = 0.0116;  sfSigma[0][1] = 0.0159;  sfSigma[0][2] = 0.0119;  sfSigma[0][3] = 0.0103;  sfSigma[0][4] = 0.0141;  sfSigma[0][5] = 0.0083;
+      sfSigma[1][0] = 0.1872;  sfSigma[1][1] = 0.1680;  sfSigma[1][2] = 0.1276;  sfSigma[1][3] = 0.1999;  sfSigma[1][4] = 0.0537;  sfSigma[1][5] = 0.2882;
+      sfSigma[2][0] = -0.1221; sfSigma[2][1] = -0.0290; sfSigma[2][2] = 0.4179;  sfSigma[2][3] = 0.2938;  sfSigma[2][4] = 1.0519;  sfSigma[2][5] = -0.4405;
+      // TODO: check BSA for these other parameterizations; radiation damage caused slow PMT gain drifts, hence the cuts drift slowly //////////////
+      // // based on run 11442
+      // sfMu[0][0]    = 0.2425;  sfMu[0][1]    = 0.2415;  sfMu[0][2]    = 0.2402;  sfMu[0][3]    = 0.2478;  sfMu[0][4]    = 0.2412;  sfMu[0][5]    = 0.2445;
+      // sfMu[1][0]    = -0.7902; sfMu[1][1]    = -1.0531; sfMu[1][2]    = -1.1415; sfMu[1][3]    = -0.5304; sfMu[1][4]    = -0.6461; sfMu[1][5]    = -0.9213;
+      // sfMu[2][0]    = 5.2645;  sfMu[2][1]    = 4.4854;  sfMu[2][2]    = 4.4976;  sfMu[2][3]    = 5.9428;  sfMu[2][4]    = 5.6900;  sfMu[2][5]    = 4.8948;
+      // sfSigma[0][0] = 0.0116;  sfSigma[0][1] = 0.0155;  sfSigma[0][2] = 0.0115;  sfSigma[0][3] = 0.0104;  sfSigma[0][4] = 0.0145;  sfSigma[0][5] = 0.0085;
+      // sfSigma[1][0] = 0.2024;  sfSigma[1][1] = 0.2095;  sfSigma[1][2] = 0.1564;  sfSigma[1][3] = 0.1989;  sfSigma[1][4] = 0.0470;  sfSigma[1][5] = 0.2886;
+      // sfSigma[2][0] = -0.2808; sfSigma[2][1] = -0.3066; sfSigma[2][2] = 0.1420;  sfSigma[2][3] = 0.3124;  sfSigma[2][4] = 1.1334;  sfSigma[2][5] = -0.4543;
+      // // based on run 11483
+      // sfMu[0][0]    = 0.2433;  sfMu[0][1]    = 0.2421;  sfMu[0][2]    = 0.2415;  sfMu[0][3]    = 0.2486;  sfMu[0][4]    = 0.2419;  sfMu[0][5]    = 0.2447;
+      // sfMu[1][0]    = -0.8052; sfMu[1][1]    = -1.0495; sfMu[1][2]    = -1.1747; sfMu[1][3]    = -0.5170; sfMu[1][4]    = -0.6840; sfMu[1][5]    = -0.9022;
+      // sfMu[2][0]    = 5.2750;  sfMu[2][1]    = 4.4886;  sfMu[2][2]    = 4.4935;  sfMu[2][3]    = 5.9044;  sfMu[2][4]    = 5.6716;  sfMu[2][5]    = 4.9288;
+      // sfSigma[0][0] = 0.0120;  sfSigma[0][1] = 0.0164;  sfSigma[0][2] = 0.0120;  sfSigma[0][3] = 0.0108;  sfSigma[0][4] = 0.0147;  sfSigma[0][5] = 0.0077;
+      // sfSigma[1][0] = 0.1794;  sfSigma[1][1] = 0.1519;  sfSigma[1][2] = 0.1379;  sfSigma[1][3] = 0.1838;  sfSigma[1][4] = 0.0494;  sfSigma[1][5] = 0.3509;
+      // sfSigma[2][0] = -0.0695; sfSigma[2][1] = 0.1553;  sfSigma[2][2] = 0.3300;  sfSigma[2][3] = 0.4330;  sfSigma[2][4] = 1.1032;  sfSigma[2][5] = -0.7996;
+      // // based on run 11518
+      // sfMu[0][0]    = 0.2417;  sfMu[0][1]    = 0.2409;  sfMu[0][2]    = 0.2393;  sfMu[0][3]    = 0.2465;  sfMu[0][4]    = 0.2407;  sfMu[0][5]    = 0.2436;
+      // sfMu[1][0]    = -0.7828; sfMu[1][1]    = -1.0793; sfMu[1][2]    = -1.1627; sfMu[1][3]    = -0.4932; sfMu[1][4]    = -0.6576; sfMu[1][5]    = -0.9408;
+      // sfMu[2][0]    = 5.3301;  sfMu[2][1]    = 4.4935;  sfMu[2][2]    = 4.5123;  sfMu[2][3]    = 6.1411;  sfMu[2][4]    = 5.7539;  sfMu[2][5]    = 4.9382;
+      // sfSigma[0][0] = 0.0121;  sfSigma[0][1] = 0.0149;  sfSigma[0][2] = 0.0116;  sfSigma[0][3] = 0.0109;  sfSigma[0][4] = 0.0148;  sfSigma[0][5] = 0.0081;
+      // sfSigma[1][0] = 0.1727;  sfSigma[1][1] = 0.2762;  sfSigma[1][2] = 0.1618;  sfSigma[1][3] = 0.1730;  sfSigma[1][4] = 0.0460;  sfSigma[1][5] = 0.3260;
+      // sfSigma[2][0] = -0.0368; sfSigma[2][1] = -0.8267; sfSigma[2][2] = 0.1066;  sfSigma[2][3] = 0.4624;  sfSigma[2][4] = 1.1389;  sfSigma[2][5] = -0.6666;
+      // // based on run 11563
+      // sfMu[0][0]    = 0.2416;  sfMu[0][1]    = 0.2406;  sfMu[0][2]    = 0.2393;  sfMu[0][3]    = 0.2464;  sfMu[0][4]    = 0.2404;  sfMu[0][5]    = 0.2434;
+      // sfMu[1][0]    = -0.7865; sfMu[1][1]    = -1.0576; sfMu[1][2]    = -1.1872; sfMu[1][3]    = -0.5078; sfMu[1][4]    = -0.6703; sfMu[1][5]    = -0.9305;
+      // sfMu[2][0]    = 5.3506;  sfMu[2][1]    = 4.5243;  sfMu[2][2]    = 4.5071;  sfMu[2][3]    = 6.0961;  sfMu[2][4]    = 5.7028;  sfMu[2][5]    = 4.9425;
+      // sfSigma[0][0] = 0.0120;  sfSigma[0][1] = 0.0159;  sfSigma[0][2] = 0.0119;  sfSigma[0][3] = 0.0109;  sfSigma[0][4] = 0.0149;  sfSigma[0][5] = 0.0086;
+      // sfSigma[1][0] = 0.1752;  sfSigma[1][1] = 0.1975;  sfSigma[1][2] = 0.1458;  sfSigma[1][3] = 0.1787;  sfSigma[1][4] = 0.0414;  sfSigma[1][5] = 0.2873;
+      // sfSigma[2][0] = -0.0405; sfSigma[2][1] = -0.2537; sfSigma[2][2] = 0.2474;  sfSigma[2][3] = 0.4116;  sfSigma[2][4] = 1.2172;  sfSigma[2][5] = -0.4651;
     }
     else if(runnum==11) { // MC
       for(int s=0; s<6; s++) {
