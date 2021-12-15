@@ -29,6 +29,11 @@ EventTree * ev;
 int PrintUsage();
 void SetDefaultArgs();
 void PrintMeans(TString title, std::map<Int_t,TH1D*> mapdist);
+void DrawPlot(
+    TString titleX, TString titleY,
+    std::function<Double_t(Int_t)> lambdaXval, std::function<Double_t(Int_t)> lambdaXerr,
+    std::function<Double_t(Int_t)> lambdaYval, std::function<Double_t(Int_t)> lambdaYerr
+    );
 
 int main(int argc, char** argv) {
 
@@ -205,6 +210,29 @@ int main(int argc, char** argv) {
   PrintMeans("FG",mapdistFG);
   PrintMeans("FGH",mapdistFGH);
 
+  // calculate error propagation of a/b
+  auto ratioErr = [&](Double_t a, Double_t aErr, Double_t b, Double_t bErr){
+    return TMath::Sqrt(
+        TMath::Power(a/b,2) * (
+          TMath::Power(aErr/a,2) + TMath::Power(bErr/b,2)
+          )
+        );
+  };
+
+  // draw plots
+  DrawPlot("<x>","<W/A>",
+      [&](Int_t b){mapdistDepolWA.at(b)->GetMean()},
+      [&](Int_t b){mapdistDepolWA.at(b)->GetStdDev()},
+      [&](Int_t b){mapdistX.at(b)->GetMean()},
+      [&](Int_t b){mapdistX.at(b)->GetStdDev()}
+      );
+  DrawPlot("<x>","<W>/<A>",
+      [&](Int_t b){ mapdistDepolW.at(b)->GetMean() / mapdistDepolA.at(b)->GetMean() },
+      [&](Int_t b){ ratioErr( mapdistDepolW.at(b)->GetMean(), mapdistDepolW.at(b)->GetStdDev(), mapdistDepolA.at(b)->GetMean(), mapdistDepolA.at(b)->GetStdDev() ); },
+      [&](Int_t b){ mapdistX.at(b)->GetMean() },
+      [&](Int_t b){ mapdistX.at(b)->GetStdDev() }
+      );
+
     
   // write histograms
   for(Int_t b : BS->binVec) {
@@ -231,7 +259,7 @@ int main(int argc, char** argv) {
 
 
 ///////////////////////////////////////////
-
+// print table of mean values
 void PrintMeans(TString title, std::map<Int_t,TH1D*> mapdist) {
   TString printStr = title + ": {";
   TH1D * totDist;
@@ -259,6 +287,29 @@ void PrintMeans(TString title, std::map<Int_t,TH1D*> mapdist) {
   printf("  RMS  = %f\n",Tools::CalculateRMS(totDist));
 };
 
+///////////////////////////////////////////
+// draw mean of this vs. mean of that
+void DrawPlot(
+    TString titleX, TString titleY,
+    std::function<Double_t(Int_t)> lambdaXval, std::function<Double_t(Int_t)> lambdaXerr,
+    std::function<Double_t(Int_t)> lambdaYval, std::function<Double_t(Int_t)> lambdaYerr
+    )
+{
+  TGraphErrors *gr = new TGraphErrors();
+  gr->SetName(titleY+"_vs_"+titleX);
+  gr->SetTitle(titleY+" vs. "+titleX+";"+titleX+";"+titleY);
+  gr->SetMarkerStyle(kFullCircle);
+  gr->SetMarkerColor(kBlack);
+  Int_t cnt = 0;
+  for(Int_t b : BS->binVec) {
+    gr->SetPoint( cnt, lambdaXval(b), lambdaYval(b) );
+    gr->SetPoint( cnt, lambdaXerr(b), lambdaYerr(b) );
+    cnt++;
+  };
+  gr->Write();
+};
+
+///////////////////////////////////////////
 // set default arguments
 void SetDefaultArgs() {
   inputData = "";
@@ -272,7 +323,7 @@ int PrintUsage() {
 
   SetDefaultArgs();
   BS = new Binning();
-  fprintf(stderr,"\nUSAGE: buildSpinroot.exe [-f or -d input_data ] [options...]\n\n");
+  fprintf(stderr,"\nUSAGE: TabulateBinMeans.exe [-f or -d input_data ] [options...]\n\n");
 
   printf("INPUT DATA:\n");
   printf(" -f\tsingle ROOT file\n");
