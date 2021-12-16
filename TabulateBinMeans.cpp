@@ -95,43 +95,43 @@ int main(int argc, char** argv) {
   
   // define histograms
   TFile * outfile = new TFile("tables.root","RECREATE");
-  TH1D * distMh; std::map<Int_t,TH1D*> mapdistMh;
-  TH1D * distX; std::map<Int_t,TH1D*> mapdistX;
-  TH1D * distZ; std::map<Int_t,TH1D*> mapdistZ;
-  TH1D * distQ2; std::map<Int_t,TH1D*> mapdistQ2;
-  TH1D * distY; std::map<Int_t,TH1D*> mapdistY;
-  TH1D * distPhPerp; std::map<Int_t,TH1D*> mapdistPhPerp;
-  TH1D * distDepolA; std::map<Int_t,TH1D*> mapdistDepolA;
-  TH1D * distDepolC; std::map<Int_t,TH1D*> mapdistDepolC;
-  TH1D * distDepolW; std::map<Int_t,TH1D*> mapdistDepolW;
+  TH1D * distMh;      std::map<Int_t,TH1D*> mapdistMh;
+  TH1D * distX;       std::map<Int_t,TH1D*> mapdistX;
+  TH1D * distZ;       std::map<Int_t,TH1D*> mapdistZ;
+  TH1D * distQ2;      std::map<Int_t,TH1D*> mapdistQ2;
+  TH1D * distY;       std::map<Int_t,TH1D*> mapdistY;
+  TH1D * distPhPerp;  std::map<Int_t,TH1D*> mapdistPhPerp;
+  TH1D * distDepolA;  std::map<Int_t,TH1D*> mapdistDepolA;
+  TH1D * distDepolC;  std::map<Int_t,TH1D*> mapdistDepolC;
+  TH1D * distDepolW;  std::map<Int_t,TH1D*> mapdistDepolW;
   TH1D * distDepolCA; std::map<Int_t,TH1D*> mapdistDepolCA;
   TH1D * distDepolWA; std::map<Int_t,TH1D*> mapdistDepolWA;
-  TH1D * distP0; std::map<Int_t,TH1D*> mapdistP0;
-  TH1D * distP1; std::map<Int_t,TH1D*> mapdistP1;
-  TH1D * distF; std::map<Int_t,TH1D*> mapdistF;
-  TH1D * distG; std::map<Int_t,TH1D*> mapdistG;
-  TH1D * distFG; std::map<Int_t,TH1D*> mapdistFG;
-  TH1D * distFGH; std::map<Int_t,TH1D*> mapdistFGH;
+  TH1D * distP0;      std::map<Int_t,TH1D*> mapdistP0;
+  TH1D * distP1;      std::map<Int_t,TH1D*> mapdistP1;
+  TH1D * distF;       std::map<Int_t,TH1D*> mapdistF;
+  TH1D * distG;       std::map<Int_t,TH1D*> mapdistG;
+  TH1D * distFG;      std::map<Int_t,TH1D*> mapdistFG;
+  TH1D * distFGH;     std::map<Int_t,TH1D*> mapdistFGH;
   TString bStr;
   for(Int_t b : BS->binVec) {
     bStr = Form("Bin%d",b);
-    distMh = new TH1D(TString("distMh"+bStr),TString("Mh for "+bStr),100,0,3);
-    distX = new TH1D(TString("distX"+bStr),TString("X for "+ bStr),100,0,1);
-    distZ = new TH1D(TString("distZ"+bStr),TString("Z for "+ bStr),100,0,1);
-    distQ2 = new TH1D(TString("distQ2"+bStr),TString("Q2 for "+bStr),100,0,12);
-    distY = new TH1D(TString("distY"+bStr),TString("Y for "+ bStr),100,0,1);
-    distPhPerp = new TH1D(TString("distPhPerp"+bStr),TString("PhPerp for "+bStr),100,0,5);
-    distDepolA = new TH1D(TString("distDepolA"+bStr),TString("DepolA for "+bStr),1000,-1,2.5);
-    distDepolC = new TH1D(TString("distDepolC"+bStr),TString("DepolC for "+bStr),1000,-1,2.5);
-    distDepolW = new TH1D(TString("distDepolW"+bStr),TString("DepolW for "+bStr),1000,-1,2.5);
+    distMh      = new TH1D(TString("distMh"+bStr),TString("Mh for "+bStr),100,0,3);
+    distX       = new TH1D(TString("distX"+bStr),TString("X for "+ bStr),100,0,1);
+    distZ       = new TH1D(TString("distZ"+bStr),TString("Z for "+ bStr),100,0,1);
+    distQ2      = new TH1D(TString("distQ2"+bStr),TString("Q2 for "+bStr),100,0,12);
+    distY       = new TH1D(TString("distY"+bStr),TString("Y for "+ bStr),100,0,1);
+    distPhPerp  = new TH1D(TString("distPhPerp"+bStr),TString("PhPerp for "+bStr),100,0,5);
+    distDepolA  = new TH1D(TString("distDepolA"+bStr),TString("DepolA for "+bStr),1000,-1,2.5);
+    distDepolC  = new TH1D(TString("distDepolC"+bStr),TString("DepolC for "+bStr),1000,-1,2.5);
+    distDepolW  = new TH1D(TString("distDepolW"+bStr),TString("DepolW for "+bStr),1000,-1,2.5);
     distDepolCA = new TH1D(TString("distDepolCA"+bStr),TString("DepolCA for "+bStr),1000,-1,2.5);
     distDepolWA = new TH1D(TString("distDepolWA"+bStr),TString("DepolWA for "+bStr),1000,-1,2.5);
-    distP0 = new TH1D(TString("distP0"+bStr),TString("P_{2,0}(cos#theta) for "+bStr),1000,-0.6,1.1);
-    distP1 = new TH1D(TString("distP1"+bStr),TString("sin#theta for "+bStr),1000,-1.1,1.1);
-    distF = new TH1D(TString("distF"+bStr),TString("F for "+bStr),1000,-1.1,1.1);
-    distG = new TH1D(TString("distG"+bStr),TString("G for "+bStr),1000,-1.1,1.1);
-    distFG = new TH1D(TString("distFG"+bStr),TString("FG for "+bStr),1000,-1.1,1.1);
-    distFGH = new TH1D(TString("distFGH"+bStr),TString("FGH for "+bStr),1000,-1.1,1.1);
+    distP0      = new TH1D(TString("distP0"+bStr),TString("P_{2,0}(cos#theta) for "+bStr),1000,-0.6,1.1);
+    distP1      = new TH1D(TString("distP1"+bStr),TString("sin#theta for "+bStr),1000,-1.1,1.1);
+    distF       = new TH1D(TString("distF"+bStr),TString("F for "+bStr),1000,-1.1,1.1);
+    distG       = new TH1D(TString("distG"+bStr),TString("G for "+bStr),1000,-1.1,1.1);
+    distFG      = new TH1D(TString("distFG"+bStr),TString("FG for "+bStr),1000,-1.1,1.1);
+    distFGH     = new TH1D(TString("distFGH"+bStr),TString("FGH for "+bStr),1000,-1.1,1.1);
     mapdistMh.insert(std::pair<Int_t,TH1D*>(b,distMh));
     mapdistX.insert(std::pair<Int_t,TH1D*>(b,distX));
     mapdistZ.insert(std::pair<Int_t,TH1D*>(b,distZ));
@@ -161,7 +161,7 @@ int main(int argc, char** argv) {
   Float_t iv;
   printf("begin loop through %lld events...\n",ev->ENT);
   for(int i=0; i<ev->ENT; i++) {
-    if(i>100000) break; // limiter
+    // if(i>100000) break; // limiter
     ev->GetEvent(i);
     if(ev->Valid()) {
 
@@ -197,19 +197,36 @@ int main(int argc, char** argv) {
   auto propErr = [&](Double_t a, Double_t aErr, Double_t b, Double_t bErr){ return a/b * TMath::Hypot(aErr/a,bErr); };
 
   // draw plots (usually mean vs. mean)
+  // depol. C/A vs. X
+  DrawPlot("aveCA_vs_aveX","<x>","<C/A>",
+      [&](Int_t b){ return mapdistX.at(b)->GetMean(); },
+      [&](Int_t b){ return mapdistX.at(b)->GetMeanError(); },
+      [&](Int_t b){ return mapdistDepolCA.at(b)->GetMean(); },
+      [&](Int_t b){ return mapdistDepolCA.at(b)->GetMeanError(); }
+      );
+  DrawPlot("aveC_aveA_vs_aveX","<x>","<C>/<A>",
+      [&](Int_t b){ return mapdistX.at(b)->GetMean(); },
+      [&](Int_t b){ return mapdistX.at(b)->GetMeanError(); },
+      [&](Int_t b){ return mapdistDepolC.at(b)->GetMean() / mapdistDepolA.at(b)->GetMean(); },
+      [&](Int_t b){ return propErr(
+        mapdistDepolC.at(b)->GetMean(), mapdistDepolC.at(b)->GetMeanError(),
+        mapdistDepolA.at(b)->GetMean(), mapdistDepolA.at(b)->GetMeanError()
+        );}
+      );
+  // depol. W/A vs. X
   DrawPlot("aveWA_vs_aveX","<x>","<W/A>",
       [&](Int_t b){ return mapdistX.at(b)->GetMean(); },
-      [&](Int_t b){ return mapdistX.at(b)->GetStdDev(); },
+      [&](Int_t b){ return mapdistX.at(b)->GetMeanError(); },
       [&](Int_t b){ return mapdistDepolWA.at(b)->GetMean(); },
-      [&](Int_t b){ return mapdistDepolWA.at(b)->GetStdDev(); }
+      [&](Int_t b){ return mapdistDepolWA.at(b)->GetMeanError(); }
       );
   DrawPlot("aveW_aveA_vs_aveX","<x>","<W>/<A>",
       [&](Int_t b){ return mapdistX.at(b)->GetMean(); },
-      [&](Int_t b){ return mapdistX.at(b)->GetStdDev(); },
+      [&](Int_t b){ return mapdistX.at(b)->GetMeanError(); },
       [&](Int_t b){ return mapdistDepolW.at(b)->GetMean() / mapdistDepolA.at(b)->GetMean(); },
       [&](Int_t b){ return propErr(
-        mapdistDepolW.at(b)->GetMean(), mapdistDepolW.at(b)->GetStdDev(),
-        mapdistDepolA.at(b)->GetMean(), mapdistDepolA.at(b)->GetStdDev()
+        mapdistDepolW.at(b)->GetMean(), mapdistDepolW.at(b)->GetMeanError(),
+        mapdistDepolA.at(b)->GetMean(), mapdistDepolA.at(b)->GetMeanError()
         );}
       );
     
