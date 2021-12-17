@@ -30,17 +30,15 @@ montages["dis"] = [
   "XDist",
   "WDist",
   "YDist",
-  "elePDist",
-  "eleThetaDist",
 ]
 montages["dihadron"] = [
   "MhDist",
   "ZpairDist",
-  "thetaDist",
   "PhPerpDist",
   "MmissDist",
   "PhiHDist",
   "PhiRDist",
+  "thetaDist",
 ]
 montages["hadron"] = prependParts [ 
   "hadPDist",
@@ -48,30 +46,35 @@ montages["hadron"] = prependParts [
   "hadThetaDist",
   "hadXFDist",
 ]
-montages["elePID"] = [
+montages["elePID1"] = [
+  "elePDist",
+  "eleThetaDist",
+  "elePCALenDist",
+  "eleECINenDist",
+  "eleECOUTenDist",
+]
+montages["elePID2"] = [
   "eleSampFracDist",
   "eleSFvsP",
   "eleDiagonalSFdist",
   "eleECALvsPCALedep",
-  "eleECINenDist",
-  "eleECOUTenDist",
-  "elePCALenDist",
 ]
 montages["hadPID"] = prependParts [
   "hadChi2pidDist",
   "hadChi2pidVsP",
 ]
 montages["vertex"] = [
-  "eleVzDist",
   "piPlushadEleVzDiffDist",
   "piMinushadEleVzDiffDist",
+  "eleVzDist",
 ]
 
 
 # montage settings
 settings = [
-  # "-tile 6x0",
+  # "-tile 2x0",
   "-geometry 800x400x0x0",
+  # "-geometry 1600x800x0x0",
 ]
 
 # execution
