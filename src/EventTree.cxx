@@ -478,6 +478,20 @@ void EventTree::GetEvent(Long64_t i) {
 /////////////////////////////////////////////////////////
 // MAIN ANALYSIS CUT
 Bool_t EventTree::Valid() {
+  // XCHECK CUTS //////////////////////
+  return
+    Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) && 
+    cutDIS &&
+    TMath::Abs(hadChi2pid[qA])<5 &&
+    TMath::Abs(hadChi2pid[qB])<5 &&
+    hadE[qA]>1.2 && hadE[qA]<4 &&
+    hadE[qB]>1.2 && hadE[qB]<4 &&
+    hadTheta[qA]>6 && hadTheta[qA]<30 &&
+    hadTheta[qB]>6 && hadTheta[qB]<30 &&
+    eleTheta>10 && eleTheta<30 &&
+    eleE>2.65 &&
+    cutFiducial;
+  /////////////////////////////////////
   return cutDIS && cutDihadron && cutHelicity && 
          cutFiducial && cutPID && cutVertex && cutFR;
   // NOTE: if you want to disable `cutDihadron`, you likely want to ensure `Tools::PairSame` is still checked
