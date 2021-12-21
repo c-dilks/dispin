@@ -481,7 +481,8 @@ Bool_t EventTree::Valid() {
   // XCHECK CUTS //////////////////////
   return
     Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) && 
-    cutDIS &&
+    // cutDIS &&
+    x>0 && x<1 && /* prevent crashing */
     TMath::Abs(hadChi2pid[qA])<5 &&
     TMath::Abs(hadChi2pid[qB])<5 &&
     hadE[qA]>1.2 && hadE[qA]<4 &&
@@ -930,11 +931,16 @@ Float_t EventTree::GetDepolarizationFactor(Char_t kf) {
 
   dfA = y*y / (2 - 2*epsilon); // A(x,y)
 
-  if(kf=='A')      return dfA;
+  // XCHECK FACTORS ////////////////////////////////////////////////////////////////////////////
+  // re-scale depol factors, for cross check purposes
+  Double_t iFactor = (1+gamma*gamma/(2*x)) / (TMath::Power(gamma*y*RundepBeamEn(runnum),2)*x*y);
+  //////////////////////////////////////////////////////////////////////////////////////////////
+
+  if(kf=='A')      return dfA * iFactor; // modified for XCHECK ////////////////
   else if(kf=='B') return dfA * epsilon;
   else if(kf=='C') return dfA * TMath::Sqrt(1-epsilon*epsilon);
   else if(kf=='V') return dfA * TMath::Sqrt(2*epsilon*(1+epsilon));
-  else if(kf=='W') return dfA * TMath::Sqrt(2*epsilon*(1-epsilon));
+  else if(kf=='W') return dfA * TMath::Sqrt(2*epsilon*(1-epsilon)) * iFactor/TMath::Sqrt(1+gamma*gamma); // modified for XCHECK /////////
   else {
     fprintf(stderr,"ERROR: unknown depolarization factor %c; returning 0\n",kf);
     return 0;

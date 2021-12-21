@@ -121,11 +121,11 @@ int main(int argc, char** argv) {
     distQ2      = new TH1D(TString("distQ2"+bStr),TString("Q2 for "+bStr),100,0,12);
     distY       = new TH1D(TString("distY"+bStr),TString("Y for "+ bStr),100,0,1);
     distPhPerp  = new TH1D(TString("distPhPerp"+bStr),TString("PhPerp for "+bStr),100,0,5);
-    distDepolA  = new TH1D(TString("distDepolA"+bStr),TString("DepolA for "+bStr),1000,-1,2.5);
-    distDepolC  = new TH1D(TString("distDepolC"+bStr),TString("DepolC for "+bStr),1000,-1,2.5);
-    distDepolW  = new TH1D(TString("distDepolW"+bStr),TString("DepolW for "+bStr),1000,-1,2.5);
-    distDepolCA = new TH1D(TString("distDepolCA"+bStr),TString("DepolCA for "+bStr),1000,-1,2.5);
-    distDepolWA = new TH1D(TString("distDepolWA"+bStr),TString("DepolWA for "+bStr),1000,-1,2.5);
+    distDepolA  = new TH1D(TString("distDepolA"+bStr),TString("DepolA for "+bStr),1000,-2,5);
+    distDepolC  = new TH1D(TString("distDepolC"+bStr),TString("DepolC for "+bStr),1000,-2,5);
+    distDepolW  = new TH1D(TString("distDepolW"+bStr),TString("DepolW for "+bStr),1000,-2,5);
+    distDepolCA = new TH1D(TString("distDepolCA"+bStr),TString("DepolCA for "+bStr),1000,-2,5);
+    distDepolWA = new TH1D(TString("distDepolWA"+bStr),TString("DepolWA for "+bStr),1000,-2,5);
     distP0      = new TH1D(TString("distP0"+bStr),TString("P_{2,0}(cos#theta) for "+bStr),1000,-0.6,1.1);
     distP1      = new TH1D(TString("distP1"+bStr),TString("sin#theta for "+bStr),1000,-1.1,1.1);
     distF       = new TH1D(TString("distF"+bStr),TString("F for "+bStr),1000,-1.1,1.1);
