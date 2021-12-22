@@ -2,9 +2,10 @@
 
 ClassImp(BruAsymmetry)
 
-BruAsymmetry::BruAsymmetry(TString outdir_, TString minimizer_)
+BruAsymmetry::BruAsymmetry(TString outdir_, TString minimizer_, Int_t whichSpinMC_)
   : outdir(outdir_)
   , minimizer(minimizer_)
+  , whichSpinMC(whichSpinMC_)
 {
 
   printf("construct BruAsymmetry\n");
@@ -26,7 +27,8 @@ BruAsymmetry::BruAsymmetry(TString outdir_, TString minimizer_)
   FM->SetUp().LoadVariable(TString("Depol3")+Form("[%f,%f]",0.0,2.5));
 
   // category for spin
-  FM->SetUp().LoadCategory("Spin_idx[SpinP=1,SpinM=-1,SpinOff=0]");
+  spinBranch = whichSpinMC<0 ? "Spin_idx" : Form("SpinMC_%d_idx",whichSpinMC);
+  FM->SetUp().LoadCategory(spinBranch+"[SpinP=1,SpinM=-1,SpinOff=0]");
   
   // unique ID variable
   FM->SetUp().SetIDBranchName("Idx");
@@ -76,8 +78,11 @@ void BruAsymmetry::AddNumerMod(Modulation * modu) {
       depolVar = "1";
   };
 
+  TString polVar = "@Pol[]";
+  TString spinVar = "@"+spinBranch+"[]";
+
   // modulation, including polarization, depolarization, and spin sign
-  formu = "@Pol[]*"+depolVar+"*@Spin_idx[]*"+modu->FormuBru();
+  formu = polVar+"*"+depolVar+"*"+spinVar+"*"+modu->FormuBru();
   this->PrintLog(formuName+" = "+formu);
   FM->SetUp().LoadFormula(formuName+"="+formu);
 
@@ -129,7 +134,7 @@ void BruAsymmetry::AddDenomMod(Modulation * modu) {
 void BruAsymmetry::BuildPDF() {
 
   // build PDFstr
-  TString obsList = "PhiH,PhiR,PhiD,Theta,Pol,Depol2,Depol3,Spin_idx";
+  TString obsList = "PhiH,PhiR,PhiD,Theta,Pol,Depol2,Depol3,"+spinBranch;
   if(nDenomParams==0) {
     // if PDF has numerator amplitudes only, we can use RooComponentsPDF
     PDFstr = "RooComponentsPDF::PWfit(1,"; // PDF class::name ("+1" term ,

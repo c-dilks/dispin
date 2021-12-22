@@ -39,7 +39,7 @@
 class BruAsymmetry : public TObject
 {
   public:
-    BruAsymmetry(TString outdir_, TString minimizer_);
+    BruAsymmetry(TString outdir_, TString minimizer_, Int_t whichSpinMC_=-1);
     ~BruAsymmetry();
 
     void AddNumerMod(Modulation * modu);
@@ -84,6 +84,8 @@ class BruAsymmetry : public TObject
 
     TString outdir;
     TString minimizer;
+    Int_t whichSpinMC;
+    TString spinBranch;
     TString outlog;
 
     TFile * infile[2];

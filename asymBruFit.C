@@ -16,15 +16,16 @@ void asymBruFit(
     TString minimizer="minuit", // minimizer (see comments above)
     TString sPlotDir="", // sPlot directory (leave empty string if not using, otherwise use outDir from `sPlotBru.C`)
     Int_t binschemeIVtype=2, // binning scheme (execute `buildSpinroot.exe` and see usage of `-i`)
-    Int_t nbins0=-1, Int_t nbins1=-1, Int_t nbins2=-1 // number of bins for each dimension
+    Int_t nbins0=-1, Int_t nbins1=-1, Int_t nbins2=-1, // number of bins for each dimension
            /* example: binschemeIVtype=32, nbins0=6, nbins1=3, runs fit in 6 bins of z (iv=3) for 3 bins of Mh (iv=2) */
+    Int_t whichSpinMC=-1 // if >=0, use helicity from injected asymmetry (branch "SpinMC_`whichSpinMC`_idx")
 ) {
 
   // instantiate brufit
-  BruAsymmetry * B = new BruAsymmetry(bruDir,minimizer);
+  BruAsymmetry * B = new BruAsymmetry(bruDir,minimizer,whichSpinMC);
 
   // build modulations
-  ///* // 7 amps (PRL)
+  /* // 7 amps (PRL)
   B->AddNumerMod(new Modulation(3,0,0));
   B->AddNumerMod(new Modulation(2,1,1));
   B->AddNumerMod(new Modulation(3,1,1));
@@ -32,8 +33,8 @@ void asymBruFit(
   B->AddNumerMod(new Modulation(2,2,2));
   B->AddNumerMod(new Modulation(3,2,2));
   B->AddNumerMod(new Modulation(3,2,-2));
-  //*/
-  /* // all 12 PWs up to L=2
+  */
+  ///* // all 12 PWs up to L=2
   B->AddNumerMod(new Modulation(3,0,0,0,true));
   B->AddNumerMod(new Modulation(3,1,0,0,true));
   B->AddNumerMod(new Modulation(2,1,1,0,true));
@@ -46,7 +47,7 @@ void asymBruFit(
   B->AddNumerMod(new Modulation(2,2,2,0,true));
   B->AddNumerMod(new Modulation(3,2,2,0,true));
   B->AddNumerMod(new Modulation(3,2,-2,0,true));
-  */
+  //*/
   /* // DSIDIS
   B->AddNumerMod(new Modulation(2,0,0,0,false,Modulation::kDSIDIS)); // sin(PhiD)
   B->AddNumerMod(new Modulation(2,0,0,1,false,Modulation::kDSIDIS)); // sin(2*PhiD)
@@ -80,12 +81,14 @@ void asymBruFit(
   /* pi+, pi0 sFit
    * - NOTE: use `TrimCatTree.C` and `sPlotBru.C` to produce the required files
    */
-  B->LoadDataSets(
-      "catTreeData.rga_inbending_all.0x3b.idx.trimmed.root",
-      "catTreeMC.mc.PRL.0x3b.idx.trimmed.root",
-      sPlotDir+"/Tweights.root",
-      "Signal"
-      );
+  // B->LoadDataSets(
+  //     "catTreeData.rga_inbending_all.0x3b.idx.trimmed.root",
+  //     "catTreeMC.mc.PRL.0x3b.idx.trimmed.root",
+  //     sPlotDir+"/Tweights.root",
+  //     "Signal"
+  //     );
+  /* MC injection tests */
+  B->LoadDataSets("catTreeMC.mc.PRL.DIS.0x34.idx.root",""); // MC
 
   // hyperparameters
   // - MCMC settings

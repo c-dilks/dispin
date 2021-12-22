@@ -1412,9 +1412,9 @@ void Asymmetry::ActivateTree(Bool_t isMC, InjectionModel *IM_) {
   tree->Branch("DYsgn",&tree_DYsgn,"DYsgn/D");
   tree->Branch("diphM",&tree_diphM,"diphM/D");
   tree->Branch("Weight",&tree_Weight,"Weight/D");
+  tree->Branch("Pol",&tree_Pol,"Pol/D");
   if(!isMC) {
     tree->Branch("Spin_idx",&tree_Spin_idx,"Spin_idx/I");
-    tree->Branch("Pol",&tree_Pol,"Pol/D");
   } else {
     tree->Branch("diphIsMCpi0",&tree_diphIsMCpi0,"diphIsMCpi0/O");
     tree->Branch("diphMCmatchDist",&tree_diphMCmatchDist,"diphMCmatchDist/D");
