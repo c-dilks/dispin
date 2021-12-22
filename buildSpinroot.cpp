@@ -196,6 +196,7 @@ int main(int argc, char** argv) {
     if(injectionFileN!="") {
       injectionFile = new TFile(injectionFileN,"READ");
       IM = (InjectionModel*) injectionFile->Get("IM");
+      treeFile->cd();
     } else IM=nullptr;
     A->ActivateTree(isMC,IM); // tell the one and only A to fill its TTree
     spinrootFile->cd();
