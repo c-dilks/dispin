@@ -5,9 +5,10 @@ ClassImp(InjectionModel)
 InjectionModel::InjectionModel()
   : numModels(0)
   , verbose(true)
+  , firstInjection(true)
 {
   BS = new Binning();
-  RNG = new TRandomMixMax(14972); // fixed seed, for reproducibility
+  RNG = new TRandom(); // (cannot instantiate preferred TRandomMixMax until later, otherwise streaming fails)
 };
 
 void InjectionModel::SetIVtype(Int_t ivType) {
@@ -124,6 +125,10 @@ Int_t InjectionModel::InjectHelicity(EventTree *ev, int modelNum) {
   }
 
   // calculate helicity
+  if(firstInjection) {
+    RNG = new TRandomMixMax(14972); // fixed seed, for reproducibility
+    firstInjection = false;
+  }
   Float_t rn = RNG->Uniform(); // generate random number within [0,1]
   return (rn<0.5*(1+asymInj)) ? 1 : -1;
 }

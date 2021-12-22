@@ -66,7 +66,8 @@ class InjectionModel : public TObject
     std::vector<Modulation*> moduList;
     std::map<TString,TObjArray*> models;
     Binning *BS;
-    TRandom * RNG;
+    TRandom *RNG;
+    bool firstInjection;
 
   ClassDef(InjectionModel,1);
 };
