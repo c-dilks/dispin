@@ -43,15 +43,18 @@ class InjectionModel : public TObject
     std::vector<Modulation*> GetModuList() { return moduList; };
 
     // amplitude models ---
-    // get the number of amplitude models, per Modulation
-    Int_t GetNumModels() { return numModels; }
+    // counters
+    Int_t GetNumModels() { return numModels; } // get the number of amplitude models, per Modulation
+    Int_t GetNumModulations() { return models.size(); } // get the number of modulations
     // add an amplitude model to a specific `Modulation`; it is the caller's responsibility
     // to make sure all modulations in `moduList` get the same number of amplitude models
     void AddAmplitudeModel(Modulation *modu, TObject *model);
     // get list of models for a given Modulation
     TObjArray *GetAmplitudeModelList(Modulation *modu);
-    // count the number of models, checking if all modulations have the same number 
-    void CountAmplitudeModels();
+    TObjArray *GetAmplitudeModelList(TString moduName);
+    // return a model, given a Modulation and model number
+    TObject *GetAmplitudeModel(Modulation *modu, Int_t modelNum) { return this->GetAmplitudeModelList(modu)->At(modelNum); }
+    TObject *GetAmplitudeModel(TString moduName, Int_t modelNum) { return this->GetAmplitudeModelList(moduName)->At(modelNum); }
 
     // injection ---
     // assign helicity, biased toward selected model
@@ -61,6 +64,11 @@ class InjectionModel : public TObject
     void WriteOut();
 
   private:
+
+    // count the number of models, checking if all modulations have the same number of injected models
+    void CountAmplitudeModels();
+
+    // internal vars
     int numModels;
     bool verbose;
     std::vector<Modulation*> moduList;

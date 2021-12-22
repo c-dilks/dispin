@@ -40,11 +40,12 @@ void InjectionModel::AddAmplitudeModel(Modulation *modu, TObject *model) {
   this->GetAmplitudeModelList(modu)->AddLast(model);
 }
 
-TObjArray *InjectionModel::GetAmplitudeModelList(Modulation *modu) {
+TObjArray *InjectionModel::GetAmplitudeModelList(Modulation *modu) { return this->GetAmplitudeModelList(modu->AmpName()); }
+TObjArray *InjectionModel::GetAmplitudeModelList(TString moduName) {
   TObjArray *ret;
-  try { ret = models.at(modu->AmpName()); }
+  try { ret = models.at(moduName); }
   catch(const std::out_of_range &ex) {
-    fprintf(stderr,"ERROR: modulation %s not found in InjectionModel models\n",modu->AmpName().Data());
+    fprintf(stderr,"ERROR: modulation %s not found in InjectionModel models\n",moduName.Data());
     return nullptr;
   }
   return ret;
