@@ -20,12 +20,15 @@ TFile.open("#{brudir}/pulls.root","RECREATE") do
       canvPull = inFile.Get('canvPull')
 
       # loop over pull graphs
-      canvPull.GetListOfPrimitives().each do |pad|
-        pad.auto_cast.GetListOfPrimitives().each do |prim|
-          if prim.GetName().match /^pull_/
-            pullGr = prim.auto_cast
-            puts [pullGr.GetName(),pullGr.class].join " "
-          end
+      canvPull.GetListOfPrimitives.map(&:auto_cast).each do |pad|
+        pullGr = pad.GetListOfPrimitives.find{|prim| prim.GetName.match /^pull_/}
+        break unless pullGr
+        pullGr = pullGr.auto_cast
+        puts [pullGr.GetName,pullGr.class].join " "
+
+        pullGr.GetN.times do |i|
+          i,x,y = pullGr.GetPoint(i)
+          puts [x,y].join " "
         end
       end
 
