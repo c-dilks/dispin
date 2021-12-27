@@ -53,3 +53,4 @@ bruDirList.each do |bruDir|
 
 end
 rootListFile.close
+puts "\nfiles written to directory #{outDir}"

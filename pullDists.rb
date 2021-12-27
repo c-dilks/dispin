@@ -11,17 +11,18 @@ end
 brudir = ARGV[0]
 
 ####################################################################
-# pullSet: for storage of pull distributions, for each modulation
+# PullSet: for storage of pull distributions, for each modulation
 class PullSet
 
   NBINS = 100
-  PULLMAX = 5
+  PULLMAX = 5.0
 
-  def initialize(name,title,numBins,pad)
+  def initialize(name,title,numBins,padNum)
     @numBins = numBins
-    @pad = pad
+    @padNum = padNum
+    @name = name
     @pullDistList = makeList do |bin|
-      TH1D.create(name+"_bin#{bin}",title+" :: bin #{bin}",NBINS,-PULLMAX,PULLMAX)
+      TH1D.create("#{@name}_bin#{bin}",title+" :: bin #{bin}",NBINS,-PULLMAX,PULLMAX)
     end
   end
 
@@ -32,9 +33,26 @@ class PullSet
     end
   end
 
-  attr_accessor :numBins
-  attr_accessor :pad
+  # perform fits
+  def fit
+    puts "fitting #@name"
+    @fitList = makeList do |bin|
+      fit = TF1.new("#{@name}_fit_bin#{bin}","gaus",-PULLMAX,PULLMAX)
+      setpars = lambda do |parName,init,lb,ub|
+        iPar = fit.GetParNumber(parName)
+        fit.SetParameter(iPar,init)
+        fit.SetParLimits(iPar,lb,ub)
+      end
+      setpars.call( "Mean",  0.0, -PULLMAX, PULLMAX )
+      setpars.call( "Sigma", 1.0, 0.01,     PULLMAX )
+      @pullDistList[bin].Fit(fit,"BQ","",-PULLMAX,PULLMAX)
+      fit
+    end
+  end
+
+  attr_accessor :padNum
   attr_accessor :pullDistList
+  attr_accessor :fitDistList
 
 end
 pullSetHash = Hash.new # modulation => PullSet
@@ -44,7 +62,7 @@ pullSetHash = Hash.new # modulation => PullSet
 # open output file
 TFile.open("#{brudir}/pulls.root","RECREATE") do |outFile|
 
-  # loop over injectionTest files
+  # loop over injectionTest files ################################
   # - get pull graphs
   # - fill pull distributions
   File.readlines("#{brudir}/files.list").map{ |infileN| TFile.open(infileN.chomp,"READ") }.each do |inFile|
@@ -79,9 +97,12 @@ TFile.open("#{brudir}/pulls.root","RECREATE") do |outFile|
   end # loop over injectionTest files
 
 
-  # draw pull distributions
+  # fit and draw pull distributions ###########################
   pullCanvList = []
   pullSetHash.each do |modu,ps|
+
+    # fit pull distributions
+    ps.fit
 
     # make canvas list (one canvas per bin)
     unless pullCanvList.length>0
@@ -97,15 +118,20 @@ TFile.open("#{brudir}/pulls.root","RECREATE") do |outFile|
 
     # draw
     ps.pullDistList.each_with_index do |dist,i|
-      pullCanvList[i].cd(ps.pad)
+      pullCanvList[i].cd(ps.padNum)
       dist.Draw
     end
 
   end # end loop over pullSetHash
 
+  # make pngs
+  gStyle.SetOptFit(1)
+  pullCanvList.each{|canv| canv.SaveAs("#{brudir}/#{canv.GetName}.png")}
+
   # write
   outFile.cd
   pullCanvList.each(&:Write)
-  puts "wrote #{outFile.GetName}"
+  puts "\nwrote #{outFile.GetName}"
+  puts "\npngs saved: #{brudir}/*.png"
 
 end # open output file
