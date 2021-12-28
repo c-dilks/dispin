@@ -3,15 +3,19 @@
 R__LOAD_LIBRARY(DiSpin)
 
 void checkInjectionFit(
-    TString fitResultFileN="bruspin.inj0/asym_minuit_BL0.root",
+    TString fitResultFileN="bruspin.x.inj0/asym_minuit_BL0.root",
     TString injectionModelFileN="injection.root",
     Int_t injNum=0
     )
 {
-  // set output file
+  // set output file and directory
   TString outFileN = fitResultFileN;
   outFileN(TRegexp("\\.root$")) = ".injectionTest.root";
   TFile *outFile = new TFile(outFileN,"RECREATE");
+  TString imgDir = fitResultFileN;
+  imgDir(TRegexp("\\/asym.*$")) = "/injectionResults";
+  cout << "mkdir " << imgDir << endl;
+  gROOT->ProcessLine(".! mkdir -p "+imgDir);
 
   // get injection model
   TFile *injectionModelFile = new TFile(injectionModelFileN,"READ");
@@ -141,6 +145,11 @@ void checkInjectionFit(
   canvAsym->Draw();
   canvDiff->Draw();
   canvPull->Draw();
+
+  // print
+  canvAsym->SaveAs(imgDir+"/asym.png");
+  canvDiff->SaveAs(imgDir+"/diff.png");
+  canvPull->SaveAs(imgDir+"/pull.png");
 
   // write
   outFile->cd();

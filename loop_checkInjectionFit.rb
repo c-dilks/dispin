@@ -43,7 +43,7 @@ rootListFile = File.open("#{outDir}/files.list","w")
 bruDirList.each do |bruDir|
 
   # get injection number
-  injNum = (bruDir.chars - bruDirGlob.chars)[0].to_i
+  injNum = (bruDir.chars - bruDirGlob.chars).join.to_i
 
   # loop over asym*.root files in this bruspin dir
   Dir["#{bruDir}/asym_*.root"].reject{|f| f.include? "injectionTest"}.each do |asymFile|
