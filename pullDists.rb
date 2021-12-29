@@ -7,7 +7,7 @@ gStyle.SetOptFit(1)
 
 if ARGV.length < 1
   puts "USAGE #{$0} [directory]"
-  exit 0
+  exit 2
 end
 brudir = ARGV[0]
 
@@ -17,24 +17,22 @@ brudir = ARGV[0]
 # - a list of pull distributions is stored, one distribution per bin
 class PullSet
 
-  NBINS = 100
+  NBINS = 50
   PULLMAX = 10.0
 
   def initialize(name,title,numBins,padNum)
     @numBins = numBins
     @padNum = padNum
     @name = name
-    @binValList = makeList{ |bin| 0.0 }
-    @pullDistList = makeList do |bin|
-      dist = TH1D.create("#{@name}_bin#{bin}",title+" :: bin #{bin}",NBINS,-PULLMAX,PULLMAX)
-      dist.SetFillColor KAzure+10
-      dist.SetLineWidth 0
-      dist
+    @title = title
+    @binValList = makeBinList{ |bin| 0.0 }
+    @pullDistList = makeBinList do |bin|
+      TH1D.create("#{@name}_bin#{bin}","#{title.gsub(/ vs\..*$/," pulls")} :: bin #{bin}",NBINS,-PULLMAX,PULLMAX)
     end
   end
 
   # return a list, with each element specified by a block, given argument `bin`
-  def makeList
+  def makeBinList
     @numBins.times.map do |bin|
       yield bin
     end
@@ -49,10 +47,8 @@ class PullSet
   # perform fits
   def fit
     puts "fitting #@name"
-    @fitList = makeList do |bin|
+    @fitList = makeBinList do |bin|
       fit = TF1.new("#{@name}_fit_bin#{bin}","gaus",-PULLMAX,PULLMAX)
-      fit.SetLineColor KBlack
-      fit.SetLineWidth 3
       setpars = lambda do |parName,init,lb,ub|
         iPar = fit.GetParNumber(parName)
         fit.SetParameter(iPar,init)
@@ -65,27 +61,16 @@ class PullSet
     end
   end
 
-  # fit result accessors, given a parameter name; returns Array of values or errors
-  def fitResultsVals(parName)
-    @fitList.map{ |fit| fit.GetParameter(fit.GetParNumber(parName)) }
-  end
-  def fitResultsErrs(parName)
-    @fitList.map{ |fit| fit.GetParError(fit.GetParNumber(parName)) }
-  end
-
   # create a graph of fit result vs. binVal, given a parameter name
-  def fitResultGraph(parName)
-    gr = TGraphErrors.new.create(
+  def fitResultsGraph(parName)
+    gr = TGraphErrors.create(
       @binValList,
-      self.fitResultsVals(parName),
+      @fitList.map{ |fit| fit.GetParameter(fit.GetParNumber(parName)) },
       Array.new(@numBins,0.0),
-      self.fitResultsErrs(parName)
+      @fitList.map{ |fit| fit.GetParError(fit.GetParNumber(parName)) }
     )
     gr.SetName "#{@name}_#{parName}_graph"
-    gr.SetTitle "#{@name} #{parName} values"
-    gr.SetMarkerColor KBlack
-    gr.SetLineColor KBlack
-    gr.SetMarkerStyle 20
+    gr.SetTitle @title.gsub(" vs."," pull #{parName.downcase}s vs.")
     gr
   end
 
@@ -121,7 +106,7 @@ TFile.open("#{brudir}/pulls.root","RECREATE") do |outFile|
       # create PullSet instance, for this modulation
       unless pullSetHash[moduName]
         pullDistN = "pull_dist_"+moduName
-        pullDistT = pullGr.GetTitle.gsub(/pull /,"").gsub(/ vs\..*$/," pulls")
+        pullDistT = pullGr.GetTitle.gsub(/pull /,"")
         pullSetHash[moduName] = PullSet.new( pullDistN, pullDistT, pullGr.GetN, pad.GetNumber )
       end
       ps = pullSetHash[moduName]
@@ -138,30 +123,42 @@ TFile.open("#{brudir}/pulls.root","RECREATE") do |outFile|
   end # loop over injectionTest files
 
 
-  # fit and draw pull distributions ###########################
+  # fit and draw pull distributions ##################################################
+
+  # make canvases
+  makeCanvas = Proc.new do |canvN|
+    ncol = 4
+    nrow = (pullSetHash.length-1)/ncol + 1 # cf. drawBru.C values
+    canv = TCanvas.create(canvN,canvN,600*ncol,300*nrow)
+    canv.Divide(ncol,nrow)
+    canv
+  end
+  fitParamCanvHash = [:Mean,:Sigma].map{ |par| [par,makeCanvas.call("#{par.to_s.downcase}Canv")] }.to_h
+  fitParamIdealVal = {:Mean=>0.0,  :Sigma=>1.0}
+  fitParamGraphCol = {:Mean=>KRed, :Sigma=>KGreen+2}
+
+  # loop over modulations
   pullCanvList = []
   pullSetHash.each do |modu,ps|
 
     # fit pull distributions
     ps.fit
 
-    # make canvas list (one canvas per bin)
+    # make pulldists canvas list (one canvas per bin)
     unless pullCanvList.length>0
-      ncol = 4
-      nrow = (pullSetHash.length-1)/ncol + 1 # cf. drawBru.C values
-      pullCanvList = ps.makeList do |bin|
-        canvN = "pullCanv_#{modu}_bin#{bin}"
-        canv = TCanvas.create(canvN,canvN,600*ncol,300*nrow)
-        canv.Divide(ncol,nrow)
-        canv
-      end
+      pullCanvList = ps.makeBinList{ |bin| makeCanvas.call("pullCanv_#{modu}_bin#{bin}") }
     end
 
-    # draw
+    # draw pull distributions and fits
     ps.pullDistList.each_with_index do |dist,i|
       pullCanvList[i].cd(ps.padNum)
+      dist.SetFillColor KAzure+10
+      dist.SetLineWidth 0
       dist.Draw
-      ps.fitList[i].Draw "SAME"
+      fit = ps.fitList[i]
+      fit.SetLineColor KBlack
+      fit.SetLineWidth 3
+      fit.Draw "SAME"
       [-1.0,1.0].each do |v|
         line = TLine.new(v,0.0,v,dist.GetMaximum())
         line.SetLineColor KRed
@@ -170,15 +167,37 @@ TFile.open("#{brudir}/pulls.root","RECREATE") do |outFile|
       end
     end
 
+    # draw fit results graphs
+    fitParamCanvHash.each do |parSym,canv|
+      idealVal = fitParamIdealVal[parSym]
+      canv.cd(ps.padNum)
+      canv.GetPad(ps.padNum).SetGrid(0,1)
+      graph = ps.fitResultsGraph(parSym.to_s)
+      graph.SetMarkerColor fitParamGraphCol[parSym]
+      graph.SetLineColor fitParamGraphCol[parSym]
+      graph.SetMarkerStyle KFullCircle
+      graph.GetYaxis.SetRangeUser(idealVal-2,idealVal+2)
+      graph.Draw "APE"
+      line = TLine.new( graph.GetXaxis.GetXmin, idealVal, graph.GetXaxis.GetXmax, idealVal )
+      line.SetLineColor KBlack
+      line.SetLineWidth 3
+      line.SetLineStyle KDashed
+      line.Draw
+    end
+
   end # end loop over pullSetHash
 
-  # make pngs
-  pullCanvList.each{|canv| canv.SaveAs("#{brudir}/#{canv.GetName}.png")}
+  # make pngs and write canvases
+  outFile.cd
+  saveCanvas = Proc.new do |canv|
+    canv.SaveAs("#{brudir}/#{canv.GetName}.png")
+    canv.Write
+  end
+  pullCanvList.each{ |canv| saveCanvas.call(canv) }
+  fitParamCanvHash.each{ |parSym,canv| saveCanvas.call(canv) }
 
   # write
-  outFile.cd
-  pullCanvList.each(&:Write)
   puts "\nwrote #{outFile.GetName}"
   puts "\npngs saved: #{brudir}/*.png"
 
-end # open output file
+end # close output file
