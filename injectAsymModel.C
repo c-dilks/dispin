@@ -2,7 +2,7 @@
 R__LOAD_LIBRARY(DiSpin)
 
 void injectAsymModel(
-    int numInjections = 10,
+    int numInjections = 100,
     TString outFileN = "injection.root"
     )
 {
@@ -10,11 +10,11 @@ void injectAsymModel(
   // OPTIONS //////////////////////
   // define binning scheme in order to store IV names; the number
   // of bins is irrelevant, just use single-bins
-  const Int_t ivType = 1;
+  const Int_t ivType = 32;
   // approximate scale of asymmetry amplitude to inject; check `maxAdist`,
   // etc. which are histograms filled with min and max amplitude values to
   // inject; these histos give a sense of the injected amplitude range
-  const Double_t asymMax = 0.1;
+  const Double_t asymMax = 0.12;
   // other
   bool verbose = 0;
   /////////////////////////////////

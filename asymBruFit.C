@@ -88,7 +88,8 @@ void asymBruFit(
   //     "Signal"
   //     );
   /* MC injection tests */
-  B->LoadDataSets("catTreeMC.mc.PRL.DIS.0x34.idx.root",""); // MC
+  // B->LoadDataSets("catTreeMC.mc.PRL.DIS.0x34.inj_x.idx.root",""); // MC: 1D linear injection along x
+  B->LoadDataSets("catTreeMC.mc.PRL.DIS.0x34.inj_zm.idx.root",""); // MC: 2D linear injection along {z,Mh}
 
   // hyperparameters
   // - MCMC settings

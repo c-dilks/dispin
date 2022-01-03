@@ -6,10 +6,10 @@
 # 
 
 # settings #################
-ivString  = "x"
-ivType    = 1
+ivString  = "zm"
+ivType    = 32
 nbins     = [-1, -1, -1]
-numInj    = 100
+injSeq    = (46..100).to_a  # Array of injection numbers
 minimizer = "minuit"
 slurm     = false
 ############################
@@ -36,7 +36,7 @@ end
 
 # job list generation
 jobFile.puts "#!/bin/bash" unless slurm
-numInj.times{ |i| fit.call i } # loop
+injSeq.each{ |i| fit.call i } # loop
 jobFile.close
 
 # execution
