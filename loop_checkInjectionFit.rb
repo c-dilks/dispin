@@ -37,20 +37,36 @@ puts "outDir = #{outDir}"
 puts "bruDirList = #{bruDirList}"
 Dir.mkdir(outDir) unless Dir.exists? outDir
 
-
 # run checkInjectionFit.C on each file
-rootListFile = File.open("#{outDir}/files.list","w")
+listFiles = []
 bruDirList.each do |bruDir|
 
   # get injection number
   injNum = (bruDir.chars - bruDirGlob.chars).join.to_i
 
-  # loop over asym*.root files in this bruspin dir
-  Dir["#{bruDir}/asym_*.root"].reject{|f| f.include? "injectionTest"}.each do |asymFile|
-    system "root -b -q 'checkInjectionFit.C(\"#{asymFile}\",\"#{injFile}\",#{injNum})'"
-    rootListFile.puts asymFile.gsub(/\.root$/,".injectionTest.root")
+  # get list of asym*.root files
+  asymFiles = Dir["#{bruDir}/asym_*.root"].reject{|f| f.include? "injectionTest"}
+
+  # start list files
+  unless listFiles.length>0
+    listFiles = asymFiles.map do |f|
+      bl = f.gsub(/^.*BL/,"").chomp(".root").to_i
+      File.open("#{outDir}/files_BL#{bl}.list","w")
+      #
+      #
+      # TODO: put these in separate directories, rather than separate files in the same directory,
+      # so that pullDists.rb needs no changes
+      #
+      #
+    end
   end
 
+  # run checkInjectionFit.C on each asym file
+  asymFiles.each{ |f| system "root -b -q 'checkInjectionFit.C(\"#{f}\",\"#{injFile}\",#{injNum})'" }
+
+  # append each output file to each list file
+  listFiles.zip(asymFiles).each{ |listFile,asymFile| listFile.puts asymFile.gsub(/\.root$/,".injectionTest.root") }
+
 end
-rootListFile.close
+listFiles.each(&:close)
 puts "\nfiles written to directory #{outDir}"

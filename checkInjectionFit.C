@@ -13,7 +13,8 @@ void checkInjectionFit(
   outFileN(TRegexp("\\.root$")) = ".injectionTest.root";
   TFile *outFile = new TFile(outFileN,"RECREATE");
   TString imgDir = fitResultFileN;
-  imgDir(TRegexp("\\/asym.*$")) = "/injectionResults";
+  imgDir(TRegexp("\\/asym")) = "/injectionResults";
+  imgDir(TRegexp("\\.root$")) = "";
   cout << "mkdir " << imgDir << endl;
   gROOT->ProcessLine(".! mkdir -p "+imgDir);
 
