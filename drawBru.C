@@ -21,12 +21,10 @@ Int_t nDim, nBins;
 Int_t nSamples;
 TString bruDir;
 HS::FIT::Bins * HSbins;
-const int nParamsMax = 30;
 Float_t asymPlotMin;
 Float_t asymPlotMax;
 Float_t axisTitleSize;
 Int_t minimizer;
-enum minimEnum { mkMCMC, mkMCMCthenCov, mkMinuit };
 TString hTitle,vTitle,pName;
 TString resultFileN;
 
@@ -39,9 +37,9 @@ class BruBin : public TObject {
     TString name,var;
     Double_t center,mean,ub,lb;
     TH1D * hist;
-    Double_t param[nParamsMax];
-    Double_t paramErr[nParamsMax];
-    TH1D * paramVsSample[nParamsMax];
+    Double_t param[BruResultBin::nParamsMax];
+    Double_t paramErr[BruResultBin::nParamsMax];
+    TH1D * paramVsSample[BruResultBin::nParamsMax];
     TH1D * nllVsSample;
     TFile * resultFile;
     TTree * resultTree;
@@ -86,7 +84,7 @@ class BruBin : public TObject {
       if(minimizer==mkMCMC || minimizer==mkMCMCthenCov) {
         mcmcTree = (TTree*) resultFile->Get("MCMCTree");
         nSamples = (Int_t) mcmcTree->GetEntries();
-        for(int i=0; i<nParamsMax; i++) {
+        for(int i=0; i<BruResultBin::nParamsMax; i++) {
           pName = Form("bin%d_param%d_vs_sample",idx,i);
           paramVsSample[i] = new TH1D(pName,pName,nSamples,1,nSamples+1);
         };
@@ -95,7 +93,7 @@ class BruBin : public TObject {
       };
 
       // misc
-      for(int i=0; i<nParamsMax; i++) {
+      for(int i=0; i<BruResultBin::nParamsMax; i++) {
         param[i] = UNDEF;
         paramErr[i] = UNDEF;
       };
@@ -201,11 +199,11 @@ void drawBru(
   // get parameter values from results trees
   Bool_t first = true;
   RooDataSet * paramSet;
-  TString paramList[nParamsMax];
-  Modulation * moduList[nParamsMax];
+  TString paramList[BruResultBin::nParamsMax];
+  Modulation * moduList[BruResultBin::nParamsMax];
   Int_t nParams;
   TString paramName;
-  Double_t paramval[nParamsMax];
+  Double_t paramval[BruResultBin::nParamsMax];
   Double_t nll;
   Long64_t entry;
   nextBinList = TObjArrayIter(BruBinSuperList);
@@ -220,7 +218,7 @@ void drawBru(
       if(first) {
         nParams = 0;
         for(int i=0; i<paramSet->get()->size(); i++) {
-          if(nParams>nParamsMax) {
+          if(nParams>BruResultBin::nParamsMax) {
             fprintf(stderr,"ERROR: too many params\n"); return 1; };
           paramName = (*(paramSet->get()))[i]->GetName();
           if(paramName=="NLL") continue;
@@ -277,7 +275,7 @@ void drawBru(
   // build graphs and canvases
   TString outfileN;
   TFile * outFile;
-  TGraphErrors * paramGr[nParamsMax];
+  TGraphErrors * paramGr[BruResultBin::nParamsMax];
   Int_t cnt;
   TCanvas * paramCanv;
   TCanvas * paramVsSampleCanv;

@@ -512,4 +512,8 @@ static Float_t RundepPolarization(Int_t run, Bool_t v=true) {
 };
 
 
+// brufit
+// ---------------------------------------------------
+enum minimEnum { mkMCMC, mkMCMCthenCov, mkMinuit };
+
 #endif
