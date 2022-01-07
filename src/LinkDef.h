@@ -17,6 +17,6 @@
 #pragma link C++ class InjectionModel+;
 #pragma link C++ class Asymmetry+;
 #pragma link C++ class BruAsymmetry+;
-#pragma link C++ class BruResultBin+;
+#pragma link C++ class BruBin+;
 
 #endif

@@ -1,5 +1,5 @@
-#ifndef BruResultBin_
-#define BruResultBin_
+#ifndef BruBin_
+#define BruBin_
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,12 +22,12 @@
 // Brufit
 #include "Bins.h"
 
-class BruResultBin : public TObject
+class BruBin : public TObject
 {
   public:
-    BruResultBin(); // default constructor, just for streaming
-    BruResultBin(TString bruDir_, HS::FIT::Bins *HSbins, Int_t binnum0, Int_t binnum1=-1, Int_t binnum2=-1);
-    ~BruResultBin();
+    BruBin(); // default constructor, just for streaming
+    BruBin(TString bruDir_, HS::FIT::Bins *HSbins, Int_t binnum0, Int_t binnum1=-1, Int_t binnum2=-1);
+    ~BruBin();
 
     // actions
     void CalculateStats(); // calculate bin means, etc.
@@ -48,9 +48,10 @@ class BruResultBin : public TObject
     TTree *GetMcmcTree() { return mcmcTree; };
     Int_t GetNSamples() { return nSamples; };
     TH1D *GetParamVsSampleHist(Int_t param);
-    TH1D *GetNllVsSampleHist(Int_t param);
+    TH1D *GetNllVsSampleHist() { return nllVsSampleHist; };
+    Int_t GetBruIdx() { return bruIdx; };
 
-    // parameter values and errors
+    // parameter values and errors (used as TTree branchs)
     static const int nParamsMax = 30;
     Double_t paramVal[nParamsMax];
     Double_t paramErr[nParamsMax];
@@ -67,7 +68,7 @@ class BruResultBin : public TObject
         if(v.size()==0) actionIfEmpty();
         try { return v.at(k); }
         catch(const std::out_of_range &ex) {
-          fprintf(stderr,"ERROR: BruResultBin::GetElement out of range\n");
+          fprintf(stderr,"ERROR: BruBin::GetElement out of range\n");
           return dflt;
         };
       };
@@ -102,9 +103,9 @@ class BruResultBin : public TObject
     TTree *mcmcTree;
     Int_t nSamples;
     std::vector<TH1D*> paramVsSampleHists;
-    std::vector<TH1D*> nllVsSampleHists;
+    TH1D *nllVsSampleHist;
 
-  ClassDef(BruResultBin,1);
+  ClassDef(BruBin,1);
 };
 
 #endif
