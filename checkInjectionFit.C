@@ -21,6 +21,7 @@ void checkInjectionFit(
   // get injection model
   TFile *injectionModelFile = new TFile(injectionModelFileN,"READ");
   InjectionModel *IM = (InjectionModel*) injectionModelFile->Get("IM");
+  Int_t nDim = IM->GetBinning()->dimensions;
 
   // find fit result `canvAsym*`, assuming there is only one
   TFile *fitResultFile = new TFile(fitResultFileN,"READ");
@@ -39,6 +40,7 @@ void checkInjectionFit(
     fprintf(stderr,"ERROR: cannot find canvAsym in %s\n",fitResultFileN.Data());
     return;
   }
+  TObjArray *bruBins = (TObjArray*) fitResultFile->Get("BruBinList");
 
   // canvases
   Int_t ncol = 4;
@@ -90,12 +92,19 @@ void checkInjectionFit(
         moduName(TRegexp("^gr_")) = "";
         moduName(TRegexp("_BL.*")) = "";
         printf("paramGrName=%s\tmodu=%s\n",paramGr->GetName(),moduName.Data());
-        injFtn = (TF1*) IM->GetAmplitudeModel(moduName,injNum);
+        switch(nDim) {
+          case 1: injFtn = (TF1*) IM->GetAmplitudeModel(moduName,injNum); break;
+          case 2: injFtn = (TF2*) IM->GetAmplitudeModel(moduName,injNum); break;
+          case 3: injFtn = (TF3*) IM->GetAmplitudeModel(moduName,injNum); break;
+          default:
+                  fprintf(stderr,"ERROR: unknown nDim\n");
+                  return;
+        };
 
         // draw model on canvAsym
         pad->cd();
         paramGr->GetYaxis()->UnZoom();
-        injFtn->Draw("SAME");
+        if(nDim==1) injFtn->Draw("SAME");
 
         // difference and pull between fit result and model
           /* note: when we do 2D injections, it won't be what the arguments of
@@ -112,8 +121,23 @@ void checkInjectionFit(
           paramGr->GetPoint(k,iv,asym);
           asymErr = paramGr->GetErrorY(k);
 
+          // get BruBin means
+          BruBin *bb = (BruBin*) bruBins->At(k); // assume graph point number = bruBins index
+          Double_t ivMean[3];
+          for(int d=0; d<nDim; d++) ivMean[d] = bb->GetIvMean(d);
+          if(TMath::Abs( iv - ivMean[0] ) > 0.001) // cross check read mean with stored mean
+            fprintf(stderr,"WARNING: plotted ivMean and BruBin ivMean differ\n");
+
+          // evaluate injected value at <iv>
+          Double_t injFtnVal;
+          switch(nDim) {
+            case 1: injFtnVal = injFtn->Eval(ivMean[0]); break;
+            case 2: injFtnVal = injFtn->Eval(ivMean[0],ivMean[1]); break;
+            case 3: injFtnVal = injFtn->Eval(ivMean[0],ivMean[1],ivMean[2]); break;
+          };
+
           // calculate residual
-          diff = asym - injFtn->Eval(iv);
+          diff = asym - injFtnVal;
           diffErr = asymErr;
           diffGr->SetPoint(k,iv,diff);
           diffGr->SetPointError(k,0,diffErr);
