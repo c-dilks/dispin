@@ -44,12 +44,14 @@ void checkInjectionFit(
 
   // canvases
   Int_t ncol = 4;
-  Int_t nrow = IM->GetNumModulations()/ncol+1; // cf. `drawBru.C` values
+  Int_t nrow = (IM->GetNumModulations()-1)/ncol+1; // cf. `drawBru.C` values
   canvAsym->Draw();
   auto canvWidth = canvAsym->GetWindowWidth();
   auto canvHeight = canvAsym->GetWindowHeight();
+  TCanvas *canvComp = new TCanvas("canvComp","canvComp",canvWidth,canvHeight);
   TCanvas *canvDiff = new TCanvas("canvDiff","canvDiff",canvWidth,canvHeight);
   TCanvas *canvPull = new TCanvas("canvPull","canvPull",canvWidth,canvHeight);
+  canvComp->Divide(ncol,nrow);
   canvDiff->Divide(ncol,nrow);
   canvPull->Divide(ncol,nrow);
 
@@ -57,7 +59,8 @@ void checkInjectionFit(
   TLine *zeroLine;
   TLine *oneLine[2];
   TF1 *injFtn;
-  TGraphErrors *paramGr,*diffGr,*pullGr;
+  TGraphErrors *paramGr,*injeGr,*diffGr,*pullGr;
+  TMultiGraph *compareMgr;
 
   // loop over pads of canvAsym
   Bool_t first;
@@ -101,22 +104,27 @@ void checkInjectionFit(
                   return;
         };
 
-        // draw model on canvAsym
-        pad->cd();
-        paramGr->GetYaxis()->UnZoom();
-        if(nDim==1) injFtn->Draw("SAME");
-
-        // difference and pull between fit result and model
-          /* note: when we do 2D injections, it won't be what the arguments of
-           * injFtn->Eval() should be; try writing out TGraphs of the means of
-           * each variable in catTree; the best place for this idea is in
-           * drawBru.C; then here we can read these TGraphs for the mean values
-           */
+        // graphs for residual and pull between fit result and model
         Double_t asym,iv,asymErr,diff,diffErr,pull,pullErr;
+        injeGr = new TGraphErrors(); injeGr->SetName("inje_"+paramGrN); injeGr->SetTitle("injected "+paramGrT);
         diffGr = new TGraphErrors(); diffGr->SetName("diff_"+paramGrN); diffGr->SetTitle("#Delta"+paramGrT);
-        pullGr = new TGraphErrors(); pullGr->SetName("pull_"+paramGrN); pullGr->SetTitle("pull "+paramGrT);
-        diffGr->SetMarkerStyle(kFullCircle); diffGr->SetMarkerColor(kGreen+2);   diffGr->SetLineColor(kGreen+2);
-        pullGr->SetMarkerStyle(kFullCircle); pullGr->SetMarkerColor(kMagenta+2); pullGr->SetLineColor(kMagenta+2);
+        pullGr = new TGraphErrors(); pullGr->SetName("pull_"+paramGrN); pullGr->SetTitle("Pull "+paramGrT);
+        injeGr->SetMarkerStyle(kFullFourTrianglesX); injeGr->SetMarkerColor(kBlack);     injeGr->SetLineColor(kBlack);
+        diffGr->SetMarkerStyle(kFullCircle);         diffGr->SetMarkerColor(kGreen+2);   diffGr->SetLineColor(kGreen+2);
+        pullGr->SetMarkerStyle(kFullCircle);         pullGr->SetMarkerColor(kMagenta+2); pullGr->SetLineColor(kMagenta+2);
+        injeGr->SetMarkerSize(2);
+        Float_t axisTitleSize = 0.06;
+        gStyle->SetTitleSize(0.06,"T");
+        paramGr->GetXaxis()->SetLabelSize(axisTitleSize);    paramGr->GetYaxis()->SetLabelSize(axisTitleSize);
+        injeGr->GetXaxis()->SetLabelSize(axisTitleSize);     injeGr->GetYaxis()->SetLabelSize(axisTitleSize);
+        diffGr->GetXaxis()->SetLabelSize(axisTitleSize);     diffGr->GetYaxis()->SetLabelSize(axisTitleSize);
+        pullGr->GetXaxis()->SetLabelSize(axisTitleSize);     pullGr->GetYaxis()->SetLabelSize(axisTitleSize);
+        compareMgr = new TMultiGraph();
+        compareMgr->Add(paramGr);
+        compareMgr->Add(injeGr);
+        compareMgr->SetTitle(paramGr->GetTitle());
+
+        // fill graphs
         for(int k=0; k<paramGr->GetN(); k++) {
           paramGr->GetPoint(k,iv,asym);
           asymErr = paramGr->GetErrorY(k);
@@ -135,6 +143,7 @@ void checkInjectionFit(
             case 2: injFtnVal = injFtn->Eval(ivMean[0],ivMean[1]); break;
             case 3: injFtnVal = injFtn->Eval(ivMean[0],ivMean[1],ivMean[2]); break;
           };
+          injeGr->SetPoint(k,iv,injFtnVal);
 
           // calculate residual
           diff = asym - injFtnVal;
@@ -162,23 +171,31 @@ void checkInjectionFit(
         pullGr->GetYaxis()->SetRangeUser(-5,5);
         zeroLine->Draw();
         for(int o=0; o<2; o++) oneLine[o]->Draw();
+
+        // draw asymmetry result compared with injected asym
+        canvComp->cd(padN);
+        compareMgr->Draw("APE");
+        compareMgr->GetXaxis()->SetLabelSize(axisTitleSize); compareMgr->GetYaxis()->SetLabelSize(axisTitleSize);
+        compareMgr->GetYaxis()->SetRangeUser(-0.2,0.2);
+        // if(nDim==1) injFtn->Draw("SAME");
+
       }
     }
   }
 
   // draw
-  canvAsym->Draw();
+  canvComp->Draw();
   canvDiff->Draw();
   canvPull->Draw();
 
   // print
-  canvAsym->SaveAs(imgDir+"/asym.png");
+  canvComp->SaveAs(imgDir+"/asym.png");
   canvDiff->SaveAs(imgDir+"/diff.png");
   canvPull->SaveAs(imgDir+"/pull.png");
 
   // write
   outFile->cd();
-  canvAsym->Write();
+  canvComp->Write();
   canvDiff->Write();
   canvPull->Write();
 
