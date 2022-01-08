@@ -4,10 +4,10 @@ ClassImp(BruBin)
 
 // default constructor, just for streaming
 BruBin::BruBin() {
-  resultFile = new TFile();
-  resultTree = new TTree();
-  mcmcTree = new TTree();
-  nllVsSampleHist = new TH1D();
+  // resultFile = new TFile();
+  // resultTree = new TTree();
+  // mcmcTree = new TTree();
+  // nllVsSampleHist = new TH1D();
 };
 
 // constructor
@@ -45,10 +45,11 @@ BruBin::BruBin(TString bruDir_, HS::FIT::Bins *HSbins, Int_t binnum0, Int_t binn
 void BruBin::CalculateStats() {
 
   // open binTree, which we will use to fill histograms to calculate means, etc.
-  TFile *binTreeFile = new TFile(bruDir+"/"+bruName+"/TreeData.root","READ");
-  TTree *binTree = (TTree*) binTreeFile->Get("tree");
+  binTreeFile = new TFile(bruDir+"/"+bruName+"/TreeData.root","READ");
+  binTree = (TTree*) binTreeFile->Get("tree");
 
   // start histograms and set branch addresses
+  Double_t iv[3];
   for(int i=0; i<nDim; i++) {
     TString histname = Form("%s_hist_%d",ivNames[i].Data(),bruIdx);
     ivHists.push_back(new TH1D(histname,histname,100,lBounds[i]-0.05,uBounds[i]+0.05));
@@ -67,7 +68,7 @@ void BruBin::CalculateStats() {
   };
 
   // close binTree file
-  binTreeFile->Close();
+  // binTreeFile->Close(); // leave open, closing causes seg fault when streaming
 
 };
 
@@ -99,6 +100,10 @@ void BruBin::OpenResultFile(Int_t minimizer) {
     };
     pName = Form("bin%d_NLL_vs_sample",bruIdx);
     nllVsSampleHist = new TH1D(pName,pName,nSamples,1,nSamples+1);
+  } else {
+    // default instantiations, to support streaming
+    mcmcTree = new TTree();
+    nllVsSampleHist = new TH1D();
   };
 };
 

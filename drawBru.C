@@ -262,17 +262,18 @@ void drawBru(
     };
 
     binListCnt++;
+    BBlist->Write("BruBinList",TObject::kSingleKey);
     outFile->Close();
     printf("produced %s\n",outfileN.Data());
   };
 
   // cleanup
-  nextBinList = TObjArrayIter(BruBinSuperList);
-  while((BBlist = (TObjArray*) nextBinList())) {
-    nextBin = TObjArrayIter(BBlist);
-    while((BB = (BruBin*) nextBin())) {
-     BB->GetResultFile()->Close();
-    };
-  };
+  // nextBinList = TObjArrayIter(BruBinSuperList);
+  // while((BBlist = (TObjArray*) nextBinList())) {
+  //   nextBin = TObjArrayIter(BBlist);
+  //   while((BB = (BruBin*) nextBin())) {
+  //    BB->GetResultFile()->Close();
+  //   };
+  // };
 
 };

@@ -96,14 +96,15 @@ class BruBin : public TObject
     std::vector<TH1D*>    ivHists;
     std::vector<Double_t> ivMeans;
 
-    Double_t iv[3];
+    TFile *binTreeFile = nullptr;
+    TTree *binTree = nullptr;
 
-    TFile *resultFile;
-    TTree *resultTree;
-    TTree *mcmcTree;
+    TFile *resultFile = nullptr;
+    TTree *resultTree = nullptr;
+    TTree *mcmcTree = nullptr;
     Int_t nSamples;
     std::vector<TH1D*> paramVsSampleHists;
-    TH1D *nllVsSampleHist;
+    TH1D *nllVsSampleHist = nullptr;
 
   ClassDef(BruBin,1);
 };
