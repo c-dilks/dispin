@@ -227,7 +227,7 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
       if(ivVar[0]==vX) nb0=6;
       if(ivVar[0]==vM) nb0=6;
       if(ivVar[0]==vZ) nb0=6;
-      if(ivVar[0]==vZ  && ivVar[1]==vM)  { nb0=4; nb1=3; };
+      if(ivVar[0]==vZ  && ivVar[1]==vM)  { nb0=2; nb1=2; };
       if(ivVar[0]==vPt && ivVar[1]==vM)  { nb0=4; nb1=3; };
       if(ivVar[0]==vX  && ivVar[1]==vDY) { nb0=4; nb1=3; };
       if(ivVar[0]==vM  && ivVar[1]==vDY) { nb0=4; nb1=3; };
@@ -264,8 +264,8 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
       switch(nb[d]) {
         case 1: break; // single bin
         case 2:
-          //AddBinBound(vM,0.63); // PRL 2D binning
-          AddBinBound(vM,0.95); // test >M_rho region
+          AddBinBound(vM,0.63); // PRL 2D bining
+          // AddBinBound(vM,0.95); // test >M_rho region
           break;
         case 3:
           AddBinBound(vM,0.60); // DIS 2D binning
@@ -379,6 +379,9 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
     else if(ivVar[d] == vZ) {
       switch(nb[d]) {
         case 1: break; // single bin
+        case 2:
+          AddBinBound(vZ,0.55);
+          break;
         case 4:
           AddBinBound(vZ,0.468);
           AddBinBound(vZ,0.548);

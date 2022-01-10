@@ -93,7 +93,7 @@ void asymBruFit(
 
   // hyperparameters
   // - MCMC settings
-  B->MCMC_iter        = 5000; // number of samples
+  B->MCMC_iter        = 2000; // number of samples
   B->MCMC_burnin      = 0.1 * ((Double_t)B->MCMC_iter); // number to burn
   B->MCMC_norm        = 1.0 / 0.03; // ~ 1/stepsize
   // - 2nd MCMC settings (if using MCMCthenCov algorithm)
