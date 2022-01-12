@@ -110,12 +110,19 @@ void asymBruFit(
   B->Fit();
 
   // print acceptance rates
+  TString cmd;
   gSystem->RedirectOutput(B->GetLogName());
-  gROOT->ProcessLine(".! mcmcAcceptanceRate.sh");
+  cmd = ".! mcmcAcceptanceRate.rb " + bruDir
+  gROOT->ProcessLine(cmd.Data());
+  gSystem->RedirectOutput(0);
+
+  // print PROOF errors
+  gSystem->RedirectOutput(B->GetLogName());
+  cmd = ".! errorPrintProof.rb " + bruDir
+  gROOT->ProcessLine(cmd.Data());
   gSystem->RedirectOutput(0);
 
   // draw residuals and pulls for each bin
-  TString cmd;
   for(int d=0; d<BS->dimensions; d++) {
     cmd = Form(".x deps/brufit/macros/DrawResiduals.C(\"%s/\",\"%s\")",bruDir.Data(),BS->GetIVname(d).Data());
     printf("\nEXECUTE: %s\n\n",cmd.Data());
