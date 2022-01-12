@@ -3,12 +3,12 @@
 # - main purpose is for asymmetry injection studies
 
 # settings #################
-ivString  = "zm"
+ivString  = "ifarm.zm"
 ivType    = 32
 nbins     = [-1, -1, -1]
-injSeq    = (46..100).to_a  # Array of injection numbers
+injSeq    = (0..4).to_a  # Array of injection numbers
 minimizer = "minuit"
-nCPUs     = 6   # number of CPUs per node to allocate for slurm
+nCPUs     = 4   # number of CPUs per node to allocate for slurm
 ############################
 
 # if on ifarm, use slurm; otherwise, run sequentially
@@ -34,7 +34,9 @@ fit = Proc.new do |whichSpinMC|
   ]
   bruArgs.map!{ |arg| if arg.class==String then "\"#{arg}\"" else arg end } # add quotes around strings
   brufit = "root -b -q $BRUFIT/macros/LoadBru.C"
-  cmd = "#{brufit} 'asymBruFit.C(#{bruArgs.join ','})'"
+  cmd = slurm ?
+    "#{brufit} asymBruFit.C(#{bruArgs.join ','})" :
+    "#{brufit} 'asymBruFit.C(#{bruArgs.join ','})'"
   [$stdout,jobFile].each{ |s| s.puts cmd }
 end
 
@@ -57,14 +59,17 @@ if slurm
   slurmSet.call("ntasks",        "1")
   slurmSet.call("cpus-per-task", "#{nCPUs}")
   slurmSet.call("output",        "/farm_out/%u/%x-%j-%N.out")
-  slurmSet.call("error",         "/farm_out/%u/%x-%j-%N.err")
+  # slurmSet.call("error",         "/farm_out/%u/%x-%j-%N.err")
+  slurmSet.call("error",         "/farm_out/%u/%x-%j-%N.out")
   slurmFile.puts "srun $(head -n$SLURM_ARRAY_TASK_ID #{jobFileName} | tail -n1)"
   slurmFile.close()
 end
 
 # execution
 if slurm # run on slurm
+  puts "-"*30
   system "cat #{slurmFileName}"
+  puts "-"*30
   puts "submitting to slurm..."
   system "sbatch #{slurmFileName}"
 else # run locally (sequentially)

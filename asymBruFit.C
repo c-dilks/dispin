@@ -21,6 +21,11 @@ void asymBruFit(
     Int_t whichSpinMC=-1 // if >=0, use helicity from injected asymmetry (branch "SpinMC_`whichSpinMC`_idx")
 ) {
 
+  // set PROOF sandbox (where log files etc. are written)
+  TString sandbox = TString(gSystem->Getenv("PWD")) + "/" + bruDir + "/prooflog";
+  gEnv->SetValue("ProofLite.Sandbox",sandbox.Data());
+  printf("proof sandbox = %s\n",gEnv->GetValue("ProofLite.Sandbox","ERROR"));
+
   // instantiate brufit
   BruAsymmetry * B = new BruAsymmetry(bruDir,minimizer,whichSpinMC);
 
