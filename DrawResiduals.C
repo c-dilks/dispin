@@ -8,7 +8,7 @@
 #include "Bins.h"
 
 /*
- * ADAPTED FROM: dglazier:brufit/macros/DrawResiduals.C, modified for dispin
+ * ADAPTED FROM: dglazier:brufit/macros/GraphParameters.C, modified for dispin
  */
 
 //usage brufit
