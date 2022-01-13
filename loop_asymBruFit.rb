@@ -53,7 +53,7 @@ if slurm
   slurmSet.call("job-name",      "asymBruFit")
   slurmSet.call("account",       "clas12")
   slurmSet.call("partition",     "production")
-  slurmSet.call("mem-per-cpu",   "2000")
+  slurmSet.call("mem-per-cpu",   "300")
   slurmSet.call("time",          "8:00:00")
   slurmSet.call("array",         "1-#{injSeq.length}")
   slurmSet.call("ntasks",        "1")
