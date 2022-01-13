@@ -98,9 +98,9 @@ void asymBruFit(
 
   // hyperparameters
   // - MCMC settings
-  B->MCMC_iter        = 2000; // number of samples
+  B->MCMC_iter        = 3000; // number of samples
   B->MCMC_burnin      = 0.1 * ((Double_t)B->MCMC_iter); // number to burn
-  B->MCMC_norm        = 1.0 / 0.03; // ~ 1/stepsize
+  B->MCMC_norm        = 1.0 / 0.015; // ~ 1/stepsize
   // - 2nd MCMC settings (if using MCMCthenCov algorithm)
   B->MCMC_cov_iter    = 5000; // number of samples
   B->MCMC_cov_burnin  = 0.1 * ((Double_t)B->MCMC_iter); // number to burn
@@ -112,24 +112,24 @@ void asymBruFit(
   // print acceptance rates
   TString cmd;
   gSystem->RedirectOutput(B->GetLogName());
-  cmd = ".! mcmcAcceptanceRate.rb " + bruDir
+  cmd = Form(".! mcmcAcceptanceRate.rb %s",bruDir.Data());
   gROOT->ProcessLine(cmd.Data());
   gSystem->RedirectOutput(0);
 
   // print PROOF errors
   gSystem->RedirectOutput(B->GetLogName());
-  cmd = ".! errorPrintProof.rb " + bruDir
+  cmd = Form(".! errorPrintProof.rb %s",bruDir.Data());
   gROOT->ProcessLine(cmd.Data());
   gSystem->RedirectOutput(0);
 
   // draw residuals and pulls for each bin
   for(int d=0; d<BS->dimensions; d++) {
-    cmd = Form(".x deps/brufit/macros/DrawResiduals.C(\"%s/\",\"%s\")",bruDir.Data(),BS->GetIVname(d).Data());
+    cmd = Form(".x DrawResiduals.C(\"%s\",\"%s\",\"%s\")",bruDir.Data(),BS->GetIVname(d).Data(),minimizer.Data());
     printf("\nEXECUTE: %s\n\n",cmd.Data());
     gROOT->ProcessLine(cmd);
   };
 
-  // draw
+  // draw asymmetries
   cmd = Form(".x drawBru.C(\"%s\",\"%s\")",bruDir.Data(),minimizer.Data());
   printf("\nEXECUTE: %s\n\n",cmd.Data());
   gROOT->ProcessLine(cmd);

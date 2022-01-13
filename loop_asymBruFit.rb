@@ -6,9 +6,9 @@
 ivString  = "ifarm.zm"
 ivType    = 32
 nbins     = [-1, -1, -1]
-injSeq    = (0..4).to_a  # Array of injection numbers
-minimizer = "minuit"
-nCPUs     = 4   # number of CPUs per node to allocate for slurm
+injSeq    = (0..99).to_a  # Array of injection numbers
+minimizer = "mcmc"
+nCPUs     = 6   # number of CPUs per node to allocate for slurm
 ############################
 
 # if on ifarm, use slurm; otherwise, run sequentially
@@ -25,7 +25,7 @@ jobFile = File.open(jobFileName,"w")
 # define asymBruFit.C call, and append to job list
 fit = Proc.new do |whichSpinMC|
   bruArgs = [
-    "bruspin.#{ivString}.inj#{whichSpinMC}",
+    "bruspin.volatile/bruspin.#{ivString}.inj#{whichSpinMC}",
     minimizer,
     "",
     ivType,
@@ -59,8 +59,7 @@ if slurm
   slurmSet.call("ntasks",        "1")
   slurmSet.call("cpus-per-task", "#{nCPUs}")
   slurmSet.call("output",        "/farm_out/%u/%x-%j-%N.out")
-  # slurmSet.call("error",         "/farm_out/%u/%x-%j-%N.err")
-  slurmSet.call("error",         "/farm_out/%u/%x-%j-%N.out")
+  slurmSet.call("error",         "/farm_out/%u/%x-%j-%N.err")
   slurmFile.puts "srun $(head -n$SLURM_ARRAY_TASK_ID #{jobFileName} | tail -n1)"
   slurmFile.close()
 end
