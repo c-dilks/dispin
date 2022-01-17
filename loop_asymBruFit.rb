@@ -7,7 +7,7 @@ ivString  = "z"
 ivType    = 3
 nbins     = [-1, -1, -1]
 injSeq    = (0..99).to_a  # Array of injection numbers
-minimizer = "mcmc"
+minimizer = "minuit"
 nCPUs     = 6   # number of CPUs per node to allocate for slurm
 ############################
 
@@ -58,8 +58,8 @@ if slurm
   slurmSet.call("array",         "1-#{injSeq.length}")
   slurmSet.call("ntasks",        "1")
   slurmSet.call("cpus-per-task", "#{nCPUs}")
-  slurmSet.call("output",        "/farm_out/%u/%x-%j-%N.out")
-  slurmSet.call("error",         "/farm_out/%u/%x-%j-%N.err")
+  slurmSet.call("output",        "/farm_out/%u/%x-%j-%a.out")
+  slurmSet.call("error",         "/farm_out/%u/%x-%j-%a.err")
   slurmFile.puts "srun $(head -n$SLURM_ARRAY_TASK_ID #{jobFileName} | tail -n1)"
   slurmFile.close()
 end
