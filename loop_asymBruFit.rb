@@ -7,7 +7,7 @@ ivString  = "z"
 ivType    = 3
 nbins     = [-1, -1, -1]
 injSeq    = (0..99).to_a  # Array of injection numbers
-minimizer = "minuit"
+minimizer = "mcmc"
 nCPUs     = 6   # number of CPUs per node to allocate for slurm
 ############################
 
@@ -53,13 +53,13 @@ if slurm
   slurmSet.call("job-name",      "asymBruFit")
   slurmSet.call("account",       "clas12")
   slurmSet.call("partition",     "production")
-  slurmSet.call("mem-per-cpu",   "1200")
+  slurmSet.call("mem-per-cpu",   "#{7200/nCPUs}")
   slurmSet.call("time",          "8:00:00")
   slurmSet.call("array",         "1-#{injSeq.length}")
   slurmSet.call("ntasks",        "1")
   slurmSet.call("cpus-per-task", "#{nCPUs}")
-  slurmSet.call("output",        "/farm_out/%u/%x-%j-%a.out")
-  slurmSet.call("error",         "/farm_out/%u/%x-%j-%a.err")
+  slurmSet.call("output",        "/farm_out/%u/%x-%A_%a.out")
+  slurmSet.call("error",         "/farm_out/%u/%x-%A_%a.err")
   slurmFile.puts "srun $(head -n$SLURM_ARRAY_TASK_ID #{jobFileName} | tail -n1)"
   slurmFile.close()
 end
