@@ -3,8 +3,8 @@
 # - main purpose is for asymmetry injection studies
 
 # settings #################
-ivString  = "ifarm.zm"
-ivType    = 32
+ivString  = "z"
+ivType    = 3
 nbins     = [-1, -1, -1]
 injSeq    = (0..99).to_a  # Array of injection numbers
 minimizer = "mcmc"
@@ -18,14 +18,14 @@ puts slurm ?
   "MODE: not on ifarm, run SEQUENTIALLY"
 
 # start job list file
-jobFileName = "jobs.asymBruFit.#{ivString}.slurm"
+jobFileName = "jobs.asymBruFit.#{minimizer}.#{ivString}.slurm"
 slurmFileName = jobFileName.gsub(/^jobs/,"job") if slurm
 jobFile = File.open(jobFileName,"w")
 
 # define asymBruFit.C call, and append to job list
 fit = Proc.new do |whichSpinMC|
   bruArgs = [
-    "bruspin.volatile/bruspin.#{ivString}.inj#{whichSpinMC}",
+    "bruspin.volatile/bruspin.#{minimizer}.#{ivString}.inj#{whichSpinMC}",
     minimizer,
     "",
     ivType,
@@ -53,7 +53,7 @@ if slurm
   slurmSet.call("job-name",      "asymBruFit")
   slurmSet.call("account",       "clas12")
   slurmSet.call("partition",     "production")
-  slurmSet.call("mem-per-cpu",   "300")
+  slurmSet.call("mem-per-cpu",   "600")
   slurmSet.call("time",          "8:00:00")
   slurmSet.call("array",         "1-#{injSeq.length}")
   slurmSet.call("ntasks",        "1")
