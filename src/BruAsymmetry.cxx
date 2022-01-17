@@ -240,6 +240,7 @@ void BruAsymmetry::Fit() {
   if(minimizer.CompareTo("mcmc",TString::kIgnoreCase)==0) {
     FM->SetMinimiser( new HS::FIT::RooMcmcSeq(
       MCMC_iter, MCMC_burnin, MCMC_norm ) );
+    FM->SetPlotOptions("MCMC:CORNERFULL:CORNERZOOM:AUTOCORR");
     this->PrintLog("");
     this->PrintLog("OPTIMIZER: MCMC");
     this->PrintLog(
@@ -249,6 +250,7 @@ void BruAsymmetry::Fit() {
     FM->SetMinimiser( new HS::FIT::RooMcmcSeqThenCov(
       MCMC_iter,     MCMC_burnin,     MCMC_norm,
       MCMC_cov_iter, MCMC_cov_burnin, MCMC_cov_norm ) );
+    FM->SetPlotOptions("MCMC:CORNERFULL:CORNERZOOM:AUTOCORR");
     this->PrintLog("");
     this->PrintLog("OPTIMIZER: MCMCthenCov");
     this->PrintLog(
