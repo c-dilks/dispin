@@ -6,7 +6,7 @@ include Root
 gStyle.SetOptFit(1)
 
 if ARGV.length < 1
-  puts "USAGE #{$0} [directory]"
+  puts "USAGE #{$0} [pullresults directory]"
   exit 2
 end
 brudir = ARGV[0]
