@@ -17,7 +17,7 @@ BruAsymmetry::BruAsymmetry(TString outdir_, TString minimizer_, Int_t whichSpinM
   gSystem->RedirectOutput(0);
 
 
-  // variables
+  // load PDF variables
   FM->SetUp().LoadVariable(TString("PhiH")+Form("[%f,%f]",-PI,PI));
   FM->SetUp().LoadVariable(TString("PhiR")+Form("[%f,%f]",-PI,PI));
   FM->SetUp().LoadVariable(TString("PhiD")+Form("[%f,%f]",-PI,PI));
@@ -25,6 +25,23 @@ BruAsymmetry::BruAsymmetry(TString outdir_, TString minimizer_, Int_t whichSpinM
   FM->SetUp().LoadVariable(TString("Pol")+Form("[%f,%f]",-1.0,1.0));
   FM->SetUp().LoadVariable(TString("Depol2")+Form("[%f,%f]",0.0,2.5));
   FM->SetUp().LoadVariable(TString("Depol3")+Form("[%f,%f]",0.0,2.5));
+
+  // load independent variables (IVs) 
+  /* - we can load them here now, although some will also be loaded by the binning scheme later
+   * - useful if we want *all* IVs stored in binned trees, but will cause warnings about
+   *   certain variables being ignored
+   * - doing this is optional, if we don't, then binning scheme will load the ones we need
+   */
+  if(1) { // enable/disable switch
+    // definitions kept consistent with Binning.cxx, but doesn't really have to be
+    FM->SetUp().LoadVariable( TString("Mh")+Form("[%f,%f]",     0.0, 2.0  ));
+    FM->SetUp().LoadVariable( TString("X")+Form("[%f,%f]",      0.0, 1.0  ));
+    FM->SetUp().LoadVariable( TString("Z")+Form("[%f,%f]",      0.0, 1.0  ));
+    FM->SetUp().LoadVariable( TString("PhPerp")+Form("[%f,%f]", 0.0, 3.0  ));
+    FM->SetUp().LoadVariable( TString("DY")+Form("[%f,%f]",     0.0, 4.0  ));
+    FM->SetUp().LoadVariable( TString("Q2")+Form("[%f,%f]",     0.0, 12.0 ));
+    FM->SetUp().LoadVariable( TString("XF")+Form("[%f,%f]",     0.0, 1.0  ));
+  };
 
   // category for spin
   spinBranch = whichSpinMC<0 ? "Spin_idx" : Form("SpinMC_%d_idx",whichSpinMC);
