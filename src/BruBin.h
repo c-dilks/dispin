@@ -40,8 +40,8 @@ class BruBin : public TObject
     TString  GetIvName(Int_t dim);
     Double_t GetLBound(Int_t dim);
     Double_t GetUBound(Int_t dim);
-    TH1D     *GetIvHists(Int_t dim);
-    Double_t GetIvMean(Int_t dim);
+    Double_t GetIvMean(Int_t dim); // by dimension number
+    Double_t GetIvMean(TString varName); // by branch name
 
     TFile *GetResultFile() { return resultFile; };
     TTree *GetResultTree() { return resultTree; };
@@ -64,21 +64,38 @@ class BruBin : public TObject
     // return element `k` from vector `v<T>`, with exception handling; called by public `Get*` methods
     // - optionally execute `actionIfEmpty` if `v` has no elements
     template<class T>
-      T GetElement(std::vector<T> v, Int_t k, T dflt, std::function<void()>actionIfEmpty=[](){}) {
+      T GetVectorElement(std::vector<T> v, Int_t k, T dflt, std::function<void()>actionIfEmpty=[](){}) {
         if(v.size()==0) actionIfEmpty();
         try { return v.at(k); }
         catch(const std::out_of_range &ex) {
-          fprintf(stderr,"ERROR: BruBin::GetElement out of range\n");
+          fprintf(stderr,"ERROR: BruBin::GetVectorElement out of range\n");
           return dflt;
         };
-      };
+      }
 
-    // print all elements of a vector
+    // similar method for map
+    template<class K, class V>
+      V GetMapElement(std::map<K,V> m, K k, V dflt, std::function<void()>actionIfEmpty=[](){}) {
+        if(m.size()==0) actionIfEmpty();
+        try { return m.at(k); }
+        catch(const std::out_of_range &ex) {
+          fprintf(stderr,"ERROR: BruBin::GetMapElement out of range\n");
+          return dflt;
+        };
+      }
+
+    // print all elements of a vector or map
     template<class T>
       void PrintVector(std::vector<T> v) {
         std::cout << "( ";
         std::for_each(v.begin(),v.end(),[](T &elem){ std::cout << elem << " "; });
         std::cout << ")" << std::endl;
+      }
+    template<class K, class V>
+      void PrintMap(std::map<K,V> m) {
+        std::cout << "[" << std::endl;
+        for(auto &kv : m) std::cout << "    " << kv.first << ": " << kv.second << std::endl;
+        std::cout << "]" << std::endl;
       }
     
   private:
@@ -93,8 +110,10 @@ class BruBin : public TObject
     std::vector<TString>  ivNames;
     std::vector<Double_t> lBounds;
     std::vector<Double_t> uBounds;
-    std::vector<TH1D*>    ivHists;
-    std::vector<Double_t> ivMeans;
+
+    std::vector<TString>       binTreeBranches;
+    std::map<TString,TH1D*>    ivHists;
+    std::map<TString,Double_t> ivMeans;
 
     TFile *binTreeFile = nullptr;
     TTree *binTree = nullptr;

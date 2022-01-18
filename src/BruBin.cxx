@@ -48,23 +48,36 @@ void BruBin::CalculateStats() {
   binTreeFile = new TFile(bruDir+"/"+bruName+"/TreeData.root","READ");
   binTree = (TTree*) binTreeFile->Get("tree");
 
+  // get list of branches
+  TObjArrayIter nextBranch(binTree->GetListOfBranches());
+  while(auto br = nextBranch()) {
+    TString brName = br->GetName();
+    if( !brName.Contains("Idx") && !brName.Contains("Spin") ) binTreeBranches.push_back(brName);
+  };
+
   // start histograms and set branch addresses
-  Double_t iv[3];
-  for(int i=0; i<nDim; i++) {
-    TString histname = Form("%s_hist_%d",ivNames[i].Data(),bruIdx);
-    ivHists.push_back(new TH1D(histname,histname,100,lBounds[i]-0.05,uBounds[i]+0.05));
-    binTree->SetBranchAddress(ivNames[i],&iv[i]);
+  std::map<TString,Double_t> ivVals;
+  for(auto brName : binTreeBranches) {
+    TString histname = Form("%s_hist_%d",brName.Data(),bruIdx);
+    Double_t lb = binTree->GetMinimum(brName);
+    Double_t ub = binTree->GetMaximum(brName);
+    Double_t rg = ub-lb;
+    lb -= 0.05*rg;
+    ub += 0.05*rg;
+    ivHists.insert(std::pair<TString,TH1D*>( brName, new TH1D(histname,histname,100,lb,ub) ));
+    ivVals.insert(std::pair<TString,Double_t>( brName, UNDEF ));
+    binTree->SetBranchAddress( brName, &(ivVals.at(brName)) );
   };
 
   // fill histograms
   for(Long64_t e=0; e<binTree->GetEntries(); e++) {
     binTree->GetEntry(e);
-    for(int i=0; i<nDim; i++) ivHists[i]->Fill(iv[i]);
+    for(auto brName : binTreeBranches) ivHists.at(brName)->Fill(ivVals.at(brName));
   };
 
   // calculate means
-  for(auto ivHist : ivHists) {
-    ivMeans.push_back(ivHist->GetMean());
+  for(auto brName : binTreeBranches) {
+    ivMeans.insert(std::pair<TString,Double_t>( brName, ivHists.at(brName)->GetMean() ));
   };
 
   // close binTree file
@@ -109,16 +122,15 @@ void BruBin::OpenResultFile(Int_t minimizer) {
 
 
 // accessors
-TAxis BruBin::GetAxis(Int_t dim) { return GetElement( axes, dim, TAxis() ); };
-Int_t BruBin::GetBinNum(Int_t dim) { return GetElement( binNums, dim, 0 ); };
-Double_t BruBin::GetCenter(Int_t dim) { return GetElement( centers, dim, 0.0 ); };
-TString BruBin::GetIvName(Int_t dim) { return GetElement( ivNames, dim, TString("") ); };
-Double_t BruBin::GetLBound(Int_t dim) { return GetElement( lBounds, dim, 0.0 ); };
-Double_t BruBin::GetUBound(Int_t dim) { return GetElement( uBounds, dim, 0.0 ); };
-TH1D *BruBin::GetIvHists(Int_t dim) { return GetElement( ivHists, dim, (TH1D*)nullptr, [&](){CalculateStats();} ); };
-Double_t BruBin::GetIvMean(Int_t dim) { return GetElement( ivMeans, dim, 0.0, [&](){CalculateStats();} ); };
-TH1D* BruBin::GetParamVsSampleHist(Int_t param) { return GetElement( paramVsSampleHists, param, (TH1D*)nullptr ); };
-
+TAxis BruBin::GetAxis(Int_t dim) { return GetVectorElement( axes, dim, TAxis() ); };
+Int_t BruBin::GetBinNum(Int_t dim) { return GetVectorElement( binNums, dim, 0 ); };
+Double_t BruBin::GetCenter(Int_t dim) { return GetVectorElement( centers, dim, UNDEF ); };
+TString BruBin::GetIvName(Int_t dim) { return GetVectorElement( ivNames, dim, TString("") ); };
+Double_t BruBin::GetLBound(Int_t dim) { return GetVectorElement( lBounds, dim, UNDEF ); };
+Double_t BruBin::GetUBound(Int_t dim) { return GetVectorElement( uBounds, dim, UNDEF ); };
+TH1D* BruBin::GetParamVsSampleHist(Int_t param) { return GetVectorElement( paramVsSampleHists, param, (TH1D*)nullptr ); };
+Double_t BruBin::GetIvMean(TString varName) { return GetMapElement( ivMeans, varName, UNDEF, [&](){CalculateStats();} ); };
+Double_t BruBin::GetIvMean(Int_t dim) { return GetIvMean(GetIvName(dim)); };
 
 // print out
 void BruBin::PrintInfo() {
@@ -126,7 +138,7 @@ void BruBin::PrintInfo() {
   printf("  bruName = %s\n",bruName.Data());
   printf("  ivNames = "); PrintVector(ivNames);
   printf("  centers = "); PrintVector(centers);
-  printf("  means   = "); PrintVector(ivMeans);
+  printf("  means   = "); PrintMap(ivMeans);
 };
 
 BruBin::~BruBin() {};

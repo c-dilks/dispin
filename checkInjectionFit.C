@@ -1,11 +1,13 @@
 // check fit result of injected asymmetry against the injected model,
 // given a fit result `asym_*.root` file and an injection model file `injection.root`
 R__LOAD_LIBRARY(DiSpin)
+#include "Constants.h"
 
 void checkInjectionFit(
     TString fitResultFileN="bruspin.x.inj0/asym_minuit_BL0.root",
     TString injectionModelFileN="injection.root",
-    Int_t injNum=0
+    Int_t injNum=0, // which injection model number
+    Int_t nDimFit=0 // number of dimensions in the FIT (set to `0` to use `nDim` from InjectionModel)
     )
 {
   // set output file and directory
@@ -21,7 +23,8 @@ void checkInjectionFit(
   // get injection model
   TFile *injectionModelFile = new TFile(injectionModelFileN,"READ");
   InjectionModel *IM = (InjectionModel*) injectionModelFile->Get("IM");
-  Int_t nDim = IM->GetBinning()->dimensions;
+  Int_t nDimInj = IM->GetBinning()->dimensions;
+  if(nDimFit<=0) nDimFit = nDimInj;
 
   // find fit result `canvAsym*`, assuming there is only one
   TFile *fitResultFile = new TFile(fitResultFileN,"READ");
@@ -95,12 +98,12 @@ void checkInjectionFit(
         moduName(TRegexp("^gr_")) = "";
         moduName(TRegexp("_BL.*")) = "";
         printf("paramGrName=%s\tmodu=%s\n",paramGr->GetName(),moduName.Data());
-        switch(nDim) {
+        switch(nDimInj) {
           case 1: injFtn = (TF1*) IM->GetAmplitudeModel(moduName,injNum); break;
           case 2: injFtn = (TF2*) IM->GetAmplitudeModel(moduName,injNum); break;
           case 3: injFtn = (TF3*) IM->GetAmplitudeModel(moduName,injNum); break;
           default:
-                  fprintf(stderr,"ERROR: unknown nDim\n");
+                  fprintf(stderr,"ERROR: unknown nDimInj\n");
                   return;
         };
 
@@ -132,7 +135,11 @@ void checkInjectionFit(
           // get BruBin means
           BruBin *bb = (BruBin*) bruBins->At(k); // assume graph point number = bruBins index
           Double_t ivMean[3];
-          for(int d=0; d<nDim; d++) ivMean[d] = bb->GetIvMean(d);
+          for(int d=0; d<nDimFit; d++) {
+            ivMean[d] = bb->GetIvMean(d);
+            if(TMath::Abs(ivMean[d]-UNDEF) < 0.1)
+              fprintf(stderr,"ERROR: bad IV mean... is the \"nDimFit\" argument correct?\n");
+          }
           if(TMath::Abs( iv - ivMean[0] ) > 0.001) // cross check read mean with stored mean
             fprintf(stderr,"WARNING: plotted ivMean and BruBin ivMean differ\n");
 
