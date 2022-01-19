@@ -4,9 +4,9 @@ R__LOAD_LIBRARY(DiSpin)
 // IMPORTANT: run with `brufit -b -q asymBruFit.C`
 /* - minimizers: optimizer algorithm, choose one of the following:
  *   - minuit: maximum likelihood using Minuit MIGRAD
- *   - mcmc: sample posterior using Metropolis-Hastings walk with
+ *   - mcmcseq: sample posterior using Metropolis-Hastings walk with
  *     gaussian proposal; set hyperparameters at the end of this macro
- *   - mcmcthencov: first run mcmc as above, then use the resulting
+ *   - mcmccov: first run mcmc as above, then use the resulting
  *     covariance matrix in the gaussian proposal function of a second,
  *     subsequent mcmc walk
  */
@@ -96,15 +96,19 @@ void asymBruFit(
   // B->LoadDataSets("catTreeMC.mc.PRL.DIS.0x34.inj_x.idx.root",""); // MC: 1D linear injection along x
   B->LoadDataSets("catTreeMC.mc.PRL.DIS.0x34.inj_zm.idx.root",""); // MC: 2D linear injection along {z,Mh}
 
-  // hyperparameters
-  // - MCMC settings
+  // MCMC hyperparameters
+  // - chain 1
   B->MCMC_iter        = 3000; // number of samples
   B->MCMC_burnin      = 0.1 * ((Double_t)B->MCMC_iter); // number to burn
   B->MCMC_norm        = 1.0 / 0.015; // ~ 1/stepsize
-  // - 2nd MCMC settings (if using MCMCthenCov algorithm)
+  // - chain 2 (for minimizer=="mcmccov")
   B->MCMC_cov_iter    = 5000; // number of samples
   B->MCMC_cov_burnin  = 0.1 * ((Double_t)B->MCMC_iter); // number to burn
   B->MCMC_cov_norm    = 1.0 / 0.03; // ~ 1/stepSize
+  // - acceptance rate locks
+  MCMC_lockacc_min    = 0.15;
+  MCMC_lockacc_max    = 0.3;
+  MCMC_lockacc_target = 0.234; // standard "optimal" acceptance rate
 
   // perform fit
   B->Fit();

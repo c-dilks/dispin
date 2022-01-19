@@ -25,6 +25,7 @@
 
 // BruFit
 #include <FitManager.h>
+#include <Minimiser.h>
 #include <RooMcmc.h>
 #include <Process.h>
 
@@ -67,15 +68,19 @@ class BruAsymmetry : public TObject
     };
     TString GetLogName() { return outlog; };
 
-    // hyperparameters
-    // - MCMC settings
+    // MCMC hyperparameters
+    // - chain 1
     Int_t MCMC_iter; // number of MCMC MH steps
     Int_t MCMC_burnin; // discard the first `MCMC_burnin` steps ("burn-in")
     Float_t MCMC_norm; // ~ 1/stepSize
-    // - 2nd MCMC settings, with covariance from 1st chain (for MCMCthenCov algorithm)
+    // - chain 2 (for minimizer=="mcmccov")
     Int_t MCMC_cov_iter; // number of MCMC MH steps
     Int_t MCMC_cov_burnin; // discard the first `MCMC_burnin` steps ("burn-in")
     Float_t MCMC_cov_norm; // ~ 1/stepSize
+    // - acceptance rate locks
+    Double_t MCMC_lockacc_min;
+    Double_t MCMC_lockacc_max;
+    Double_t MCMC_lockacc_target;
 
     
     HS::FIT::FitManager * FM;
@@ -83,10 +88,14 @@ class BruAsymmetry : public TObject
   private:
 
     TString outdir;
-    TString minimizer;
+    Int_t minimizer;
     Int_t whichSpinMC;
     TString spinBranch;
     TString outlog;
+
+    HS::FIT::Minuit2 *minuitAlgo;
+    HS::FIT::RooMcmc *mcmcAlgo;
+    Bool_t useMCMC;
 
     TFile * infile[2];
     TFile * outfile[2];

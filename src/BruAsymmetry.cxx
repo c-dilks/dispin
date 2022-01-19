@@ -4,15 +4,18 @@ ClassImp(BruAsymmetry)
 
 BruAsymmetry::BruAsymmetry(TString outdir_, TString minimizer_, Int_t whichSpinMC_)
   : outdir(outdir_)
-  , minimizer(minimizer_)
   , whichSpinMC(whichSpinMC_)
 {
+  // get minimizer enum
+  minimizer = MinimizerStrToEnum(minimizer_);
+  if(minimizer<0) return;
 
+  // start FitManager and output logs
   printf("construct BruAsymmetry\n");
   FM = new HS::FIT::FitManager();
   outdir = outdir_;
   FM->SetUp().SetOutDir(outdir); // calls mkdir automatically
-  outlog = outdir+"/out."+minimizer+".log";
+  outlog = outdir+"/out."+minimizer_+".log";
   gSystem->RedirectOutput(outlog,"w");
   gSystem->RedirectOutput(0);
 
@@ -51,13 +54,16 @@ BruAsymmetry::BruAsymmetry(TString outdir_, TString minimizer_, Int_t whichSpinM
   FM->SetUp().SetIDBranchName("Idx");
 
 
-  // default MCMC settings
-  MCMC_iter = 1000;
+  // default MCMC hyperparameters
+  MCMC_iter   = 1000;
   MCMC_burnin = 200;
-  MCMC_norm = 200;
-  MCMC_cov_iter = 1000;
+  MCMC_norm   = 200;
+  MCMC_cov_iter   = 1000;
   MCMC_cov_burnin = 200;
-  MCMC_cov_norm = 200;
+  MCMC_cov_norm   = 200;
+  MCMC_lockacc_min    = -1; // leave this set to -1 to disable locks; if both min and max are >=0, enable locks
+  MCMC_lockacc_max    = -1;
+  MCMC_lockacc_target = 0.234; // standard "optimal" acceptance rate
 
 
   // misc vars
@@ -236,37 +242,49 @@ void BruAsymmetry::Fit() {
   printf("---- fit with %d parallel threads\n",nWorkers);
 
 
-  // set minimizer algorithm
-  if(minimizer.CompareTo("mcmc",TString::kIgnoreCase)==0) {
-    FM->SetMinimiser( new HS::FIT::RooMcmcSeq(
-      MCMC_iter, MCMC_burnin, MCMC_norm ) );
-    FM->SetPlotOptions("MCMC:CORNERFULL:CORNERZOOM:AUTOCORR");
-    this->PrintLog("");
-    this->PrintLog("OPTIMIZER: MCMC");
-    this->PrintLog(
-      Form("MCMC iter,burnin,stepsize = %d, %d, %f",
-            MCMC_iter,MCMC_burnin,1.0/MCMC_norm));
-  } else if(minimizer.CompareTo("mcmcthencov",TString::kIgnoreCase)==0) {
-    FM->SetMinimiser( new HS::FIT::RooMcmcSeqThenCov(
-      MCMC_iter,     MCMC_burnin,     MCMC_norm,
-      MCMC_cov_iter, MCMC_cov_burnin, MCMC_cov_norm ) );
-    FM->SetPlotOptions("MCMC:CORNERFULL:CORNERZOOM:AUTOCORR");
-    this->PrintLog("");
-    this->PrintLog("OPTIMIZER: MCMCthenCov");
-    this->PrintLog(
-      Form("MCMC chain 1 iter,burnin,stepsize = %d, %d, %f",
-            MCMC_iter,MCMC_burnin,1.0/MCMC_norm));
-    this->PrintLog(
-      Form("MCMC chain 2 iter,burnin,stepsize = %d, %d, %f",
-            MCMC_cov_iter,MCMC_cov_burnin,1.0/MCMC_cov_norm));
-  } else if(minimizer.CompareTo("minuit",TString::kIgnoreCase)==0) {
-    this->PrintLog("");
+  // define minimizer algorithm
+  this->PrintLog("");
+  if(minimizer==mkMCMCseq) { // sequential MCMC --------------------------
+    this->PrintLog("OPTIMIZER: MCMCseq");
+    mcmcAlgo = new HS::FIT::RooMcmcSeq(
+        MCMC_iter, MCMC_burnin, MCMC_norm
+        );
+    useMCMC = true;
+  } else if(minimizer==mkMCMCcov) { // sequential-then-cov MCMC ----------
+    this->PrintLog("OPTIMIZER: MCMCcov");
+    mcmcAlgo = new HS::FIT::RooMcmcSeqThenCov(
+        MCMC_iter,     MCMC_burnin,     MCMC_norm,
+        MCMC_cov_iter, MCMC_cov_burnin, MCMC_cov_norm
+        );
+    useMCMC = true;
+  } else if(minimizer==mkMinuit) { // Minuit -----------------------------
     this->PrintLog("OPTIMIZER: Minuit");
-    FM->SetMinimiser(new HS::FIT::Minuit2());
-  } else {
+    minuitAlgo = new HS::FIT::Minuit2();
+  } else { // ------------------------------------------------------------
     fprintf(stderr,"ERROR: unknown minimizer in BruAsymmetry::Fit()\n");
     return;
   };
+
+  // additioal settings for MCMC algos
+  if(useMCMC) {
+    // print hyperparameters to log file
+    this->PrintLog( Form("MCMC seq chain: iter,burnin,stepsize = %d, %d, %f",MCMC_iter,MCMC_burnin,1.0/MCMC_norm));
+    if(minimizer==mkMCMCcov) this->PrintLog( Form("MCMC cov chain: iter,burnin,stepsize = %d, %d, %f",MCMC_cov_iter,MCMC_cov_burnin,1.0/MCMC_cov_norm));
+    // enable additional plots for MCMC performance evaluation
+    FM->SetPlotOptions("MCMC:CORNERFULL:CORNERZOOM:AUTOCORR");
+    // set acceptance rate locks (if desired)
+    if(MCMC_lockacc_min>=0 && MCMC_lockacc_max>MCMC_lockacc_min) {
+      this->PrintLog(Form("MCMC acceptance locks enabled: min,max,target = %f, %f, %f",MCMC_lockacc_min,MCMC_lockacc_max,MCMC_lockacc_target));
+      mcmcAlgo->SetDesiredAcceptance(MCMC_lockacc_min,MCMC_lockacc_max,MCMC_lockacc_target);
+    } else this->PrintLog("MCMC acceptance locks disabled");
+  };
+
+  // stage minmizer algorithm to fit manager
+  if(useMCMC) FM->SetMinimiser(mcmcAlgo);
+  else        FM->SetMinimiser(minuitAlgo);
+
+
+  // =====================================================================
 
 
   // fit settings:

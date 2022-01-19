@@ -514,6 +514,14 @@ static Float_t RundepPolarization(Int_t run, Bool_t v=true) {
 
 // brufit
 // ---------------------------------------------------
-enum minimEnum { mkMCMC, mkMCMCthenCov, mkMinuit };
+enum minimEnum { mkMCMCseq, mkMCMCcov, mkMinuit };
+static Int_t MinimizerStrToEnum(TString str) {
+  if(str.CompareTo("mcmc",TString::kIgnoreCase)==0)    return mkMCMCseq;
+  if(str.CompareTo("mcmcseq",TString::kIgnoreCase)==0) return mkMCMCseq; // (alternate name)
+  if(str.CompareTo("mcmccov",TString::kIgnoreCase)==0) return mkMCMCcov;
+  if(str.CompareTo("minuit",TString::kIgnoreCase)==0)  return mkMinuit;
+  fprintf(stderr,"ERROR: unknown minimizer type\n");
+  return -1;
+}
 
 #endif
