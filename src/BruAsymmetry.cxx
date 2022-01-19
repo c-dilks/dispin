@@ -241,14 +241,15 @@ void BruAsymmetry::Fit() {
   nWorkers = TMath::Min(nThreads,this->GetNbins()); // for PROOF
   printf("---- fit with %d parallel threads\n",nWorkers);
 
+  // determine whether to enable acceptance locks
+  Bool_t useAccLocks = MCMC_lockacc_min>=0 && MCMC_lockacc_max>MCMC_lockacc_min;
 
   // define minimizer algorithm
   this->PrintLog("");
   if(minimizer==mkMCMCseq) { // sequential MCMC --------------------------
     this->PrintLog("OPTIMIZER: MCMCseq");
-    mcmcAlgo = new HS::FIT::RooMcmcSeq(
-        MCMC_iter, MCMC_burnin, MCMC_norm
-        );
+    if(useAccLocks) mcmcAlgo = new HS::FIT::RooMcmcSeqHelper( MCMC_iter, MCMC_burnin, MCMC_norm );
+    else            mcmcAlgo = new HS::FIT::RooMcmcSeq(       MCMC_iter, MCMC_burnin, MCMC_norm );
     useMCMC = true;
   } else if(minimizer==mkMCMCcov) { // sequential-then-cov MCMC ----------
     this->PrintLog("OPTIMIZER: MCMCcov");
@@ -273,7 +274,7 @@ void BruAsymmetry::Fit() {
     // enable additional plots for MCMC performance evaluation
     FM->SetPlotOptions("MCMC:CORNERFULL:CORNERZOOM:AUTOCORR");
     // set acceptance rate locks (if desired)
-    if(MCMC_lockacc_min>=0 && MCMC_lockacc_max>MCMC_lockacc_min) {
+    if(useAccLocks) {
       this->PrintLog(Form("MCMC acceptance locks enabled: min,max,target = %f, %f, %f",MCMC_lockacc_min,MCMC_lockacc_max,MCMC_lockacc_target));
       mcmcAlgo->SetDesiredAcceptance(MCMC_lockacc_min,MCMC_lockacc_max,MCMC_lockacc_target);
     } else this->PrintLog("MCMC acceptance locks disabled");

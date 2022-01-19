@@ -98,17 +98,17 @@ void asymBruFit(
 
   // MCMC hyperparameters
   // - chain 1
-  B->MCMC_iter        = 3000; // number of samples
-  B->MCMC_burnin      = 0.1 * ((Double_t)B->MCMC_iter); // number to burn
-  B->MCMC_norm        = 1.0 / 0.015; // ~ 1/stepsize
+  B->MCMC_iter   = 3000; // number of samples
+  B->MCMC_burnin = 0.1 * ((Double_t)B->MCMC_iter); // number to burn
+  B->MCMC_norm   = 1.0 / 0.015; // ~ 1/stepsize
   // - chain 2 (for minimizer=="mcmccov")
-  B->MCMC_cov_iter    = 5000; // number of samples
-  B->MCMC_cov_burnin  = 0.1 * ((Double_t)B->MCMC_iter); // number to burn
-  B->MCMC_cov_norm    = 1.0 / 0.03; // ~ 1/stepSize
+  B->MCMC_cov_iter   = 5000; // number of samples
+  B->MCMC_cov_burnin = 0.1 * ((Double_t)B->MCMC_iter); // number to burn
+  B->MCMC_cov_norm   = 1.0 / 0.03; // ~ 1/stepSize
   // - acceptance rate locks
-  MCMC_lockacc_min    = 0.15;
-  MCMC_lockacc_max    = 0.3;
-  MCMC_lockacc_target = 0.234; // standard "optimal" acceptance rate
+  B->MCMC_lockacc_target = 0.234; // standard "optimal" acceptance rate
+  B->MCMC_lockacc_min    = B->MCMC_lockacc_target - 0.03;
+  B->MCMC_lockacc_max    = B->MCMC_lockacc_target + 0.03;
 
   // perform fit
   B->Fit();
