@@ -1,3 +1,4 @@
+R__LOAD_LIBRARY(DiSpin)
 #include <TList.h>
 #include <TFile.h>
 #include <TString.h>
@@ -5,7 +6,10 @@
 #include <RooArgList.h>
 #include <RooRealVar.h>
 #include <TGraphErrors.h>
+
 #include "Bins.h"
+
+#include "Constants.h"
 
 /*
  * ADAPTED FROM: dglazier:brufit/macros/GraphParameters.C, modified for dispin
@@ -15,7 +19,7 @@
 //.L DrawResiduals.C
 //DrawResiduals("out/","x") where x is a binned variable
 //                           e.g. RF.Bins().LoadBinVar("x",4,3,4);
-void DrawResiduals(TString DirName,TString Var,TString minimizer){
+void DrawResiduals(TString DirName,TString Var,TString minimizer_){
 
   gROOT->ProcessLine(".! mkdir -p "+DirName+"/residuals");
   TFile* file=new TFile(DirName+"/DataBinsConfig.root");
@@ -28,11 +32,15 @@ void DrawResiduals(TString DirName,TString Var,TString minimizer){
 
   // set results file name
   TString resultsFileN;
-  if(minimizer=="minuit")    resultsFileN = "ResultsHSMinuit2.root";
-  else if(minimizer=="mcmc") resultsFileN = "ResultsHSRooMcmcSeq.root";
-  else {
-    fprintf(stderr,"ERROR: unknown minimizer in DrawResiduals.C\n");
-    return;
+  Int_t minimizer = MinimizerStrToEnum(minimizer_);
+  if(minimizer<0) return;
+  switch(minimizer) {
+    case mkMCMCseq: resultsFileN="ResultsHSRooMcmcSeq.root";        break;
+    case mkMCMCcov: resultsFileN="ResultsHSRooMcmcSeqThenCov.root"; break;
+    case mkMinuit:  resultsFileN="ResultsHSMinuit2.root";           break;
+    default:
+                    fprintf(stderr,"ERROR: unknown minimizer in DrawResiduals.C\n");
+                    return;
   };
 
   for(Int_t ib=0;ib<DataBins->GetN();ib++){
