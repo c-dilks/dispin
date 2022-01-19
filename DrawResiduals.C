@@ -31,17 +31,9 @@ void DrawResiduals(TString DirName,TString Var,TString minimizer_){
   TString AxisName=Var;
 
   // set results file name
-  TString resultsFileN;
   Int_t minimizer = MinimizerStrToEnum(minimizer_);
   if(minimizer<0) return;
-  switch(minimizer) {
-    case mkMCMCseq: resultsFileN="ResultsHSRooMcmcSeq.root";        break;
-    case mkMCMCcov: resultsFileN="ResultsHSRooMcmcSeqThenCov.root"; break;
-    case mkMinuit:  resultsFileN="ResultsHSMinuit2.root";           break;
-    default:
-                    fprintf(stderr,"ERROR: unknown minimizer in DrawResiduals.C\n");
-                    return;
-  };
+  TString resultsFileN = BrufitResultsFileName(minimizer);
 
   for(Int_t ib=0;ib<DataBins->GetN();ib++){
     TString redName=DataBins->GetBinName(ib);

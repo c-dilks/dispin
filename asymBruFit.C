@@ -2,13 +2,8 @@ R__LOAD_LIBRARY(DiSpin)
 #include "BruAsymmetry.h"
 
 // IMPORTANT: run with `brufit -b -q asymBruFit.C`
-/* - minimizers: optimizer algorithm, choose one of the following:
- *   - minuit: maximum likelihood using Minuit MIGRAD
- *   - mcmcseq: sample posterior using Metropolis-Hastings walk with
- *     gaussian proposal; set hyperparameters at the end of this macro
- *   - mcmccov: first run mcmc as above, then use the resulting
- *     covariance matrix in the gaussian proposal function of a second,
- *     subsequent mcmc walk
+/* - minimizer: optimizer algorithm; see src/Constants.h MinimizerStrToEnum
+ *              for available minimizer strings
  */
 
 void asymBruFit(
@@ -107,8 +102,8 @@ void asymBruFit(
   B->MCMC_cov_norm   = 1.0 / 0.03; // ~ 1/stepSize
   // - acceptance rate locks
   B->MCMC_lockacc_target = 0.234; // standard "optimal" acceptance rate
-  B->MCMC_lockacc_min    = B->MCMC_lockacc_target - 0.03;
-  B->MCMC_lockacc_max    = B->MCMC_lockacc_target + 0.03;
+  B->MCMC_lockacc_min    = B->MCMC_lockacc_target - 0.01;
+  B->MCMC_lockacc_max    = B->MCMC_lockacc_target + 0.01;
 
   // perform fit
   B->Fit();

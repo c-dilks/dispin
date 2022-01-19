@@ -3,11 +3,11 @@
 # - main purpose is for asymmetry injection studies
 
 # settings #################
-ivString  = "z"
+ivString  = "z.locktest"
 ivType    = 3
 nbins     = [-1, -1, -1]
 injSeq    = (0..99).to_a  # Array of injection numbers
-minimizer = "mcmc"
+minimizer = "mcmcseq"
 nCPUs     = 6   # number of CPUs per node to allocate for slurm
 ############################
 

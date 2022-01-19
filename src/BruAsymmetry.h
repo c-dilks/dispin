@@ -95,7 +95,6 @@ class BruAsymmetry : public TObject
 
     HS::FIT::Minuit2 *minuitAlgo;
     HS::FIT::RooMcmc *mcmcAlgo;
-    Bool_t useMCMC;
 
     TFile * infile[2];
     TFile * outfile[2];

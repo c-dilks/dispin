@@ -514,14 +514,42 @@ static Float_t RundepPolarization(Int_t run, Bool_t v=true) {
 
 // brufit
 // ---------------------------------------------------
-enum minimEnum { mkMCMCseq, mkMCMCcov, mkMinuit };
+enum minimEnum { mkMCMC, mkMCMCseq, mkMCMCcov, mkMinuit };
+
+// convert minimizer string to an enumerator
 static Int_t MinimizerStrToEnum(TString str) {
-  if(str.CompareTo("mcmc",TString::kIgnoreCase)==0)    return mkMCMCseq;
-  if(str.CompareTo("mcmcseq",TString::kIgnoreCase)==0) return mkMCMCseq; // (alternate name)
-  if(str.CompareTo("mcmccov",TString::kIgnoreCase)==0) return mkMCMCcov;
-  if(str.CompareTo("minuit",TString::kIgnoreCase)==0)  return mkMinuit;
+  if(str.CompareTo("mcmc",TString::kIgnoreCase)==0)    return mkMCMC;    // sequential, no acceptance rate locking
+  if(str.CompareTo("mcmcseq",TString::kIgnoreCase)==0) return mkMCMCseq; // sequential, with acceptance rate locking
+  if(str.CompareTo("mcmccov",TString::kIgnoreCase)==0) return mkMCMCcov; // sequential + covariant
+  if(str.CompareTo("minuit",TString::kIgnoreCase)==0)  return mkMinuit;  // minuit MIGRAD
   fprintf(stderr,"ERROR: unknown minimizer type\n");
   return -1;
-}
+};
+
+// return brufit results file name, given minimizer enum
+static TString BrufitResultsFileName(Int_t minimizer) {
+  switch(minimizer) {
+    case mkMCMC:    return "ResultsHSRooMcmcSeq.root";        break;
+    case mkMCMCseq: return "ResultsHSRooMcmcSeqHelper.root";  break;
+    case mkMCMCcov: return "ResultsHSRooMcmcSeqThenCov.root"; break;
+    case mkMinuit:  return "ResultsHSMinuit2.root";           break;
+    default:
+                    fprintf(stderr,"ERROR: unknown minimizer in Constants::BrufitResultsFileName\n");
+                    return "UNKNOWN";
+  };
+};
+
+// return true if minimizer is MCMC
+static Bool_t IsMCMC(Int_t minimizer) {
+  switch(minimizer) {
+    case mkMCMC:    return true;  break;
+    case mkMCMCseq: return true;  break;
+    case mkMCMCcov: return true;  break;
+    case mkMinuit:  return false; break;
+    default:
+                    fprintf(stderr,"ERROR: unknown minimizer in Constants::IsMCMC\n");
+                    return "UNKNOWN";
+  };
+};
 
 #endif

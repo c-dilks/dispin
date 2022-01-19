@@ -18,7 +18,6 @@ void drawBru(
   // get minimizer type
   Int_t minimizer = MinimizerStrToEnum(minimizer_);
   if(minimizer<0) return;
-  Bool_t useMCMC = minimizer==mkMCMCseq || minimizer==mkMCMCcov;
 
   // get binning scheme
   TFile * binFile = new TFile(bruDir+"/DataBinsConfig.root","READ");
@@ -113,7 +112,7 @@ void drawBru(
       };
 
       // if MCMC was used, fill param vs sample graphs
-      if(useMCMC) {
+      if(IsMCMC(minimizer)) {
         BB->GetMcmcTree()->SetBranchAddress("entry",&entry);
         BB->GetMcmcTree()->SetBranchAddress("nll_MarkovChain_local_",&nll);
         for(int i=0; i<nParams; i++) {
@@ -226,7 +225,7 @@ void drawBru(
     paramCanv->Write();
 
     // parameter vs. sample
-    if(useMCMC) {
+    if(IsMCMC(minimizer)) {
       nrow=nParams/ncol+1; // (update for NLL)
       nextBin = TObjArrayIter(BBlist);
       while((BB = (BruBin*) nextBin())) {
