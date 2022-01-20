@@ -2,7 +2,7 @@
 
 # arguments
 if [ $# -lt 2 ]; then
-  echo "USAGE: $0 [outroot dir] [data/mc] [optional extra args]"
+  echo "USAGE: $0 [outroot dir] [data/mc] [optional extra args for buildSpinroot.exe]"
   echo "  if you pass extra args such as -p, do NOT pass -b, -i, or -n"
   exit
 fi

@@ -170,15 +170,17 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
     chain->SetBranchAddress("gen_hadParentPid",gen_hadParentPid);
     // - helicityMC
     if(chain->GetBranch("helicityMC")) {
+      chain->SetBranchAddress("NhelicityMC",&NhelicityMC);
       chain->SetBranchAddress("helicityMC",helicityMC);
       helicityMCinjected = true;
     } else {
-      for(int hh=0; hh<NhelicityMC; hh++) helicityMC[hh]=0;
+      NhelicityMC = 0;
+      for(int hh=0; hh<NumInjectionsMax; hh++) helicityMC[hh]=0;
       helicityMCinjected = false;
     };
   } else { 
     MCrecMode = false;
-    for(int hh=0; hh<NhelicityMC; hh++) helicityMC[hh]=0; 
+    for(int hh=0; hh<NumInjectionsMax; hh++) helicityMC[hh]=0; 
     helicityMCinjected = false;
     gen_W = UNDEF;
     gen_Q2 = UNDEF;
@@ -222,6 +224,7 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
     gen_RPerp = UNDEF;
     gen_RT = UNDEF;
     gen_PhiH = UNDEF;
+    gen_PhiR = UNDEF;
     gen_PhiRq = UNDEF;
     gen_PhiRp = UNDEF;
     gen_PhiRp_r = UNDEF;
@@ -260,6 +263,7 @@ void EventTree::GetEvent(Long64_t i) {
 
   // set preferred PhiR angle
   PhiR = PhiRp; // preferred definition by Bacchetta (see Dihadron.cxx)
+  gen_PhiR = gen_PhiRp;
 
   PhiHR = Tools::AdjAngle( PhiH - PhiR );
 
@@ -539,11 +543,15 @@ Int_t EventTree::SpinState() {
     return UNDEF;
   }
 
-  else { // MC run
+  else { // MC run - use injected helicity (DEPRECATED by `InjectionModel`)
     if(!helicityMCinjected) {
       // if helicityMC has not yet been injected, inject something here so cutHelicity==true
       //helicityMC[whichHelicityMC] = 3; // +helicity only
       helicityMC[whichHelicityMC] = RNG->Uniform()<0.5 ? 2:3; // 50/50 random
+    };
+    if(whichHelicityMC<0||whichHelicityMC>NhelicityMC) {
+      fprintf(stderr,"ERROR: bad whichHelicityMC\n");
+      return UNDEF;
     };
     switch(helicityMC[whichHelicityMC]) {
       case 2: return sM;
@@ -918,6 +926,16 @@ Float_t EventTree::GetDepolarizationFactor(Char_t kf) {
     return 0;
   };
 };
+// - get depolarization factor ratio, which depends on twist (for LU polarization only!!!)
+Float_t EventTree::GetDepolarizationRatio(Int_t twist) {
+  switch(twist) {
+    case 2: return GetDepolarizationFactor('C') / GetDepolarizationFactor('A'); break;
+    case 3: return GetDepolarizationFactor('W') / GetDepolarizationFactor('A'); break;
+    default:
+            fprintf(stderr,"ERROR: unknown twist %d for depolarization factor ratio; return 0\n",twist);
+            return 0;
+  }
+}
 
 // general method to calculate rapidity
 // - calculate the rapidity of `momentumVec`, where `momentumVec` is boosted by

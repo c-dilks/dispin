@@ -37,3 +37,6 @@ pairs.list
 tmp/*
 *.tex
 tags
+files.list
+bruspin.*
+catTree*.bak

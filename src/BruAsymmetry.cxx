@@ -2,21 +2,25 @@
 
 ClassImp(BruAsymmetry)
 
-BruAsymmetry::BruAsymmetry(TString outdir_, TString minimizer_)
+BruAsymmetry::BruAsymmetry(TString outdir_, TString minimizer_, Int_t whichSpinMC_)
   : outdir(outdir_)
-  , minimizer(minimizer_)
+  , whichSpinMC(whichSpinMC_)
 {
+  // get minimizer enum
+  minimizer = MinimizerStrToEnum(minimizer_);
+  if(minimizer<0) return;
 
+  // start FitManager and output logs
   printf("construct BruAsymmetry\n");
   FM = new HS::FIT::FitManager();
   outdir = outdir_;
   FM->SetUp().SetOutDir(outdir); // calls mkdir automatically
-  outlog = outdir+"/out."+minimizer+".log";
+  outlog = outdir+"/out."+minimizer_+".log";
   gSystem->RedirectOutput(outlog,"w");
   gSystem->RedirectOutput(0);
 
 
-  // variables
+  // load PDF variables
   FM->SetUp().LoadVariable(TString("PhiH")+Form("[%f,%f]",-PI,PI));
   FM->SetUp().LoadVariable(TString("PhiR")+Form("[%f,%f]",-PI,PI));
   FM->SetUp().LoadVariable(TString("PhiD")+Form("[%f,%f]",-PI,PI));
@@ -25,20 +29,41 @@ BruAsymmetry::BruAsymmetry(TString outdir_, TString minimizer_)
   FM->SetUp().LoadVariable(TString("Depol2")+Form("[%f,%f]",0.0,2.5));
   FM->SetUp().LoadVariable(TString("Depol3")+Form("[%f,%f]",0.0,2.5));
 
+  // load independent variables (IVs) 
+  /* - we can load them here now, although some will also be loaded by the binning scheme later
+   * - useful if we want *all* IVs stored in binned trees, but will cause warnings about
+   *   certain variables being ignored
+   * - doing this is optional, if we don't, then binning scheme will load the ones we need
+   */
+  if(1) { // enable/disable switch
+    // definitions kept consistent with Binning.cxx, but doesn't really have to be
+    FM->SetUp().LoadVariable( TString("Mh")+Form("[%f,%f]",     0.0, 2.0  ));
+    FM->SetUp().LoadVariable( TString("X")+Form("[%f,%f]",      0.0, 1.0  ));
+    FM->SetUp().LoadVariable( TString("Z")+Form("[%f,%f]",      0.0, 1.0  ));
+    FM->SetUp().LoadVariable( TString("PhPerp")+Form("[%f,%f]", 0.0, 3.0  ));
+    FM->SetUp().LoadVariable( TString("DY")+Form("[%f,%f]",     0.0, 4.0  ));
+    FM->SetUp().LoadVariable( TString("Q2")+Form("[%f,%f]",     0.0, 12.0 ));
+    FM->SetUp().LoadVariable( TString("XF")+Form("[%f,%f]",     0.0, 1.0  ));
+  };
+
   // category for spin
-  FM->SetUp().LoadCategory("Spin_idx[SpinP=1,SpinM=-1,SpinOff=0]");
+  spinBranch = whichSpinMC<0 ? "Spin_idx" : Form("SpinMC_%d_idx",whichSpinMC);
+  FM->SetUp().LoadCategory(spinBranch+"[SpinP=1,SpinM=-1,SpinOff=0]");
   
   // unique ID variable
   FM->SetUp().SetIDBranchName("Idx");
 
 
-  // default MCMC settings
-  MCMC_iter = 1000;
+  // default MCMC hyperparameters
+  MCMC_iter   = 1000;
   MCMC_burnin = 200;
-  MCMC_norm = 200;
-  MCMC_cov_iter = 1000;
+  MCMC_norm   = 200;
+  MCMC_cov_iter   = 1000;
   MCMC_cov_burnin = 200;
-  MCMC_cov_norm = 200;
+  MCMC_cov_norm   = 200;
+  MCMC_lockacc_min    = -1; // leave this set to -1 to disable locks; if both min and max are >=0, enable locks
+  MCMC_lockacc_max    = -1;
+  MCMC_lockacc_target = 0.234; // standard "optimal" acceptance rate
 
 
   // misc vars
@@ -76,8 +101,11 @@ void BruAsymmetry::AddNumerMod(Modulation * modu) {
       depolVar = "1";
   };
 
+  TString polVar = "@Pol[]";
+  TString spinVar = "@"+spinBranch+"[]";
+
   // modulation, including polarization, depolarization, and spin sign
-  formu = "@Pol[]*"+depolVar+"*@Spin_idx[]*"+modu->FormuBru();
+  formu = polVar+"*"+depolVar+"*"+spinVar+"*"+modu->FormuBru();
   this->PrintLog(formuName+" = "+formu);
   FM->SetUp().LoadFormula(formuName+"="+formu);
 
@@ -129,7 +157,7 @@ void BruAsymmetry::AddDenomMod(Modulation * modu) {
 void BruAsymmetry::BuildPDF() {
 
   // build PDFstr
-  TString obsList = "PhiH,PhiR,PhiD,Theta,Pol,Depol2,Depol3,Spin_idx";
+  TString obsList = "PhiH,PhiR,PhiD,Theta,Pol,Depol2,Depol3,"+spinBranch;
   if(nDenomParams==0) {
     // if PDF has numerator amplitudes only, we can use RooComponentsPDF
     PDFstr = "RooComponentsPDF::PWfit(1,"; // PDF class::name ("+1" term ,
@@ -213,36 +241,57 @@ void BruAsymmetry::Fit() {
   nWorkers = TMath::Min(nThreads,this->GetNbins()); // for PROOF
   printf("---- fit with %d parallel threads\n",nWorkers);
 
-
-  // set minimizer algorithm
-  if(minimizer.CompareTo("mcmc",TString::kIgnoreCase)==0) {
-    FM->SetMinimiser( new HS::FIT::RooMcmcSeq(
-      MCMC_iter, MCMC_burnin, MCMC_norm ) );
-    this->PrintLog("");
+  // define minimizer algorithm
+  Bool_t useAccLocks;
+  this->PrintLog("");
+  if(minimizer==mkMCMC) { // sequential MCMC, no acceptance locks
     this->PrintLog("OPTIMIZER: MCMC");
-    this->PrintLog(
-      Form("MCMC iter,burnin,stepsize = %d, %d, %f",
-            MCMC_iter,MCMC_burnin,1.0/MCMC_norm));
-  } else if(minimizer.CompareTo("mcmcthencov",TString::kIgnoreCase)==0) {
-    FM->SetMinimiser( new HS::FIT::RooMcmcSeqThenCov(
-      MCMC_iter,     MCMC_burnin,     MCMC_norm,
-      MCMC_cov_iter, MCMC_cov_burnin, MCMC_cov_norm ) );
-    this->PrintLog("");
-    this->PrintLog("OPTIMIZER: MCMCthenCov");
-    this->PrintLog(
-      Form("MCMC chain 1 iter,burnin,stepsize = %d, %d, %f",
-            MCMC_iter,MCMC_burnin,1.0/MCMC_norm));
-    this->PrintLog(
-      Form("MCMC chain 2 iter,burnin,stepsize = %d, %d, %f",
-            MCMC_cov_iter,MCMC_cov_burnin,1.0/MCMC_cov_norm));
-  } else if(minimizer.CompareTo("minuit",TString::kIgnoreCase)==0) {
-    this->PrintLog("");
+    mcmcAlgo = new HS::FIT::RooMcmcSeq( MCMC_iter, MCMC_burnin, MCMC_norm );
+    useAccLocks = false;
+  } else if(minimizer==mkMCMCseq) { // sequential MCMC, with acceptance rate locks
+    this->PrintLog("OPTIMIZER: MCMCseq");
+    mcmcAlgo = new HS::FIT::RooMcmcSeqHelper( MCMC_iter, MCMC_burnin, MCMC_norm );
+    useAccLocks = true;
+  } else if(minimizer==mkMCMCcov) { // sequential-then-cov MCMC
+    this->PrintLog("OPTIMIZER: MCMCcov");
+    mcmcAlgo = new HS::FIT::RooMcmcSeqThenCov(
+        MCMC_iter,     MCMC_burnin,     MCMC_norm,
+        MCMC_cov_iter, MCMC_cov_burnin, MCMC_cov_norm
+        );
+    useAccLocks = true;
+  } else if(minimizer==mkMinuit) { // Minuit
     this->PrintLog("OPTIMIZER: Minuit");
-    FM->SetMinimiser(new HS::FIT::Minuit2());
+    minuitAlgo = new HS::FIT::Minuit2();
   } else {
     fprintf(stderr,"ERROR: unknown minimizer in BruAsymmetry::Fit()\n");
     return;
   };
+
+  // additioal settings for MCMC algos
+  if(IsMCMC(minimizer)) {
+    // print hyperparameters to log file
+    this->PrintLog( Form("MCMC seq chain: iter,burnin,stepsize = %d, %d, %f",MCMC_iter,MCMC_burnin,1.0/MCMC_norm));
+    if(minimizer==mkMCMCcov) this->PrintLog( Form("MCMC cov chain: iter,burnin,stepsize = %d, %d, %f",MCMC_cov_iter,MCMC_cov_burnin,1.0/MCMC_cov_norm));
+    // enable additional plots for MCMC performance evaluation
+    FM->SetPlotOptions("MCMC:CORNERFULL:CORNERZOOM:AUTOCORR");
+    // set acceptance rate locks (if desired)
+    if(useAccLocks) {
+      // determine if the user specified acceptance rate locks
+      if( MCMC_lockacc_min>=0 && MCMC_lockacc_max>MCMC_lockacc_min ) {
+        this->PrintLog(Form("MCMC acceptance rate locks ENABLED: min,max,target = %f, %f, %f",MCMC_lockacc_min,MCMC_lockacc_max,MCMC_lockacc_target));
+        mcmcAlgo->SetDesiredAcceptance(MCMC_lockacc_min,MCMC_lockacc_max,MCMC_lockacc_target);
+      } else {
+        this->PrintLog("MCMC acceptance rate locks ENABLED: using brufit default lock values");
+      };
+    } else this->PrintLog("MCMC acceptance rate locks DISABLED");
+  };
+
+  // stage minmizer algorithm to fit manager
+  if(IsMCMC(minimizer)) FM->SetMinimiser(mcmcAlgo);
+  else                  FM->SetMinimiser(minuitAlgo);
+
+
+  // =====================================================================
 
 
   // fit settings:

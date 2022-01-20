@@ -372,8 +372,8 @@ Asymmetry::Asymmetry(Binning * binScheme, Int_t binNum) {
   );
 
   treeActivated = false;
-
-
+  injectAsym = false;
+  IM = nullptr;
 
   if(debug) {
     printf("whichDim = %d\n",whichDim);
@@ -521,28 +521,34 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
 
   // fill tree
   if(treeActivated) {
-    tree_PhiH = (Double_t)(PhiH);
-    tree_PhiR = (Double_t)(PhiR);
-    tree_PhiD = (Double_t)(PhiD);
-    tree_Theta = (Double_t)(theta);
-    tree_Pol = (Double_t)(pol);
-    tree_Depol2 = (Double_t)(depol2);
-    tree_Depol3 = (Double_t)(depol3);
-    tree_Rellum = (Double_t)(rellum);
-    tree_X = (Double_t)(x);
-    tree_Mh = (Double_t)(Mh);
-    tree_Mmiss = (Double_t)(Mmiss);
-    tree_Z = (Double_t)(z);
-    tree_PhPerp = (Double_t)(PhPerp);
-    tree_Q2 = (Double_t)(Q2);
-    tree_XF = (Double_t)(xF);
-    tree_DY = (Double_t)(DY);
-    tree_DYsgn = (Double_t)(DYsgn);
-    tree_diphM = (Double_t)(diphM);
-    tree_Weight = (Double_t)(weight);
-    tree_Spin_idx = (Int_t)(SpinInt(spinn));
-    tree_diphIsMCpi0 = ev->objDiphoton->IsMCpi0;
+    tree_PhiH            = (Double_t)(PhiH);
+    tree_PhiR            = (Double_t)(PhiR);
+    tree_PhiD            = (Double_t)(PhiD);
+    tree_Theta           = (Double_t)(theta);
+    tree_Pol             = (Double_t)(pol);
+    tree_Depol2          = (Double_t)(depol2);
+    tree_Depol3          = (Double_t)(depol3);
+    tree_Rellum          = (Double_t)(rellum);
+    tree_X               = (Double_t)(x);
+    tree_Mh              = (Double_t)(Mh);
+    tree_Mmiss           = (Double_t)(Mmiss);
+    tree_Z               = (Double_t)(z);
+    tree_PhPerp          = (Double_t)(PhPerp);
+    tree_Q2              = (Double_t)(Q2);
+    tree_XF              = (Double_t)(xF);
+    tree_DY              = (Double_t)(DY);
+    tree_DYsgn           = (Double_t)(DYsgn);
+    tree_diphM           = (Double_t)(diphM);
+    tree_Weight          = (Double_t)(weight);
+    tree_Spin_idx        = (Int_t)(SpinInt(spinn));
+    tree_diphIsMCpi0     = ev->objDiphoton->IsMCpi0;
     tree_diphMCmatchDist = ev->objDiphoton->MCmatchDist;
+    for(int i=0; i<EventTree::NumInjectionsMax; i++) tree_SpinMC_idx[i]=0;
+    if(injectAsym) {
+      for(int i=0; i<IM->GetNumModels(); i++) {
+        tree_SpinMC_idx[i] = IM->InjectHelicity(ev,i);
+      };
+    };
     tree->Fill();
   };
 
@@ -1381,7 +1387,12 @@ Bool_t Asymmetry::KickEvent(TString reason,Float_t badValue) {
 };
 
 
-void Asymmetry::ActivateTree(Bool_t isMC) {
+// activate catTree (for bruFit)
+void Asymmetry::ActivateTree(Bool_t isMC, InjectionModel *IM_) {
+  if(IM_!=nullptr) {
+    IM = IM_;
+    injectAsym = true;
+  };
   tree = new TTree("tree","tree");
   tree->Branch("PhiH",&tree_PhiH,"PhiH/D");
   tree->Branch("PhiR",&tree_PhiR,"PhiR/D");
@@ -1401,12 +1412,17 @@ void Asymmetry::ActivateTree(Bool_t isMC) {
   tree->Branch("DYsgn",&tree_DYsgn,"DYsgn/D");
   tree->Branch("diphM",&tree_diphM,"diphM/D");
   tree->Branch("Weight",&tree_Weight,"Weight/D");
+  tree->Branch("Pol",&tree_Pol,"Pol/D");
   if(!isMC) {
     tree->Branch("Spin_idx",&tree_Spin_idx,"Spin_idx/I");
-    tree->Branch("Pol",&tree_Pol,"Pol/D");
   } else {
     tree->Branch("diphIsMCpi0",&tree_diphIsMCpi0,"diphIsMCpi0/O");
     tree->Branch("diphMCmatchDist",&tree_diphMCmatchDist,"diphMCmatchDist/D");
+  };
+  if(injectAsym) {
+    for(int i=0; i<IM->GetNumModels(); i++) {
+      tree->Branch(Form("SpinMC_%d_idx",i),&(tree_SpinMC_idx[i]),Form("SpinMC_%d_idx/I",i)); // one branch per injected asymmetry model
+    };
   };
   treeActivated = true;
 };

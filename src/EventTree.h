@@ -61,6 +61,7 @@ class EventTree : public TObject
 
     //Float_t GetDepolarizationFactorApprox(Char_t kf);
     Float_t GetDepolarizationFactor(Char_t kf);
+    Float_t GetDepolarizationRatio(Int_t twist);
     void CalculateRapidity(
       TLorentzVector momentumVec_,
       TVector3 boostVec, TVector3 zAxis,
@@ -128,8 +129,9 @@ class EventTree : public TObject
     // event-level branches
     Int_t evnum,runnum;
     Int_t helicity;
-    static const Int_t NhelicityMC = 73;
-    Int_t helicityMC[NhelicityMC];
+    static const Int_t NumInjectionsMax = 256;
+    Int_t NhelicityMC;
+    Int_t helicityMC[NumInjectionsMax];
 
     // PhiR 
     Float_t PhiR; // set to the preferred one
@@ -217,6 +219,7 @@ class EventTree : public TObject
     Float_t gen_RPerp;
     Float_t gen_RT;
     Float_t gen_PhiH;
+    Float_t gen_PhiR;
     Float_t gen_PhiRq;
     Float_t gen_PhiRp;
     Float_t gen_PhiRp_r;

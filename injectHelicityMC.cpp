@@ -43,7 +43,8 @@ int main(int argc, char** argv) {
   ///////////////////////////////////////////////
 
 
-  // OPTIONS FOR LATTICE STUDY ///////////////////
+  // OPTIONS /////////////////////////////////////
+  const Int_t NumInjections = 73;
   // - settings for lattice estimate of shift on LU amps from nonzero
   //   UU amps; here we control how to read the physics asymmetries
   //
@@ -61,6 +62,12 @@ int main(int argc, char** argv) {
   TString iv1str = "";
   TString iv2str = "";
   ///////////////////////////////////////////////
+
+  // prevent injection overflow
+  if(NumInjections > EventTree::NumInjectionsMax) {
+    fprintf(stderr,"ERROR: requested more than EventTree::NumInjectionsMax injections\n");
+    return 1;
+  };
 
   // open input outroot file
   inFile = new TFile(infileN,"READ");
@@ -95,10 +102,10 @@ int main(int argc, char** argv) {
 
   // clone the tree, and create new helicityMC branch
   outTr = inTr->CloneTree(0);
-  Int_t helicityMC[EventTree::NhelicityMC];
-  TString brN = "helicityMC";
-  TString brF = Form("%s[%d]/I",brN.Data(),EventTree::NhelicityMC);
-  outTr->Branch(brN,helicityMC,brF);
+  Int_t NhelicityMC;
+  Int_t helicityMC[NumInjections];
+  outTr->Branch("NhelicityMC",&NhelicityMC,"NhelicityMC/I");
+  outTr->Branch("helicityMC",helicityMC,"helicityMC[NhelictyMC]/I");
 
 
   // instantiate modulations for MC
@@ -106,7 +113,7 @@ int main(int argc, char** argv) {
   Modulation * modu[nMod];
   Double_t moduVal[nMod];
   Float_t amp = 0.04; // injected amplitude
-  Float_t asymInject[EventTree::NhelicityMC];
+  Float_t asymInject[NumInjections];
   Float_t numerInject,denomInject,denomInject2;
   TRandom * RNG;
   Float_t rn;
@@ -184,7 +191,7 @@ int main(int argc, char** argv) {
   for(Long64_t i=0; i<ENT; i++) {
     if(i%10000==0) printf("[+] %.2f%%\n",100*(float)i/((float)ENT));
     inTr->GetEntry(i);
-    for(int h=0; h<EventTree::NhelicityMC; h++) helicityMC[h]=0;
+    for(int h=0; h<NumInjections; h++) helicityMC[h]=0;
 
 
     // lattice estimate
@@ -465,7 +472,7 @@ int main(int argc, char** argv) {
 
     // calculate injected helicity: 2=spin-, 3=spin+
     rn = RNG->Uniform(); // generate random number within [0,1]
-    for(int f=0; f<EventTree::NhelicityMC; f++) {
+    for(int f=0; f<NumInjections; f++) {
       asymInject[f] *= 0.863; // polarization (cf EventTree::Polarization())
       if(success)
         helicityMC[f] = (rn<0.5*(1+asymInject[f])) ? 3 : 2;

@@ -17,10 +17,12 @@
 #include "Binning.h"
 #include "Asymmetry.h"
 #include "Modulation.h"
+#include "InjectionModel.h"
 
 
 // argument variables
 TString inputData;
+TString injectionFileN;
 Int_t pairType;
 Int_t nBins[3];
 Int_t ivType;
@@ -40,6 +42,8 @@ Asymmetry * A;
 EventTree * ev;
 TFile * spinrootFile;
 TFile * treeFile;
+TFile * injectionFile;
+InjectionModel *IM;
 
 
 //////////////////////////////////////
@@ -55,7 +59,7 @@ int main(int argc, char** argv) {
   enum inputType_enum {iFile,iDir};
   Int_t inputType = -1;
   Int_t nd=0;
-  while( (opt=getopt(argc,argv,"f:d:p:i:n:t:l:m:w|b|h:s|")) != -1 ) {
+  while( (opt=getopt(argc,argv,"f:d:p:i:n:t:l:m:w|b|h:s|j:")) != -1 ) {
     switch(opt) {
       case 'f': /* input file */
         if(inputType>=0) return PrintUsage();
@@ -99,6 +103,9 @@ int main(int argc, char** argv) {
         break;
       case 's': /* simulated (MC) data (see Asymmetry::ActivateTree()) */
         isMC = true;
+        break;
+      case 'j': /* asymmetry injection model file */
+        injectionFileN = optarg;
         break;
       default: return PrintUsage();
     };
@@ -186,7 +193,12 @@ int main(int argc, char** argv) {
   if(singleBinMode) {
     printf("\nCREATING TREE FILE = %s\n\n",treeFileN.Data());
     treeFile = new TFile(treeFileN,"RECREATE");
-    A->ActivateTree(isMC); // tell the one and only A to fill its TTree
+    if(injectionFileN!="") {
+      injectionFile = new TFile(injectionFileN,"READ");
+      IM = (InjectionModel*) injectionFile->Get("IM");
+      treeFile->cd();
+    } else IM=nullptr;
+    A->ActivateTree(isMC,IM); // tell the one and only A to fill its TTree
     spinrootFile->cd();
   };
 
@@ -286,6 +298,7 @@ void SetDefaultArgs() {
   gridDim = 1;
   whichHelicityMC = 0;
   isMC = false;
+  injectionFileN = "";
 };
 
 
@@ -330,7 +343,11 @@ int PrintUsage() {
 
   printf(" -b\tbin in 2D azimuthal space (for multi-amplitude chi2 minimization)\n\n");
 
-  printf(" -h\t(for MC) - select which helicityMC to use\n\n");
+  printf("extra options for MC usage (in single-bin mode):\n");
+  printf(" -s\ttell Asymmetry::ActivateTree() this is MC data\n");
+  printf(" -j\tinjection model file, for MC asymmetry injection studies\n");
+  printf(" -h\tselect which helicityMC to use (DEPRECATED)\n");
+  printf("\n");
 
   return 0;
 };
