@@ -139,7 +139,7 @@ void sPlotBru(
   // draw parameters vs. bin, and fit results
   TString cmd;
   for(int d=0; d<BS->dimensions; d++) {
-    cmd = Form(".x deps/brufit/macros/GraphParameters.C(\"%s/\",\"%s\")",outDir.Data(),BS->GetIVname(d).Data());
+    cmd = Form(".x GraphBruParameters.C(\"%s/\",\"%s\")",outDir.Data(),BS->GetIVname(d).Data());
     printf("\nEXECUTE: %s\n\n",cmd.Data());
     gROOT->ProcessLine(cmd);
   };

@@ -16,12 +16,8 @@ void drawBru(
   gStyle->SetOptStat(0);
 
   // get minimizer type
-  Int_t minimizer;
-  if(minimizer_.CompareTo("mcmc",TString::kIgnoreCase)==0) minimizer=mkMCMC;
-  else if(minimizer_.CompareTo("mcmcthencov",TString::kIgnoreCase)==0) minimizer=mkMCMCthenCov;
-  else if(minimizer_.CompareTo("minuit",TString::kIgnoreCase)==0) minimizer=mkMinuit;
-  else { fprintf(stderr,"ERROR: unknown minimizer type\n"); return; };
-
+  Int_t minimizer = MinimizerStrToEnum(minimizer_);
+  if(minimizer<0) return;
 
   // get binning scheme
   TFile * binFile = new TFile(bruDir+"/DataBinsConfig.root","READ");
@@ -116,7 +112,7 @@ void drawBru(
       };
 
       // if MCMC was used, fill param vs sample graphs
-      if(minimizer==mkMCMC || minimizer==mkMCMCthenCov) {
+      if(IsMCMC(minimizer)) {
         BB->GetMcmcTree()->SetBranchAddress("entry",&entry);
         BB->GetMcmcTree()->SetBranchAddress("nll_MarkovChain_local_",&nll);
         for(int i=0; i<nParams; i++) {
@@ -229,7 +225,7 @@ void drawBru(
     paramCanv->Write();
 
     // parameter vs. sample
-    if(minimizer==mkMCMC || minimizer==mkMCMCthenCov) {
+    if(IsMCMC(minimizer)) {
       nrow=nParams/ncol+1; // (update for NLL)
       nextBin = TObjArrayIter(BBlist);
       while((BB = (BruBin*) nextBin())) {

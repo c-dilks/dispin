@@ -90,20 +90,12 @@ void BruBin::CalculateStats() {
 void BruBin::OpenResultFile(Int_t minimizer) {
 
   // open result file and tree
-  TString resultFileN;
-  switch(minimizer) {
-    case mkMCMC:        resultFileN="ResultsHSRooMcmcSeq.root"; break;
-    case mkMCMCthenCov: resultFileN="ResultsHSRooMcmcSeqThenCov.root"; break;
-    case mkMinuit:      resultFileN="ResultsHSMinuit2.root"; break;
-    default:
-                        fprintf(stderr,"ERROR: unknown minimizer in BruBin::OpenResultFile\n");
-                        return;
-  };
+  TString resultFileN = BrufitResultsFileName(minimizer);
   resultFile = new TFile(bruDir+"/"+bruName+"/"+resultFileN,"READ");
   resultTree = (TTree*) resultFile->Get("ResultTree");
 
   // if MCMC, prepare some additional plots
-  if(minimizer==mkMCMC || minimizer==mkMCMCthenCov) {
+  if(IsMCMC(minimizer)) {
     mcmcTree = (TTree*) resultFile->Get("MCMCTree");
     nSamples = (Int_t) mcmcTree->GetEntries();
     TString pName;

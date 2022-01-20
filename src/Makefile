@@ -20,8 +20,7 @@ $(DISPINOBJ): $(DICT) $(HEADERS) $(SOURCES)
 
 $(DICT): $(HEADERS)
 	@echo "----- generate dictionary $@ -----"
-	@echo "WARNING: -Wno-defaulted-function-deleted is used to silence brufit warnings"
-	@rootcling -f $@ -Wno-defaulted-function-deleted $(DEPS) $^
+	@rootcling -f $@ $(DEPS) $^
 
 clean:
 	$(RM) ../$(DISPINOBJ) $(DICT) $(PCM)
