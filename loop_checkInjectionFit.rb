@@ -37,10 +37,12 @@ puts "bruDirList = #{bruDirList}"
 
 # run checkInjectionFit.C on each file
 listFiles = []
+failures = []
 bruDirList.each do |bruDir|
 
   # get injection number
   injNum = (bruDir.chars - bruDirGlob.chars).join.to_i
+  puts "-------->>>>> CHECK INJECTION #{injNum}"
 
   # get list of asym*.root files
   asymFiles = Dir["#{bruDir}/asym_*.root"].reject{|f| f.include? "injectionTest"}.sort
@@ -54,13 +56,28 @@ bruDirList.each do |bruDir|
     end
   end
 
+  # check for asym files
+  if asymFiles.length==0
+    failures << injNum
+    next
+  end
+
   # run checkInjectionFit.C on each asym file
-  asymFiles.each{ |f| system "root -b -q 'checkInjectionFit.C(\"#{f}\",\"#{injFile}\",#{injNum})'" }
+  failed = false
+  asymFiles.each do |f|
+    system "root -b -q 'checkInjectionFit.C(\"#{f}\",\"#{injFile}\",#{injNum})'"
+    if !$?.success?
+      failures << injNum
+      failed = true
+    end
+  end
+  next if failed
 
   # append each output file name to each list file
   listFiles.zip(asymFiles){ |listFile,asymFile| listFile.puts asymFile.gsub(/\.root$/,".injectionTest.root") }
 
 end
+puts "\nfailed injections: #{failures.uniq}"
 puts "\nlist files:"
 puts listFiles.map(&:inspect)
 listFiles.each(&:close)
