@@ -158,25 +158,33 @@ void Modulation::Initialize() {
     if(l==0) legStr = "1";
     else if(l==1) {
       switch(mAbs) {
-        case 0:
-          legStr = "cos(theta)";
-          break;
-        case 1:
-          legStr = "sin(theta)";
-          break;
+        case 0: legStr = "cos(theta)"; break;
+        case 1: legStr = "sin(theta)"; break;
       };
     } else if(l==2) {
       switch(mAbs) {
-        case 0:
-          legStr = "0.5*(3*pow(cos(theta),2)-1)";
-          break;
-        case 1:
-          legStr = "sin(2*theta)";
-          break;
-        case 2:
-          legStr = "pow(sin(theta),2)";
-          break;
+        case 0: legStr = "0.5*(3*pow(cos(theta),2)-1)"; break;
+        case 1: legStr = "sin(2*theta)";                break; // ignore factor 3/2
+        case 2: legStr = "pow(sin(theta),2)";           break; // ignore factor 3
       };
+    } else if(l==3) {
+      switch(mAbs) {
+        case 0: legStr ="0.5*(5*pow(cos(theta),3)-3*cos(theta))"; break;
+        case 1: legStr ="(5*pow(cos(theta),2)-1)*sin(theta)";     break; // ignore factor 3/2
+        case 2: legStr ="cos(theta)*pow(sin(theta),2)";           break; // ignore factor 15
+        case 3: legStr ="pow(sin(theta),3)";                      break; // ignore factor 15
+      };
+    } else if(l==4) {
+      switch(mAbs) {
+        case 0: legStr ="0.125*(35*pow(cos(theta),4)-30*pow(cos(theta),2)+3)"; break;
+        case 1: legStr ="(7*pow(cos(theta),3)-3*cos(theta))*sin(theta)";       break; // ignore factor 5/2
+        case 2: legStr ="(7*pow(cos(theta),2)-1)*pow(sin(theta),2)";           break; // ignore factor 15/2
+        case 3: legStr ="cos(theta)*pow(sin(theta),3)";                        break; // ignore factor 105
+        case 4: legStr ="pow(sin(theta),4)";                                   break; // ignore factor 105
+      };
+    } else {
+      fprintf(stderr,"ERROR: unrecognized L value %d for partial wave modulation, ignoring theta dependence\n",l);
+      legStr = "1";
     };
   } else legStr = "1";
 
