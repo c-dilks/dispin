@@ -3,12 +3,14 @@
 # - main purpose is for asymmetry injection studies
 
 # settings #################
-ivString  = "z.locktest"
+ivString  = "z.long"
 ivType    = 3
 nbins     = [-1, -1, -1]
 injSeq    = (0..99).to_a  # Array of injection numbers
-minimizer = "mcmcseq"
+minimizer = "mcmccov"
 nCPUs     = 6   # number of CPUs per node to allocate for slurm
+timeLim   = 48 # time limit [hr]
+#timeLim   = (17000*0.00167).to_i+1 # time limit [hr] ~<~ numSteps*time/step
 ############################
 
 # if on ifarm, use slurm; otherwise, run sequentially
@@ -54,7 +56,7 @@ if slurm
   slurmSet.call("account",       "clas12")
   slurmSet.call("partition",     "production")
   slurmSet.call("mem-per-cpu",   "#{7200/nCPUs}")
-  slurmSet.call("time",          "8:00:00")
+  slurmSet.call("time",          "#{timeLim}:00:00")
   slurmSet.call("array",         "1-#{injSeq.length}")
   slurmSet.call("ntasks",        "1")
   slurmSet.call("cpus-per-task", "#{nCPUs}")

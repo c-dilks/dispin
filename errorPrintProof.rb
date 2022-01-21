@@ -17,6 +17,7 @@ logfiles.each do |logfile|
   cmd += "|grep -v \"retrieving message from input socket\""
   cmd += "|grep -v \"plotOn: WARNING: variable is not an explicit dependent:\""
   cmd += "|grep -v \" is not a dependent and will be ignored.\""
+  cmd += "|grep -v \"cache/libRooStats_rdict.pcm file does not exist\""
   res = `#{cmd}`
   puts "\n------->>> #{File.basename(logfile)}:\n#{res}" if $?.success?
 end
