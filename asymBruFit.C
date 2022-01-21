@@ -18,7 +18,8 @@ void asymBruFit(
     Int_t nbins0=6,  // number of bins for each dimension
     Int_t nbins1=-1, // - example: ivType=32, nbins0=6, nbins1=3, runs fit in 6 bins of z (iv=3) for 3 bins of Mh (iv=2)
     Int_t nbins2=-1, // - leave `-1` to use defaults defined in `src/Binning.cxx`
-    Int_t whichSpinMC=-1 // if >=0, use helicity from injected asymmetry (branch "SpinMC_`whichSpinMC`_idx")
+    Int_t whichSpinMC=-1, // if >=0, use helicity from injected asymmetry (branch "SpinMC_`whichSpinMC`_idx")
+    Int_t Lmax=2
 ) {
 
   // set PROOF sandbox (where log files etc. are written)
@@ -30,13 +31,11 @@ void asymBruFit(
   // instantiate brufit
   BruAsymmetry * B = new BruAsymmetry(bruDir,minimizer,whichSpinMC);
 
-
   // set binning scheme ------------------------------------------------------------------------------------
   Binning * BS = new Binning();
   BS->SetScheme(pairType,ivType,nbins0,nbins1,nbins2);
   B->Bin(BS);
   B->PrintBinScheme();
-
 
   // build modulations -----------------------------------------------------------------------------
   Int_t whichHad[2];
@@ -45,7 +44,6 @@ void asymBruFit(
   printf("\nFit with %s\n\n", usePWexpansion ? "FULL PARTIAL WAVE EXPANSION" : "AZIMUTHAL MODULATIONS ONLY");
   if(usePWexpansion) {
     // all A_LU partial waves up to L=Lmax
-    const Int_t Lmax = 2;
     for(int L=0; L<=Lmax; L++) {
       for(int M=0; M<=L; M++) {
         for(int T=2; T<=3; T++) {
