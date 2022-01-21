@@ -13,7 +13,8 @@ void asymBruFit(
     Int_t binschemeIVtype=2, // binning scheme (execute `buildSpinroot.exe` and see usage of `-i`)
     Int_t nbins0=-1, Int_t nbins1=-1, Int_t nbins2=-1, // number of bins for each dimension
            /* example: binschemeIVtype=32, nbins0=6, nbins1=3, runs fit in 6 bins of z (iv=3) for 3 bins of Mh (iv=2) */
-    Int_t whichSpinMC=-1 // if >=0, use helicity from injected asymmetry (branch "SpinMC_`whichSpinMC`_idx")
+    Int_t whichSpinMC=-1, // if >=0, use helicity from injected asymmetry (branch "SpinMC_`whichSpinMC`_idx")
+    Int_t Lmax=2
 ) {
 
   // set PROOF sandbox (where log files etc. are written)
@@ -35,7 +36,6 @@ void asymBruFit(
   B->AddNumerMod(new Modulation(3,2,-2));
   */
   ///* // all 12 PWs up to L=Lmax
-  const Int_t Lmax = 2;
   for(int L=0; L<=Lmax; L++) {
     for(int M=0; M<=L; M++) {
       for(int T=2; T<=3; T++) {
