@@ -67,7 +67,7 @@ void asymBruFit(
 
   // load data and MC trees
   /* pi+, pi- */
-  //B->LoadDataSets("catTreeData.rga_inbending_all.0x34.idx.root","catTreeMC.mc.PRL.0x34.idx.root"); // RGA
+  B->LoadDataSets("catTreeData.rga_inbending_all.0x34.idx.root","catTreeMC.mc.PRL.0x34.idx.root"); // RGA
   //B->LoadDataSets("catTreeData.rgb_inbending_all.0x34.idx.root","catTreeMC.mc.PRL.0x34.idx.root"); // RGB
   /* pi+, pi+ */
   //B->LoadDataSets("catTreeData.0x33.XFgt0.idx.root","catTreeMC.0x33.spinAbsent.XFgt0.idx.root"); // pi+pi+
@@ -87,7 +87,7 @@ void asymBruFit(
   //     );
   /* MC injection tests */
   // B->LoadDataSets("catTreeMC.mc.PRL.DIS.0x34.inj_x.idx.root",""); // MC: 1D linear injection along x
-  B->LoadDataSets("catTreeMC.mc.PRL.DIS.0x34.inj_zm.idx.root",""); // MC: 2D linear injection along {z,Mh}
+  // B->LoadDataSets("catTreeMC.mc.PRL.DIS.0x34.inj_zm.idx.root",""); // MC: 2D linear injection along {z,Mh}
 
   // MCMC hyperparameters
   // - chain 1
