@@ -34,19 +34,17 @@ void asymBruFit(
   B->AddNumerMod(new Modulation(3,2,2));
   B->AddNumerMod(new Modulation(3,2,-2));
   */
-  ///* // all 12 PWs up to L=2
-  B->AddNumerMod(new Modulation(3,0,0,0,true));
-  B->AddNumerMod(new Modulation(3,1,0,0,true));
-  B->AddNumerMod(new Modulation(2,1,1,0,true));
-  B->AddNumerMod(new Modulation(3,1,1,0,true));
-  B->AddNumerMod(new Modulation(3,1,-1,0,true));
-  B->AddNumerMod(new Modulation(3,2,0,0,true));
-  B->AddNumerMod(new Modulation(2,2,1,0,true));
-  B->AddNumerMod(new Modulation(3,2,1,0,true));
-  B->AddNumerMod(new Modulation(3,2,-1,0,true));
-  B->AddNumerMod(new Modulation(2,2,2,0,true));
-  B->AddNumerMod(new Modulation(3,2,2,0,true));
-  B->AddNumerMod(new Modulation(3,2,-2,0,true));
+  ///* // all 12 PWs up to L=Lmax
+  const Int_t Lmax = 2;
+  for(int L=0; L<=Lmax; L++) {
+    for(int M=0; M<=L; M++) {
+      for(int T=2; T<=3; T++) {
+        if(T==2 && M==0) continue;
+        B->AddNumerMod(new Modulation(T,L,M,0,true));
+        if(T==3 && M>0) B->AddNumerMod(new Modulation(T,L,-M,0,true));
+      };
+    };
+  };
   //*/
   /* // DSIDIS
   B->AddNumerMod(new Modulation(2,0,0,0,false,Modulation::kDSIDIS)); // sin(PhiD)

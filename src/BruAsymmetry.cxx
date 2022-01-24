@@ -83,6 +83,7 @@ BruAsymmetry::BruAsymmetry(TString outdir_, TString minimizer_, Int_t whichSpinM
 void BruAsymmetry::AddNumerMod(Modulation * modu) {
 
   // set amplitude and modulation names
+  printf("-> AddNumerMod tw%d |%d,%d>\n",modu->GetTw(),modu->GetL(),modu->GetM());
   TString ampName = modu->AmpName();
   TString formuName = ampName;
   formuName.ReplaceAll("Amp","Mod");
