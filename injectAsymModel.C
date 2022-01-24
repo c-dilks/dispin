@@ -28,7 +28,7 @@ void injectAsymModel(
 
   // injection model
   InjectionModel *IM = new InjectionModel();
-  IM->FillModuList(0);
+  IM->FillModuList(3); // <-- argument = lmax
   IM->SetIVtype(pairType,ivType);
   Binning *BS = IM->GetBinning();
 

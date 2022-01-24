@@ -16,9 +16,10 @@ void InjectionModel::SetIVtype(Int_t pairType, Int_t ivType) {
 };
 
 void InjectionModel::FillModuList(int preset) {
-  if(preset==0) { // PWA, all 12 amps
+  if(preset>=0 && preset<=4) { // PWA, all 12 amps; preset=lmax (0=default)
+    int lmax = (preset>0)? preset:2;
     for(int tw=2; tw<=3; tw++) {
-      for(int l=0; l<=2; l++) {
+      for(int l=0; l<=lmax; l++) {
         for(int m=-l; m<=l; m++) {
           if(tw==2 && m<=0) continue;
           if(verbose) printf("modulation %d %d %d\n",tw,l,m);
