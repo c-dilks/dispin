@@ -35,7 +35,7 @@ else suffix=""; fi
 pairtype="$(echo $args | grep '\-p' | sed 's/^.*-p//g' | awk '{print $1}')"
 if [ -n "$pairtype" ]; then pairtype=".$pairtype"; fi
 suffix="${suffix}.$(echo $outrootDir | sed 's/outroot\.//g' | sed 's/\/$//')$pairtype"
-outfile=catTree${suffix}.root
+outfile=catTree${suffix}.lmaxtest.root
 echo "outfile=$outfile"
 
 

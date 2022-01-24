@@ -14,7 +14,7 @@ void injectAsymModel(
   // approximate scale of asymmetry amplitude to inject; check `maxAdist`,
   // etc. which are histograms filled with min and max amplitude values to
   // inject; these histos give a sense of the injected amplitude range
-  const Double_t asymMax = 0.12;
+  const Double_t asymMax = 0.1;
   // other
   bool verbose = 0;
   /////////////////////////////////
@@ -27,7 +27,7 @@ void injectAsymModel(
 
   // injection model
   InjectionModel *IM = new InjectionModel();
-  IM->FillModuList(0);
+  IM->FillModuList(3); // <-- argument = lmax
   IM->SetIVtype(ivType);
   Binning *BS = IM->GetBinning();
 
