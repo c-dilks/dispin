@@ -3,9 +3,10 @@
 # - main purpose is for asymmetry injection studies
 
 # settings #################
-idString  = "depol.x"
-ivType    = 1
-nbins     = [6, -1, -1]
+lmax      = 3
+ivString  = "z.lmax#{lmax}"
+ivType    = 3
+nbins     = [-1, -1, -1]
 injSeq    = (0..99).to_a  # Array of injection numbers
 minimizer = "minuit"
 pairType  = 0x34
@@ -37,6 +38,7 @@ fit = Proc.new do |whichSpinMC|
     ivType,
     *nbins,
     whichSpinMC,
+    lmax,
   ]
   bruArgs.map!{ |arg| if arg.class==String then "\"#{arg}\"" else arg end } # add quotes around strings
   brufit = "root -b -q $BRUFIT/macros/LoadBru.C"
