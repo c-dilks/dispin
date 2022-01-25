@@ -3,7 +3,8 @@
 # - main purpose is for asymmetry injection studies
 
 # settings #################
-ivString  = "z.long"
+lmax      = 3
+ivString  = "z.lmax#{lmax}"
 ivType    = 3
 nbins     = [-1, -1, -1]
 injSeq    = (0..99).to_a  # Array of injection numbers
@@ -33,6 +34,7 @@ fit = Proc.new do |whichSpinMC|
     ivType,
     *nbins,
     whichSpinMC,
+    lmax,
   ]
   bruArgs.map!{ |arg| if arg.class==String then "\"#{arg}\"" else arg end } # add quotes around strings
   brufit = "root -b -q $BRUFIT/macros/LoadBru.C"
