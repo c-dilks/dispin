@@ -32,6 +32,7 @@ dihadron spin asymmetry analysis
 - if you clone this repository with the option `--recurse-submodules`, it will
   clone a copy of [`j2root`](https://github.com/drewkenjo/j2root) to the
   directory `deps/j2root`
+- build with `buildJ2root.sh`, otherwise follow directions below
 - `cd` to this directory and follow the `README.md` within for compilation
 - this repository provides the ability to write data to `root` files with
   groovy
@@ -54,6 +55,7 @@ dihadron spin asymmetry analysis
   uses the groovy accessors to query information in an event loop
 
 ## brufit
+- build with `buildBrufit.sh`, otherwise follow directions below
 - build instructions: see `deps/brufit` readme
 - source `./env.sh` will set `$BRUFIT`, which is needed to compile `brufit`
   - if you build on `ifarm`, you may need to run
