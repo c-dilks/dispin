@@ -3,7 +3,7 @@
 # - main purpose is for asymmetry injection studies
 
 # settings #################
-lmax      = 3
+lmax      = 2
 ivString  = "z.lmax#{lmax}"
 ivType    = 3
 nbins     = [-1, -1, -1]
