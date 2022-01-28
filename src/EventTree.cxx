@@ -552,6 +552,7 @@ Int_t EventTree::SpinState() {
      */
     return sP;
     /////////
+    /*
     if(!helicityMCinjected) {
       // if helicityMC has not yet been injected, inject something here so cutHelicity==true
       //helicityMC[whichHelicityMC] = 3; // +helicity only
@@ -567,6 +568,7 @@ Int_t EventTree::SpinState() {
       case 0: return UNDEF;
       default: fprintf(stderr,"WARNING: bad SpinState request: %d\n",helicityMC[whichHelicityMC]);
     };
+    */
   };
   return UNDEF;
 };
