@@ -544,6 +544,14 @@ Int_t EventTree::SpinState() {
   }
 
   else { // MC run - use injected helicity (DEPRECATED by `InjectionModel`)
+    /////////
+    /* since usage of this method for MC has been replaced by InjectionModel, 
+     * we now just return `sP`, a value that will not cause an error in the 
+     * caller; this `sP` return value is not at all used when processing MC,
+     * unless you are using an older fit algo than brufit
+     */
+    return sP;
+    /////////
     if(!helicityMCinjected) {
       // if helicityMC has not yet been injected, inject something here so cutHelicity==true
       //helicityMC[whichHelicityMC] = 3; // +helicity only

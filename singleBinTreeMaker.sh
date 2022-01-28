@@ -44,7 +44,7 @@ if [[ $(hostname) =~ "ifarm" ]]; then
   echo "on ifarm, will use SLURM"
   slurm.buildSpinroot.sh $args
   sleep 3
-  waitForSlurm.sh dispin
+  waitForSlurm.sh dispin_buildSpinroot
 else
   echo "not on ifarm, will use CONDOR"
   condor.buildSpinroot.sh $args
