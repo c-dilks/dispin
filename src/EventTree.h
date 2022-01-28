@@ -172,6 +172,7 @@ class EventTree : public TObject
     Bool_t cutPID;
     Bool_t cutElePID;
     Bool_t cutHadPID[2];
+    Bool_t cutXCHECK;
 
 
     // tree banches used for matching MCgen event
