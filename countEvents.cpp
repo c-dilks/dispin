@@ -7,6 +7,7 @@
 #include "TChain.h"
 #include "TString.h"
 #include "TSystem.h"
+#include "TROOT.h"
 
 // DihBsa
 #include "Constants.h"
@@ -23,6 +24,8 @@ void PrintEvent2();
 void PrintEvent3();
 Bool_t first;
 Bool_t hasDiphoton;
+TLorentzVector vecEle,vecHad[2];
+TString tableName;
 
 int main(int argc, char** argv) {
 
@@ -35,7 +38,8 @@ int main(int argc, char** argv) {
    DecodePairType(whichPair,whichHad[qA],whichHad[qB]);
 
    // OPTIONS
-   Bool_t printEvents = false;
+   Bool_t printEvents = true;
+   tableName = "eventTable.txt";
    /////////////////////
 
 
@@ -48,6 +52,7 @@ int main(int argc, char** argv) {
    Long_t nCutFiducial=0;
    Long_t nCutPID=0;
    Long_t nCutVertex=0;
+   Long_t nPrinted=0;
 
    // yields including diphoton cuts
    hasDiphoton = false; // true if whichPair has diphoton
@@ -83,7 +88,14 @@ int main(int argc, char** argv) {
          //PrintEvent2();
        };
      };
-     PrintEvent3();
+     if(true) { // XCHECK printout ////////////
+       if(printEvents && nPrinted<1000 && Tools::PairSame(ev->hadIdx[qA],ev->hadIdx[qB],whichHad[qA],whichHad[qB])) {
+         PrintEvent3();
+         nPrinted++;
+       };
+       if(nPrinted>=1000) { printf("---LIMITER---\n"); break; }; // limiter
+     };
+     /////////////
 
      // counts for each cut
      if(Tools::PairSame(ev->hadIdx[qA],ev->hadIdx[qB],whichHad[qA],whichHad[qB])) {
@@ -131,8 +143,13 @@ int main(int argc, char** argv) {
    };
 
 
-   if(printEvents) 
-     printf("\n!! events printed to eventTable.txt (no more than 10000 printed) !!\n\n");
+   if(printEvents) {
+     printf("\n!! events printed to %s (no more than 10000 printed) !!\n\n",tableName.Data());
+     gSystem->RedirectOutput(tableName+".tmp","w");
+     gROOT->ProcessLine(Form(".! cat %s | column -t",tableName.Data()));
+     gSystem->RedirectOutput(0);
+     gROOT->ProcessLine(Form(".! mv %s.tmp %s",tableName.Data(),tableName.Data()));
+   };
 };
 
 
@@ -148,7 +165,7 @@ void PrintCount(TString cntName,Long64_t numer,Long64_t denom) {
 // print variables from the event
 void PrintEvent() {
   if(first) {
-    gSystem->RedirectOutput("eventTable.txt","w");
+    gSystem->RedirectOutput(tableName,"w");
     printf("evnum");
     printf(" eleP");
     printf(" piPlusP");
@@ -168,7 +185,7 @@ void PrintEvent() {
     printf(" theta");
     printf("\n");
     first = false;
-  } else gSystem->RedirectOutput("eventTable.txt","a");
+  } else gSystem->RedirectOutput(tableName,"a");
   printf("%d",ev->evnum);
   printf(" %.3f",ev->eleP);
   printf(" %.3f",ev->hadP[qA]);
@@ -196,7 +213,7 @@ void PrintEvent2() {
     TString pname[2];
     for(int h=0; h<2; h++) 
       pname[h] = PairHadName(whichHad[qA],whichHad[qB],h);
-    gSystem->RedirectOutput("eventTable.txt","w");
+    gSystem->RedirectOutput(tableName,"w");
     printf("evntnum");
     for(int h=0; h<2; h++) {
       printf(" Lab_%s_z",pname[h].Data());
@@ -208,7 +225,7 @@ void PrintEvent2() {
     };
     printf("\n");
     first = false;
-  } else gSystem->RedirectOutput("eventTable.txt","a");
+  } else gSystem->RedirectOutput(tableName,"a");
   printf("%d",ev->evnum);
   for(int h=0; h<2; h++) {
     printf(" %.5f",ev->hadPqLab[h]);
@@ -224,12 +241,13 @@ void PrintEvent2() {
 
 
 void PrintEvent3() {
+  vecEle.SetPtEtaPhiE(ev->elePt,ev->eleEta,ev->elePhi,ev->eleE);
+  for(int h=0; h<2; h++) vecHad[h].SetPtEtaPhiE(ev->hadPt[h],ev->hadEta[h],ev->hadPhi[h],ev->hadE[h]);
   if(first) {
     TString pname[2];
     for(int h=0; h<2; h++) pname[h] = PairHadName(whichHad[qA],whichHad[qB],h);
-    gSystem->RedirectOutput("eventTable.txt","w");
+    gSystem->RedirectOutput(tableName,"w");
     printf("evnum");
-    printf(" helicity");
     printf(" e_px");
     printf(" e_py");
     printf(" e_pz");
@@ -243,40 +261,45 @@ void PrintEvent3() {
     printf(" Q2");
     printf(" W");
     printf(" Mmiss");
-    // printf(" piPlusXF");
-    // printf(" piMinusXF");
     printf(" Zpair");
     printf(" Mh");
-    // printf(" PhPerp");
-    // printf(" PhiH");
-    // printf(" PhiR");
-    // printf(" theta");
     printf(" gamma");
     printf(" epsilon");
-    printf(" dp_W"); // TODO: rescale to Harut or no?
-    printf(" dp_C");
     printf(" dp_A");
+    printf(" dp_C");
+    printf(" dp_W");
     // status variables: whether or not cut passes
     printf(" s_Harut"); // Harut's cross check cuts
     printf(" s_PRL"); // (standard ev->Valid())
-    // printf(" s_DIS");
-    // printf(" s_Dihadron");
-    // printf(" s_Helicity");
     printf(" s_Fiducial");
-    // printf(" s_PID");
-    // printf(" s_Vertex");
     printf("\n");
     first = false;
-  } else gSystem->RedirectOutput("eventTable.txt","a");
+  } else gSystem->RedirectOutput(tableName,"a");
   printf("%d",ev->evnum);
+  printf(" %.2f",vecEle.Px());
+  printf(" %.2f",vecEle.Py());
+  printf(" %.2f",vecEle.Pz());
   for(int h=0; h<2; h++) {
-    printf(" %.5f",ev->hadPqLab[h]);
-    printf(" %.5f",ev->hadPqCom[h]);
-    printf(" %.5f",ev->hadPqBreit[h]);
-    printf(" %.5f",ev->hadYCM[h]);
-    printf(" %.5f",ev->hadYH[h]);
-    printf(" %.5f",ev->hadXF[h]);
+    printf(" %.2f",vecHad[h].Px());
+    printf(" %.2f",vecHad[h].Py());
+    printf(" %.2f",vecHad[h].Pz());
   };
+  printf(" %.2f",ev->x);
+  printf(" %.2f",ev->y);
+  printf(" %.2f",ev->Q2);
+  printf(" %.2f",ev->W);
+  printf(" %.2f",ev->Mmiss);
+  printf(" %.2f",ev->Zpair);
+  printf(" %.2f",ev->Mh);
+  printf(" %.2f",ev->gamma);
+  printf(" %.2f",ev->epsilon);
+  printf(" %.2f",ev->GetDepolarizationFactor('A'));
+  printf(" %.2f",ev->GetDepolarizationFactor('C'));
+  printf(" %.2f",ev->GetDepolarizationFactor('W'));
+  // status variables: whether or not cut passes
+  printf(" %d",ev->cutXCHECK); // Harut's cross check cuts
+  printf(" %d",ev->Valid()); // full PRL cuts
+  printf(" %d",ev->cutFiducial);
   printf("\n");
   gSystem->RedirectOutput(0);
 };

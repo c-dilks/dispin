@@ -473,8 +473,8 @@ void EventTree::GetEvent(Long64_t i) {
 
   // XCHECK CUTS //////////////////////
   cutXCHECK = 
-    Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) && 
-    x>0 && x<1 && /* prevent out-of-range bins when cutDIS is disabled */
+    Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) && // select event builder PID
+    x>0 && x<1 && // prevent out-of-range bins when cutDIS is disabled
     TMath::Abs(hadChi2pid[qA])<5 &&
     TMath::Abs(hadChi2pid[qB])<5 &&
     hadE[qA]>1.2 && hadE[qA]<4 &&
@@ -939,7 +939,7 @@ Float_t EventTree::GetDepolarizationFactor(Char_t kf) {
 
   dfA = y*y / (2 - 2*epsilon); // A(x,y)
 
-  Bool_t useXCHECKdefinitions = false;
+  Bool_t useXCHECKdefinitions = true;
   if(useXCHECKdefinitions) { // XCHECK MODIFIED FACTORS //////////////////////////////
     // re-scale depol factors, for cross check purposes
     Double_t iFactor = (1+gamma*gamma/(2*x)) / (TMath::Power(gamma*y*RundepBeamEn(runnum),2)*x*y);
