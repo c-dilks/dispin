@@ -478,20 +478,6 @@ void EventTree::GetEvent(Long64_t i) {
 /////////////////////////////////////////////////////////
 // MAIN ANALYSIS CUT
 Bool_t EventTree::Valid() {
-  // XCHECK CUTS //////////////////////
-  return
-    Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) && 
-    x>0 && x<1 && /* prevent out-of-range bins when cutDIS is disabled */
-    TMath::Abs(hadChi2pid[qA])<5 &&
-    TMath::Abs(hadChi2pid[qB])<5 &&
-    hadE[qA]>1.2 && hadE[qA]<4 &&
-    hadE[qB]>1.2 && hadE[qB]<4 &&
-    hadTheta[qA]>6 && hadTheta[qA]<30 &&
-    hadTheta[qB]>6 && hadTheta[qB]<30 &&
-    eleTheta>10 && eleTheta<30 &&
-    eleE>2.65 &&
-    cutFiducial;
-  /////////////////////////////////////
   return cutDIS && cutDihadron && cutHelicity && 
          cutFiducial && cutPID && cutVertex && cutFR;
   // NOTE: if you want to disable `cutDihadron`, you likely want to ensure `Tools::PairSame` is still checked
@@ -938,22 +924,11 @@ Float_t EventTree::GetDepolarizationFactor(Char_t kf) {
 
   dfA = y*y / (2 - 2*epsilon); // A(x,y)
 
-  // XCHECK FACTORS ////////////////////////////////////////////////////////////////////////////
-  // re-scale depol factors, for cross check purposes
-  Double_t iFactor = (1+gamma*gamma/(2*x)) / (TMath::Power(gamma*y*RundepBeamEn(runnum),2)*x*y);
-  //////////////////////////////////////////////////////////////////////////////////////////////
-
-  /* harut's definitions */
-  if(kf=='A')      return dfA * iFactor; // modified for XCHECK ////////////////
-  else if(kf=='W') return dfA * TMath::Sqrt(2*epsilon*(1-epsilon)) * iFactor/TMath::Sqrt(1+gamma*gamma); // modified for XCHECK /////////
-
-  /* PRL definitions */
-  // if(kf=='A')      return dfA;
-  // else if(kf=='W') return dfA * TMath::Sqrt(2*epsilon*(1-epsilon));
-
+  if(kf=='A')      return dfA;
   else if(kf=='B') return dfA * epsilon;
   else if(kf=='C') return dfA * TMath::Sqrt(1-epsilon*epsilon);
   else if(kf=='V') return dfA * TMath::Sqrt(2*epsilon*(1+epsilon));
+  else if(kf=='W') return dfA * TMath::Sqrt(2*epsilon*(1-epsilon));
   else {
     fprintf(stderr,"ERROR: unknown depolarization factor %c; returning 0\n",kf);
     return 0;

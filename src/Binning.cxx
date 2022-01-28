@@ -221,7 +221,7 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
 
   // default binning schemes for each IV, if they weren't specified as args
   Int_t nb[3];
-  TString defaultScheme = "XCHECK"; // <------------------ main switch
+  TString defaultScheme = "PI0"; // <------------------ main switch
   if( nb0==-1 && nb1==-1 && nb2==-1) {
     if(defaultScheme=="PI0") { // SPIN2021: RGA fa18+sp19 inbending data, pi+pi0
       if(ivVar[0]==vX) nb0=6;
@@ -246,12 +246,6 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
     };
     if(defaultScheme=="PRL") { // PRL: RGA fa18 inbending data
       if(ivVar[0]==vX) nb0=12;
-      if(ivVar[0]==vM) nb0=12;
-      if(ivVar[0]==vZ  && ivVar[1]==vM) { nb0=6; nb1=2; };
-      if(ivVar[0]==vPt && ivVar[1]==vM) { nb0=6; nb1=2; };
-    };
-    if(defaultScheme=="XCHECK") { // XCHECK (for depol. factors cross check)
-      if(ivVar[0]==vX) nb0=10;
       if(ivVar[0]==vM) nb0=12;
       if(ivVar[0]==vZ  && ivVar[1]==vM) { nb0=6; nb1=2; };
       if(ivVar[0]==vPt && ivVar[1]==vM) { nb0=6; nb1=2; };
@@ -344,17 +338,6 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
           AddBinBound(vX,0.199);
           AddBinBound(vX,0.242);
           AddBinBound(vX,0.308);
-          break;
-        case 10:
-          AddBinBound(vX,0.13); // XCHECK depol. factors
-          AddBinBound(vX,0.16);
-          AddBinBound(vX,0.19);
-          AddBinBound(vX,0.22);
-          AddBinBound(vX,0.25);
-          AddBinBound(vX,0.28);
-          AddBinBound(vX,0.31);
-          AddBinBound(vX,0.34);
-          AddBinBound(vX,0.37);
           break;
         case 12:
           AddBinBound(vX,0.118); // PRL 1D binning
