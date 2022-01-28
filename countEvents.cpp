@@ -20,6 +20,7 @@ EventTree * ev;
 void PrintCount(TString cntName,Long64_t numer,Long64_t denom);
 void PrintEvent();
 void PrintEvent2();
+void PrintEvent3();
 Bool_t first;
 Bool_t hasDiphoton;
 
@@ -79,9 +80,10 @@ int main(int argc, char** argv) {
        nValid++;
        if(printEvents && nValid<=10000) {
          //PrintEvent();
-         PrintEvent2();
+         //PrintEvent2();
        };
      };
+     PrintEvent3();
 
      // counts for each cut
      if(Tools::PairSame(ev->hadIdx[qA],ev->hadIdx[qB],whichHad[qA],whichHad[qB])) {
@@ -204,6 +206,65 @@ void PrintEvent2() {
       printf(" Breit_%s_rapidity",pname[h].Data());
       printf(" xF_%s",pname[h].Data());
     };
+    printf("\n");
+    first = false;
+  } else gSystem->RedirectOutput("eventTable.txt","a");
+  printf("%d",ev->evnum);
+  for(int h=0; h<2; h++) {
+    printf(" %.5f",ev->hadPqLab[h]);
+    printf(" %.5f",ev->hadPqCom[h]);
+    printf(" %.5f",ev->hadPqBreit[h]);
+    printf(" %.5f",ev->hadYCM[h]);
+    printf(" %.5f",ev->hadYH[h]);
+    printf(" %.5f",ev->hadXF[h]);
+  };
+  printf("\n");
+  gSystem->RedirectOutput(0);
+};
+
+
+void PrintEvent3() {
+  if(first) {
+    TString pname[2];
+    for(int h=0; h<2; h++) pname[h] = PairHadName(whichHad[qA],whichHad[qB],h);
+    gSystem->RedirectOutput("eventTable.txt","w");
+    printf("evnum");
+    printf(" helicity");
+    printf(" e_px");
+    printf(" e_py");
+    printf(" e_pz");
+    for(int h=0; h<2; h++) {
+      printf(" %s_px",pname[h].Data());
+      printf(" %s_py",pname[h].Data());
+      printf(" %s_pz",pname[h].Data());
+    };
+    printf(" x");
+    printf(" y");
+    printf(" Q2");
+    printf(" W");
+    printf(" Mmiss");
+    // printf(" piPlusXF");
+    // printf(" piMinusXF");
+    printf(" Zpair");
+    printf(" Mh");
+    // printf(" PhPerp");
+    // printf(" PhiH");
+    // printf(" PhiR");
+    // printf(" theta");
+    printf(" gamma");
+    printf(" epsilon");
+    printf(" dp_W"); // TODO: rescale to Harut or no?
+    printf(" dp_C");
+    printf(" dp_A");
+    // status variables: whether or not cut passes
+    printf(" s_Harut"); // Harut's cross check cuts
+    printf(" s_PRL"); // (standard ev->Valid())
+    // printf(" s_DIS");
+    // printf(" s_Dihadron");
+    // printf(" s_Helicity");
+    printf(" s_Fiducial");
+    // printf(" s_PID");
+    // printf(" s_Vertex");
     printf("\n");
     first = false;
   } else gSystem->RedirectOutput("eventTable.txt","a");
