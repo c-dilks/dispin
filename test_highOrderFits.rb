@@ -7,9 +7,9 @@ ivString  = "mh"
 ivType    = 2
 nbins     = [-1, -1, -1]
 lmaxSeq   = [2, 3, 4] # Lmax values
-minimizer = "mcmccov"
+minimizer = "minuit"
 nCPUs     = 6   # number of CPUs per node to allocate for slurm
-timeLim   = 48 # time limit [hr]
+timeLim   = 16 # time limit [hr]
 #timeLim   = (17000*0.00167).to_i+1 # time limit [hr] ~<~ numSteps*time/step
 ############################
 
