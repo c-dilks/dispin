@@ -7,7 +7,7 @@ R__LOAD_LIBRARY(DiSpin)
  */
 
 void asymBruFit(
-    TString bruDir="bruspin", // output directory; several files will be written
+    TString bruDir="bruspin", // output directory; use keywords to specify which data set to analyze (see below)
     TString minimizer="minuit", // minimizer (see comments above)
     TString sPlotDir="", // sPlot directory (leave empty string if not using, otherwise use outDir from `sPlotBru.C`)
     Int_t binschemeIVtype=2, // binning scheme (execute `buildSpinroot.exe` and see usage of `-i`)
@@ -24,7 +24,8 @@ void asymBruFit(
   // instantiate brufit
   BruAsymmetry * B = new BruAsymmetry(bruDir,minimizer,whichSpinMC);
 
-  // build modulations
+
+  // build modulations -----------------------------------------------------------------------------
   /* // 7 amps (PRL)
   B->AddNumerMod(new Modulation(3,0,0));
   B->AddNumerMod(new Modulation(2,1,1));
@@ -59,37 +60,45 @@ void asymBruFit(
   // build full PDF
   B->BuildPDF();
 
-  // set binning scheme
+
+  // set binning scheme ------------------------------------------------------------------------------------
   Binning * BS = new Binning();
   BS->SetScheme(binschemeIVtype,nbins0,nbins1,nbins2);
   B->Bin(BS);
   B->PrintBinScheme();
 
-  // load data and MC trees
-  /* pi+, pi- */
-  //B->LoadDataSets("catTreeData.rga_inbending_all.0x34.idx.root","catTreeMC.mc.PRL.0x34.idx.root"); // RGA
-  //B->LoadDataSets("catTreeData.rgb_inbending_all.0x34.idx.root","catTreeMC.mc.PRL.0x34.idx.root"); // RGB
-  /* pi+, pi+ */
-  //B->LoadDataSets("catTreeData.0x33.XFgt0.idx.root","catTreeMC.0x33.spinAbsent.XFgt0.idx.root"); // pi+pi+
-  /* pi+, p */
-  //B->LoadDataSets("spinroot.proton.pion/catTreeData.idx.root","catTreeMC.proton.pion.idx.root");
+
+  // load data and MC trees ---------------------------------------------------------------------------------
+  TString dataTree,mcTree;
+
+  // MC tree
+  mcTree = "catTreeMC.mc.inbending.bg45.0x34.idx.root"; // new MC
+  // mcTree = "catTreeMC.mc.PRL.DIS.0x34.inj_x.idx.root"; // MC: 1D linear injection along x (old MC)
+  // mcTree = "catTreeMC.mc.PRL.DIS.0x34.inj_zm.idx.root; // MC: 2D linear injection along {z,Mh} (old MC)
+
+  // data tree (specified by keyword)
+  if      (bruDir.Contains("rga")) dataTree = "catTreeData.rga_inbending_all.0x34.idx.root"; // RGA pi+,pi-
+  else if (bruDir.Contains("rgb")) dataTree = "catTreeData.rgb_inbending_all.0x34.idx.root"; // RGB pi+,pi-
+  else {
+    // no keyword
+    dataTree=mcTree;  mcTree=""; // analyze MC only (e.g., for injection studies)
+  };
+
+  // load trees
+  B->LoadDataSets(dataTree,mcTree);
+
   /* pi+, pi0 */
-  //B->LoadDataSets("catTreeData.rga_inbending_all.0x35.idx.root","catTreeMC.mc.PRL.0x35.idx.root"); // pi0 sig window
-  //B->LoadDataSets("catTreeData.rga_inbending_all.0x3c.idx.root","catTreeMC.mc.PRL.0x3c.idx.root"); // pi0 bg window
-  /* pi+, pi0 sFit
-   * - NOTE: use `TrimCatTree.C` and `sPlotBru.C` to produce the required files
-   */
-  // B->LoadDataSets(
+  // B->LoadDataSets("catTreeData.rga_inbending_all.0x35.idx.root","catTreeMC.mc.PRL.0x35.idx.root"); // pi+,pi0 sig window
+  // B->LoadDataSets("catTreeData.rga_inbending_all.0x3c.idx.root","catTreeMC.mc.PRL.0x3c.idx.root"); // pi+,pi0 bg window
+  // B->LoadDataSets( /* sFit; NOTE: use `TrimCatTree.C` and `sPlotBru.C` to produce the required files */
   //     "catTreeData.rga_inbending_all.0x3b.idx.trimmed.root",
   //     "catTreeMC.mc.PRL.0x3b.idx.trimmed.root",
   //     sPlotDir+"/Tweights.root",
   //     "Signal"
   //     );
-  /* MC injection tests */
-  // B->LoadDataSets("catTreeMC.mc.PRL.DIS.0x34.inj_x.idx.root",""); // MC: 1D linear injection along x
-  B->LoadDataSets("catTreeMC.mc.PRL.DIS.0x34.inj_zm.idx.root",""); // MC: 2D linear injection along {z,Mh}
 
-  // MCMC hyperparameters
+
+  // MCMC hyperparameters ------------------------------------------------------------------------------------
   // - chain 1
   B->MCMC_iter   = 3000; // number of samples
   B->MCMC_burnin = 0.1 * ((Double_t)B->MCMC_iter); // number to burn
@@ -103,7 +112,8 @@ void asymBruFit(
   B->MCMC_lockacc_min    = B->MCMC_lockacc_target - 0.02;
   B->MCMC_lockacc_max    = B->MCMC_lockacc_target + 0.02;
 
-  // perform fit
+
+  // perform fit -----------------------------------------------------------------------------------------------
   B->Fit();
 
   // print acceptance rates

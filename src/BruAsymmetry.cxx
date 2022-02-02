@@ -194,8 +194,11 @@ void BruAsymmetry::LoadDataSets(
     TString treeName
     )
 {
+  printf("LoadDataSets:\n - dataFile = %s\n - mcFile = %s\n",dataFileN.Data(),mcFileN.Data());
 
   // load data tree
+  this->PrintLog("");
+  this->PrintLog(Form("Data File: %s",dataFileN.Data()));
   FM->LoadData(treeName,dataFileN);
 
   // load MC data, for normalization integral
