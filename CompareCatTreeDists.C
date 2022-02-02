@@ -15,14 +15,16 @@ TCut extraCut;
 void CompareDist(TString varname, TString vartitle);
 
 void CompareCatTreeDists(
-  //TString infile0N="catTreeData.rga_inbending_all.0x34.root", /*green*/
-  //TString infile1N="catTreeData.rgb_inbending_all.0x34.root", /*purple*/
-  //TString infile0N="catTreeData.rgb_inbending_sp19.0x34.root", /*green*/
-  //TString infile1N="catTreeData.rgb_inbending_wi20.0x34.root", /*purple*/
-  //TString infile0N="catTreeData.rgb_inbending_all.0x34.root", /*green*/
-  //TString infile1N="catTreeMC.mc.PRL.0x34.root",              /*purple*/
-  TString infile0N="catTreeData.rga_inbending_all.0x3b.idx.root", /*green*/
-  TString infile1N="catTreeMC.mc.PRL.0x3b.idx.root",              /*purple*/
+  TString infile0N="catTreeData.rga_inbending_all.0x34.root", /*green*/
+  TString infile1N="catTreeMC.mc.inbending.bg45.0x34.idx.root", /*purple*/
+  // TString infile0N="catTreeData.rga_inbending_all.0x34.root", /*green*/
+  // TString infile1N="catTreeData.rgb_inbending_all.0x34.root", /*purple*/
+  // TString infile0N="catTreeData.rgb_inbending_sp19.0x34.root", /*green*/
+  // TString infile1N="catTreeData.rgb_inbending_wi20.0x34.root", /*purple*/
+  // TString infile0N="catTreeData.rgb_inbending_all.0x34.root", /*green*/
+  // TString infile1N="catTreeMC.mc.PRL.0x34.root",              /*purple*/
+  // TString infile0N="catTreeData.rga_inbending_all.0x3b.idx.root", /*green*/
+  // TString infile1N="catTreeMC.mc.PRL.0x3b.idx.root",              /*purple*/
   Bool_t drawRatioPlot_ = true,
   TCut extraCut_ = "" /* add any additional cuts here */
 ) {
@@ -55,7 +57,7 @@ void CompareCatTreeDists(
   CompareDist("Theta","#theta");
   CompareDist("XF","x_{F}");
   CompareDist("DYsgn","#Delta Y_{h}");
-  CompareDist("diphM","M_{#gamma#gamma} [GeV]");
+  // CompareDist("diphM","M_{#gamma#gamma} [GeV]");
 };
 
 
