@@ -12,6 +12,7 @@ ivBinnings  = { # map `ivType` to number of bins for each dimension
   42 => [4,3],
 }
 timeLim = 36 # time limit [hr]
+memory = 1000 # memory allocation per CPU [MB]
 ############################
 
 sep = Proc.new{ |title| puts "\n#{title}\n"+"="*40 }
@@ -71,7 +72,7 @@ if slurm
   slurmSet.call("job-name",      "#{idString}")
   slurmSet.call("account",       "clas12")
   slurmSet.call("partition",     "production")
-  slurmSet.call("mem-per-cpu",   "#{7200/nCPUs}")
+  slurmSet.call("mem-per-cpu",   "#{memory}")
   slurmSet.call("time",          "#{timeLim}:00:00")
   slurmSet.call("array",         "1-#{settings.length}")
   slurmSet.call("ntasks",        "1")

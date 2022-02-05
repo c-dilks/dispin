@@ -1,0 +1,3 @@
+#!/bin/bash
+# execute brufit-dependent macros
+root $BRUFIT/macros/LoadBru.C $*

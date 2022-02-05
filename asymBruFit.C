@@ -21,6 +21,9 @@ void asymBruFit(
   gEnv->SetValue("ProofLite.Sandbox",sandbox.Data());
   printf("proof sandbox = %s\n",gEnv->GetValue("ProofLite.Sandbox","ERROR"));
 
+  // print some info for debugging
+  gROOT->ProcessLine(".! root --version");
+
   // instantiate brufit
   BruAsymmetry * B = new BruAsymmetry(bruDir,minimizer,whichSpinMC);
 
@@ -77,8 +80,8 @@ void asymBruFit(
   // mcTree = "catTreeMC.mc.PRL.DIS.0x34.inj_zm.idx.root; // MC: 2D linear injection along {z,Mh} (old MC)
 
   // data tree (specified by keyword)
-  if      (bruDir.Contains("rga")) dataTree = "catTreeData.rga_inbending_all.0x34.idx.root"; // RGA pi+,pi-
-  else if (bruDir.Contains("rgb")) dataTree = "catTreeData.rgb_inbending_all.0x34.idx.root"; // RGB pi+,pi-
+  if      (bruDir.Contains("rga")) dataTree = "catTreeData.rga_inbending_all.idx.root"; // RGA pi+,pi-
+  else if (bruDir.Contains("rgb")) dataTree = "catTreeData.rgb_inbending_all.idx.root"; // RGB pi+,pi-
   else {
     // no keyword
     dataTree=mcTree;  mcTree=""; // analyze MC only (e.g., for injection studies)
@@ -118,26 +121,28 @@ void asymBruFit(
 
   // print acceptance rates
   TString cmd;
+  cmd = Form(".! ./mcmcAcceptanceRate.rb %s",bruDir.Data());
+  printf("\nEXECUTE: %s\n\n",cmd.Data());
   gSystem->RedirectOutput(B->GetLogName());
-  cmd = Form(".! mcmcAcceptanceRate.rb %s",bruDir.Data());
   gROOT->ProcessLine(cmd.Data());
   gSystem->RedirectOutput(0);
 
   // print PROOF errors
+  cmd = Form(".! ./errorPrintProof.rb %s",bruDir.Data());
+  printf("\nEXECUTE: %s\n\n",cmd.Data());
   gSystem->RedirectOutput(B->GetLogName());
-  cmd = Form(".! errorPrintProof.rb %s",bruDir.Data());
   gROOT->ProcessLine(cmd.Data());
   gSystem->RedirectOutput(0);
 
   // draw residuals and pulls for each bin
   for(int d=0; d<BS->dimensions; d++) {
-    cmd = Form(".x DrawResiduals.C(\"%s\",\"%s\",\"%s\")",bruDir.Data(),BS->GetIVname(d).Data(),minimizer.Data());
+    cmd = Form(".! ./brufit -b -q 'DrawResiduals.C(\"%s\",\"%s\",\"%s\")'",bruDir.Data(),BS->GetIVname(d).Data(),minimizer.Data());
     printf("\nEXECUTE: %s\n\n",cmd.Data());
     gROOT->ProcessLine(cmd);
   };
 
   // draw asymmetries
-  cmd = Form(".x drawBru.C(\"%s\",\"%s\")",bruDir.Data(),minimizer.Data());
+  cmd = Form(".! ./brufit -b -q 'drawBru.C(\"%s\",\"%s\")'",bruDir.Data(),minimizer.Data());
   printf("\nEXECUTE: %s\n\n",cmd.Data());
   gROOT->ProcessLine(cmd);
 };

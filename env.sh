@@ -23,7 +23,3 @@ env|grep --color -w DISPIN_HOME
 env|grep --color -w BRUFIT
 env|grep --color -w LD_LIBRARY_PATH
 env|grep --color -w JYPATH
-
-# brufit alias
-function brufit { root $BRUFIT/macros/LoadBru.C $*; }
-function brufitq { brufit -b -q $*; }
