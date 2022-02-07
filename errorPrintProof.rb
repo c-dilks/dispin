@@ -1,14 +1,17 @@
 #!/usr/bin/env ruby
 # print errors in PROOF logs
 
-if ARGV.length!=1
-  $stderr.puts "USAGE: #{$0} [bruDir]"
+if ARGV.length<1
+  $stderr.puts "USAGE: #{$0} [bruDir(s)]"
+  $stderr.puts "  globs allowed, no need for quotes"
   exit 2
 end
 puts "\nPROOF LOG ERRORS:"
-sandbox = ARGV[0]+"/prooflog"
-logdir = Dir.glob(sandbox+"/*").find{|d|d.include?"dispin"}+"/last-lite-session"
-logfiles = Dir.glob(logdir+"/*.log").reject{|f|File.symlink?(f)}.sort
+sandboxList = ARGV.map{|d|d+"/prooflog"}
+logDirList = sandboxList.map do |sandbox|
+  Dir.glob(sandbox+"/*").find_all{|d|d.include?"dispin"}.map{|d|d+"/last-lite-session"}
+end.flatten
+logfiles = logDirList.map{|d|Dir.glob(d+"/*.log").reject{|f|File.symlink?(f)}}.flatten.sort
 logfiles.each do |logfile|
   cmd = "grep -i error #{logfile}"
   cmd += "|grep -v MATRIX"
@@ -19,5 +22,5 @@ logfiles.each do |logfile|
   cmd += "|grep -v \" is not a dependent and will be ignored.\""
   cmd += "|grep -v \"cache/libRooStats_rdict.pcm file does not exist\""
   res = `#{cmd}`
-  puts "\n------->>> #{File.basename(logfile)}:\n#{res}" if $?.success?
+  puts "\n------->>> #{logfile}:\n#{res}" if $?.success?
 end
