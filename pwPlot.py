@@ -1,7 +1,7 @@
+#!/usr/bin/env python3
 # draw partial wave plots, with shared axes
 
 import matplotlib.pyplot as plt
-import numpy as np
 import sys
 import ROOT as root
 
@@ -35,7 +35,7 @@ stackPlotsInt = int(sys.argv[5]) if narg>=5 else 0
 # OPTIONS ################
 includeMeq0 = False
 transparentBG = False
-includePrelimLabel = True
+includePrelimLabel = False
 asymMax = 0.095 if scheme!=0 else 0.25
 asymMin = -asymMax
 ##########################
@@ -351,6 +351,3 @@ if enableOutput:
     print("--- produced "+outfileN)
 else:
     plt.show()
-
-
-
