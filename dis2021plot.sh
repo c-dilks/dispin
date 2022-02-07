@@ -1,4 +1,5 @@
 #!/bin/bash
+# DEPRECATED: parameters of pwPlot.py have been updated
 
 ext=png
 for tw in 2 3; do

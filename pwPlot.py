@@ -11,13 +11,10 @@ narg = len(sys.argv)-1
 if narg < 3:
     print(
         "USAGE: "+sys.argv[0],
-        "[brufit asym.root]",
         "[plot scheme]",
         "[Xtitle]",
-        "[output(pdf,png;default=disabled)]",
-        "[stackPlots(0/1;default=0)]",
+        "[brufit asym.root file(s)]",
         file=sys.stderr)
-    print(" - set twist to 0 for twist3 m==0 only")
     print(" - plot schemes:")
     print("   - 0: twist3, m=0 only")
     print("   - 2: twist2")
@@ -26,25 +23,25 @@ if narg < 3:
     print("   - 2000+: dump individual plot")
     print("       digits: twist|L|M|sign(m)")
     print("                         0:+,1:-")
-    exit()
-infileName = sys.argv[1]
-scheme = int(sys.argv[2])
-xtitle = sys.argv[3]
-outputEXT = sys.argv[4] if narg>=4 else "disabled"
-stackPlotsInt = int(sys.argv[5]) if narg>=5 else 0
+    print(" - Xtitle: x-axis title, can be Latex syntax")
+    print(" - brufit asym.root file(s)")
+    print("   - add as many files as you want, they will all be")
+    print("     plotted on the same figure")
+    print(f'\n see hard-coded OPTIONS in {sys.argv[0]} for more settings')
+    exit(2)
+scheme = int(sys.argv[1])
+xtitle = sys.argv[2]
+infiles = sys.argv[3:]
 # OPTIONS ################
+outputEXT = "pdf" # "png", "pdf", etc., or "disabled" for interactive output
 includeMeq0 = False
 transparentBG = False
 includePrelimLabel = False
 asymMax = 0.095 if scheme!=0 else 0.25
 asymMin = -asymMax
 ##########################
-stackPlots = True if stackPlotsInt==1 else False
 if outputEXT!="png": # some features only work for png
     transparentBG = False
-    stackPlots = False
-
-
 
 # latex
 # NOTE: needed to install `dvipng` and `cm-super`
@@ -57,22 +54,8 @@ if enableOutput:
         "font.serif": ["Times"],
         #"font.family": "sans-serif",
         #"font.sans-serif": ["Computer Modern Sans Serif"],
-        "text.latex.preamble": [r'\usepackage{amssymb}']
+        "text.latex.preamble": r'\usepackage{amssymb}'
     })
-
-
-# open brufit result
-if not stackPlots:
-    infiles = [infileName]
-    blStr = infileName.split('/')[-1].split('_')[-1].split('.')[0]
-else:
-    infiles = [
-        infileName,
-        infileName.replace("BL0","BL1"),
-        infileName.replace("BL0","BL2"),
-        #infileName.replace("BL0","BL3"),
-    ]
-    
 
 
 # determine nrows and ncols, and plotmap
@@ -125,7 +108,7 @@ elif scheme>=2000: # single plot
     plotmap[ell][emm]  = [0,0]
 else:
     print("ERROR: bad scheme number",file=sys.stderr)
-    exit()
+    exit(1)
 
 # figure size and aspect ratio
 plt.rcParams.update({
@@ -153,12 +136,6 @@ elif scheme==4:
     maintitle = "Twist-2 $A_{LU}$ DSIDIS Amplitudes"
 elif scheme>=2000:
     maintitle = "Twist-"+str(twist)+" $A_{LU}^{|"+str(ell)+","+str(emm)+"\\rangle}$"
-if not stackPlots:
-    if "pt.mh" in infileName or "z.mh" in infileName:
-        if blStr=="BL0": extraStr = "$M_h<0.6$ GeV"
-        elif blStr=="BL1": extraStr = "$0.6<M_h<0.95$ GeV"
-        elif blStr=="BL2": extraStr = "$M_h>0.95$ GeV"
-        maintitle += ", "+extraStr
 fig.suptitle(
     maintitle,
     fontsize = 18 if scheme<2000 else 14
@@ -198,7 +175,7 @@ for l,lmap in plotmap.items():
         lStr = "L"+str(l)
         mStr = "M"+("p" if m>=0 else "m")+str(abs(m))
 
-        for infileN in infiles:
+        for infileIdx,infileN in enumerate(infiles):
             infile = root.TFile(infileN,"READ")
             blStr = infileN.split('/')[-1].split('_')[-1].split('.')[0]
             endStr = "Lv0P0_"+blStr
@@ -210,22 +187,22 @@ for l,lmap in plotmap.items():
             asym = infile.Get(asymN)
 
             # plot formatting
-            mkrSty = 'o'
-            errCol = 'xkcd:ocean'
-            if stackPlots:
-                if blStr=="BL0":
-                    mkrSty = 'o'
-                    errCol = 'xkcd:red'
-                elif blStr=="BL1":
-                    mkrSty = '^'
-                    errCol = 'xkcd:jungle green'
-                elif blStr=="BL2":
-                    mkrSty = 'v'
-                    errCol = 'xkcd:true blue'
-                elif blStr=="BL3":
-                    mkrSty = 's'
-                    errCol = 'xkcd:violet'
-            #mkrCol = 'k'
+            if infileIdx==0:
+                mkrSty = 's'
+                errCol = 'xkcd:coral'
+            elif infileIdx==1:
+                mkrSty = 'o'
+                errCol = 'xkcd:darkish blue'
+            elif infileIdx==2:
+                mkrSty = '^'
+                errCol = 'xkcd:jungle green'
+            elif infileIdx==3:
+                mkrSty = 'v'
+                errCol = 'xkcd:violet'
+            else:
+                mkrSty = 'o'
+                errCol = 'xkcd:black'
+                print("WARNING: need to define new colors",file=sys.stderr)
             mkrCol = errCol
 
             # draw asymmetry graph to subplot
@@ -237,9 +214,10 @@ for l,lmap in plotmap.items():
                 color=mkrCol,
                 ecolor=errCol,
                 linestyle='None',
-                elinewidth=2,
-                markersize=4,
-                capsize=2
+                elinewidth=1,
+                markersize=2,
+                capsize=1,
+                zorder=10+infileIdx,
             )
 
             # close asym.root file
@@ -247,20 +225,21 @@ for l,lmap in plotmap.items():
 
         # END for infileN in infiles
 
-
         # zero line
         axs[r,c].axhline(
             0,0,1,
             color='xkcd:steel',
             ls=':',
-            lw=2
+            lw=1,
+            zorder=5,
         )
 
         # grid
         axs[r,c].grid(
             True,'major','both',
             color='xkcd:light grey',
-            linewidth=0.5
+            linewidth=0.5,
+            zorder=0,
         )
 
         # axis labels
@@ -326,21 +305,18 @@ for l,lmap in plotmap.items():
 # END loop over L and M #####################################
 
 
-
 # axis limits
 xlb = list(asym.GetX())[0]
 xub = list(asym.GetX())[-1]
 xlb -= 0.15*abs(xub-xlb)
 xub += 0.15*abs(xub-xlb)
-#if "z.mh" in infileName:  xlb,xub = 0.35,0.80 # override
-#if "pt.mh" in infileName: xlb,xub = 0.10,0.90 #override
 plt.xlim(xlb,xub)
 plt.ylim(asymMin,asymMax)
 
 
 # draw plots, either to file or to viewer
 if enableOutput:
-    outfileN = infileName.replace(
+    outfileN = infiles[0].replace(
         ".root",
         "_sc"+str(scheme)+"."+outputEXT
     )
@@ -350,4 +326,4 @@ if enableOutput:
     )
     print("--- produced "+outfileN)
 else:
-    plt.show()
+    plt.show() # FIXME: causes segfault ?
