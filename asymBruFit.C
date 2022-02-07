@@ -21,9 +21,6 @@ void asymBruFit(
   gEnv->SetValue("ProofLite.Sandbox",sandbox.Data());
   printf("proof sandbox = %s\n",gEnv->GetValue("ProofLite.Sandbox","ERROR"));
 
-  // print some info for debugging
-  gROOT->ProcessLine(".! root --version");
-
   // instantiate brufit
   BruAsymmetry * B = new BruAsymmetry(bruDir,minimizer,whichSpinMC);
 
