@@ -1,8 +1,10 @@
 #!/usr/bin/env ruby
 # wrapper for pwPlot.py to produce and organize output plots
 require 'pp'
+require 'fileutils'
 
 # settings #################
+subDir     = "bruspin.volatile"
 idString   = "final.feb3"
 datasets   = ["rga", "rgb"]
 minimizers = ["minuit", "mcmccov"]
@@ -14,6 +16,7 @@ ivOpts     = { # map `ivType` to options, such as latex titles, settings, etc.
   42 => { :xTitle=>'$p_T$ [GeV]', :blTitle=>'$M_h$ __BL__' },
 }
 Verbose = true
+outputFormat = "png"
 
 #########################################
 # functions and stuff
@@ -38,14 +41,16 @@ sep = "\n\n"+"#{'S'*50}\n"*3+"\n\n"
 # build pwPlot.py commands, stacking datasets
 
 pwPlotCmds = []
+outputDirs = []
 ivOpts.keys.product(minimizers,schemes).each do |ivType,minimizer,scheme|
 
   puts "\n#{"="*30} PLOT: #{[ivType,minimizer,scheme].join ' '}" if Verbose
 
   # list of bruDirs, one for each dataset
   bruDirs = datasets.map do |dataset|
-    "bruspin.volatile/" + [idString,dataset,ivType,minimizer].join('.')
+    "#{subDir}/" + [idString,dataset,ivType,minimizer].join('.')
   end
+  outputDirs << bruDirs[0] # (only need the first one, where output files are produced)
   printDebug("bruDirs\n",bruDirs)
 
   # map each bruDir to a list of asym*.root files within, then zip together those lists
@@ -80,6 +85,7 @@ ivOpts.keys.product(minimizers,schemes).each do |ivType,minimizer,scheme|
     pwPlotCmd = [
       "./pwPlot.py",
       "-s#{scheme}",
+      "-o#{outputFormat}",
       *titleOpts,
       *bruFiles,
     ].join(' ')
@@ -90,7 +96,23 @@ end
 puts sep
 printDebug("pwPlot commands",pwPlotCmds)
 
+
 #####################################
 # execute pwPlot.py
 puts sep
 pwPlotCmds.each{ |cmd| system cmd }
+
+
+#####################################
+# collect output files
+puts sep
+resultDir = "#{subDir}/#{idString}.results"
+Dir.mkdir(resultDir) unless Dir.exist? resultDir
+outputDirs.each do |outputDir|
+  Dir.glob("#{outputDir}/*.#{outputFormat}").each do |outputFile| 
+    destFile = "#{resultDir}/" + outputFile.sub(/^.*#{idString}./,'').gsub('/','_')
+    FileUtils.mv outputFile, destFile, verbose: true
+  end
+end
+puts sep
+puts "results collected:   #{resultDir}/*.#{outputFormat}"

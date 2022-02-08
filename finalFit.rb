@@ -2,6 +2,7 @@
 # run asymBruFit.C with arguments for the final fit
 
 # settings #################
+subDir     = "bruspin.volatile"
 idString    = "final.feb3"
 datasets    = ["rga", "rgb"]
 minimizers  = ["minuit", "mcmccov"]
@@ -11,7 +12,7 @@ ivBinnings  = { # map `ivType` to number of bins for each dimension
   32 => [4,3],
   42 => [4,3],
 }
-timeLim = 36 # time limit [hr]
+timeLim = 48 # time limit [hr]
 memory = 1000 # memory allocation per CPU [MB]
 ############################
 
@@ -47,7 +48,7 @@ ivBinnings.each{ |_,nbins| nbins.replace (nbins+[-1,-1])[0..2] } # fill rest of 
 # - ASSUME there will be one job per possible setting
 sep.call "job list"
 settings = datasets.product(ivTypes,minimizers).each do |dataset,ivType,minimizer|
-  bruDir = "bruspin.volatile/" + [idString,dataset,ivType,minimizer].join('.')
+  bruDir = "#{subDir}/" + [idString,dataset,ivType,minimizer].join('.')
   bruArgs = [
     bruDir,
     minimizer,

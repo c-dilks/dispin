@@ -51,7 +51,7 @@ bruDirList.each do |bruDir|
   unless listFiles.length>0
     listFiles = asymFiles.map do |f|
       outDirFull = "#{outDir}_BL#{f.gsub(/^.*BL/,"").chomp(".root").to_i}" # e.g., bruspin.x.pullresults_BL0
-      Dir.mkdir(outDirFull) unless Dir.exists? outDirFull
+      Dir.mkdir(outDirFull) unless Dir.exist? outDirFull
       File.open("#{outDirFull}/files.list","w")
     end
   end
