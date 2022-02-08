@@ -250,9 +250,9 @@ for l,lmap in plotmap.items():
                 color=mkrCol,
                 ecolor=errCol,
                 linestyle='None',
-                elinewidth=1,
-                markersize=2,
-                capsize=1,
+                elinewidth=2,
+                markersize=3,
+                capsize=2,
                 zorder=10+infileIdx,
             )
 
