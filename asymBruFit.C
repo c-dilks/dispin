@@ -77,8 +77,8 @@ void asymBruFit(
   // mcTree = "catTreeMC.mc.PRL.DIS.0x34.inj_zm.idx.root; // MC: 2D linear injection along {z,Mh} (old MC)
 
   // data tree (specified by keyword)
-  if      (bruDir.Contains("rga")) dataTree = "catTreeData.rga_inbending_all.idx.root"; // RGA pi+,pi-
-  else if (bruDir.Contains("rgb")) dataTree = "catTreeData.rgb_inbending_all.idx.root"; // RGB pi+,pi-
+  if      (bruDir.Contains("rga")) dataTree = "catTreeData.rga.inbending.all.idx.root"; // RGA pi+,pi-
+  else if (bruDir.Contains("rgb")) dataTree = "catTreeData.rgb.inbending.all.idx.root"; // RGB pi+,pi-
   else {
     // no keyword
     dataTree=mcTree;  mcTree=""; // analyze MC only (e.g., for injection studies)
