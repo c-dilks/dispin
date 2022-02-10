@@ -48,12 +48,14 @@ class FiducialCuts : public TObject {
     /// Different versions are available: For SDIS I use the loose versions,
     /// For cross sectiosn I would recommend the medium or tigth version.
     bool EC_hit_position_fiducial_cut_homogeneous(int j, int cutLevel_);
-    /// Cut based on chi2/NDF, using polynomial border in the theta-phi plane.
-    /// use the following cut for inbending hadrons:
+    /// Cut based on chi2/NDF
+    /// --> based on local theta phi coordinate
+    /// --> Use this cut only for inbending hadrons! 
+    /// --> The cut parameters are not adjusted for any outbending hadron (Do not use it for outbending!)
     bool DC_fiducial_cut_theta_phi(int j, int region, int part_pid);
     /// Cut based on chi2/NDF, straight lines are used in the x-y hit plane.
-    /// use the following cut for inebnding electrons and all outbending
-    /// particles
+    /// --> based on local x, y coordinate
+    /// --> USe this cut for inbending electrons and all outbending hadrons 
     bool DC_fiducial_cut_XY(int j, int region, int part_pid);
 
 
