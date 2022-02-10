@@ -659,11 +659,7 @@ Bool_t EventTree::CheckSampFrac() {
       sfSigma[1][0] = 20.4;     sfSigma[1][1] = 129.3;   sfSigma[1][2] = 0.6191;   sfSigma[1][3] = 0.6817;   sfSigma[1][4] = 20.84;    sfSigma[1][5] = 8.44;
       sfSigma[2][0] = -41.44;   sfSigma[2][1] = -101.6;  sfSigma[2][2] = -2.673;   sfSigma[2][3] = -2.606;   sfSigma[2][4] = -42.67;   sfSigma[2][5] = -21.73;
     }
-    else if( runnum>=11093 && runnum<=11300 ) { // RGB fall 2019
-      fprintf(stderr,"ERROR: RGB fall2019 sampling fraction cuts not yet implemented; ask FX\n");
-      return false;
-    }
-    else if( runnum>=11323 && runnum<=11571 ) { // RGB winter 2020
+    else if( (runnum>=11323 && runnum<=11571) || (runnum>=11093 && runnum<=11300) ) { // RGB winter 2020 // (also using this for RGB fall 2019, but it should be updated! TODO)
       // TODO: check BSA for these other parameterizations; radiation damage caused slow PMT gain drifts, hence the cuts drift slowly //////////////
       // based on run 11375
       // sfMu[0][0]    = 0.2427;  sfMu[0][1]    = 0.2417;  sfMu[0][2]    = 0.2409;  sfMu[0][3]    = 0.2482;  sfMu[0][4]    = 0.2414;  sfMu[0][5]    = 0.2450;
