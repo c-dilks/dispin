@@ -479,7 +479,7 @@ void EventTree::GetEvent(Long64_t i) {
 // MAIN ANALYSIS CUT
 Bool_t EventTree::Valid() {
   return cutDIS && cutDihadron && cutHelicity && 
-         cutFiducial && cutPID && cutVertex && cutFR;
+         cutFiducial && cutPID && /*cutVertex &&*/ cutFR;
   // NOTE: if you want to disable `cutDihadron`, you likely want to ensure `Tools::PairSame` is still checked
   //return Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) && cutHelicity; // disable "all" cuts
 };
