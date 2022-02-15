@@ -30,30 +30,52 @@ class Tools {
       PrintSeparator(outprint.Length()+4);
     };
 
+
+    // get nonzero minimum of a histogram
+    static Double_t GetNonzeroMinimum(TH1 *hist) {
+      Double_t min=1e10;
+      Double_t infinitesimal=1e-10;
+      Double_t minTmp;
+      for(int b=1; b<hist->GetNbinsX(); b++) {
+        minTmp = hist->GetBinContent(b);
+        if(minTmp<infinitesimal) continue;
+        if(minTmp<min) min=minTmp;
+      };
+      return min;
+    };
+
     
     // zoom out the vertical scale for the case where multiple
     // `TH1`s have been drawn with the "SAME" option, but the y-axis
     // range is improperly zoomed
     // - example: `UnzoomVertical(canvas->GetPad(3))`
     // - optionally specify a new title 
-    // - set `min0` to true if you want to lock the minimum at zero
-    static void UnzoomVertical(TVirtualPad *pad, TString title="", Bool_t min0=false) {
-      Double_t max=-1e6;
-      Double_t min=1e6;
+    // - set `min0` to the desired minimum (e.g., 0.0 so zero is not suppressed, or 
+    //   a small nonzero value for the case of drawing with a log axis)
+    static void UnzoomVertical(TVirtualPad *pad, TString title="", Double_t min0=UNDEF) {
+      Double_t max=-1e10;
+      Double_t min=1e10;
       Double_t maxTmp,minTmp;
       for(auto obj : *pad->GetListOfPrimitives()) {
         if(obj->InheritsFrom(TH1::Class())) {
           maxTmp = ((TH1*)obj)->GetMaximum();
-          minTmp = ((TH1*)obj)->GetMinimum();
+          if(pad->GetLogy()>0) minTmp = GetNonzeroMinimum(((TH1*)obj)); // min should not be zero, if drawing with log scale
+          else minTmp = ((TH1*)obj)->GetMinimum();
           max = maxTmp > max ? maxTmp : max;
           min = minTmp < min ? minTmp : min;
         };
       };
-      max += 0.05*(max-min);
-      //min -= 0.05*(max-min);
+      if(pad->GetLogy()>0) {
+        max *= 2;
+        min /= 2;
+      } else {
+        max += 0.05*(max-min);
+        //min -= 0.05*(max-min);
+      };
+      if(min0>UNDEF) min=min0; // force min to min0, if specified
       for(auto obj : *pad->GetListOfPrimitives()) {
         if(obj->InheritsFrom(TH1::Class())) {
-          ((TH1*)obj)->GetYaxis()->SetRangeUser(min0?0:min,max);
+          ((TH1*)obj)->GetYaxis()->SetRangeUser(min,max);
           if(title!="") ((TH1*)obj)->SetTitle(title);
         };
       };
