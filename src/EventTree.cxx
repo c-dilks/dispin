@@ -588,12 +588,10 @@ Float_t EventTree::Rellum() {
 // return true if the event passes vertex cuts
 Bool_t EventTree::CheckVertex() {
 
-  // electron Vz cuts
-  if(RundepTorus(runnum)==kInbending) {
-    // vzBoolEle = -13 < eleVertex[eZ] && eleVertex[eZ] < 12; // inbending, RGA common cuts
-    vzBoolEle = -8.5 < eleVertex[eZ] && eleVertex[eZ] < 4.5; // inbending; tighter than RGA common cuts, to remove foil from RGB data
-  } else {
-    vzBoolEle = -18 < eleVertex[eZ] && eleVertex[eZ] < 10; // outbending, RGA common cuts
+  // electron Vz cuts // tighter than RGA common cuts, to remove foil from Spring2019+ data
+  switch(RundepTorus(runnum)) {
+    case kInbending:  vzBoolEle = -8.0  < eleVertex[eZ] && eleVertex[eZ] < 3.0; break;
+    case kOutbending: vzBoolEle = -10.0 < eleVertex[eZ] && eleVertex[eZ] < 2.5; break;
   };
 
   // | had_Vz - ele_Vz | cut

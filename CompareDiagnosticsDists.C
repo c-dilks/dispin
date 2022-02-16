@@ -78,7 +78,7 @@ void CompareDist(TString distName, TString varTex, TString distTitle="") {
   };
 
   // draw
-  canv->cd(1); dist[0]->Draw("P"); dist[1]->Draw("PSAME");
+  canv->cd(1); dist[0]->Draw("P"); dist[1]->Draw("PSAME"); Tools::UnzoomVertical(canv->GetPad(1));
   canv->cd(2); rat->Draw("E");
   TString imgFile = outDir+"/"+TString(distName)+".png";
   canv->Print(imgFile);

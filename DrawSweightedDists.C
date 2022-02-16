@@ -41,7 +41,7 @@ void Draw(TString varN, TString varT, TString units, Int_t nbins, Double_t lb, D
   hist[kU]->Draw();
   hist[kS]->Draw("SAME");
   hist[kB]->Draw("SAME");
-  Tools::UnzoomVertical(canv1->GetPad(1),"",1);
+  Tools::UnzoomVertical(canv1->GetPad(1),"",0.0);
   canv1->SaveAs(splotDir+"/kindist1_"+varN+".png");
 
   TCanvas *canv2 = new TCanvas( varN+"_canv2", varN+"_canv2", 800, 600 );
@@ -58,7 +58,7 @@ void Draw(TString varN, TString varT, TString units, Int_t nbins, Double_t lb, D
   histMCNormalized->Scale(1/mcNum);
   histSigNormalized->Draw();
   histMCNormalized->Draw("SAME");
-  Tools::UnzoomVertical(canv2->GetPad(1),"",1);
+  Tools::UnzoomVertical(canv2->GetPad(1),"",0.0);
   canv2->SaveAs(splotDir+"/kindist2_"+varN+".png");
 };
 
