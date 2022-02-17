@@ -19,7 +19,7 @@ opts=`echo $args|sed 's/[^ ]* *//'`
 job="job.${exe}.condor";
 log="logfiles"
 mkdir -p $log
-rm -vf ${log}/${exe}.*
+# rm -vf ${log}/${exe}.*
 
 mkdir -p spinroot
 rm -vf spinroot/*.root
