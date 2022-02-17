@@ -1,7 +1,8 @@
-R__LOAD_LIBRARY(DiSpin)
 // CompareDiagnosticsDists ------------------------------
 // draw kinematic distributions from diagnostics plots.root
 // - useful for presentations
+R__LOAD_LIBRARY(DiSpin)
+#include "Constants.h"
 
 TFile * infile[2];
 TString infileT[2];
