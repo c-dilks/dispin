@@ -416,7 +416,7 @@ void CompareDiagnosticsDists(
   // generate imghead.tex
   gSystem->RedirectOutput(outDir+"/imghead.tex","w");
   printf("%% ############ begin generated tex ############\n");
-  printf("\\subsection{%s vs. %s}\n",infileT[0].Data(),infileT[1].Data());
+  printf("\\subsubsection{%s vs. %s}\n",infileT[0].Data(),infileT[1].Data());
   printf("The following several pages, figures \\ref{%s}--\\ref{%s}, show comparisons between the %s and the %s.\n",
       firstLabel.Data(),
       lastLabel.Data(),
