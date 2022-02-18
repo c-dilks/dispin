@@ -89,6 +89,25 @@ class DatasetLooper
   end
 
   #####################################
+  # utilities
+
+  # convert dataset name to title
+  def datasetTitle(dataset)
+    toks = dataset.split('.').map do |tok|
+      tok = tok.upcase if tok.match? /rga|rgb|mc/
+      tok = tok.gsub(/bg/,"(BG-merged ") + " nA)" if tok.match? /^bg/
+      tok.gsub!(/^fa/,"Fall 20")
+      tok.gsub!(/^sp/,"Spring 20")
+      tok.gsub!(/^wi/,"Winter 20")
+      tok
+    end
+    toks.delete("subset")
+    toks.delete("diph")
+    toks.delete("all")
+    return toks.append("data set").join(' ')
+  end
+
+  #####################################
   # tests
   def test
     puts '='*30

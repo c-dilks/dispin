@@ -5,6 +5,7 @@ R__LOAD_LIBRARY(DiSpin)
 #include "Constants.h"
 
 TFile * infile[2];
+TString infileN[2];
 TString infileT[2];
 TCanvas * canv;
 Float_t textSize=0.04;
@@ -84,16 +85,19 @@ void CompareDist(TString distName, TString varTex, TString distTitle="") {
   TString imgFile = outDir+"/"+TString(distName)+".png";
   canv->Print(imgFile);
 
-  // latex code
+  // generate latex code
+  TString imgLabel = "";
+  imgLabel = "fig:" + infileN[0] + ".VS." + infileN[1] + "." + distName;
+  Tools::GlobalRegexp(imgLabel,TRegexp("\\.root"),"");
   Tools::LatexImage(
       latexFile,
       "img/"+imgFile,
-      "Left panel: comparison of " + varTex + " distributions from data sets ``" +
-        dataName[0]+"'' (light red points) and ``" +
-        dataName[1]+"'' (dark blue points). " +
+      "Left panel: comparison of " + varTex + " distributions from the " +
+        dataName[0]+" (light red points) and the " +
+        dataName[1]+" (dark blue points). " +
         "Right panel: ratio of data sets."
         ,
-      "diagnosticComp_"+distName,
+      imgLabel,
       "h",
       1.0
       );
@@ -193,18 +197,21 @@ void CompareDist2D(TString distName, TString varTexX, TString varTexY) {
   TString imgFile = outDir+"/"+TString(distName)+".png";
   canv->Print(imgFile);
 
-  // latex code
+  // generate latex code
+  TString imgLabel = "";
+  imgLabel = "fig:" + infileN[0] + ".VS." + infileN[1] + "." + distName;
+  Tools::GlobalRegexp(imgLabel,TRegexp("\\.root"),"");
   Tools::LatexImage(
       latexFile,
       "img/"+imgFile,
-      "Distribution of " + varTexY + " vs. " + varTexX + " from data set ``" +
-      dataName[0]+"'' (top-left) and data set ``" +
-      dataName[1]+"'' (top-right). Profiles are given by black points. The ratio " +
+      "Distribution of " + varTexY + " vs. " + varTexX + " from the " +
+      dataName[0]+" (top-left) and the " +
+      dataName[1]+" (top-right). Profiles are given by black points. The ratio " +
       "of the distributions is given in the bottom-left, and the comparison of the " +
       "profiles is in the bottom-right, where light red and dark blue respectively correspond to " +
       "the top-left and top-right profiles."
       ,
-      "diagnosticComp_"+distName,
+      imgLabel,
       "h",
       1.0
       );
@@ -244,12 +251,14 @@ void CompareDiagnosticsDists(
   TString infileTitle0="",
   TString infileTitle1=""
 ) {
-  infile[0] = new TFile(infile0N,"READ");
-  infile[1] = new TFile(infile1N,"READ");
+  infileN[0] = infile0N;
+  infileN[1] = infile1N;
   infileT[0] = infileTitle0;
   infileT[1] = infileTitle1;
   gStyle->SetOptStat(0);
   gStyle->SetPalette(kGreenPink);
+
+  for(f=0;f<2;f++) infile[f] = new TFile(infileN[f],"READ");
 
   outDir=outDir_;
   gROOT->ProcessLine(".! mkdir -p "+outDir);

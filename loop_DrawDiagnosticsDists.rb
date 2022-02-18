@@ -6,9 +6,9 @@ looper = DatasetLooper.new
 
 # run DrawDiagnosticsDists for each file
 cmds = []
-looper.loopDatasets do |dataset|
+looper.loopSubsets do |dataset|
   args = [
-    "plots.testvertex.#{dataset}.root",
+    "plots.#{dataset}.root",
     "diagplots/#{dataset}",
   ]
   args.map!{ |arg| if arg.class==String then "\"#{arg}\"" else arg end } # add quotes around strings
