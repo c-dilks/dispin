@@ -5,5 +5,6 @@ require './DatasetLooper.rb'
 looper = DatasetLooper.new
 
 looper.loopAllsets do |dataset|
-  system "singleBinTreeMaker.sh outroot.#{dataset} data"
+  datasetType = dataset.split('.').include?('mc') ? 'mc' : 'data'
+  system "singleBinTreeMaker.sh outroot.#{dataset} #{datasetType}"
 end
