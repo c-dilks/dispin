@@ -15,6 +15,8 @@ TString dataName[2];
 TString latexFile;
 TH1D * dist[2];
 TString outDir;
+TString firstLabel,lastLabel;
+Bool_t isFirstLabel,isLastLabel;
 
 /* `distName` is the name of the distribution (no need to specify path);
  *  if empty, it will instead use whatever's currently at the `dist[]` pointers
@@ -55,7 +57,7 @@ void CompareDist(TString distName, TString varTex, TString distTitle="") {
   rat->SetMarkerColor(kBlack);
   rat->SetMarkerStyle(kFullCircle);
   rat->SetMarkerSize(0.5);
-  rat->GetYaxis()->SetRangeUser(0.5,2);
+  rat->GetYaxis()->SetRangeUser(0.1,10);
   TString ratT = rat->GetTitle();
   ratT(TRegexp("distribution")) = dataName[0]+"/"+dataName[1];
   rat->SetTitle(ratT);
@@ -98,9 +100,11 @@ void CompareDist(TString distName, TString varTex, TString distTitle="") {
         "Right panel: ratio of data sets."
         ,
       imgLabel,
-      "h",
-      1.0
+      "t",
+      0.85
       );
+  if(isFirstLabel) { firstLabel=imgLabel; isFirstLabel=false; };
+  if(isLastLabel)  { lastLabel=imgLabel;  isLastLabel=false;  };
 };
 
 
@@ -212,9 +216,11 @@ void CompareDist2D(TString distName, TString varTexX, TString varTexY) {
       "the top-left and top-right profiles."
       ,
       imgLabel,
-      "h",
-      1.0
+      "t",
+      0.85
       );
+  if(isFirstLabel) { firstLabel=imgLabel; isFirstLabel=false; };
+  if(isLastLabel)  { lastLabel=imgLabel;  isLastLabel=false;  };
 };
 
 /*
@@ -239,6 +245,15 @@ void DrawCanv(TString distName) {
   canv->Print(TString(distName)+".png");
 };
 */
+
+void LatexClearPage() {
+  // add `\clearpage` to latex output, since latex cannot easily handle
+  // more than 18 consecutive floats
+  gSystem->RedirectOutput(latexFile,"a");
+  printf("\\clearpage\n");
+  gSystem->RedirectOutput(0);
+};
+
 
 ///////////////////////////////////////////////////
 ///////////////////////////////////////////////////
@@ -265,7 +280,10 @@ void CompareDiagnosticsDists(
   latexFile = outDir+"/img.tex";
   gSystem->RedirectOutput(latexFile,"w");
   printf("%% ############ begin generated tex ############\n");
+  printf("\\input{img/%s/imghead.tex}\n",outDir.Data());
   gSystem->RedirectOutput(0);
+  isFirstLabel = true;
+  isLastLabel = false;
 
   // get data set name
   for(f=0;f<2;f++) {
@@ -295,7 +313,7 @@ void CompareDiagnosticsDists(
       TString varRootExtra=""
       ) {
     TString had_name[2] = {"piPlus","piMinus"};
-    TString had_latex[2] = {"\\pi^+","\\pi^-"};
+    TString had_latex[2] = {"\\pip","\\pim"};
     TString had_root[2] = {"#pi^{+}","#pi^{-}"};
     for(int h=0; h<2; h++) {
       CompareDist(
@@ -313,47 +331,71 @@ void CompareDiagnosticsDists(
   // DIS
   CompareDist("Q2Dist","$Q^2$","Q^{2}");
   CompareDist("XDist","$x$","x");
+  LatexClearPage();
   CompareDist("WDist","$W$","W");
   CompareDist("YDist","$y$","y");
+  LatexClearPage();
 
   // dihadron
   CompareDist("MhDist","$M_h$","M_{h}");
   CompareDist("ZpairDist","$z$","z_{pair}");
-  CompareDist("PhPerpDist","$P_h^\\perp$","p_{T}");
+  LatexClearPage();
+  CompareDist("PhPerpDist","$\\phperp$","p_{T}");
   CompareDist("MmissDist","$M_X$","M_{X}");
-  CompareDist("PhiHDist","$\\phi_h$","#phi_{h}");
-  CompareDist("PhiRDist","$\\phi_R$","#phi_{R}");
+  LatexClearPage();
+  CompareDist("xFDist","dihadron $x_F$","dihadron x_{F}");
   CompareDist("thetaDist","$\\theta$","#theta");
-  CompareDistHadron("hadPhiHDist","\\phi_h","#phi_{h}");
+  LatexClearPage();
+  CompareDist("PhiHDist","$\\phih$","#phi_{h}");
+  CompareDist("PhiRDist","$\\phir$","#phi_{R}");
+  LatexClearPage();
+  CompareDistHadron("hadPhiHDist","\\phih","#phi_{h}");
+  LatexClearPage();
 
   // fragmentation region
   CompareDistHadron("hadXFDist","x_F","x_{F}");
-
-  // vertex
-  CompareDist("eleVzDist","$v_z\\left(e^-\\right)$","v_{z}(e^{-})");
-  CompareDistHadron("hadEleVzDiffDist","v_z","v_{z}","-v_z\\left(e^-\\right)","-v_{z}(e^{-})");
+  LatexClearPage();
 
   // PID
-  CompareDist("eleThetaDist","$\\theta_{lab}\\left(e^-\\right)$","#theta_{lab}(e^{-})");
+  CompareDist("eleThetaDist","$\\theta_{\\mbox{lab}}\\left(e^-\\right)$","#theta_{lab}(e^{-})");
   CompareDist("elePDist","$p\\left(e^-\\right)$","p(e^{-})");
+  LatexClearPage();
   CompareDist("elePCALenDist","$E_{PCAL}\\left(e^-\\right)$","E_{PCAL}(e^{-})");
   CompareDist("eleECINenDist","$E_{ECIN}\\left(e^-\\right)$","E_{ECIN}(e^{-})");
+  LatexClearPage();
   CompareDist("eleECOUTenDist","$E_{ECOUT}\\left(e^-\\right)$","E_{ECOUT}(e^{-})");
   CompareDist("eleSampFracDist","electron sampling fraction","S.F.(e^{-})");
-  CompareDistHadron("hadThetaDist","\\theta_{lab}","#theta_{lab}");
+  LatexClearPage();
+  CompareDistHadron("hadThetaDist","\\theta_{\\mbox{lab}}","#theta_{lab}");
+  LatexClearPage();
   CompareDistHadron("hadPDist","p","p");
+  LatexClearPage();
   CompareDistHadron("hadChi2pidDist","\\chipid","#chi^{2}_{pid}");
+  LatexClearPage();
   CompareDist2D("eleDiagonalSFdist","$E_{\\mbox{PCAL}}/p$","$E_{\\mbox{ECIN}}/p$");
+  LatexClearPage();
   CompareDist2D("eleSFvsP","$p$","electron sampling fraction");
+  LatexClearPage();
   CompareDist2D("eleECALvsPCALedep","$E_{\\mbox{PCAL}}$","$E_{\\mbox{ECAL}}$");
-  CompareDist2D("piPlushadChi2pidVsP","$p$","$\\pi^+~\\chi^2_{\\mbox{pid}}$");
-  CompareDist2D("piMinushadChi2pidVsP","$p$","$\\pi^-~\\chi^2_{\\mbox{pid}}$");
+  LatexClearPage();
+  CompareDist2D("piPlushadChi2pidVsP","$p$","$\\pip~\\chipid$");
+  LatexClearPage();
+  CompareDist2D("piMinushadChi2pidVsP","$p$","$\\pim~\\chipid$");
+  LatexClearPage();
+
+  // vertex
+  CompareDistHadron("hadEleVzDiffDist","v_z","v_{z}","-v_z\\left(e^-\\right)","-v_{z}(e^{-})");
+  LatexClearPage();
+  isLastLabel = true;
+  CompareDist("eleVzDist","$v_z\\left(e^-\\right)$","v_{z}(e^{-})");
+  LatexClearPage();
+
 
   /*
   CompareDist2Dproj(
       "vzDiffEleHad",
-      "$v_z(\\pi^-)-v_z(e^-)$",
-      "$v_z(\\pi^+)-v_z(e^-)$",
+      "$v_z(\\pim)-v_z(e^-)$",
+      "$v_z(\\pip)-v_z(e^-)$",
       "v_{z}(#pi^{-})-v_{z}(e^{-})",
       "v_{z}(#pi^{+})-v_{z}(e^{-})"
       );
@@ -370,5 +412,19 @@ void CompareDiagnosticsDists(
   printf("%% ############ end generated tex ############\n");
   gSystem->RedirectOutput(0);
   printf("latex file: %s\n",latexFile.Data());
+
+  // generate imghead.tex
+  gSystem->RedirectOutput(outDir+"/imghead.tex","w");
+  printf("%% ############ begin generated tex ############\n");
+  printf("\\subsection{%s vs. %s}\n",infileT[0].Data(),infileT[1].Data());
+  printf("The following several pages, figures \\ref{%s}--\\ref{%s}, show comparisons between the %s and the %s.\n",
+      firstLabel.Data(),
+      lastLabel.Data(),
+      infileT[0].Data(),
+      infileT[1].Data()
+      );
+  printf("\\clearpage\n");
+  printf("%% ############ end generated tex ############\n");
+  gSystem->RedirectOutput(0);
 
 };
