@@ -5,6 +5,15 @@ require 'pp'
 
 class DatasetLooper
 
+  # module Filters
+  #   refine Array do
+  #     def onlyMC
+  #       self.select{|e|e.include?'mc'}
+  #     end
+  #   end
+  # end
+  # using Filters
+
   # list of datasets
   DatasetList = [
     "mc.inbending.bg45",
@@ -47,78 +56,91 @@ class DatasetLooper
   #####################################
   # general loopers; better to use 'sugar' below
 
-  # loop over datases in `arr`, executing a block for each
-  def loopSets(arr,&block)
-    arr.each do |dataset|
-      yield dataset
-    end
-  end
+  # # loop over datases in `arr`, executing a block for each
+  # def loopSets(arr,&block)
+  #   arr.each do |dataset|
+  #     yield dataset
+  #   end
+  # end
 
-  # loop over pairs of datasets in `arr`, executing a block for each
-  def loopPairs(arr)
-    arr.combination(2).to_a.each do |pair|
-      yield pair
+  # # loop over pairs of datasets in `arr`, executing a block for each
+  # def loopPairs(arr)
+  #   arr.combination(2).to_a.each do |pair|
+  #     yield pair
+  #   end
+  # end
+
+  #####################################
+  # method generators
+  def self.loopSets(*arrs)
+    arrs.each do |arr|
+      define_method("loop#{arr}") do |&block|
+        # puts instance_variable_get("@#{arr}")
+        instance_variable_get("@#{arr}").each do |dataset|
+          block.call dataset
+        end
+      end
     end
   end
+  loopSets :allsetList
 
   #####################################
   # specific loopers (sugar)
 
   # Datasets
-  def loopDatasets(&block)
-    loopSets(DatasetList,&block)
-  end
-  def loopDatasetPairs(&block)
-    loopPairs(DatasetList,&block)
-  end
+  #def loopDatasets(&block)
+  #  loopSets(DatasetList,&block)
+  #end
+  #def loopDatasetPairs(&block)
+  #  loopPairs(DatasetList,&block)
+  #end
 
-  # Subsets
-  def loopSubsets(&block)
-    loopSets(@subsetList,&block)
-  end
-  def loopSubsetPairs(&block)
-    loopPairs(@subsetList,&block)
-  end
+  ## Subsets
+  #def loopSubsets(&block)
+  #  loopSets(@subsetList,&block)
+  #end
+  #def loopSubsetPairs(&block)
+  #  loopPairs(@subsetList,&block)
+  #end
     
-  # Allsets
-  def loopAllsets(&block)
-    loopSets(@allsetList,&block)
-  end
-  def loopAllsetPairs(&block)
-    loopPairs(@allsetList,&block)
-  end
+  ## Allsets
+  #def loopAllsets(&block)
+  #  loopSets(@allsetList,&block)
+  #end
+  #def loopAllsetPairs(&block)
+  #  loopPairs(@allsetList,&block)
+  #end
 
-  #####################################
-  # utilities
+  ######################################
+  ## utilities
 
-  # convert dataset name to title
-  def datasetTitle(dataset)
-    toks = dataset.split('.').map do |tok|
-      tok = tok.upcase if tok.match? /rga|rgb|mc/
-      tok = tok.gsub(/bg/,"(BG-merged ") + " nA)" if tok.match? /^bg/
-      tok.gsub!(/^fa/,"Fall 20")
-      tok.gsub!(/^sp/,"Spring 20")
-      tok.gsub!(/^wi/,"Winter 20")
-      tok
-    end
-    toks.delete("subset")
-    toks.delete("diph")
-    toks.delete("all")
-    return toks.append("data set").join(' ')
-  end
+  ## convert dataset name to title
+  #def datasetTitle(dataset)
+  #  toks = dataset.split('.').map do |tok|
+  #    tok = tok.upcase if tok.match? /rga|rgb|mc/
+  #    tok = tok.gsub(/bg/,"(BG-merged ") + " nA)" if tok.match? /^bg/
+  #    tok.gsub!(/^fa/,"Fall 20")
+  #    tok.gsub!(/^sp/,"Spring 20")
+  #    tok.gsub!(/^wi/,"Winter 20")
+  #    tok
+  #  end
+  #  toks.delete("subset")
+  #  toks.delete("diph")
+  #  toks.delete("all")
+  #  return toks.append("data set").join(' ')
+  #end
 
-  #####################################
-  # tests
-  def test
-    puts '='*30
-    loopSubsets{ |set| puts "#{set}" }
-    puts '='*30
-    loopAllsetPairs{ |set| puts "#{set}" }
-  end
+  ######################################
+  ## tests
+  #def test
+  #  puts '='*30
+  #  loopSubsets{ |set| puts "#{set}" }
+  #  puts '='*30
+  #  loopAllsetPairs{ |set| puts "#{set}" }
+  #end
 
-  #####################################
+  ######################################
 
-  attr_accessor :subsetList
-  attr_accessor :allsetList
+  attr_accessor :subsetList, :allsetList
 
 end
