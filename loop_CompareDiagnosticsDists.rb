@@ -6,7 +6,7 @@ looper = DatasetLooper.new
 
 # run CompareDiagnosticsDists, for each pair of datasets
 cmds = []
-looper.loopSubsetPairs do |pair|
+looper.subsetListPairs do |pair|
 
   # convert dataset names to titles
   pairTitles = pair.map{|set| looper.datasetTitle(set) }

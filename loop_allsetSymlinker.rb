@@ -4,6 +4,6 @@
 require './DatasetLooper.rb'
 looper = DatasetLooper.new
 
-looper.loopAllsets do |dataset|
+looper.allsetListLoop do |dataset|
   system "allsetSymlinker.sh #{dataset.gsub(/\.all$/,'')}"
 end

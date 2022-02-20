@@ -6,6 +6,6 @@ looper = DatasetLooper.new
 
 numFiles = 8 # number of files in each subset
 
-looper.loopDatasets do |dataset|
+looper.datasetListLoop do |dataset|
   system "subsetSymlinker.sh outroot.#{dataset} #{numFiles}"
 end
