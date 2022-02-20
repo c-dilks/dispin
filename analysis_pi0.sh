@@ -38,7 +38,7 @@ for iv in 1 2 3 4; do
   brudir="bruspin.sfit.$varName"
   mkdir -p $brudir
   rm -r $brudir
-  brufit -b -q asymBruFit.C'("'$brudir'","minuit","'$splotdir'",'$iv',6)'
+  brufit -b -q asymBruFit.C'("catTreeData.rga_inbending_all.0x3b.idx.trimmed.root","catTreeMC.mc.PRL.0x3b.idx.trimmed.root","'$brudir'","minuit","'$splotdir'",'$iv',6)'
   errorPrintProof.sh | tee $brudir/ERRORS.log
 
 

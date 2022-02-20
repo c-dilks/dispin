@@ -7,12 +7,15 @@ R__LOAD_LIBRARY(DiSpin)
  */
 
 void asymBruFit(
-    TString bruDir="bruspin", // output directory; use keywords to specify which data set to analyze (see below)
+    TString dataTree="catTreeData.rga.inbending.all.idx.root", // data catTree
+    TString mcTree="catTreeMC.mc.inbending.bg45.0x34.idx.root"; // MC catTree (leave empty to disable)
+    TString bruDir="bruspin", // output directory
     TString minimizer="minuit", // minimizer (see comments above)
     TString sPlotDir="", // sPlot directory (leave empty string if not using, otherwise use outDir from `sPlotBru.C`)
     Int_t binschemeIVtype=2, // binning scheme (execute `buildSpinroot.exe` and see usage of `-i`)
-    Int_t nbins0=-1, Int_t nbins1=-1, Int_t nbins2=-1, // number of bins for each dimension
-           /* example: binschemeIVtype=32, nbins0=6, nbins1=3, runs fit in 6 bins of z (iv=3) for 3 bins of Mh (iv=2) */
+    Int_t nbins0=-1, // number of bins for each dimension
+    Int_t nbins1=-1, // - example: binschemeIVtype=32, nbins0=6, nbins1=3, runs fit in 6 bins of z (iv=3) for 3 bins of Mh (iv=2)
+    Int_t nbins2=-1, // - leave `-1` to use defaults defined in `src/Binning.cxx`
     Int_t whichSpinMC=-1 // if >=0, use helicity from injected asymmetry (branch "SpinMC_`whichSpinMC`_idx")
 ) {
 
@@ -68,34 +71,9 @@ void asymBruFit(
   B->PrintBinScheme();
 
 
-  // load data and MC trees ---------------------------------------------------------------------------------
-  TString dataTree,mcTree;
-
-  // MC tree
-  mcTree = "catTreeMC.mc.inbending.bg45.0x34.idx.root"; // new MC
-  // mcTree = "catTreeMC.mc.PRL.DIS.0x34.inj_x.idx.root"; // MC: 1D linear injection along x (old MC)
-  // mcTree = "catTreeMC.mc.PRL.DIS.0x34.inj_zm.idx.root; // MC: 2D linear injection along {z,Mh} (old MC)
-
-  // data tree (specified by keyword)
-  if      (bruDir.Contains("rga")) dataTree = "catTreeData.rga.inbending.all.idx.root"; // RGA pi+,pi-
-  else if (bruDir.Contains("rgb")) dataTree = "catTreeData.rgb.inbending.all.idx.root"; // RGB pi+,pi-
-  else {
-    // no keyword
-    dataTree=mcTree;  mcTree=""; // analyze MC only (e.g., for injection studies)
-  };
-
-  // load trees
-  B->LoadDataSets(dataTree,mcTree);
-
-  /* pi+, pi0 */
-  // B->LoadDataSets("catTreeData.rga_inbending_all.0x35.idx.root","catTreeMC.mc.PRL.0x35.idx.root"); // pi+,pi0 sig window
-  // B->LoadDataSets("catTreeData.rga_inbending_all.0x3c.idx.root","catTreeMC.mc.PRL.0x3c.idx.root"); // pi+,pi0 bg window
-  // B->LoadDataSets( /* sFit; NOTE: use `TrimCatTree.C` and `sPlotBru.C` to produce the required files */
-  //     "catTreeData.rga_inbending_all.0x3b.idx.trimmed.root",
-  //     "catTreeMC.mc.PRL.0x3b.idx.trimmed.root",
-  //     sPlotDir+"/Tweights.root",
-  //     "Signal"
-  //     );
+  // load data and MC catTrees -------------------------------------------------------------------------------
+  if(splotDir=="") B->LoadDataSets( dataTree, mcTree  );
+  else             B->LoadDataSets( dataTree, mcTree, sPlotDir+"/Tweights.root", "Signal" );
 
 
   // MCMC hyperparameters ------------------------------------------------------------------------------------
