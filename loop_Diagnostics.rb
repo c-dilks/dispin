@@ -11,7 +11,7 @@ puts "poolSize = #{poolSize}"
 pool = Thread.pool(poolSize)
 
 # run diagnostics.exe for each dataset
-looper.loopSubsets do |dataset|
+looper.subsetListLoop do |dataset|
   args = [
     "\"outroot.#{dataset}/*.root\"",
     "plots.#{dataset}.root",

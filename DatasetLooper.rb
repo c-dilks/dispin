@@ -1,95 +1,94 @@
 #!/usr/bin/env ruby
-# common methods for looping through all our datasets
+# common methods for looping through the dataset lists
 
 require 'pp'
 
 class DatasetLooper
 
-  # list of datasets
-  DatasetList = [
-    "mc.inbending.bg45",
-    "mc.outbending.bg40",
-    "mc.outbending.bg50",
-    "rga.inbending.fa18",
-    "rga.inbending.sp19",
-    "rga.outbending.fa18",
-    "rgb.inbending.sp19",
-    "rgb.inbending.sp20",
-    "rgb.outbending.fa19",
+  #####################################
+  # construction
+ 
+  # list of lists that we will define below
+  ListOfLists = [
+    "datasetList",
+    "subsetList",
+    "allsetList",
   ]
 
-  #####################################
   # constructor
-
   def initialize
+
+    # list of datasets
+    @datasetList = [
+      "mc.inbending.bg45",
+      "mc.outbending.bg40",
+      "mc.outbending.bg50",
+      "rga.inbending.fa18",
+      "rga.inbending.sp19",
+      "rga.outbending.fa18",
+      "rgb.inbending.sp19",
+      "rgb.inbending.sp20",
+      "rgb.outbending.fa19",
+    ]
+
     # make @subsetList
-    @subsetList = DatasetList.map do |dataset|
+    @subsetList = @datasetList.map do |dataset|
       dataset+".subset"
     end
+
     # make @allsetList
-    @allsetList = DatasetList.map do |dataset|
+    @allsetList = @datasetList.map do |dataset|
       dataset.gsub(/bending\..*$/,"bending.all")
     end.uniq
+
   end
 
+  # generate list accessors
+  ListOfLists.map(&:to_sym).each{ |sym| attr_accessor sym }
+
+
   #####################################
-  # print
- 
+  # looping method generators
+
+  # generator of a method for looping through elements of `list`
+  # - example: `gen_loopSets :datasetList` generates method `datasetListLoop(&block)`, 
+  #   which will call `block` for each element in `datasetList`
+  def self.gen_loopSets(list)
+    define_method("#{list}Loop") do |&block|
+      instance_variable_get("@#{list}").each do |dataset|
+        block.call dataset
+      end
+    end
+  end
+
+  # generator of a method for looping through pairs of elements of `list`
+  # - analagous to `gen_loopSets`
+  # - example: method `datasetListPairs(&block)` calls `block` for each pair
+  def self.gen_loopPairs(list)
+    define_method("#{list}Pairs") do |&block|
+      instance_variable_get("@#{list}").combination(2).to_a.each do |pair|
+        block.call pair
+      end
+    end
+  end
+
+  # generate the looping methods for each list in ListOfLists
+  ListOfLists.map(&:to_sym).each do |sym|
+    gen_loopSets sym
+    gen_loopPairs sym
+  end
+
+
+  ######################################
+  ## utilities
+
+  # print all the lists
   def printLists
-    puts "\nDatasetList = "
-    pp DatasetList
-    puts "\nSubsetList = "
-    pp @subsetList
-    puts "\nAllsetList = "
-    pp @allsetList
-  end
-
-  #####################################
-  # general loopers; better to use 'sugar' below
-
-  # loop over datases in `arr`, executing a block for each
-  def loopSets(arr,&block)
-    arr.each do |dataset|
-      yield dataset
+    ListOfLists.each do |list|
+      puts "\n#{list} = "
+      pp instance_variable_get("@#{list}")
     end
   end
-
-  # loop over pairs of datasets in `arr`, executing a block for each
-  def loopPairs(arr)
-    arr.combination(2).to_a.each do |pair|
-      yield pair
-    end
-  end
-
-  #####################################
-  # specific loopers (sugar)
-
-  # Datasets
-  def loopDatasets(&block)
-    loopSets(DatasetList,&block)
-  end
-  def loopDatasetPairs(&block)
-    loopPairs(DatasetList,&block)
-  end
-
-  # Subsets
-  def loopSubsets(&block)
-    loopSets(@subsetList,&block)
-  end
-  def loopSubsetPairs(&block)
-    loopPairs(@subsetList,&block)
-  end
-    
-  # Allsets
-  def loopAllsets(&block)
-    loopSets(@allsetList,&block)
-  end
-  def loopAllsetPairs(&block)
-    loopPairs(@allsetList,&block)
-  end
-
-  #####################################
-  # utilities
 
   # convert dataset name to title
   def datasetTitle(dataset)
@@ -106,19 +105,5 @@ class DatasetLooper
     toks.delete("all")
     return toks.append("data set").join(' ')
   end
-
-  #####################################
-  # tests
-  def test
-    puts '='*30
-    loopSubsets{ |set| puts "#{set}" }
-    puts '='*30
-    loopAllsetPairs{ |set| puts "#{set}" }
-  end
-
-  #####################################
-
-  attr_accessor :subsetList
-  attr_accessor :allsetList
 
 end

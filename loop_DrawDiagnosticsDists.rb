@@ -6,7 +6,7 @@ looper = DatasetLooper.new
 
 # run DrawDiagnosticsDists for each file
 cmds = []
-looper.loopSubsets do |dataset|
+looper.subsetListLoop do |dataset|
   args = [
     "plots.#{dataset}.root",
     "diagplots/#{dataset}",
