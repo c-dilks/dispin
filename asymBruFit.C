@@ -8,7 +8,7 @@ R__LOAD_LIBRARY(DiSpin)
 
 void asymBruFit(
     TString dataTree="catTreeData.rga.inbending.all.idx.root", // data catTree
-    TString mcTree="catTreeMC.mc.inbending.bg45.0x34.idx.root"; // MC catTree (leave empty to disable)
+    TString mcTree="catTreeMC.mc.inbending.bg45.0x34.idx.root", // MC catTree (leave empty to disable)
     TString bruDir="bruspin", // output directory
     TString minimizer="minuit", // minimizer (see comments above)
     TString sPlotDir="", // sPlot directory (leave empty string if not using, otherwise use outDir from `sPlotBru.C`)
