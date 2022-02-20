@@ -1,19 +1,23 @@
 #!/usr/bin/env ruby
 # run asymBruFit.C with arguments for the final fit
 
+require './DatasetLooper.rb'
+looper = DatasetLooper.new
+
 # settings #################
 subDir     = "bruspin.volatile"
-idString    = "final.feb3"
-datasets    = ["rga", "rgb"]
-minimizers  = ["minuit", "mcmccov"]
-ivBinnings  = { # map `ivType` to number of bins for each dimension
+idString   = "final.feb20"
+datasets   = looper.allsetListLoopOnlyData
+mcsets     = looper.allsetListLoopOnlyMC
+minimizers = ["minuit", "mcmccov"]
+ivBinnings = { # map `ivType` to number of bins for each dimension
   1  => [12],
   2  => [12],
   32 => [4,3],
   42 => [4,3],
 }
 timeLim = 48 # time limit [hr]
-memory = 1000 # memory allocation per CPU [MB]
+memory  = 1000 # memory allocation per CPU [MB]
 ############################
 
 sep = Proc.new{ |title| puts "\n#{title}\n"+"="*40 }
@@ -45,12 +49,21 @@ ivTypes = ivBinnings.keys
 ivBinnings.each{ |_,nbins| nbins.replace (nbins+[-1,-1])[0..2] } # fill rest of nbins Arrays with default `-1` values
 
 # loop over all possible settings, defining asymBruFit.C calls, and generate job list
-# - ASSUME there will be one job per possible setting
+# - there will be one job per possible setting
 sep.call "job list"
 settings = datasets.product(ivTypes,minimizers).each do |dataset,ivType,minimizer|
-  bruDir = "#{subDir}/" + [idString,dataset,ivType,minimizer].join('.')
+
+  # match mcset to dataset
+  mcset = mcsets.find do |set|
+    torus = dataset.split('.').find{ |tok| tok.include?"bending" }
+    set.include? torus
+  end
+
+  # asymBrufit.C arguments
   bruArgs = [
-    bruDir,
+    "catTreeData.#{dataset}.idx.root",
+    "catTreeMC.#{mcset}.idx.root",
+    "#{subDir}/" + [idString,dataset,ivType,minimizer].join('.'),
     minimizer,
     "",
     ivType,

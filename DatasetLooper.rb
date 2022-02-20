@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 # common methods for looping through the dataset lists
+# - see `testDatasetLooper.rb` for usage guidance
 
 require 'pp'
 
@@ -8,13 +9,6 @@ class DatasetLooper
   #####################################
   # construction
  
-  # list of lists that we will define below
-  ListOfLists = [
-    "datasetList",
-    "subsetList",
-    "allsetList",
-  ]
-
   # constructor
   def initialize
 
@@ -43,39 +37,73 @@ class DatasetLooper
 
   end
 
+  # list of lists that have been defined above
+  ListOfLists = [
+    :datasetList,
+    :subsetList,
+    :allsetList,
+  ]
+
   # generate list accessors
-  ListOfLists.map(&:to_sym).each{ |sym| attr_accessor sym }
+  ListOfLists.each{ |sym| attr_accessor sym }
+
+
+  #####################################
+  # list filters for data or MC
+
+  def noop(list) list end
+  def onlyMC(list) list.find_all{ |set| set.match? /^mc\./ } end
+  def onlyData(list) list.reject{ |set| set.match? /^mc\./ } end
+
+  ListOfFilters = [
+    :noop,
+    :onlyMC,
+    :onlyData,
+  ]
 
 
   #####################################
   # looping method generators
 
   # generator of a method for looping through elements of `list`
-  # - example: `gen_loopSets :datasetList` generates method `datasetListLoop(&block)`, 
-  #   which will call `block` for each element in `datasetList`
-  def self.gen_loopSets(list)
-    define_method("#{list}Loop") do |&block|
-      instance_variable_get("@#{list}").each do |dataset|
-        block.call dataset
+  # - example: `gen_loopSets :datasetList` generates method `datasetListLoop(&block)`, which will call
+  #   `block` for each element in `datasetList` (and if you do not pass a block when calling the method,
+  #   it will simply return the list)
+  # - specify a filter, to filter the loop
+  #   - example: `gen_loopSets(:datasetList,:onlyMC)` generates method `datasetListLoopOnlyMC(&block)`,
+  #     which will call `block` for each element in `onlyMC(datasetList)`
+  def self.gen_loopSets(list,filter=:noop)
+    methodName = "#{list.to_s}Loop"
+    methodName += filter.to_s.sub(/^./,&:upcase) if filter!=:noop # append filter name, capitalizing first letter
+    define_method(methodName) do |&block|
+      filteredList = send( filter.to_s, instance_variable_get("@#{list}") ) # filter `list`
+      filteredList.each do |dataset|
+        block.call dataset unless block.nil?
       end
     end
   end
 
   # generator of a method for looping through pairs of elements of `list`
   # - analagous to `gen_loopSets`
-  # - example: method `datasetListPairs(&block)` calls `block` for each pair
-  def self.gen_loopPairs(list)
-    define_method("#{list}Pairs") do |&block|
-      instance_variable_get("@#{list}").combination(2).to_a.each do |pair|
-        block.call pair
+  # - example: method `datasetListPairs(&block)` calls `block` for each pair in `datasetList`
+  # - example: method `datasetListPairsOnlyMC(&block)` calls `block` for each pair `onlyMC(datsetList)`
+  def self.gen_loopPairs(list,filter=:noop)
+    methodName = "#{list.to_s}Pairs"
+    methodName += filter.to_s.sub(/^./,&:upcase) if filter!=:noop # append filter name, capitalizing first letter
+    define_method(methodName) do |&block|
+      filteredList = send( filter.to_s, instance_variable_get("@#{list}") ) # filter `list`
+      filteredList.combination(2).to_a.each do |pair|
+        block.call pair unless block.nil?
       end
     end
   end
 
-  # generate the looping methods for each list in ListOfLists
-  ListOfLists.map(&:to_sym).each do |sym|
-    gen_loopSets sym
-    gen_loopPairs sym
+  # generate the looping methods for each list in ListOfLists and for each filter in ListOfFilters
+  ListOfLists.each do |list|
+    ListOfFilters.each do |filter|
+      gen_loopSets(list, filter)
+      gen_loopPairs(list, filter)
+    end
   end
 
 
@@ -85,8 +113,10 @@ class DatasetLooper
   # print all the lists
   def printLists
     ListOfLists.each do |list|
-      puts "\n#{list} = "
+      puts "\n#{list.to_s} = "
       pp instance_variable_get("@#{list}")
+      # pp onlyMC   instance_variable_get("@#{list}")
+      # pp onlyData instance_variable_get("@#{list}")
     end
   end
 

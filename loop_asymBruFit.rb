@@ -27,6 +27,8 @@ jobFile = File.open(jobFileName,"w")
 # define asymBruFit.C call, and append to job list
 fit = Proc.new do |whichSpinMC|
   bruArgs = [
+    "catTreeMC.mc.PRL.DIS.0x34.inj_zm.idx.root",
+    "",
     "bruspin.volatile/bruspin.#{minimizer}.#{ivString}.inj#{whichSpinMC}",
     minimizer,
     "",
