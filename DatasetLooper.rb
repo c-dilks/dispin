@@ -54,11 +54,15 @@ class DatasetLooper
   def noop(list) list end
   def onlyMC(list) list.find_all{ |set| set.match? /^mc\./ } end
   def onlyData(list) list.reject{ |set| set.match? /^mc\./ } end
+  def onlyRGA(list) list.find_all{ |set| set.match? /^rga\./ } end
+  def onlyRGB(list) list.find_all{ |set| set.match? /^rgb\./ } end
 
   ListOfFilters = [
     :noop,
     :onlyMC,
     :onlyData,
+    :onlyRGA,
+    :onlyRGB,
   ]
 
 
@@ -134,6 +138,15 @@ class DatasetLooper
     toks.delete("diph")
     toks.delete("all")
     return toks.append("data set").join(' ')
+  end
+
+  # find dataset in `searchList` that has matching torus polarity; only returns 
+  # the first match, so this is best used when there will be only one possible match
+  def matchByTorus(dataset,searchList)
+    searchList.find do |set|
+      torus = dataset.split('.').find{ |tok| tok.include?"bending" }
+      set.include? torus
+    end
   end
 
 end

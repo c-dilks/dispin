@@ -54,10 +54,7 @@ sep.call "job list"
 settings = datasets.product(ivTypes,minimizers).each do |dataset,ivType,minimizer|
 
   # match mcset to dataset
-  mcset = mcsets.find do |set|
-    torus = dataset.split('.').find{ |tok| tok.include?"bending" }
-    set.include? torus
-  end
+  mcset = looper.matchByTorus(dataset,mcsets)
 
   # asymBrufit.C arguments
   bruArgs = [
