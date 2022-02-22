@@ -72,7 +72,7 @@ void asymBruFit(
 
 
   // load data and MC catTrees -------------------------------------------------------------------------------
-  if(splotDir=="") B->LoadDataSets( dataTree, mcTree  );
+  if(sPlotDir=="") B->LoadDataSets( dataTree, mcTree  );
   else             B->LoadDataSets( dataTree, mcTree, sPlotDir+"/Tweights.root", "Signal" );
 
 
