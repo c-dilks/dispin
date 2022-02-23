@@ -3,14 +3,30 @@
 
 #include "EventTree.h"
 
+// class to support 'catTrees' = (conCATenated trees), for holding
+// only the events that are analyzed by brufit
+// - this class derives from EventTree, so that places where EventTree kinematic
+//   variables are used (such as Mh,PhiH,etc.) are also compatible with CatTree
+//   branches
+// - CatTree variables are a small subset of those available in EventTree
+// - EventTree variables are floats, CatTree variables are doubles; this inconsistency
+//   remains for compatiblity with already produced ROOT files
+
 class CatTree : public EventTree
 {
   public:
     CatTree(TString treeFileN);
     ~CatTree();
+    
+    // get CatTree event, and set EventTree kinematic variables; does not set
+    // Valid() booleans, since necessity of Valid() is assumed to only be
+    // upstream of CatTree production
     void GetEvent(Long64_t i) override;
-    Float_t GetDepol2() { return (Float_t) d_Depol2; };
-    Float_t GetDepol3() { return (Float_t) d_Depol3; };
+
+    // depolarization accessors, since EventTree instead does the calculation, but
+    // CatTree just stores them
+    Float_t GetDepol2() override { return (Float_t) d_Depol2; };
+    Float_t GetDepol3() override { return (Float_t) d_Depol3; };
 
   private:
 
