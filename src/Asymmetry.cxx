@@ -1393,6 +1393,7 @@ void Asymmetry::ActivateTree(Bool_t isMC, InjectionModel *IM_) {
     IM = IM_;
     injectAsym = true;
   };
+  // TODO: (low priority) use the new CatTree class
   tree = new TTree("tree","tree");
   tree->Branch("PhiH",&tree_PhiH,"PhiH/D");
   tree->Branch("PhiR",&tree_PhiR,"PhiR/D");

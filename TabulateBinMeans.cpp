@@ -6,6 +6,7 @@
 
 // ROOT
 #include "TFile.h"
+#include "TTree.h"
 #include "TString.h"
 #include "TMath.h"
 #include "TRegexp.h"
@@ -20,10 +21,12 @@
 #include "Constants.h"
 #include "Binning.h"
 #include "EventTree.h"
+#include "CatTree.h"
 
 TString inputData;
 Int_t pairType;
 Int_t ivType;
+Bool_t useEventTree;
 Binning * BS;
 EventTree * ev;
 
@@ -43,8 +46,12 @@ int main(int argc, char** argv) {
   int opt;
   enum inputType_enum {iFile,iDir};
   Int_t inputType = -1;
-  while( (opt=getopt(argc,argv,"f:d:p:i:")) != -1 ) {
+  useEventTree = true;
+  while( (opt=getopt(argc,argv,"c|f:d:p:i:")) != -1 ) {
     switch(opt) {
+      case 'c': /* read catTree instead of outroot file EventTree */
+        useEventTree = false;
+        break;
       case 'f': /* input file */
         if(inputType>=0) return PrintUsage();
         inputData = optarg;
@@ -78,6 +85,7 @@ int main(int argc, char** argv) {
   printf("inputData = %s\n",inputData.Data());
   printf("pairType = 0x%x\n",pairType);
   printf("ivType = %d\n",ivType);
+  printf("useEventTree = %d\n",useEventTree);
 
   // set binning scheme
   BS = new Binning();
@@ -87,11 +95,11 @@ int main(int argc, char** argv) {
     return 0;
   };
 
-  // instantiate EventTree 
+  // instantiate EventTree or catTree
   // (use 1 file if inputType==iFile, 
   //  or all root files in inputData if inputType==iDir)
-  ev = new EventTree(inputData+(inputType==iDir?"/*.root":""),pairType);
-
+  if(useEventTree) ev = new EventTree(inputData+(inputType==iDir?"/*.root":""),pairType);
+  else ev = new CatTree(inputData);
   
   // define histograms
   TFile * outfile = new TFile("tables.root","RECREATE");
@@ -159,11 +167,14 @@ int main(int argc, char** argv) {
   //-----------------------------------------------------
   Int_t bn;
   Float_t iv;
+  Bool_t valid;
   printf("begin loop through %lld events...\n",ev->ENT);
-  for(int i=0; i<ev->ENT; i++) {
+  for(Long64_t i=0; i<ev->ENT; i++) {
     // if(i>100000) break; // limiter
     ev->GetEvent(i);
-    if(ev->Valid()) {
+
+    valid = useEventTree ? ev->Valid() : true;
+    if(valid) {
 
       // get bin number
       bn = BS->FindBin(ev);
@@ -173,23 +184,25 @@ int main(int argc, char** argv) {
       mapdistX.at(bn)->Fill(ev->x);
       mapdistZ.at(bn)->Fill(ev->Zpair);
       mapdistQ2.at(bn)->Fill(ev->Q2);
-      mapdistY.at(bn)->Fill(ev->y);
       mapdistPhPerp.at(bn)->Fill(ev->PhPerp);
-      mapdistDepolA.at(bn)->Fill(ev->GetDepolarizationFactor('A'));
-      mapdistDepolC.at(bn)->Fill(ev->GetDepolarizationFactor('C'));
-      mapdistDepolW.at(bn)->Fill(ev->GetDepolarizationFactor('W'));
-      mapdistDepolCA.at(bn)->Fill(ev->GetDepolarizationFactor('C')/ev->GetDepolarizationFactor('A'));
-      mapdistDepolWA.at(bn)->Fill(ev->GetDepolarizationFactor('W')/ev->GetDepolarizationFactor('A'));
-      mapdistP0.at(bn)->Fill(0.5*(3*TMath::Power(TMath::Cos(ev->theta),2)-1));
-      mapdistP1.at(bn)->Fill(TMath::Sin(ev->theta));
-      mapdistF.at(bn)->Fill(TMath::Cos(ev->PhiH));
-      mapdistG.at(bn)->Fill(TMath::Sin(ev->PhiR));
-      mapdistFG.at(bn)->Fill(TMath::Sin(2*ev->PhiH-ev->PhiR)*TMath::Sin(ev->PhiH));
-      mapdistFGH.at(bn)->Fill(
-        TMath::Sin(ev->PhiH-ev->PhiR) *
-        TMath::Sin(ev->PhiH-ev->PhiR) *
-        TMath::Cos(ev->PhiH)
-      );
+      if(useEventTree) {
+        mapdistY.at(bn)->Fill(ev->y);
+        mapdistDepolA.at(bn)->Fill(ev->GetDepolarizationFactor('A'));
+        mapdistDepolC.at(bn)->Fill(ev->GetDepolarizationFactor('C'));
+        mapdistDepolW.at(bn)->Fill(ev->GetDepolarizationFactor('W'));
+        mapdistDepolCA.at(bn)->Fill(ev->GetDepolarizationFactor('C')/ev->GetDepolarizationFactor('A'));
+        mapdistDepolWA.at(bn)->Fill(ev->GetDepolarizationFactor('W')/ev->GetDepolarizationFactor('A'));
+        mapdistP0.at(bn)->Fill(0.5*(3*TMath::Power(TMath::Cos(ev->theta),2)-1));
+        mapdistP1.at(bn)->Fill(TMath::Sin(ev->theta));
+        mapdistF.at(bn)->Fill(TMath::Cos(ev->PhiH));
+        mapdistG.at(bn)->Fill(TMath::Sin(ev->PhiR));
+        mapdistFG.at(bn)->Fill(TMath::Sin(2*ev->PhiH-ev->PhiR)*TMath::Sin(ev->PhiH));
+        mapdistFGH.at(bn)->Fill(
+          TMath::Sin(ev->PhiH-ev->PhiR) *
+          TMath::Sin(ev->PhiH-ev->PhiR) *
+          TMath::Cos(ev->PhiH)
+        );
+      };
     };
   };
 
@@ -197,38 +210,41 @@ int main(int argc, char** argv) {
   auto propErr = [&](Double_t a, Double_t aErr, Double_t b, Double_t bErr){ return a/b * TMath::Hypot(aErr/a,bErr); };
 
   // draw plots (usually mean vs. mean)
-  // depol. C/A vs. X
-  DrawPlot("aveCA_vs_aveX","<x>","<C/A>",
-      [&](Int_t b){ return mapdistX.at(b)->GetMean(); },
-      [&](Int_t b){ return mapdistX.at(b)->GetMeanError(); },
-      [&](Int_t b){ return mapdistDepolCA.at(b)->GetMean(); },
-      [&](Int_t b){ return mapdistDepolCA.at(b)->GetMeanError(); }
-      );
-  DrawPlot("aveC_aveA_vs_aveX","<x>","<C>/<A>",
-      [&](Int_t b){ return mapdistX.at(b)->GetMean(); },
-      [&](Int_t b){ return mapdistX.at(b)->GetMeanError(); },
-      [&](Int_t b){ return mapdistDepolC.at(b)->GetMean() / mapdistDepolA.at(b)->GetMean(); },
-      [&](Int_t b){ return propErr(
-        mapdistDepolC.at(b)->GetMean(), mapdistDepolC.at(b)->GetMeanError(),
-        mapdistDepolA.at(b)->GetMean(), mapdistDepolA.at(b)->GetMeanError()
-        );}
-      );
-  // depol. W/A vs. X
-  DrawPlot("aveWA_vs_aveX","<x>","<W/A>",
-      [&](Int_t b){ return mapdistX.at(b)->GetMean(); },
-      [&](Int_t b){ return mapdistX.at(b)->GetMeanError(); },
-      [&](Int_t b){ return mapdistDepolWA.at(b)->GetMean(); },
-      [&](Int_t b){ return mapdistDepolWA.at(b)->GetMeanError(); }
-      );
-  DrawPlot("aveW_aveA_vs_aveX","<x>","<W>/<A>",
-      [&](Int_t b){ return mapdistX.at(b)->GetMean(); },
-      [&](Int_t b){ return mapdistX.at(b)->GetMeanError(); },
-      [&](Int_t b){ return mapdistDepolW.at(b)->GetMean() / mapdistDepolA.at(b)->GetMean(); },
-      [&](Int_t b){ return propErr(
-        mapdistDepolW.at(b)->GetMean(), mapdistDepolW.at(b)->GetMeanError(),
-        mapdistDepolA.at(b)->GetMean(), mapdistDepolA.at(b)->GetMeanError()
-        );}
-      );
+
+  if(useEventTree) {
+    // depol. C/A vs. X
+    DrawPlot("aveCA_vs_aveX","<x>","<C/A>",
+        [&](Int_t b){ return mapdistX.at(b)->GetMean(); },
+        [&](Int_t b){ return mapdistX.at(b)->GetMeanError(); },
+        [&](Int_t b){ return mapdistDepolCA.at(b)->GetMean(); },
+        [&](Int_t b){ return mapdistDepolCA.at(b)->GetMeanError(); }
+        );
+    DrawPlot("aveC_aveA_vs_aveX","<x>","<C>/<A>",
+        [&](Int_t b){ return mapdistX.at(b)->GetMean(); },
+        [&](Int_t b){ return mapdistX.at(b)->GetMeanError(); },
+        [&](Int_t b){ return mapdistDepolC.at(b)->GetMean() / mapdistDepolA.at(b)->GetMean(); },
+        [&](Int_t b){ return propErr(
+          mapdistDepolC.at(b)->GetMean(), mapdistDepolC.at(b)->GetMeanError(),
+          mapdistDepolA.at(b)->GetMean(), mapdistDepolA.at(b)->GetMeanError()
+          );}
+        );
+    // depol. W/A vs. X
+    DrawPlot("aveWA_vs_aveX","<x>","<W/A>",
+        [&](Int_t b){ return mapdistX.at(b)->GetMean(); },
+        [&](Int_t b){ return mapdistX.at(b)->GetMeanError(); },
+        [&](Int_t b){ return mapdistDepolWA.at(b)->GetMean(); },
+        [&](Int_t b){ return mapdistDepolWA.at(b)->GetMeanError(); }
+        );
+    DrawPlot("aveW_aveA_vs_aveX","<x>","<W>/<A>",
+        [&](Int_t b){ return mapdistX.at(b)->GetMean(); },
+        [&](Int_t b){ return mapdistX.at(b)->GetMeanError(); },
+        [&](Int_t b){ return mapdistDepolW.at(b)->GetMean() / mapdistDepolA.at(b)->GetMean(); },
+        [&](Int_t b){ return propErr(
+          mapdistDepolW.at(b)->GetMean(), mapdistDepolW.at(b)->GetMeanError(),
+          mapdistDepolA.at(b)->GetMean(), mapdistDepolA.at(b)->GetMeanError()
+          );}
+        );
+  };
     
 
   // print means for cross check
@@ -236,19 +252,21 @@ int main(int argc, char** argv) {
   PrintMeans("z",mapdistZ);
   PrintMeans("Mpipi",mapdistMh);
   PrintMeans("Q2",mapdistQ2);
-  PrintMeans("y",mapdistY);
   PrintMeans("pHT",mapdistPhPerp);
-  PrintMeans("A(y,eps)",mapdistDepolA);
-  PrintMeans("C(y,eps)",mapdistDepolC);
-  PrintMeans("W(y,eps)",mapdistDepolW);
-  PrintMeans("C/A(y,eps)",mapdistDepolCA);
-  PrintMeans("W/A(y,eps)",mapdistDepolWA);
-  PrintMeans("P_{2,0}(cos#theta)",mapdistP0);
-  PrintMeans("sin#theta",mapdistP1);
-  PrintMeans("F",mapdistF);
-  PrintMeans("G",mapdistG);
-  PrintMeans("FG",mapdistFG);
-  PrintMeans("FGH",mapdistFGH);
+  if(useEventTree) {
+    PrintMeans("y",mapdistY);
+    PrintMeans("A(y,eps)",mapdistDepolA);
+    PrintMeans("C(y,eps)",mapdistDepolC);
+    PrintMeans("W(y,eps)",mapdistDepolW);
+    PrintMeans("C/A(y,eps)",mapdistDepolCA);
+    PrintMeans("W/A(y,eps)",mapdistDepolWA);
+    PrintMeans("P_{2,0}(cos#theta)",mapdistP0);
+    PrintMeans("sin#theta",mapdistP1);
+    PrintMeans("F",mapdistF);
+    PrintMeans("G",mapdistG);
+    PrintMeans("FG",mapdistFG);
+    PrintMeans("FGH",mapdistFGH);
+  };
 
   // write histograms
   for(Int_t b : BS->binVec) {
@@ -256,19 +274,21 @@ int main(int argc, char** argv) {
     mapdistX.at(b)->Write();
     mapdistZ.at(b)->Write();
     mapdistQ2.at(b)->Write();
-    mapdistY.at(b)->Write();
     mapdistPhPerp.at(b)->Write();
-    mapdistDepolA.at(b)->Write();
-    mapdistDepolC.at(b)->Write();
-    mapdistDepolW.at(b)->Write();
-    mapdistDepolCA.at(b)->Write();
-    mapdistDepolWA.at(b)->Write();
-    mapdistP0.at(b)->Write();
-    mapdistP1.at(b)->Write();
-    mapdistF.at(b)->Write();
-    mapdistG.at(b)->Write();
-    mapdistFG.at(b)->Write();
-    mapdistFGH.at(b)->Write();
+    if(useEventTree) {
+      mapdistY.at(b)->Write();
+      mapdistDepolA.at(b)->Write();
+      mapdistDepolC.at(b)->Write();
+      mapdistDepolW.at(b)->Write();
+      mapdistDepolCA.at(b)->Write();
+      mapdistDepolWA.at(b)->Write();
+      mapdistP0.at(b)->Write();
+      mapdistP1.at(b)->Write();
+      mapdistF.at(b)->Write();
+      mapdistG.at(b)->Write();
+      mapdistFG.at(b)->Write();
+      mapdistFGH.at(b)->Write();
+    };
   };
 
   printf("produced %s\n",outfile->GetName());
@@ -347,6 +367,8 @@ int PrintUsage() {
   printf(" -f\tsingle ROOT file\n");
   printf(" -d\tdirectory of ROOT files\n");
   printf(" NOTE: specify input with either -f or -d, but not both\n");
+  printf("\n");
+  printf(" -c\tread a CatTree instead of EventTree (faster, but less plots are made)\n");
   printf("\n");
 
   printf("OPTIONS:\n");

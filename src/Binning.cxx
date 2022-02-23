@@ -9,7 +9,7 @@ Binning::Binning() {
   //printf("Instantiating Binning...\n");
 
   // set minimum and maximum IV values
-  minIV[vM] = 0;   maxIV[vM] = 2;
+  minIV[vM] = 0;   maxIV[vM] = 3;
   minIV[vX] = 0;   maxIV[vX] = 1;
   minIV[vZ] = 0;   maxIV[vZ] = 1;
   minIV[vPt] = 0;  maxIV[vPt] = 3;

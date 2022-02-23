@@ -35,10 +35,11 @@
 class EventTree : public TObject
 {
   public:
+    EventTree() {};
     EventTree(TString filelist, Int_t whichPair_=0x34);
     ~EventTree();
 
-    void GetEvent(Long64_t i);
+    virtual void GetEvent(Long64_t i);
     void GetTrajectories(Long64_t i, Bool_t prog=false);
     Bool_t Valid();
 
