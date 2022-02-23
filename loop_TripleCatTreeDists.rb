@@ -24,7 +24,7 @@ looper.allsetListLoopOnlyRGA do |dataset|
     prefix = set.split('.').include?('mc') ? 'catTreeMC' : 'catTreeData'
     "#{prefix}.#{set}.idx.root"
   end
-  pp catTrees
+  # pp catTrees
 
   # output directory
   outdir = "cattreetriples/" + dataset.split('.').find{|tok|tok.include?'bending'}
@@ -34,6 +34,7 @@ looper.allsetListLoopOnlyRGA do |dataset|
     *catTrees,
     outdir,
   ]
+  puts "#{args}"
   args.map!{ |arg| if arg.class==String then "\"#{arg}\"" else arg end } # add quotes around strings
   cmds << "root -b -q 'TripleCatTreeDists.C(#{args.join(',')})'"
 end

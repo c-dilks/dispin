@@ -35,6 +35,13 @@ class DatasetLooper
       dataset.gsub(/bending\..*$/,"bending.all")
     end.uniq
 
+    # add bibending sets to @allsetList only
+    @allsetList.append *[
+      "mc.bibending.all",
+      "rga.bibending.all",
+      "rgb.bibending.all",
+    ]
+
   end
 
   # list of lists that have been defined above

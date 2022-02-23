@@ -41,16 +41,20 @@ void TripleCatTreeDists(
     //normalizer[f] = 1;
   };
 
-  CompareDist("Mh",     "M_{h} [GeV]",            0.0,  2.5  );
-  CompareDist("X",      "x",                      0.0,  1.0  );
-  CompareDist("Z",      "z",                      0.0,  1.0  );
-  CompareDist("Q2",     "Q^{2} [GeV^{2}]",        0.0,  11.0 );
-  CompareDist("PhPerp", "p_{T} [GeV]",            0.0,  2.5  );
-  CompareDist("PhiH",   "#phi_{h}",               -PI,  PI   );
-  CompareDist("PhiR",   "#phi_{R}",               -PI,  PI   );
-  CompareDist("Theta",  "#theta",                 0.0,  PI   );
-  CompareDist("XF",     "x_{F}",                  -0.1, 0.9  );
-  CompareDist("DYsgn",  "#Delta Y_{h}",           -3.0, 3.0  );
+  CompareDist("Mh",     "M_{h} [GeV]",     0.0,  2.5  );
+  CompareDist("X",      "x",               0.0,  1.0  );
+  CompareDist("Z",      "z",               0.0,  1.0  );
+  CompareDist("Q2",     "Q^{2} [GeV^{2}]", 0.0,  11.0 );
+  CompareDist("PhPerp", "p_{T} [GeV]",     0.0,  2.5  );
+  CompareDist("PhiH",   "#phi_{h}",        -PI,  PI   );
+  CompareDist("PhiR",   "#phi_{R}",        -PI,  PI   );
+  CompareDist("PhiD",   "#Delta#phi",      -PI,  PI   );
+  CompareDist("Theta",  "#theta",          0.0,  PI   );
+  CompareDist("Depol2", "K_{2}",           0.2,  1.2  );
+  CompareDist("Depol3", "K_{3}",           0.3,  0.8  );
+  CompareDist("Mmiss",  "M_{X}",           1.3,  3.3  );
+  CompareDist("XF",     "x_{F}",           -0.1, 0.9  );
+  CompareDist("DYsgn",  "#Delta Y_{h}",    -3.0, 3.0  );
   // CompareDist("diphM",  "M_{#gamma#gamma} [GeV]", 0.0,  2.0  );
 };
 
