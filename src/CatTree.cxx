@@ -25,6 +25,7 @@ CatTree::CatTree(TString treeFileN) : EventTree() {
   ctree->SetBranchAddress("diphM",&d_diphM);
   ctree->SetBranchAddress("Weight",&d_Weight);
   ctree->SetBranchAddress("Pol",&d_Pol);
+  ctree->SetBranchAddress("Spin_idx",&spinIdx);
 
   ENT = ctree->GetEntries();
   printf("opened catTree from %s\n",treeFileN.Data());

@@ -23,10 +23,10 @@ class CatTree : public EventTree
     // upstream of CatTree production
     void GetEvent(Long64_t i) override;
 
-    // depolarization accessors, since EventTree instead does the calculation, but
-    // CatTree just stores them
+    // CatTree-specific accessors
     Float_t GetDepol2() override { return (Float_t) d_Depol2; };
     Float_t GetDepol3() override { return (Float_t) d_Depol3; };
+    Int_t GetSpinIdx() override { return spinIdx; };
 
   private:
 
@@ -53,6 +53,7 @@ class CatTree : public EventTree
     Double_t d_diphM;
     Double_t d_Weight;
     Double_t d_Pol;
+    Int_t spinIdx;
 
   ClassDefOverride(CatTree,1);
 };

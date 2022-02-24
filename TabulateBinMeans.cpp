@@ -121,13 +121,21 @@ int main(int argc, char** argv) {
   // define distHash = { varName => { binNum => distribution } }
   // - define variable names, each of which will be associated with a set of histograms
   // - useful if the variable names are consistent with `Binning`
-  distHash.insert( make_pair("Mh",      map<Int_t,TH1D*>{} ));
-  distHash.insert( make_pair("X",       map<Int_t,TH1D*>{} ));
-  distHash.insert( make_pair("Z",       map<Int_t,TH1D*>{} ));
-  distHash.insert( make_pair("Q2",      map<Int_t,TH1D*>{} ));
-  distHash.insert( make_pair("PhPerp",  map<Int_t,TH1D*>{} ));
-  distHash.insert( make_pair("DepolCA", map<Int_t,TH1D*>{} ));
-  distHash.insert( make_pair("DepolWA", map<Int_t,TH1D*>{} ));
+  distHash.insert( make_pair("Mh",       map<Int_t,TH1D*>{} ));
+  distHash.insert( make_pair("X",        map<Int_t,TH1D*>{} ));
+  distHash.insert( make_pair("Z",        map<Int_t,TH1D*>{} ));
+  distHash.insert( make_pair("Q2",       map<Int_t,TH1D*>{} ));
+  distHash.insert( make_pair("PhPerp",   map<Int_t,TH1D*>{} ));
+  distHash.insert( make_pair("DepolCA",  map<Int_t,TH1D*>{} ));
+  distHash.insert( make_pair("DepolWA",  map<Int_t,TH1D*>{} ));
+  distHash.insert( make_pair("PhiH",     map<Int_t,TH1D*>{} ));
+  distHash.insert( make_pair("PhiR",     map<Int_t,TH1D*>{} ));
+  distHash.insert( make_pair("Theta",    map<Int_t,TH1D*>{} ));
+  distHash.insert( make_pair("Mmiss",    map<Int_t,TH1D*>{} ));
+  distHash.insert( make_pair("XF",       map<Int_t,TH1D*>{} ));
+  distHash.insert( make_pair("DYsgn",    map<Int_t,TH1D*>{} ));
+  distHash.insert( make_pair("Helicity", map<Int_t,TH1D*>{} ));
+
   if(useEventTree) {
     distHash.insert( make_pair("Y",       map<Int_t,TH1D*>{} ));
     distHash.insert( make_pair("DepolA",  map<Int_t,TH1D*>{} ));
@@ -144,13 +152,20 @@ int main(int argc, char** argv) {
   TString bStr;
   for(Int_t b : BS->binVec) {
     bStr = Form("Bin%d",b);
-    distHash.at("Mh").insert(      make_pair(b, new TH1D(TString("distMh"+bStr),      TString("M_{h} for "+bStr),               100,  0,    3   )));
-    distHash.at("X").insert(       make_pair(b, new TH1D(TString("distX"+bStr),       TString("x for "+bStr),                   100,  0,    1   )));
-    distHash.at("Z").insert(       make_pair(b, new TH1D(TString("distZ"+bStr),       TString("z for "+bStr),                   100,  0,    1   )));
-    distHash.at("Q2").insert(      make_pair(b, new TH1D(TString("distQ2"+bStr),      TString("Q^{2} for "+bStr),               100,  0,    12  )));
-    distHash.at("PhPerp").insert(  make_pair(b, new TH1D(TString("distPhPerp"+bStr),  TString("p_{T} for "+bStr),               100,  0,    5   )));
-    distHash.at("DepolCA").insert( make_pair(b, new TH1D(TString("distDepolCA"+bStr), TString("C/A for "+bStr),                 1000, -10,  10  )));
-    distHash.at("DepolWA").insert( make_pair(b, new TH1D(TString("distDepolWA"+bStr), TString("W/A for "+bStr),                 1000, -10,  10  )));
+    distHash.at("Mh").insert(       make_pair(b, new TH1D(TString("distMh"+bStr),      TString("M_{h} for "+bStr),        100,  0,    3   )));
+    distHash.at("X").insert(        make_pair(b, new TH1D(TString("distX"+bStr),       TString("x for "+bStr),            100,  0,    1   )));
+    distHash.at("Z").insert(        make_pair(b, new TH1D(TString("distZ"+bStr),       TString("z for "+bStr),            100,  0,    1   )));
+    distHash.at("Q2").insert(       make_pair(b, new TH1D(TString("distQ2"+bStr),      TString("Q^{2} for "+bStr),        100,  0,    12  )));
+    distHash.at("PhPerp").insert(   make_pair(b, new TH1D(TString("distPhPerp"+bStr),  TString("p_{T} for "+bStr),        100,  0,    5   )));
+    distHash.at("PhiH").insert(     make_pair(b, new TH1D(TString("PhiH"+bStr),        TString("#phi_{h} for "+bStr),     100,  -PI,  PI  )));
+    distHash.at("PhiR").insert(     make_pair(b, new TH1D(TString("PhiR"+bStr),        TString("#phi_{R} for "+bStr),     100,  -PI,  PI  )));
+    distHash.at("Theta").insert(    make_pair(b, new TH1D(TString("Theta"+bStr),       TString("#theta for "+bStr),       100,  0,    PI  )));
+    distHash.at("Mmiss").insert(    make_pair(b, new TH1D(TString("Mmiss"+bStr),       TString("M_{X} for "+bStr),        100,  0,    3   )));
+    distHash.at("XF").insert(       make_pair(b, new TH1D(TString("XF"+bStr),          TString("x_{F} for "+bStr),        300,  -1,   1   )));
+    distHash.at("DYsgn").insert(    make_pair(b, new TH1D(TString("DYsgn"+bStr),       TString("#Delta Y_{h} for "+bStr), 100,  -10,  10  )));
+    distHash.at("Helicity").insert( make_pair(b, new TH1D(TString("Helicity"+bStr),    TString("helicity for "+bStr),     3,    -1.5, 1.5 )));
+    distHash.at("DepolCA").insert(  make_pair(b, new TH1D(TString("distDepolCA"+bStr), TString("C/A for "+bStr),          1000, -10,  10  )));
+    distHash.at("DepolWA").insert(  make_pair(b, new TH1D(TString("distDepolWA"+bStr), TString("W/A for "+bStr),          1000, -10,  10  )));
     if(useEventTree) {
       distHash.at("Y").insert(       make_pair(b, new TH1D(TString("distY"+bStr),       TString("y for "+bStr),                   100,  0,    1   )));
       distHash.at("DepolA").insert(  make_pair(b, new TH1D(TString("distDepolA"+bStr),  TString("A(#varepsilon,y) for "+bStr),    1000, -10,  10  )));
@@ -194,13 +209,20 @@ int main(int argc, char** argv) {
       distHash.at("Z").at(bn)->Fill(ev->Zpair);
       distHash.at("Q2").at(bn)->Fill(ev->Q2);
       distHash.at("PhPerp").at(bn)->Fill(ev->PhPerp);
+      distHash.at("PhiH").at(bn)->Fill(ev->PhiH);
+      distHash.at("PhiR").at(bn)->Fill(ev->PhiR);
+      distHash.at("Theta").at(bn)->Fill(ev->theta);
+      distHash.at("Mmiss").at(bn)->Fill(ev->Mmiss);
+      distHash.at("XF").at(bn)->Fill(ev->xF);
+      distHash.at("DYsgn").at(bn)->Fill(ev->DYsgn);
+      distHash.at("Helicity").at(bn)->Fill(ev->GetSpinIdx());
+      distHash.at("DepolCA").at(bn)->Fill(ev->GetDepol2());
+      distHash.at("DepolWA").at(bn)->Fill(ev->GetDepol3());
       if(useEventTree) {
         distHash.at("Y").at(bn)->Fill(ev->y);
         distHash.at("DepolA").at(bn)->Fill(ev->GetDepolarizationFactor('A'));
         distHash.at("DepolC").at(bn)->Fill(ev->GetDepolarizationFactor('C'));
         distHash.at("DepolW").at(bn)->Fill(ev->GetDepolarizationFactor('W'));
-        distHash.at("DepolCA").at(bn)->Fill(ev->GetDepolarizationFactor('C')/ev->GetDepolarizationFactor('A'));
-        distHash.at("DepolWA").at(bn)->Fill(ev->GetDepolarizationFactor('W')/ev->GetDepolarizationFactor('A'));
         distHash.at("P0").at(bn)->Fill(0.5*(3*TMath::Power(TMath::Cos(ev->theta),2)-1));
         distHash.at("P1").at(bn)->Fill(TMath::Sin(ev->theta));
         distHash.at("F").at(bn)->Fill(TMath::Cos(ev->PhiH));
@@ -208,10 +230,6 @@ int main(int argc, char** argv) {
         distHash.at("FG").at(bn)->Fill(TMath::Sin(2*ev->PhiH-ev->PhiR)*TMath::Sin(ev->PhiH));
         distHash.at("FGH").at(bn)->Fill( TMath::Sin(ev->PhiH-ev->PhiR) * TMath::Sin(ev->PhiH-ev->PhiR) * TMath::Cos(ev->PhiH) );
       }
-      else {
-        distHash.at("DepolCA").at(bn)->Fill(ev->GetDepol2());
-        distHash.at("DepolWA").at(bn)->Fill(ev->GetDepol3());
-      };
     };
   };
   // END EVENT LOOP /////////////
@@ -240,19 +258,57 @@ int main(int argc, char** argv) {
     
 
   // draw plots (usually mean vs. mean) /////////////////////////////////
+
+  // lambda: loop over each variable in distHash, drawing its mean vs. each bin mean in the Binning scheme
   auto LoopDrawMeanVsMean = [&](Int_t bn1=-1, Int_t bn2=-1){
+    // set plot name
     TString plotNsuffix = "_vs_" + BS->GetIVname(0);
     if(bn1>=0) plotNsuffix += "_" + BS->GetIVname(1) + Form("Bin%d",bn1);
     if(bn2>=0) plotNsuffix += "_" + BS->GetIVname(2) + Form("Bin%d",bn2);
-    VarLoop( [&](TString varName){
-        DrawMeanVsMean(
-            varName+plotNsuffix,
-            VarTitle(BS->GetIVname(0)), VarTitle(varName),
-            distHash.at(BS->GetIVname(0)), distHash.at(varName),
-            bn1, bn2
-            );
-        });
+    // lambda for drawing the plot with DrawPlot
+    auto lambdaDrawPlot = [&](TString varName) {
+      enum xy {kx,ky};
+      TString varN[2];
+      varN[kx] = BS->GetIVname(0);
+      varN[ky] = varName;
+      map<Int_t,TH1D*> dists[2];
+      // set lambda functions for values and errors for DrawPlot
+      function<Double_t(Int_t)> lambdaVal[2];
+      function<Double_t(Int_t)> lambdaErr[2];
+      for(int k=0; k<2; k++) { // loop over x and y
+        dists[k] = distHash.at(varN[k]);
+        if( varN[k].Contains("Phi") || varN[k]=="Theta" ) { // if angle distribution
+          if(k==kx) { // (lambdaVal and lambdaErr cannot contain `k` in the body)
+            lambdaVal[k] = [&](Int_t b){ return Tools::MeanAngle(dists[kx].at(b)); }; // mean of angles
+            lambdaErr[k] = [&](Int_t b){ return 0.0; /*TODO*/ };
+          } else {
+            lambdaVal[k] = [&](Int_t b){ return Tools::MeanAngle(dists[ky].at(b)); }; // mean of angles
+            lambdaErr[k] = [&](Int_t b){ return 0.0; /*TODO*/ };
+          };
+        } else { // if not angle distribution
+          if(k==kx) {
+            lambdaVal[k] = [&](Int_t b){ return dists[kx].at(b)->GetMean(); }; // usual mean
+            lambdaErr[k] = [&](Int_t b){ return dists[kx].at(b)->GetMeanError(); }; 
+          } else {
+            lambdaVal[k] = [&](Int_t b){ return dists[ky].at(b)->GetMean(); }; // usual mean
+            lambdaErr[k] = [&](Int_t b){ return dists[ky].at(b)->GetMeanError(); }; 
+          };
+        };
+      };
+      // draw
+      DrawPlot(
+          varName + plotNsuffix,
+          VarTitle(varN[kx]), VarTitle(varN[ky]),
+          lambdaVal[kx], lambdaErr[kx],
+          lambdaVal[ky], lambdaErr[ky],
+          bn1, bn2
+          );
+    };
+    // execution: call lambdaDrawPlot for each variable
+    VarLoop(lambdaDrawPlot);
   };
+
+  // call LoopDrawMeanVsMean for each higher-dimensional bin
   switch(BS->dimensions) {
     case 1:
       LoopDrawMeanVsMean();
@@ -267,7 +323,8 @@ int main(int argc, char** argv) {
       break;
   };
 
-  // draw depolarizationi plots, using various methods for the averaging
+
+  // draw depolarization plots, using various methods for the averaging
   if(useEventTree) {
     // depol. C/A vs. X
     DrawMeanVsMean("aveCA_vs_aveX","<x>","<C/A>",

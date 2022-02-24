@@ -30,7 +30,6 @@ class Tools {
       PrintSeparator(outprint.Length()+4);
     };
 
-
     // get nonzero minimum of a histogram
     static Double_t GetNonzeroMinimum(TH1 *hist) {
       Double_t min=1e10;
@@ -142,6 +141,21 @@ class Tools {
       return TMath::Sqrt(numer/denom);
     };
 
+    // calculate the mean angle of a histogram
+    static Double_t MeanAngle(TH1 *h) {
+      Double_t sumOfSin = 0.0;
+      Double_t sumOfCos = 0.0;
+      Double_t sumOfWgt = 0.0;
+      // compute sums of sines and cosines, weighted by entries in each bin
+      for(int bn=1; bn<=h->GetNbinsX(); bn++ ) {
+        Double_t wgt = h->GetBinContent(bn);
+        Double_t ang = h->GetBinCenter(bn);
+        sumOfSin += wgt*TMath::Sin(ang);
+        sumOfCos += wgt*TMath::Cos(ang);
+        sumOfWgt += wgt;
+      };
+      return TMath::ATan2( sumOfSin/sumOfWgt, sumOfCos/sumOfWgt );
+    };
 
     
     // get angle between two vectors

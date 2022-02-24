@@ -44,6 +44,7 @@ class EventTree : public TObject
     Bool_t Valid();
 
     Int_t SpinState();
+    virtual Int_t GetSpinIdx() { return SpinInt(SpinState()); };
     Float_t Polarization();
     Float_t Rellum();
     Bool_t CheckVertex();
