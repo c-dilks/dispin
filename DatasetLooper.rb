@@ -6,9 +6,19 @@ require 'pp'
 
 class DatasetLooper
 
+  # CONSTANTS
+
+  # binning schemes and related options: `ivType` => { :bins=>[bn0,bn1,bn2], :option=>value, ... }
+  BinHash = {
+    1  => { :bins=>[12],  :xTitle=>'$x$'          },
+    2  => { :bins=>[12],  :xTitle=>'$M_h$ [GeV]'  },
+    32 => { :bins=>[4,3], :xTitle=>'$z$',         :blTitle=>'$M_h$ __BL__' },
+    42 => { :bins=>[4,3], :xTitle=>'$p_T$ [GeV]', :blTitle=>'$M_h$ __BL__' },
+  }
+ 
   #####################################
   # construction
- 
+
   # constructor
   def initialize
 
@@ -154,6 +164,12 @@ class DatasetLooper
       torus = dataset.split('.').find{ |tok| tok.include?"bending" }
       set.include? torus
     end
+  end
+
+  # get catTree file basename (does not include ".root" or ".idx.root" extensions
+  def catTreeBaseName(dataset)
+    prefix = dataset.split('.').include?('mc') ? 'catTreeMC' : 'catTreeData'
+    return "#{prefix}.#{dataset}"
   end
 
 end

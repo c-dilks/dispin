@@ -20,11 +20,7 @@ looper.allsetListLoopOnlyRGA do |dataset|
   triple << looper.matchByTorus(dataset,looper.allsetListLoopOnlyMC) # MC
 
   # catTrees
-  catTrees = triple.map do |set|
-    prefix = set.split('.').include?('mc') ? 'catTreeMC' : 'catTreeData'
-    "#{prefix}.#{set}.idx.root"
-  end
-  # pp catTrees
+  catTrees = triple.map{ |set| looper.catTreeBaseName(set)+".idx.root" }
 
   # output directory
   outdir = "cattreetriples/" + dataset.split('.').find{|tok|tok.include?'bending'}

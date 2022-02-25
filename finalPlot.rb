@@ -3,18 +3,15 @@
 require 'pp'
 require 'fileutils'
 
+require './DatasetLooper.rb'
+looper = DatasetLooper.new
+
 # settings #################
 subDir     = "bruspin.volatile"
 idString   = "final.feb3"
-datasets   = ["rga", "rgb"]
+datasets   = ["rga", "rgb"]  ### TODO TODO TODO: update to use DatasetLooper
 minimizers = ["minuit", "mcmccov"]
 schemes    = [0,2,3]
-ivOpts     = { # map `ivType` to options, such as latex titles, settings, etc.
-  1  => { :xTitle=>'$x$'          },
-  2  => { :xTitle=>'$M_h$ [GeV]'  },
-  32 => { :xTitle=>'$z$',         :blTitle=>'$M_h$ __BL__' },
-  42 => { :xTitle=>'$p_T$ [GeV]', :blTitle=>'$M_h$ __BL__' },
-}
 Verbose = true
 outputFormat = "png"
 
@@ -29,7 +26,7 @@ def printDebug(title,data)
   end
 end
 
-# mapping certain `ivOpts` options to `pwPlot.py` options
+# mapping certain `BinHash` options to `pwPlot.py` options
 pwOpts = {
   :xTitle  => '-x',
   :blTitle => '-e',
@@ -42,7 +39,7 @@ sep = "\n\n"+"#{'S'*50}\n"*3+"\n\n"
 
 pwPlotCmds = []
 outputDirs = []
-ivOpts.keys.product(minimizers,schemes).each do |ivType,minimizer,scheme|
+DatasetLooper::BinHash.keys.product(minimizers,schemes).each do |ivType,minimizer,scheme|
 
   puts "\n#{"="*30} PLOT: #{[ivType,minimizer,scheme].join ' '}" if Verbose
 
@@ -74,10 +71,10 @@ ivOpts.keys.product(minimizers,schemes).each do |ivType,minimizer,scheme|
     bl = blList.first
 
     # set title options for pwPlot.py
-    titleOpts = ivOpts[ivType].map do |ivOpt,arg|
-      argMod = arg.gsub("__BL__","bin #{bl}")
-      pwOpt = pwOpts[ivOpt]
-      pwOpt += "'#{argMod}'" unless pwOpt==nil
+    titleOpts = DatasetLooper::BinHash[ivType].map do |opt,val|
+      title = val.gsub("__BL__","bin #{bl}") if val.is_a? String
+      pwOpt = pwOpts[opt]
+      pwOpt += "'#{title}'" unless pwOpt==nil
     end
     printDebug("titleOpts",titleOpts)
 

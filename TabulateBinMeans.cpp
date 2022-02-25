@@ -37,6 +37,7 @@ TFile *outfile;
 Binning * BS;
 EventTree * ev;
 map<TString,map<Int_t,TH1D*>> distHash;
+Int_t nBins[3];
 
 int PrintUsage();
 void SetDefaultArgs();
@@ -60,8 +61,9 @@ int main(int argc, char** argv) {
   int opt;
   enum inputType_enum {iFile,iDir};
   Int_t inputType = -1;
+  Int_t nd=0;
   useEventTree = true;
-  while( (opt=getopt(argc,argv,"c|f:d:p:i:")) != -1 ) {
+  while( (opt=getopt(argc,argv,"c|f:d:p:i:n:")) != -1 ) {
     switch(opt) {
       case 'c': /* read catTree instead of outroot file EventTree */
         useEventTree = false;
@@ -82,6 +84,12 @@ int main(int argc, char** argv) {
       case 'i': /* independent variables */
         ivType = (Int_t) strtof(optarg,NULL);
         break;
+      case 'n': /* number of bins for each independent variable */
+        optind--;
+        for( ; optind<argc && *argv[optind]!='-'; optind++) {
+          if(nd<3) nBins[nd++] = (Int_t) strtof(argv[optind],NULL);
+        };
+        break;
       default: return PrintUsage();
     };
   };
@@ -99,11 +107,12 @@ int main(int argc, char** argv) {
   printf("inputData = %s\n",inputData.Data());
   printf("pairType = 0x%x\n",pairType);
   printf("ivType = %d\n",ivType);
+  printf("nBins = ( %d, %d, %d )\n",nBins[0],nBins[1],nBins[2]);
   printf("useEventTree = %d\n",useEventTree);
 
   // set binning scheme
   BS = new Binning();
-  Bool_t schemeSuccess = BS->SetScheme(ivType);
+  Bool_t schemeSuccess = BS->SetScheme(ivType,nBins[0],nBins[1],nBins[2]);
   if(!schemeSuccess) {
     fprintf(stderr,"ERROR: Binning::SetScheme failed\n");
     return 0;
@@ -116,11 +125,15 @@ int main(int argc, char** argv) {
   else ev = new CatTree(inputData);
 
   // define output file
-  outfile = new TFile("tables.root","RECREATE");
+  TString outfileN = Form("tables.%d.",ivType); 
+  if(!useEventTree) outfileN += inputData;
+  else outfileN += ".root";
+  outfileN = "tables/"+outfileN;
+  outfile = new TFile(outfileN,"RECREATE");
 
   // define distHash = { varName => { binNum => distribution } }
   // - define variable names, each of which will be associated with a set of histograms
-  // - useful if the variable names are consistent with `Binning`
+  // - useful if the variable names are consistent with `Binning`, do NOT use underscores
   distHash.insert( make_pair("Mh",       map<Int_t,TH1D*>{} ));
   distHash.insert( make_pair("X",        map<Int_t,TH1D*>{} ));
   distHash.insert( make_pair("Z",        map<Int_t,TH1D*>{} ));
@@ -152,31 +165,31 @@ int main(int argc, char** argv) {
   TString bStr;
   for(Int_t b : BS->binVec) {
     bStr = Form("Bin%d",b);
-    distHash.at("Mh").insert(       make_pair(b, new TH1D(TString("distMh"+bStr),      TString("M_{h} for "+bStr),        100,  0,    3   )));
-    distHash.at("X").insert(        make_pair(b, new TH1D(TString("distX"+bStr),       TString("x for "+bStr),            100,  0,    1   )));
-    distHash.at("Z").insert(        make_pair(b, new TH1D(TString("distZ"+bStr),       TString("z for "+bStr),            100,  0,    1   )));
-    distHash.at("Q2").insert(       make_pair(b, new TH1D(TString("distQ2"+bStr),      TString("Q^{2} for "+bStr),        100,  0,    12  )));
-    distHash.at("PhPerp").insert(   make_pair(b, new TH1D(TString("distPhPerp"+bStr),  TString("p_{T} for "+bStr),        100,  0,    5   )));
-    distHash.at("PhiH").insert(     make_pair(b, new TH1D(TString("PhiH"+bStr),        TString("#phi_{h} for "+bStr),     100,  -PI,  PI  )));
-    distHash.at("PhiR").insert(     make_pair(b, new TH1D(TString("PhiR"+bStr),        TString("#phi_{R} for "+bStr),     100,  -PI,  PI  )));
-    distHash.at("Theta").insert(    make_pair(b, new TH1D(TString("Theta"+bStr),       TString("#theta for "+bStr),       100,  0,    PI  )));
-    distHash.at("Mmiss").insert(    make_pair(b, new TH1D(TString("Mmiss"+bStr),       TString("M_{X} for "+bStr),        100,  0,    3   )));
-    distHash.at("XF").insert(       make_pair(b, new TH1D(TString("XF"+bStr),          TString("x_{F} for "+bStr),        300,  -1,   1   )));
-    distHash.at("DYsgn").insert(    make_pair(b, new TH1D(TString("DYsgn"+bStr),       TString("#Delta Y_{h} for "+bStr), 100,  -10,  10  )));
-    distHash.at("Helicity").insert( make_pair(b, new TH1D(TString("Helicity"+bStr),    TString("helicity for "+bStr),     3,    -1.5, 1.5 )));
-    distHash.at("DepolCA").insert(  make_pair(b, new TH1D(TString("distDepolCA"+bStr), TString("C/A for "+bStr),          1000, -10,  10  )));
-    distHash.at("DepolWA").insert(  make_pair(b, new TH1D(TString("distDepolWA"+bStr), TString("W/A for "+bStr),          1000, -10,  10  )));
+    distHash.at("Mh").insert(       make_pair(b, new TH1D(TString("Mh"+bStr),       TString("M_{h} for "+bStr),               100,  0,    3   )));
+    distHash.at("X").insert(        make_pair(b, new TH1D(TString("X"+bStr),        TString("x for "+bStr),                   100,  0,    1   )));
+    distHash.at("Z").insert(        make_pair(b, new TH1D(TString("Z"+bStr),        TString("z for "+bStr),                   100,  0,    1   )));
+    distHash.at("Q2").insert(       make_pair(b, new TH1D(TString("Q2"+bStr),       TString("Q^{2} for "+bStr),               100,  0,    12  )));
+    distHash.at("PhPerp").insert(   make_pair(b, new TH1D(TString("PhPerp"+bStr),   TString("p_{T} for "+bStr),               100,  0,    5   )));
+    distHash.at("PhiH").insert(     make_pair(b, new TH1D(TString("PhiH"+bStr),     TString("#phi_{h} for "+bStr),            100,  -PI,  PI  )));
+    distHash.at("PhiR").insert(     make_pair(b, new TH1D(TString("PhiR"+bStr),     TString("#phi_{R} for "+bStr),            100,  -PI,  PI  )));
+    distHash.at("Theta").insert(    make_pair(b, new TH1D(TString("Theta"+bStr),    TString("#theta for "+bStr),              100,  0,    PI  )));
+    distHash.at("Mmiss").insert(    make_pair(b, new TH1D(TString("Mmiss"+bStr),    TString("M_{X} for "+bStr),               100,  0,    3   )));
+    distHash.at("XF").insert(       make_pair(b, new TH1D(TString("XF"+bStr),       TString("x_{F} for "+bStr),               300,  -1,   1   )));
+    distHash.at("DYsgn").insert(    make_pair(b, new TH1D(TString("DYsgn"+bStr),    TString("#Delta Y_{h} for "+bStr),        100,  -10,  10  )));
+    distHash.at("Helicity").insert( make_pair(b, new TH1D(TString("Helicity"+bStr), TString("helicity for "+bStr),            3,    -1.5, 1.5 )));
+    distHash.at("DepolCA").insert(  make_pair(b, new TH1D(TString("DepolCA"+bStr),  TString("C/A for "+bStr),                 1000, -10,  10  )));
+    distHash.at("DepolWA").insert(  make_pair(b, new TH1D(TString("DepolWA"+bStr),  TString("W/A for "+bStr),                 1000, -10,  10  )));
     if(useEventTree) {
-      distHash.at("Y").insert(       make_pair(b, new TH1D(TString("distY"+bStr),       TString("y for "+bStr),                   100,  0,    1   )));
-      distHash.at("DepolA").insert(  make_pair(b, new TH1D(TString("distDepolA"+bStr),  TString("A(#varepsilon,y) for "+bStr),    1000, -10,  10  )));
-      distHash.at("DepolC").insert(  make_pair(b, new TH1D(TString("distDepolC"+bStr),  TString("C(#varepsilon,y) for "+bStr),    1000, -10,  10  )));
-      distHash.at("DepolW").insert(  make_pair(b, new TH1D(TString("distDepolW"+bStr),  TString("W(#varepsilon,y) for "+bStr),    1000, -10,  10  )));
-      distHash.at("P0").insert(      make_pair(b, new TH1D(TString("distP0"+bStr),      TString("P_{2, 0}(cos#theta) for "+bStr), 1000, -0.6, 1.1 )));
-      distHash.at("P1").insert(      make_pair(b, new TH1D(TString("distP1"+bStr),      TString("sin#theta for "+bStr),           1000, -1.1, 1.1 )));
-      distHash.at("F").insert(       make_pair(b, new TH1D(TString("distF"+bStr),       TString("F for "+bStr),                   1000, -1.1, 1.1 )));
-      distHash.at("G").insert(       make_pair(b, new TH1D(TString("distG"+bStr),       TString("G for "+bStr),                   1000, -1.1, 1.1 )));
-      distHash.at("FG").insert(      make_pair(b, new TH1D(TString("distFG"+bStr),      TString("FG for "+bStr),                  1000, -1.1, 1.1 )));
-      distHash.at("FGH").insert(     make_pair(b, new TH1D(TString("distFGH"+bStr),     TString("FGH for "+bStr),                 1000, -1.1, 1.1 )));
+      distHash.at("Y").insert(      make_pair(b, new TH1D(TString("Y"+bStr),        TString("y for "+bStr),                   100,  0,    1   )));
+      distHash.at("DepolA").insert( make_pair(b, new TH1D(TString("DepolA"+bStr),   TString("A(#varepsilon,y) for "+bStr),    1000, -10,  10  )));
+      distHash.at("DepolC").insert( make_pair(b, new TH1D(TString("DepolC"+bStr),   TString("C(#varepsilon,y) for "+bStr),    1000, -10,  10  )));
+      distHash.at("DepolW").insert( make_pair(b, new TH1D(TString("DepolW"+bStr),   TString("W(#varepsilon,y) for "+bStr),    1000, -10,  10  )));
+      distHash.at("P0").insert(     make_pair(b, new TH1D(TString("P0"+bStr),       TString("P_{2, 0}(cos#theta) for "+bStr), 1000, -0.6, 1.1 )));
+      distHash.at("P1").insert(     make_pair(b, new TH1D(TString("P1"+bStr),       TString("sin#theta for "+bStr),           1000, -1.1, 1.1 )));
+      distHash.at("F").insert(      make_pair(b, new TH1D(TString("F"+bStr),        TString("F for "+bStr),                   1000, -1.1, 1.1 )));
+      distHash.at("G").insert(      make_pair(b, new TH1D(TString("G"+bStr),        TString("G for "+bStr),                   1000, -1.1, 1.1 )));
+      distHash.at("FG").insert(     make_pair(b, new TH1D(TString("FG"+bStr),       TString("FG for "+bStr),                  1000, -1.1, 1.1 )));
+      distHash.at("FGH").insert(    make_pair(b, new TH1D(TString("FGH"+bStr),      TString("FGH for "+bStr),                 1000, -1.1, 1.1 )));
     };
   };
 
@@ -279,10 +292,10 @@ int main(int argc, char** argv) {
         dists[k] = distHash.at(varN[k]);
         if( varN[k].Contains("Phi") || varN[k]=="Theta" ) { // if angle distribution
           if(k==kx) { // (lambdaVal and lambdaErr cannot contain `k` in the body)
-            lambdaVal[k] = [&](Int_t b){ return Tools::MeanAngle(dists[kx].at(b)); }; // mean of angles
+            lambdaVal[k] = [&](Int_t b){ return Tools::AdjAngleThreeQuarters(Tools::MeanAngle(dists[kx].at(b))); }; // mean of angles
             lambdaErr[k] = [&](Int_t b){ return 0.0; /*TODO*/ };
           } else {
-            lambdaVal[k] = [&](Int_t b){ return Tools::MeanAngle(dists[ky].at(b)); }; // mean of angles
+            lambdaVal[k] = [&](Int_t b){ return Tools::AdjAngleThreeQuarters(Tools::MeanAngle(dists[ky].at(b))); }; // mean of angles
             lambdaErr[k] = [&](Int_t b){ return 0.0; /*TODO*/ };
           };
         } else { // if not angle distribution
@@ -477,6 +490,7 @@ void SetDefaultArgs() {
   inputData = "";
   pairType = EncodePairType(kPip,kPim);
   ivType = Binning::vM + 1;
+  for(int d=0; d<3; d++) nBins[d] = -1;
 };
 
 
@@ -506,6 +520,9 @@ int PrintUsage() {
   printf("   \tplotted against. The number of digits will be the number of\n");
   printf("   \tdimensions in the multi-dimensional binning\n");
   printf("   \t* the allowed digits are:\n");
+
+  printf(" -n\tnumber of bins, listed for each independent variable,\n");
+  printf("   \tseparated by spaces\n\n");
   BS = new Binning();
   for(int i=0; i<Binning::nIV; i++) {
     printf("   \t  %d = %s\n",i+1,(BS->IVtitle[i]).Data());

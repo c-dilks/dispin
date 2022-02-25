@@ -81,16 +81,22 @@ class Tools {
     };
 
 
-    // shift angle to the range [-PI,+PI]
+    // shift angle to the range [-PI,+PI)
     static Float_t AdjAngle(Float_t ang) {
       while(ang>PI) ang-=2*PI;
-      while(ang<-PI) ang+=2*PI;
+      while(ang<=-PI) ang+=2*PI;
       return ang;
     };
-    // shift angle to the range [0,2*PI]
+    // shift angle to the range [0,2*PI)
     static Float_t AdjAngleTwoPi(Float_t ang) {
       while(ang>2*PI) ang-=2*PI;
-      while(ang<0) ang+=2*PI;
+      while(ang<=0) ang+=2*PI;
+      return ang;
+    };
+    // shift angle to the range [-PI/2,3PI/2)
+    static Float_t AdjAngleThreeQuarters(Float_t ang) {
+      while(ang>3.0*PI/2.0) ang-=2*PI;
+      while(ang<=-PI/2.0) ang+=2*PI;
       return ang;
     };
 
