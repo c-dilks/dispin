@@ -32,6 +32,8 @@ grFormat = {
   :markerSize => 2,
   :lineSize   => 2,
 }
+grFormat[2][:color]=KMagenta+1 if fileList.length==3 # if 3 sets, change color of 3rd (MC)
+
 gStyle.SetTitleSize(FontSize,"XYZ")
 gStyle.SetLabelSize(FontSize,"XYZ")
 
