@@ -19,10 +19,10 @@ looper.allsetListLoopOnlyRGA do |dataset|
 
   # loop through ivTypes
   DatasetLooper::BinHash.keys.each do |ivType|
-    tableFiles = catTrees.map{ |catTree| "tables/tables.#{ivType}.#{catTree}" }
-    outDir = "tables/img.#{torus}.#{ivType}"
+    tableFiles = catTrees.map{ |catTree| "meanvmean/meanvmean.#{ivType}.#{catTree}" }
+    outDir = "meanvmean/img.#{torus}.#{ivType}"
     Dir.mkdir(outDir) unless Dir.exist? outDir
     system "drawBinMeans.rb #{tableFiles.join ' '}"
-    FileUtils.mv Dir.glob("tables/canv*.png"), outDir, verbose: true
+    FileUtils.mv Dir.glob("meanvmean/canv*.png"), outDir, verbose: true
   end
 end

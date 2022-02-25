@@ -113,6 +113,6 @@ mgrHash.each do |mgrN,mgr|
   canvList << canv
 end
 
-canvList.each{ |canv| canv.SaveAs("tables/#{canv.GetName}.png") }
+canvList.each{ |canv| canv.SaveAs("meanvmean/#{canv.GetName}.png") }
 
 run_app if Interactive
