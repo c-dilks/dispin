@@ -13,16 +13,16 @@ DatasetLooper::BinHash.each do |ivType,binOpts|
   row = 0
   highDim = false
   highDimVar = ''
-  torii = ['inbending','outbending','bibending']
+  tori = ['inbending','outbending','bibending']
 
   # list of lists: [ [inbending pngs], [outbending pngs], [bibending pngs] ]
-  toriiPngs = torii.map do |torus|
+  toriPngs = tori.map do |torus|
     Dir.glob("meanvmean/img.#{torus}.#{ivType}/*.png").sort
   end
-  numPngs = toriiPngs.first.length
+  numPngs = toriPngs.first.length
 
-  # zip together the png lists from the three torii, and iterate over each triple of pngs
-  toriiPngs.inject(:zip).map(&:flatten).each do |pngs|
+  # zip together the png lists from the three tori, and iterate over each triple of pngs
+  toriPngs.inject(:zip).map(&:flatten).each do |pngs|
 
     # header
     if row%NumRows==0

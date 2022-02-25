@@ -35,7 +35,7 @@ titles = {
   "DYsgn"  => "$\\Delta Y$",
 }
 
-torii = [
+tori = [
   "inbending",
   "outbending",
   "bibending",
@@ -48,7 +48,7 @@ cnt = 0
 vars.each do |var|
   out.puts "\\begin{figure}[h]"
   out.puts "\\centering"
-  torii.each do |torus|
+  tori.each do |torus|
     out.puts "\\includegraphics[width=0.32\\textwidth]{img/triple/#{torus}/#{var}.png}"
   end
   caption = "Comparisons of #{titles[var]} for inbending (left), outbending (middle), and the combined inbending and outbending data sets (right)."
