@@ -177,8 +177,8 @@ int main(int argc, char** argv) {
     distHash.at("XF").insert(       make_pair(b, new TH1D(TString("XF"+bStr),       TString("x_{F} for "+bStr),               300,  -1,   1   )));
     distHash.at("DYsgn").insert(    make_pair(b, new TH1D(TString("DYsgn"+bStr),    TString("#Delta Y_{h} for "+bStr),        100,  -10,  10  )));
     distHash.at("Helicity").insert( make_pair(b, new TH1D(TString("Helicity"+bStr), TString("helicity for "+bStr),            3,    -1.5, 1.5 )));
-    distHash.at("DepolCA").insert(  make_pair(b, new TH1D(TString("DepolCA"+bStr),  TString("C/A for "+bStr),                 1000, -10,  10  )));
-    distHash.at("DepolWA").insert(  make_pair(b, new TH1D(TString("DepolWA"+bStr),  TString("W/A for "+bStr),                 1000, -10,  10  )));
+    distHash.at("DepolCA").insert(  make_pair(b, new TH1D(TString("DepolCA"+bStr),  TString("K_{2} for "+bStr),               1000, -10,  10  )));
+    distHash.at("DepolWA").insert(  make_pair(b, new TH1D(TString("DepolWA"+bStr),  TString("K_{3} for "+bStr),               1000, -10,  10  )));
     if(useEventTree) {
       distHash.at("Y").insert(      make_pair(b, new TH1D(TString("Y"+bStr),        TString("y for "+bStr),                   100,  0,    1   )));
       distHash.at("DepolA").insert( make_pair(b, new TH1D(TString("DepolA"+bStr),   TString("A(#varepsilon,y) for "+bStr),    1000, -10,  10  )));

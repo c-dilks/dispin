@@ -4,9 +4,13 @@ require 'fileutils'
 require './DatasetLooper.rb'
 looper = DatasetLooper.new
 
+# clean up old pngs
+FileUtils.rm Dir.glob("meanvmean/*.png"), verbose: true
+
+# loop over RGA datasets
 looper.allsetListLoopOnlyRGA do |rgaSet|
   
-  # stack of datasets
+  # stack of datasets, matching the RGA set to RGB and MC
   rgbSet = looper.matchByTorus(rgaSet,looper.allsetListLoopOnlyRGB)
   stack = [rgaSet,rgbSet] # RGA and RGB
   stack << looper.matchByTorus(rgaSet,looper.allsetListLoopOnlyMC) # MC for RGA
@@ -22,9 +26,9 @@ looper.allsetListLoopOnlyRGA do |rgaSet|
   # loop through ivTypes
   DatasetLooper::BinHash.keys.each do |ivType|
     rootInFiles = catTrees.map{ |catTree| "meanvmean/meanvmean.#{ivType}.#{catTree}" }
-    outDir = "meanvmean/img.#{torus}.#{ivType}"
-    Dir.mkdir(outDir) unless Dir.exist? outDir
-    system "drawBinMeans.rb #{rootInFiles.join ' '}"
-    FileUtils.mv Dir.glob("meanvmean/canv*.png"), outDir, verbose: true
+    system "./drawBinMeans.rb #{rootInFiles.join ' '}"
+    Dir.glob("meanvmean/canv*.png") do |png|
+      FileUtils.mv png, png.sub(/canv/,"img.#{torus}.#{ivType}"), verbose: true
+    end
   end
 end
