@@ -27,7 +27,7 @@ def exe(cmd)
 end
 
 # get list of *.err files with [ERR_PATTERN]
-grepErr = exe "errorPrint.sh | #{grep} #{patErr}"
+grepErr = exe "errorPrint.sh | #{grep} '#{patErr}'"
 errFiles = grepErr.gsub(/:.*$/,"").split(/\n/).uniq
 puts "\n#{"="*40}"
 
@@ -35,4 +35,4 @@ puts "\n#{"="*40}"
 outFiles = errFiles.map{ |f| f.gsub(/\.err$/,".out") }
 
 # grep for [LOG_PATTERN] in *.out files
-outFiles.each{ |log| exe "#{grep} #{patLog} #{log}" }
+outFiles.each{ |log| exe "#{grep} '#{patLog}' #{log}" }
