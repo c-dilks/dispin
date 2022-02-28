@@ -32,6 +32,8 @@ grFormat = {
   :markerSize => 2,
   :lineSize   => 2,
 }
+grFormat[2][:color]=KMagenta+1 if fileList.length==3 # if 3 sets, change color of 3rd (MC)
+
 gStyle.SetTitleSize(FontSize,"XYZ")
 gStyle.SetLabelSize(FontSize,"XYZ")
 
@@ -113,6 +115,16 @@ mgrHash.each do |mgrN,mgr|
   canvList << canv
 end
 
-canvList.each{ |canv| canv.SaveAs("meanvmean/#{canv.GetName}.png") }
+# output canvases ### NOTE: includes filter that excludes irrelevant plots
+canvList.each do |canv|
+  canvN = canv.GetName
+
+  # filter out irrelevant plots
+  next if canvN.include?"Helicity"
+  next if canvN.include?"DYsgn"
+  next if canvN.split('_').length > canvN.split('_').uniq.length # skip sanity checks (e.g., <x> vs. <x>)
+
+  canv.SaveAs("meanvmean/#{canvN}.png")
+end
 
 run_app if Interactive

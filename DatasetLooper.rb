@@ -47,7 +47,8 @@ class DatasetLooper
 
     # add bibending sets to @allsetList only
     @allsetList.append *[
-      "mc.bibending.all",
+      "mca.bibending.all",
+      "mcb.bibending.all",
       "rga.bibending.all",
       "rgb.bibending.all",
     ]
@@ -69,8 +70,8 @@ class DatasetLooper
   # list filters for data or MC
 
   def noop(list) list end
-  def onlyMC(list) list.find_all{ |set| set.match? /^mc\./ } end
-  def onlyData(list) list.reject{ |set| set.match? /^mc\./ } end
+  def onlyMC(list) list.find_all{ |set| set.match? /^mc/ } end
+  def onlyData(list) list.reject{ |set| set.match? /^mc/ } end
   def onlyRGA(list) list.find_all{ |set| set.match? /^rga\./ } end
   def onlyRGB(list) list.find_all{ |set| set.match? /^rgb\./ } end
 
@@ -160,15 +161,24 @@ class DatasetLooper
   # find dataset in `searchList` that has matching torus polarity; only returns 
   # the first match, so this is best used when there will be only one possible match
   def matchByTorus(dataset,searchList)
-    searchList.find do |set|
-      torus = dataset.split('.').find{ |tok| tok.include?"bending" }
-      set.include? torus
+    torus = dataset.split('.').find{ |tok| tok.include?"bending" }
+    results = searchList.find_all{ |set| set.include? torus }
+    if torus=='bibending' and results.find{ |result| result.include?"mc" }
+      if dataset.include?"rga"
+        return results.find{ |result| result.include?"mca" }
+      elsif dataset.include?"rgb"
+        return results.find{ |result| result.include?"mcb" }
+      else
+        $stderr.puts "ERROR in DatasetLooper.matchByTorus (see class)"
+        return results.first
+      end
     end
+    return results.first
   end
 
   # get catTree file basename (does not include ".root" or ".idx.root" extensions
   def catTreeBaseName(dataset)
-    prefix = dataset.split('.').include?('mc') ? 'catTreeMC' : 'catTreeData'
+    prefix = dataset.split('.').find{|tok|tok.match?(/^mc/)} ? 'catTreeMC' : 'catTreeData'
     return "#{prefix}.#{dataset}"
   end
 

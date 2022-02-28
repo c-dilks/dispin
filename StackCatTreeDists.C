@@ -1,32 +1,37 @@
-// TripleCatTreeDists ------------------------------
-// draw kinematic distributions from 3 catTree*.root files
+// StackCatTreeDists ------------------------------
+// draw kinematic distributions from a set of catTree*.root files
 R__LOAD_LIBRARY(DiSpin)
 #include "Tools.h"
 #include "Constants.h"
 
-TFile * infile[3];
+const Int_t NSTACK_MAX = 4;
+Int_t NSTACK;
+TFile * infile[NSTACK_MAX];
 TString outdir;
-TTree * tr[3];
+TTree * tr[NSTACK_MAX];
 TCanvas * canv;
 Float_t textSize=0.04;
 int f;
-Double_t normalizer[3];
+Double_t normalizer[NSTACK_MAX];
 const Int_t NBINS = 100;
 TCut extraCut;
 
 void CompareDist(TString varname, TString vartitle, Double_t forceMin=UNDEF, Double_t forceMax=UNDEF);
 
-void TripleCatTreeDists(
-  TString infile0N="catTreeData.rga.inbending.all.idx.root", // light red uptriangles
-  TString infile1N="catTreeData.rgb.inbending.all.idx.root", // dark blue downtriangles
-  TString infile2N="catTreeMC.mc.inbending.all.idx.root", // green circles
-  TString outdir_="cattreetriple", // output directory
+void StackCatTreeDists(
+  TString infile0N="catTreeData.rga.bibending.all.idx.root", // light red closed circles
+  TString infile1N="catTreeData.rgb.bibending.all.idx.root", // dark blue closed squares
+  TString infile2N="catTreeMC.mca.bibending.all.idx.root",   // light red or magenta open circles
+  TString infile3N="catTreeMC.mcb.bibending.all.idx.root",   // dark blue open squares
+  TString outdir_="cattreestacks", // output directory
   TCut extraCut_ = "" // additional cuts
 ) {
-  infile[0] = new TFile(infile0N,"READ");
-  infile[1] = new TFile(infile1N,"READ");
-  infile[2] = new TFile(infile2N,"READ");
-  for(f=0;f<3;f++) tr[f] = (TTree*)infile[f]->Get("tree");
+  NSTACK = 0;
+  if(infile0N!="") infile[NSTACK++] = new TFile(infile0N,"READ");
+  if(infile1N!="") infile[NSTACK++] = new TFile(infile1N,"READ");
+  if(infile2N!="") infile[NSTACK++] = new TFile(infile2N,"READ");
+  if(infile3N!="") infile[NSTACK++] = new TFile(infile3N,"READ");
+  for(f=0;f<NSTACK;f++) tr[f] = (TTree*)infile[f]->Get("tree");
   outdir = outdir_;
   extraCut = extraCut_;
 
@@ -35,7 +40,7 @@ void TripleCatTreeDists(
   gROOT->ProcessLine(Form(".! mkdir -p %s",outdir.Data()));
 
   // set normalization
-  for(f=0;f<3;f++) {
+  for(f=0;f<NSTACK;f++) {
     //normalizer[f] = ((TH1D*)infile[f]->Get("dihadronCntDist"))->GetEntries();// electron yield
     normalizer[f] = (Double_t)tr[f]->GetEntries(extraCut);
     //normalizer[f] = 1;
@@ -60,16 +65,16 @@ void TripleCatTreeDists(
 
 
 void CompareDist(TString varname, TString vartitle, Double_t forceMin, Double_t forceMax) {
-  TH1D * dist[3];
-  TString distN[3];
-  Double_t varmin[3];
-  Double_t varmax[3];
+  TH1D * dist[NSTACK_MAX];
+  TString distN[NSTACK_MAX];
+  Double_t varmin[NSTACK_MAX];
+  Double_t varmax[NSTACK_MAX];
   printf("compare %s\n",varname.Data());
 
   // {min,max}ima
   Double_t distmin,distmax;
   if(forceMin<=UNDEF && forceMax<=UNDEF) { // determine {min,max}ima automatically
-    for(f=0;f<3;f++) {
+    for(f=0;f<NSTACK;f++) {
       varmin[f] = tr[f]->GetMinimum(varname);
       varmax[f] = tr[f]->GetMaximum(varname);
     };
@@ -92,22 +97,29 @@ void CompareDist(TString varname, TString vartitle, Double_t forceMin, Double_t 
   };
 
   // formatting
-  Color_t color[3] = {
+  Color_t color[NSTACK_MAX] = {
     kRed-7,
     kBlue+3,
-    kGreen+1
+    kRed-7,
+    kBlue+3
   };
-  Style_t style[3] = {
-    kFullTriangleUp,
-    kFullTriangleDown,
-    kFullCircle
+  if(NSTACK==3) color[2] = kMagenta;
+  Style_t style[NSTACK_MAX] = {
+    kFullCircle,
+    kFullSquare,
+    kOpenCircle,
+    kOpenSquare
   };
 
   // distributions
+  /*
   TString distT = vartitle;
   distT(TRegexp(" \\[.*\\]")) = "";
   distT += " distributions;"+vartitle;
-  for(f=0;f<3;f++) {
+  *///*
+  TString distT = ";"+vartitle; // x-axis only
+  //*/
+  for(f=0;f<NSTACK;f++) {
     distN[f] = Form("%sDist%d",varname.Data(),f);
     dist[f] = new TH1D(distN[f],distT,numBins,distmin,distmax);
     tr[f]->Project(distN[f],varname,extraCut);
@@ -127,9 +139,11 @@ void CompareDist(TString varname, TString vartitle, Double_t forceMin, Double_t 
   // draw canvas
   canv = new TCanvas( TString(varname+"_canv"), TString(varname+"_canv"), 1000, 800);
   canv->SetGrid(1,1);
-  canv->SetLeftMargin(0.15);
-  canv->SetBottomMargin(0.15);
-  for(f=0;f<3;f++) dist[f]->Draw(f==0?"P":"PSAME");
+  canv->SetLeftMargin(0.10);
+  canv->SetBottomMargin(0.10);
+  canv->SetTopMargin(0.03);
+  canv->SetRightMargin(0.03);
+  for(f=0;f<NSTACK;f++) dist[f]->Draw(f==0?"P":"PSAME");
   Tools::UnzoomVertical(canv,"",0.0);
   canv->Print(Form("%s/%s.png",outdir.Data(),varname.Data()));
 
