@@ -8,10 +8,18 @@ looper = DatasetLooper.new
 
 # settings #################
 subDir     = "bruspin.volatile"
-idString   = "final.feb3"
-datasets   = ["rga", "rgb"]  ### TODO TODO TODO: update to use DatasetLooper
-minimizers = ["minuit", "mcmccov"]
-schemes    = [0,2,3]
+idString   = "final.feb28"
+datasets   = looper.allsetListLoopOnlyData
+minimizers = [
+  "minuit",
+  # "mcmccov"
+]
+schemes = [0,2,3]
+tori = [
+  "inbending",
+  "outbending",
+  "bibending",
+]
 Verbose = true
 outputFormat = "png"
 
@@ -39,12 +47,12 @@ sep = "\n\n"+"#{'S'*50}\n"*3+"\n\n"
 
 pwPlotCmds = []
 outputDirs = []
-DatasetLooper::BinHash.keys.product(minimizers,schemes).each do |ivType,minimizer,scheme|
+DatasetLooper::BinHash.keys.product(tori,minimizers,schemes).each do |ivType,torus,minimizer,scheme|
 
-  puts "\n#{"="*30} PLOT: #{[ivType,minimizer,scheme].join ' '}" if Verbose
+  puts "\n#{"="*30} PLOT: #{[torus,ivType,minimizer,scheme].join ' '}" if Verbose
 
-  # list of bruDirs, one for each dataset
-  bruDirs = datasets.map do |dataset|
+  # list of bruDirs, one for each dataset, filtered for the given torus polarity
+  bruDirs = datasets.select{|set|set.include?torus}.map do |dataset|
     "#{subDir}/" + [idString,dataset,ivType,minimizer].join('.')
   end
   outputDirs << bruDirs[0] # (only need the first one, where output files are produced)
