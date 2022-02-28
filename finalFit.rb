@@ -9,9 +9,14 @@ subDir     = "bruspin.volatile"
 idString   = "final.feb28"
 datasets   = looper.allsetListLoopOnlyData
 mcsets     = looper.allsetListLoopOnlyMC
-minimizers = ["minuit", "mcmccov"]
-timeLim = 48 # time limit [hr]
+minimizers = [
+  "minuit",
+  # "mcmccov"
+]
+timeLim = minimizers.include?("mcmccov") ? 48 : 8 # time limit [hr]
 memory  = 1000 # memory allocation per CPU [MB]
+puts timeLim
+exit
 ############################
 
 sep = Proc.new{ |title| puts "\n#{title}\n"+"="*40 }
