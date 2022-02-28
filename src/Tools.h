@@ -30,7 +30,6 @@ class Tools {
       PrintSeparator(outprint.Length()+4);
     };
 
-
     // get nonzero minimum of a histogram
     static Double_t GetNonzeroMinimum(TH1 *hist) {
       Double_t min=1e10;
@@ -82,16 +81,22 @@ class Tools {
     };
 
 
-    // shift angle to the range [-PI,+PI]
+    // shift angle to the range [-PI,+PI)
     static Float_t AdjAngle(Float_t ang) {
       while(ang>PI) ang-=2*PI;
-      while(ang<-PI) ang+=2*PI;
+      while(ang<=-PI) ang+=2*PI;
       return ang;
     };
-    // shift angle to the range [0,2*PI]
+    // shift angle to the range [0,2*PI)
     static Float_t AdjAngleTwoPi(Float_t ang) {
       while(ang>2*PI) ang-=2*PI;
-      while(ang<0) ang+=2*PI;
+      while(ang<=0) ang+=2*PI;
+      return ang;
+    };
+    // shift angle to the range [-PI/2,3PI/2)
+    static Float_t AdjAngleThreeQuarters(Float_t ang) {
+      while(ang>3.0*PI/2.0) ang-=2*PI;
+      while(ang<=-PI/2.0) ang+=2*PI;
       return ang;
     };
 
@@ -142,6 +147,21 @@ class Tools {
       return TMath::Sqrt(numer/denom);
     };
 
+    // calculate the mean angle of a histogram
+    static Double_t MeanAngle(TH1 *h) {
+      Double_t sumOfSin = 0.0;
+      Double_t sumOfCos = 0.0;
+      Double_t sumOfWgt = 0.0;
+      // compute sums of sines and cosines, weighted by entries in each bin
+      for(int bn=1; bn<=h->GetNbinsX(); bn++ ) {
+        Double_t wgt = h->GetBinContent(bn);
+        Double_t ang = h->GetBinCenter(bn);
+        sumOfSin += wgt*TMath::Sin(ang);
+        sumOfCos += wgt*TMath::Cos(ang);
+        sumOfWgt += wgt;
+      };
+      return TMath::ATan2( sumOfSin/sumOfWgt, sumOfCos/sumOfWgt );
+    };
 
     
     // get angle between two vectors

@@ -3,18 +3,23 @@
 require 'pp'
 require 'fileutils'
 
+require './DatasetLooper.rb'
+looper = DatasetLooper.new
+
 # settings #################
 subDir     = "bruspin.volatile"
-idString   = "final.feb3"
-datasets   = ["rga", "rgb"]
-minimizers = ["minuit", "mcmccov"]
-schemes    = [0,2,3]
-ivOpts     = { # map `ivType` to options, such as latex titles, settings, etc.
-  1  => { :xTitle=>'$x$'          },
-  2  => { :xTitle=>'$M_h$ [GeV]'  },
-  32 => { :xTitle=>'$z$',         :blTitle=>'$M_h$ __BL__' },
-  42 => { :xTitle=>'$p_T$ [GeV]', :blTitle=>'$M_h$ __BL__' },
-}
+idString   = "final.feb28"
+datasets   = looper.allsetListLoopOnlyData
+minimizers = [
+  "minuit",
+  # "mcmccov"
+]
+schemes = [0,2,3]
+tori = [
+  "inbending",
+  "outbending",
+  "bibending",
+]
 Verbose = true
 outputFormat = "png"
 
@@ -29,7 +34,7 @@ def printDebug(title,data)
   end
 end
 
-# mapping certain `ivOpts` options to `pwPlot.py` options
+# mapping certain `BinHash` options to `pwPlot.py` options
 pwOpts = {
   :xTitle  => '-x',
   :blTitle => '-e',
@@ -42,12 +47,12 @@ sep = "\n\n"+"#{'S'*50}\n"*3+"\n\n"
 
 pwPlotCmds = []
 outputDirs = []
-ivOpts.keys.product(minimizers,schemes).each do |ivType,minimizer,scheme|
+DatasetLooper::BinHash.keys.product(tori,minimizers,schemes).each do |ivType,torus,minimizer,scheme|
 
-  puts "\n#{"="*30} PLOT: #{[ivType,minimizer,scheme].join ' '}" if Verbose
+  puts "\n#{"="*30} PLOT: #{[torus,ivType,minimizer,scheme].join ' '}" if Verbose
 
-  # list of bruDirs, one for each dataset
-  bruDirs = datasets.map do |dataset|
+  # list of bruDirs, one for each dataset, filtered for the given torus polarity
+  bruDirs = datasets.select{|set|set.include?torus}.map do |dataset|
     "#{subDir}/" + [idString,dataset,ivType,minimizer].join('.')
   end
   outputDirs << bruDirs[0] # (only need the first one, where output files are produced)
@@ -74,10 +79,10 @@ ivOpts.keys.product(minimizers,schemes).each do |ivType,minimizer,scheme|
     bl = blList.first
 
     # set title options for pwPlot.py
-    titleOpts = ivOpts[ivType].map do |ivOpt,arg|
-      argMod = arg.gsub("__BL__","bin #{bl}")
-      pwOpt = pwOpts[ivOpt]
-      pwOpt += "'#{argMod}'" unless pwOpt==nil
+    titleOpts = DatasetLooper::BinHash[ivType].map do |opt,val|
+      title = val.gsub("__BL__","bin #{bl}") if val.is_a? String
+      pwOpt = pwOpts[opt]
+      pwOpt += "'#{title}'" unless pwOpt==nil
     end
     printDebug("titleOpts",titleOpts)
 

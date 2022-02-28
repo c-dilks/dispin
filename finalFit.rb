@@ -6,16 +6,10 @@ looper = DatasetLooper.new
 
 # settings #################
 subDir     = "bruspin.volatile"
-idString   = "final.feb20"
+idString   = "final.feb28"
 datasets   = looper.allsetListLoopOnlyData
 mcsets     = looper.allsetListLoopOnlyMC
 minimizers = ["minuit", "mcmccov"]
-ivBinnings = { # map `ivType` to number of bins for each dimension
-  1  => [12],
-  2  => [12],
-  32 => [4,3],
-  42 => [4,3],
-}
 timeLim = 48 # time limit [hr]
 memory  = 1000 # memory allocation per CPU [MB]
 ############################
@@ -30,7 +24,7 @@ puts slurm ?
   "Mode: not on ifarm, run sequentially"
 
 # determine number of CPUs to allocate per slurm node
-numBins = ivBinnings.values.map{ |nbins| nbins.inject :* }
+numBins = DatasetLooper::BinHash.values.map{ |opts| opts[:bins].inject :* }
 nCPUs = numBins.max # use max number of bins from any job -> could waste resources if some jobs have less bins
 # nCPUs = numBins.min # use min number of bins from any job -> jobs with more bins will take longer
 if slurm
@@ -45,8 +39,8 @@ jobFile = File.open(jobFileName,"w")
 jobFile.puts "#!/bin/bash" unless slurm
 
 # reformat some settings
-ivTypes = ivBinnings.keys
-ivBinnings.each{ |_,nbins| nbins.replace (nbins+[-1,-1])[0..2] } # fill rest of nbins Arrays with default `-1` values
+ivTypes = DatasetLooper::BinHash.keys
+DatasetLooper::BinHash.each{ |_,opts| opts[:bins].replace (opts[:bins]+[-1,-1])[0..2] } # fill rest of nbins Arrays with default `-1` values
 
 # loop over all possible settings, defining asymBruFit.C calls, and generate job list
 # - there will be one job per possible setting
@@ -54,10 +48,7 @@ sep.call "job list"
 settings = datasets.product(ivTypes,minimizers).each do |dataset,ivType,minimizer|
 
   # match mcset to dataset
-  mcset = mcsets.find do |set|
-    torus = dataset.split('.').find{ |tok| tok.include?"bending" }
-    set.include? torus
-  end
+  mcset = looper.matchByTorus(dataset,mcsets)
 
   # asymBrufit.C arguments
   bruArgs = [
@@ -67,14 +58,17 @@ settings = datasets.product(ivTypes,minimizers).each do |dataset,ivType,minimize
     minimizer,
     "",
     ivType,
-    *ivBinnings[ivType],
+    *DatasetLooper::BinHash[ivType][:bins],
   ]
   bruArgs.map!{ |arg| if arg.class==String then "\"#{arg}\"" else arg end } # add quotes around strings
   brufit = "root -b -q $BRUFIT/macros/LoadBru.C"
   cmd = slurm ?
     "#{brufit} asymBruFit.C(#{bruArgs.join ','})" :
     "#{brufit} 'asymBruFit.C(#{bruArgs.join ','})'"
-  [$stdout,jobFile].each{ |s| s.puts cmd }
+  # puts "#{bruArgs}"
+  puts cmd
+  jobFile.puts cmd
+
 end
 jobFile.close
 

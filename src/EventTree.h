@@ -35,14 +35,16 @@
 class EventTree : public TObject
 {
   public:
+    EventTree() {};
     EventTree(TString filelist, Int_t whichPair_=0x34);
     ~EventTree();
 
-    void GetEvent(Long64_t i);
+    virtual void GetEvent(Long64_t i);
     void GetTrajectories(Long64_t i, Bool_t prog=false);
     Bool_t Valid();
 
     Int_t SpinState();
+    virtual Int_t GetSpinIdx() { return SpinInt(SpinState()); };
     Float_t Polarization();
     Float_t Rellum();
     Bool_t CheckVertex();
@@ -62,6 +64,9 @@ class EventTree : public TObject
     //Float_t GetDepolarizationFactorApprox(Char_t kf);
     Float_t GetDepolarizationFactor(Char_t kf);
     Float_t GetDepolarizationRatio(Int_t twist);
+    virtual Float_t GetDepol2() { return GetDepolarizationFactor(2); }; // overridden in CatTree
+    virtual Float_t GetDepol3() { return GetDepolarizationFactor(3); }; // overridden in CatTree
+
     void CalculateRapidity(
       TLorentzVector momentumVec_,
       TVector3 boostVec, TVector3 zAxis,

@@ -6,9 +6,19 @@ require 'pp'
 
 class DatasetLooper
 
+  # CONSTANTS
+
+  # binning schemes and related options: `ivType` => { :bins=>[bn0,bn1,bn2], :option=>value, ... }
+  BinHash = {
+    1  => { :bins=>[12],  :xTitle=>'$x$'          },
+    2  => { :bins=>[12],  :xTitle=>'$M_h$ [GeV]'  },
+    32 => { :bins=>[4,3], :xTitle=>'$z$',         :blTitle=>'$M_h$ __BL__' },
+    42 => { :bins=>[4,3], :xTitle=>'$p_T$ [GeV]', :blTitle=>'$M_h$ __BL__' },
+  }
+ 
   #####################################
   # construction
- 
+
   # constructor
   def initialize
 
@@ -35,6 +45,14 @@ class DatasetLooper
       dataset.gsub(/bending\..*$/,"bending.all")
     end.uniq
 
+    # add bibending sets to @allsetList only
+    @allsetList.append *[
+      "mca.bibending.all",
+      "mcb.bibending.all",
+      "rga.bibending.all",
+      "rgb.bibending.all",
+    ]
+
   end
 
   # list of lists that have been defined above
@@ -52,13 +70,17 @@ class DatasetLooper
   # list filters for data or MC
 
   def noop(list) list end
-  def onlyMC(list) list.find_all{ |set| set.match? /^mc\./ } end
-  def onlyData(list) list.reject{ |set| set.match? /^mc\./ } end
+  def onlyMC(list) list.find_all{ |set| set.match? /^mc/ } end
+  def onlyData(list) list.reject{ |set| set.match? /^mc/ } end
+  def onlyRGA(list) list.find_all{ |set| set.match? /^rga\./ } end
+  def onlyRGB(list) list.find_all{ |set| set.match? /^rgb\./ } end
 
   ListOfFilters = [
     :noop,
     :onlyMC,
     :onlyData,
+    :onlyRGA,
+    :onlyRGB,
   ]
 
 
@@ -134,6 +156,31 @@ class DatasetLooper
     toks.delete("diph")
     toks.delete("all")
     return toks.append("data set").join(' ')
+  end
+
+  # find dataset in `searchList` that has matching torus polarity; only returns 
+  # the first match, so this is best used when there will be only one possible match
+  def matchByTorus(dataset,searchList)
+    torus = dataset.split('.').find{ |tok| tok.include?"bending" }
+    results = searchList.find_all{ |set| set.include? torus }
+    # for bibending torus, if looking for MC match, return MCA (MCB) for RGA (RGB)
+    if torus=='bibending' and results.find{ |result| result.include?"mc" }
+      if dataset.include?"rga"
+        return results.find{ |result| result.include?"mca" }
+      elsif dataset.include?"rgb"
+        return results.find{ |result| result.include?"mcb" }
+      else
+        $stderr.puts "ERROR in DatasetLooper.matchByTorus (see class)"
+        return results.first
+      end
+    end
+    return results.first
+  end
+
+  # get catTree file basename (does not include ".root" or ".idx.root" extensions
+  def catTreeBaseName(dataset)
+    prefix = dataset.split('.').find{|tok|tok.match?(/^mc/)} ? 'catTreeMC' : 'catTreeData'
+    return "#{prefix}.#{dataset}"
   end
 
 end

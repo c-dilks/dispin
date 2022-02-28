@@ -9,7 +9,7 @@ Binning::Binning() {
   //printf("Instantiating Binning...\n");
 
   // set minimum and maximum IV values
-  minIV[vM] = 0;   maxIV[vM] = 2;
+  minIV[vM] = 0;   maxIV[vM] = 3;
   minIV[vX] = 0;   maxIV[vX] = 1;
   minIV[vZ] = 0;   maxIV[vZ] = 1;
   minIV[vPt] = 0;  maxIV[vPt] = 3;
@@ -221,13 +221,13 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
 
   // default binning schemes for each IV, if they weren't specified as args
   Int_t nb[3];
-  TString defaultScheme = "PI0"; // <------------------ main switch
+  TString defaultScheme = "AB"; // <------------------ main switch
   if( nb0==-1 && nb1==-1 && nb2==-1) {
-    if(defaultScheme=="PI0") { // SPIN2021: RGA fa18+sp19 inbending data, pi+pi0
-      if(ivVar[0]==vX) nb0=6;
-      if(ivVar[0]==vM) nb0=6;
-      if(ivVar[0]==vZ) nb0=6;
-      if(ivVar[0]==vZ  && ivVar[1]==vM)  { nb0=3; nb1=2; };
+    if(defaultScheme=="AB") { // RGA vs. RGB
+      if(ivVar[0]==vX) nb0=12;
+      if(ivVar[0]==vM) nb0=12;
+      if(ivVar[0]==vZ) nb0=12;
+      if(ivVar[0]==vZ  && ivVar[1]==vM)  { nb0=4; nb1=3; };
       if(ivVar[0]==vPt && ivVar[1]==vM)  { nb0=4; nb1=3; };
       if(ivVar[0]==vX  && ivVar[1]==vDY) { nb0=4; nb1=3; };
       if(ivVar[0]==vM  && ivVar[1]==vDY) { nb0=4; nb1=3; };
