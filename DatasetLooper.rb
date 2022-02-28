@@ -163,6 +163,7 @@ class DatasetLooper
   def matchByTorus(dataset,searchList)
     torus = dataset.split('.').find{ |tok| tok.include?"bending" }
     results = searchList.find_all{ |set| set.include? torus }
+    # for bibending torus, if looking for MC match, return MCA (MCB) for RGA (RGB)
     if torus=='bibending' and results.find{ |result| result.include?"mc" }
       if dataset.include?"rga"
         return results.find{ |result| result.include?"mca" }

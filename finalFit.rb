@@ -6,7 +6,7 @@ looper = DatasetLooper.new
 
 # settings #################
 subDir     = "bruspin.volatile"
-idString   = "final.feb20"
+idString   = "final.feb28"
 datasets   = looper.allsetListLoopOnlyData
 mcsets     = looper.allsetListLoopOnlyMC
 minimizers = ["minuit", "mcmccov"]
@@ -65,7 +65,10 @@ settings = datasets.product(ivTypes,minimizers).each do |dataset,ivType,minimize
   cmd = slurm ?
     "#{brufit} asymBruFit.C(#{bruArgs.join ','})" :
     "#{brufit} 'asymBruFit.C(#{bruArgs.join ','})'"
-  [$stdout,jobFile].each{ |s| s.puts cmd }
+  # puts "#{bruArgs}"
+  puts cmd
+  jobFile.puts cmd
+
 end
 jobFile.close
 
