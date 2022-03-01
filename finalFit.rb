@@ -15,8 +15,6 @@ minimizers = [
 ]
 timeLim = minimizers.include?("mcmccov") ? 48 : 8 # time limit [hr]
 memory  = 1000 # memory allocation per CPU [MB]
-puts timeLim
-exit
 ############################
 
 sep = Proc.new{ |title| puts "\n#{title}\n"+"="*40 }
