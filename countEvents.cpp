@@ -16,10 +16,12 @@
 TString infiles;
 Int_t whichPair;
 Int_t whichHad[2];
+TString tableFile;
 EventTree * ev;
 void PrintCount(TString cntName,Long64_t numer,Long64_t denom);
 void PrintEvent();
 void PrintEvent2();
+void PrintEvent_xcheck_2_28();
 Bool_t first;
 Bool_t hasDiphoton;
 
@@ -29,12 +31,15 @@ int main(int argc, char** argv) {
    // ARGUMENTS
    infiles = "outroot/*.root";
    whichPair = EncodePairType(kPip,kPim);
+   tableFile = "eventTable.txt";
    if(argc>1) infiles = TString(argv[1]);
    if(argc>2) whichPair = (Int_t)strtof(argv[2],NULL);
+   if(argc>3) tableFile = TString(argv[3]);
    DecodePairType(whichPair,whichHad[qA],whichHad[qB]);
 
    // OPTIONS
-   Bool_t printEvents = false;
+   Bool_t printEvents = true;
+   Long64_t numToPrint = 1000;
    /////////////////////
 
 
@@ -71,16 +76,18 @@ int main(int argc, char** argv) {
    first = true;
 
    // event loop
-   for(int i=0; i<ev->ENT; i++) {
+   for(Long64_t i=0; i<ev->ENT; i++) {
+     if(printEvents && nValid>=numToPrint) { printf("--- limiter ---\n"); break; };
      ev->GetEvent(i);
 
      // full cut set
      if(ev->Valid()) {
        nValid++;
-       if(printEvents && nValid<=10000) {
+       if(printEvents && nValid<=numToPrint) {
          //PrintEvent();
-         PrintEvent2();
-       };
+         //PrintEvent2();
+         PrintEvent_xcheck_2_28();
+       }
      };
 
      // counts for each cut
@@ -217,5 +224,34 @@ void PrintEvent2() {
     printf(" %.5f",ev->hadXF[h]);
   };
   printf("\n");
+  gSystem->RedirectOutput(0);
+};
+
+
+void PrintEvent_xcheck_2_28() {
+  if(first) {
+    gSystem->RedirectOutput(tableFile,"w");
+    first = false;
+  } else gSystem->RedirectOutput(tableFile,"a");
+  std::cout <<
+    ev->runnum                       << " " <<
+    ev->evnum                        << " " <<
+    ev->helicity                     << " " <<
+    ev->Q2                           << " " <<
+    ev->W                            << " " <<
+    ev->x                            << " " <<
+    ev->y                            << " " <<
+    ev->Zpair                        << " " <<
+    ev->PhPerp                       << " " <<
+    ev->hadXF[qA]                    << " " <<
+    ev->hadXF[qB]                    << " " <<
+    ev->Mmiss                        << " " <<
+    ev->PhiH                         << " " <<
+    ev->PhiR                         << " " <<
+    ev->theta                        << " " <<
+    ev->GetDepolarizationFactor('A') << " " <<
+    ev->GetDepolarizationFactor('C') << " " <<
+    ev->GetDepolarizationFactor('W') <<
+    std::endl;
   gSystem->RedirectOutput(0);
 };
