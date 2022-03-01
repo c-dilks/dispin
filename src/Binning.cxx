@@ -383,8 +383,8 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
           AddBinBound(vZ,0.55);
           break;
         case 3:
-          AddBinBound(vZ,0.505);
-          AddBinBound(vZ,0.607);
+          AddBinBound(vZ,0.510);
+          AddBinBound(vZ,0.614);
           break;
         case 4:
           AddBinBound(vZ,0.468);
@@ -406,6 +406,10 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
     else if(ivVar[d] == vPt) {
       switch(nb[d]) {
         case 1: break; // single bin
+        case 3:
+          AddBinBound(vPt,0.369);
+          AddBinBound(vPt,0.584);
+          break;
         case 4:
           AddBinBound(vPt,0.321);
           AddBinBound(vPt,0.484);
