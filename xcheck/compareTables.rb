@@ -3,11 +3,13 @@
 
 require 'pry'
 require 'awesome_print'
+require 'matplotlib/pyplot'
+plt = Matplotlib::Pyplot
 
 # list of humans: each event in human[0]'s table will be searched for in human[1]'s
 # (human[0] should have the smaller table, if cross checking a subset)
-humans = [ "chris",   "timothy" ]
 humans = [ "timothy", "chris"   ]
+humans = [ "chris",   "timothy" ]
 
 # build list pairs of files to compare
 subdir="2.28"
@@ -50,6 +52,16 @@ def getvals(cols)
   }.to_h
 end
 
+# plot formatting
+pltc = 4 # number of plot columns
+pltr = (colSyms.length-1)/pltc+1
+plt.rcParams.update(
+  {
+    "font.size"   => 8,
+    "figure.figsize" => [2*pltr,2*pltc],
+  }
+)
+
 # cross check
 tableFiles.each{ |table|
 
@@ -57,6 +69,9 @@ tableFiles.each{ |table|
   outFileN = table[0].sub(/#{humans[0]}/,"compare")
   outFile = File.open(outFileN,'w')
   outFile.puts '%12s '*colSyms.length % colSyms.map(&:to_s) # header
+
+  # histograms (Arrays)
+  diffHists = colSyms.map{ |sym| [sym,Array.new] }.to_h
 
   # loop through human0's table
   File.readlines(table[0]).each{ |line0|
@@ -112,6 +127,9 @@ tableFiles.each{ |table|
       valsDiffRounded.at(@colIdxs[:runnum]).replace(runnum)
       valsDiffRounded.at(@colIdxs[:evnum]).replace(evnum)
 
+      # fill histograms
+      valsDiff.each{ |sym,val| diffHists[sym] << val }
+
     else
       valsDiffRounded = [runnum,evnum]
       comments << 'not found'
@@ -125,6 +143,15 @@ tableFiles.each{ |table|
   }
   outFile.close
   puts "wrote #{outFileN}"
+
+  # plot differences
+  fig,axs = plt.subplots(pltr, pltc)
+  fig.tight_layout(h_pad: 4)
+  colSyms.each_with_index do |sym,idx|
+    ax = axs[idx/pltc,idx%pltc]
+    ax.set_title sym.to_s
+    ax.hist(diffHists[sym], bins: 100)
+  end
+  plt.savefig("test.png")
   exit
 }
-
