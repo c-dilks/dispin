@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
 
    // OPTIONS
    Bool_t printEvents = true;
-   Long64_t numToPrint = 1000;
+   Long64_t numToPrint = 1e9;
    /////////////////////
 
 

@@ -2,14 +2,18 @@
 # compare tables from countEvents.cpp to any other table with the same format
 
 require 'pry'
-require 'awesome_print'
+require 'thread/pool'
 require 'matplotlib/pyplot'
+
 plt = Matplotlib::Pyplot
+pool = Thread.pool(`nproc`.to_i-2)
 
 # list of humans: each event in human[0]'s table will be searched for in human[1]'s
 # (human[0] should have the smaller table, if cross checking a subset)
-humans = [ "timothy", "chris"   ]
-humans = [ "chris",   "timothy" ]
+# - output files will be named "...human0_human1..."
+humans = []
+humans << "timothy"
+humans << "chris"
 
 # build list pairs of files to compare
 subdir="2.28"
@@ -17,7 +21,6 @@ tableFiles = humans.map{ |human|
   Dir.glob("#{subdir}/#{human}*.txt").sort
 }.inject(:zip)
 puts "COMPARISONS"
-ap tableFiles
 
 # columns, in the same order as ../countEvents.cpp
 colSyms = [
@@ -63,10 +66,12 @@ plt.rcParams.update(
 )
 
 # cross check
-tableFiles.each{ |table|
+xcheck = Proc.new{ |table|
+  puts "-> compare:"
+  puts table
 
   # start output file
-  outFileN = table[0].sub(/#{humans[0]}/,"compare")
+  outFileN = table[0].sub(/#{humans[0]}/,"compare_#{humans.join('_')}")
   outFile = File.open(outFileN,'w')
   outFile.puts '%12s '*colSyms.length % colSyms.map(&:to_s) # header
 
@@ -74,7 +79,9 @@ tableFiles.each{ |table|
   diffHists = colSyms.map{ |sym| [sym,Array.new] }.to_h
 
   # loop through human0's table
+  cnt=0
   File.readlines(table[0]).each{ |line0|
+    # if cnt>100 then break else cnt+=1 end # limiter
 
     # get human0's columns:
     cols0 = line0.split(' ') # list of strings, one element per column
@@ -150,8 +157,18 @@ tableFiles.each{ |table|
   colSyms.each_with_index do |sym,idx|
     ax = axs[idx/pltc,idx%pltc]
     ax.set_title sym.to_s
+    ax.set_yscale 'log'
     ax.hist(diffHists[sym], bins: 100)
   end
-  plt.savefig("test.png")
-  exit
+  pngN =outFileN.sub(/\.txt$/,'.png')
+  plt.savefig(pngN)
+  puts "wrote #{pngN}"
 }
+
+
+# execution
+tableFiles.each{ |table|
+  # pool.process{ xcheck.call(table) } #FIXME: matplotlib GUI must be in main thread, for now multi-threading is not possible
+  xcheck.call(table) # single-threaded
+}
+pool.shutdown

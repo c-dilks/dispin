@@ -27,5 +27,3 @@ outrootFiles.zip(chrisFiles).each{ |outrootFile,chrisFile|
   system "countEvents.exe #{outrootFile} 0x34 #{pwd}/#{chrisFile}"
 }
 Dir.chdir pwd
-puts "produced:"
-system "tree #{subdir}/chris*"
