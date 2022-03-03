@@ -45,3 +45,4 @@ catTree*.bak
 catTree.archive*
 catTrees
 xcheck/2.28
+xcheck/2.28/*.txt
