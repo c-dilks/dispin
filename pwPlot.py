@@ -224,10 +224,10 @@ for l,lmap in plotmap.items():
 
             # plot formatting
             if infileIdx==0:
-                mkrSty = 's'
+                mkrSty = 'o'
                 errCol = 'xkcd:coral'
             elif infileIdx==1:
-                mkrSty = 'o'
+                mkrSty = 's'
                 errCol = 'xkcd:darkish blue'
             elif infileIdx==2:
                 mkrSty = '^'
