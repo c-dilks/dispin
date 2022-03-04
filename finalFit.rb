@@ -6,7 +6,7 @@ looper = DatasetLooper.new
 
 # settings #################
 subDir     = "bruspin.volatile"
-idString   = "final.mar1"
+idString   = "nodepol.mar1"
 datasets   = looper.allsetListLoopOnlyData
 mcsets     = looper.allsetListLoopOnlyMC
 minimizers = [
