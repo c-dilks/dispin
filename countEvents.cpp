@@ -52,6 +52,7 @@ int main(int argc, char** argv) {
    Long_t nCutFiducial=0;
    Long_t nCutPID=0;
    Long_t nCutVertex=0;
+   Long_t nCutFR=0;
 
    // yields including diphoton cuts
    hasDiphoton = false; // true if whichPair has diphoton
@@ -100,6 +101,7 @@ int main(int argc, char** argv) {
        if(ev->cutFiducial) nCutFiducial++;
        if(ev->cutPID) nCutPID++;
        if(ev->cutVertex) nCutVertex++;
+       if(ev->cutFR) nCutFR++;
        // diphoton cuts
        if(hasDiphoton) {
          if(ev->objDiphoton->cutPhotBeta) nCutdiphPhotBeta++;
@@ -124,6 +126,7 @@ int main(int argc, char** argv) {
    PrintCount("nCutFiducial",nCutFiducial,nTotal);
    PrintCount("nCutPID",nCutPID,nTotal);
    PrintCount("nCutVertex",nCutVertex,nTotal);
+   PrintCount("nCutFR",nCutFR,nTotal);
    if(hasDiphoton) {
      printf("diphoton cuts:\n");
      PrintCount("  nCutdiphPhotBeta",nCutdiphPhotBeta,nTotal);
