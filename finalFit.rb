@@ -89,7 +89,7 @@ if slurm
   slurmSet.call("ntasks",        "1")
   slurmSet.call("cpus-per-task", "#{nCPUs}")
   slurmSet.call("output",        "/farm_out/%u/%x-%A_%a.out")
-  slurmSet.call("error",         "/farm_out/%u/%x-%A_%a.out")
+  slurmSet.call("error",         "/farm_out/%u/%x-%A_%a.err")
   slurmFile.puts "srun $(head -n$SLURM_ARRAY_TASK_ID #{jobFileName} | tail -n1)"
   slurmFile.close()
 end
