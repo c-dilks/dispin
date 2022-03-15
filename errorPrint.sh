@@ -14,4 +14,5 @@ grep -vE 'all output objects have been merged' |\
 grep -vE 'has no streamer or dictionary.*will not be saved' |\
 grep -vE 'Corner (Full |)Plot is already in the list' |\
 grep -vE 'Autocorrelation Plot is already in the list' |\
+grep -vE 'unknown branch -> Spin_idx' |\
 grep --color -E '^.*\.err:'
