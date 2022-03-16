@@ -9,7 +9,7 @@ looper.allsetListLoop do |dataset|
   DatasetLooper::BinHash.each do |ivType,binOpts|
     args = [
       '-c',
-      "-f #{looper.catTreeBaseName(dataset)}.idx.root",
+      "-f #{DatasetLooper.catTreeBaseName(dataset)}.idx.root",
       "-i #{ivType}",
       "-n #{binOpts[:bins].join ' '}",
     ]

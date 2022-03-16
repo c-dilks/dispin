@@ -22,7 +22,7 @@ looper.allsetListLoopOnlyRGA do |rgaSet|
   stack.uniq!
 
   # catTrees
-  catTrees = stack.map{ |set| looper.catTreeBaseName(set)+".idx.root" }
+  catTrees = stack.map{ |set| DatasetLooper.catTreeBaseName(set)+".idx.root" }
   (4-stack.length).times{ catTrees << '' }
 
   # output directory

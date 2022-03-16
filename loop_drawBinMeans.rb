@@ -21,7 +21,7 @@ looper.allsetListLoopOnlyRGA do |rgaSet|
   torus = rgaSet.split('.').find{ |tok| tok.include?"bending" }
 
   # catTrees
-  catTrees = stack.map{ |set| looper.catTreeBaseName(set)+".idx.root" }
+  catTrees = stack.map{ |set| DatasetLooper.catTreeBaseName(set)+".idx.root" }
 
   # loop through ivTypes
   DatasetLooper::BinHash.keys.each do |ivType|

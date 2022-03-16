@@ -178,7 +178,7 @@ class DatasetLooper
   end
 
   # get catTree file basename (does not include ".root" or ".idx.root" extensions
-  def catTreeBaseName(dataset)
+  def self.catTreeBaseName(dataset)
     prefix = dataset.split('.').find{|tok|tok.match?(/^mc/)} ? 'catTreeMC' : 'catTreeData'
     return "#{prefix}.#{dataset}"
   end
