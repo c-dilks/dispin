@@ -6,8 +6,9 @@
 
 require './DatasetLooper.rb'
 require 'fileutils'
-require 'RubyROOT'
 require 'awesome_print'
+require 'pry'
+require 'RubyROOT'
 include Root
 
 if ARGV.length!=1
@@ -28,6 +29,7 @@ sources = Dir.glob("catTree*.root")
   .grep_v(/bibending/)
   .grep_v(/idx.root$/)
   .grep_v(/TRUNCATED/)
+  .grep_v(/REWEIGHTED/)
 puts "\nhadd sources:"
 puts sources
 
@@ -154,27 +156,17 @@ if useWeighting
   ap weights
 
   # re-weight
+  cmds = []
   weights.each{ |torus,weight|
     treeToReweight = sources.find{ |source| source.include? torus.to_s }
-    puts "RE-WEIGHT #{treeToReweight} with weight #{weight}"
+    reweightedTree = treeToReweight.sub(/\.root$/,'.REWEIGHTED.root')
+    cmds << ".x ReweightCatTree.C(\"#{treeToReweight}\",#{weight})"
   }
-
-  # truncation
-  # puts "truncating....."
-  # truncatedTree = treeToTruncate.sub(/\.root$/,'.TRUNCATED.root')
-  # puts "truncatedTree=#{truncatedTree}"
-  # TFile.open(treeToTruncate,"READ"){ |inFile|
-  #   TFile.open(truncatedTree,"RECREATE"){ |outFile|
-  #     inTree = inFile.Get('tree').auto_cast
-  #     entries = inTree.GetEntries
-  #     truncatedEntries = (truncateFactor * inTree.GetEntries).round
-  #     puts "original tree entries  = #{entries}"
-  #     puts "truncated tree entries = #{truncatedEntries}"
-  #     outTree = inTree.CloneTree(truncatedEntries)
-  #     outTree.Write
-  #   }
-  # }
-  # puts "\n - PRODUCED  #{truncatedTree}"
+  print "\nreweight commands: "
+  ap cmds
+  correct = ask("\nDoes this look correct? [y/N]")=="y"
+  exit unless correct
+  cmds.each{ |cmd| gROOT.ProcessLine("#{cmd}") } # Kernel.system hangs with RubyROOT; must use gROOT instead (which locks mutex, preventing multi-threading)
 
   # update hadd target and sources
   # sources.map!{ |source| source==treeToTruncate ? truncatedTree : source }
