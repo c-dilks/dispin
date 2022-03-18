@@ -47,8 +47,9 @@ class DatasetLooper
 
     # add bibending sets to @allsetList only
     @allsetList.append *[
-      "mca.bibending.all",
-      "mcb.bibending.all",
+      # "mca.bibending.all",
+      # "mcb.bibending.all",
+      "mc.bibending.all",
       "rga.bibending.all",
       "rgb.bibending.all",
     ]
@@ -163,17 +164,17 @@ class DatasetLooper
   def matchByTorus(dataset,searchList)
     torus = dataset.split('.').find{ |tok| tok.include?"bending" }
     results = searchList.find_all{ |set| set.include? torus }
-    # for bibending torus, if looking for MC match, return MCA (MCB) for RGA (RGB)
-    if torus=='bibending' and results.find{ |result| result.include?"mc" }
-      if dataset.include?"rga"
-        return results.find{ |result| result.include?"mca" }
-      elsif dataset.include?"rgb"
-        return results.find{ |result| result.include?"mcb" }
-      else
-        $stderr.puts "ERROR in DatasetLooper.matchByTorus (see class)"
-        return results.first
-      end
-    end
+    ### for bibending torus, if looking for MC match, return MCA (MCB) for RGA (RGB)
+    # if torus=='bibending' and results.find{ |result| result.include?"mc" }
+    #   if dataset.include?"rga"
+    #     return results.find{ |result| result.include?"mca" }
+    #   elsif dataset.include?"rgb"
+    #     return results.find{ |result| result.include?"mcb" }
+    #   else
+    #     $stderr.puts "ERROR in DatasetLooper.matchByTorus (see class)"
+    #     return results.first
+    #   end
+    # end
     return results.first
   end
 

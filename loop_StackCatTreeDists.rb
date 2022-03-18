@@ -2,7 +2,7 @@
 #
 require 'thread/pool'
 require './DatasetLooper.rb'
-require 'pp'
+require 'awesome_print'
 looper = DatasetLooper.new
 
 # define thread pool
@@ -32,8 +32,9 @@ looper.allsetListLoopOnlyRGA do |rgaSet|
   args = [
     *catTrees,
     outdir,
+    'Weight',
   ]
-  puts "#{args}"
+  ap args
   args.map!{ |arg| if arg.class==String then "\"#{arg}\"" else arg end } # add quotes around strings
   cmds << "root -b -q 'StackCatTreeDists.C(#{args.join(',')})'"
 end
