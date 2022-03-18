@@ -75,6 +75,9 @@ class DatasetLooper
   def onlyData(list) list.reject{ |set| set.match? /^mc/ } end
   def onlyRGA(list) list.find_all{ |set| set.match? /^rga\./ } end
   def onlyRGB(list) list.find_all{ |set| set.match? /^rgb\./ } end
+  def onlyInbending(list) list.find_all{ |set| set.match? /\.inbending\./ } end
+  def onlyOutbending(list) list.find_all{ |set| set.match? /\.outbending\./ } end
+  def onlyBibending(list) list.find_all{ |set| set.match? /\.bibending\./ } end
 
   ListOfFilters = [
     :noop,
@@ -82,6 +85,9 @@ class DatasetLooper
     :onlyData,
     :onlyRGA,
     :onlyRGB,
+    :onlyInbending,
+    :onlyOutbending,
+    :onlyBibending,
   ]
 
 
