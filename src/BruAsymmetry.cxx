@@ -215,7 +215,7 @@ void BruAsymmetry::LoadDataSets(
   if(weightFileN=="") {
     useWeights = false;
   } else {
-    this->PrintLog(Form("WEIGHTS ENABLED, using %s",weightFileN.Data()));
+    this->PrintLog(Form("WEIGHTS ENABLED, using weight %s from file %s",weightN.Data(),weightFileN.Data()));
     useWeights = true;
     FM->Data().LoadWeights(weightName,weightFileN);
   };

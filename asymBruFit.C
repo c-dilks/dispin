@@ -11,7 +11,7 @@ void asymBruFit(
     TString mcTree="catTreeMC.mc.inbending.bg45.0x34.idx.root", // MC catTree (leave empty to disable)
     TString bruDir="bruspin", // output directory
     TString minimizer="minuit", // minimizer (see comments above)
-    TString sPlotDir="", // sPlot directory (leave empty string if not using, otherwise use outDir from `sPlotBru.C`)
+    TString weightDir="", // weights directory (viz. sWeights, via outDir from `sPlotBru.C`); leave empty string if not using
     Int_t binschemeIVtype=2, // binning scheme (execute `buildSpinroot.exe` and see usage of `-i`)
     Int_t nbins0=-1, // number of bins for each dimension
     Int_t nbins1=-1, // - example: binschemeIVtype=32, nbins0=6, nbins1=3, runs fit in 6 bins of z (iv=3) for 3 bins of Mh (iv=2)
@@ -72,8 +72,13 @@ void asymBruFit(
 
 
   // load data and MC catTrees -------------------------------------------------------------------------------
-  if(sPlotDir=="") B->LoadDataSets( dataTree, mcTree  );
-  else             B->LoadDataSets( dataTree, mcTree, sPlotDir+"/Tweights.root", "Signal" );
+  if(weightDir=="") B->LoadDataSets( dataTree, mcTree  );
+  else {
+    TString weightClass = weightDir.Contains("splot") ? // weight class name
+      "Signal" :   // signal sWeights
+      "IO";        // inbending/outbending weights for bibending
+    B->LoadDataSets( dataTree, mcTree, weightDir+"/Tweights.root", weightClass );
+  };
 
 
   // MCMC hyperparameters ------------------------------------------------------------------------------------

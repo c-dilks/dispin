@@ -23,7 +23,7 @@ void StripTweights(
   cout << "output file = " << outFileName << endl;
 
   // setup Brufit Weights object
-  Weights *W = new Weights(weightBranch);
+  Weights *W = new Weights("HSsWeights"); // (default weight name for FitManager::Data().LoadWeights)
   W->SetFile(outFileName);
   W->SetSpecies(weightClass);
   W->SetIDName("Idx");
