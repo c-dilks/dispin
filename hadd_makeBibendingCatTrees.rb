@@ -152,6 +152,8 @@ if useWeighting
   }
   print "\nyields: "
   ap yields
+  print "\nfractional yields: "
+  ap yields.map{ |t,y| [t,y/yields.values.sum] }.to_h
   print "weights: "
   ap weights
 
@@ -159,7 +161,6 @@ if useWeighting
   cmds = []
   weights.each{ |torus,weight|
     treeToReweight = sources.find{ |source| source.include? torus.to_s }
-    reweightedTree = treeToReweight.sub(/\.root$/,'.REWEIGHTED.root')
     cmds << ".x ReweightCatTree.C(\"#{treeToReweight}\",#{weight})"
   }
   print "\nreweight commands: "
@@ -169,27 +170,25 @@ if useWeighting
   cmds.each{ |cmd| gROOT.ProcessLine("#{cmd}") } # Kernel.system hangs with RubyROOT; must use gROOT instead (which locks mutex, preventing multi-threading)
 
   # update hadd target and sources
-  # sources.map!{ |source| source==treeToTruncate ? truncatedTree : source }
-  # target.sub!('.mc.',".mc#{matchDataset.chars.last}.")
-  # puts '='*30+"\n\n"
-  # puts "\nupdated hadd sources:"
-  # puts sources
-  # puts "\nupdated hadd target:"
-  # puts target
-  # puts "\ntruncated tree is #{truncatedTree},\nwhich will be REMOVED after hadd!"
-  # correct = ask("\nDoes this look correct? [y/N]")=="y"
-  # puts "you answered " + (correct ? "yes" : "no; abort hadd")
-  # exit unless correct
+  sources.map!{ |source| source.sub(/\.root$/,'.REWEIGHTED.root') }
+  puts '='*30+"\n\n"
+  puts "\nupdated hadd sources:"
+  puts sources
+  puts "\nupdated hadd target:"
+  puts target
+  puts "\nreweighted trees are #{sources},\nwhich will be REMOVED after hadd!"
+  correct = ask("\nDoes this look correct? [y/N]")=="y"
+  puts "you answered " + (correct ? "yes" : "no; abort hadd")
+  exit unless correct
 end
 
-
-puts "premature exit for debugging"; exit
-
 # hadd
-system "hadd -f #{target} #{sources.join(' ')}"
+gROOT.ProcessLine ".! hadd -f #{target} #{sources.join(' ')}"
 
-# cleanup truncated files
+# cleanup truncated and reweighted files
+puts "cleanup..."
 FileUtils.rm truncatedTree if useTruncation
+FileUtils.rm sources if useWeighting
 
 # re-index
-system "root -b -q 'IndexCatTree.C(\"#{target}\")'"
+gROOT.ProcessLine ".x IndexCatTree.C(\"#{target}\")"
