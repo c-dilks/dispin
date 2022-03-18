@@ -71,6 +71,9 @@ system "cat jobs.resubmit.slurm"
 puts '='*40
 
 # submit jobs
-print "\nDoes this look correct? Have you cross checked with errorPrintFindInLog.rb? [y/N]\n> "
+print "\nDoes this look correct? Have you cross checked with errorPrintFindInLog.rb? Farmout logfiles will be REMOVED! [y/N]\n> "
 execute = $stdin.gets.chomp=="y"
-system "sbatch job.resubmit.slurm" if execute
+if execute
+  FileUtils.rm Dir.glob('farmout/*'), verbose: true
+  system "sbatch job.resubmit.slurm"
+end
