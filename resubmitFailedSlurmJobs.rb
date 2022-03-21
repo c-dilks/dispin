@@ -9,7 +9,7 @@ if ARGV.length<1
   puts """
   USAGE: #{$0} [ERR_PATTERN] [CASE_INSENSITIVE]
 
-  - greps for [ERR_PATTERN] in farm_out *.err files, then
+  - greps for regexp [ERR_PATTERN] in farm_out *.err files, then
     find resubmit associated jobs
     - use errorPrint.sh to show errors
 
@@ -29,7 +29,7 @@ def pp(str,obj)
 end
 
 # get list of *.err files with [ERR_PATTERN]
-grepErr = `errorPrint.sh | #{grep} '#{patErr}'`
+grepErr = `errorPrint.sh | #{grep} -E '#{patErr}'`
 puts "grep results:\n#{grepErr}"
 errFiles = grepErr.gsub(/:.*$/,"").split(/\n/).uniq
 puts "\n#{"="*40}"
