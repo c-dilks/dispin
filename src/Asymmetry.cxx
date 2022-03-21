@@ -530,6 +530,9 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
     tree_PolErr          = (Double_t)(polErr);
     tree_Depol2          = (Double_t)(depol2);
     tree_Depol3          = (Double_t)(depol3);
+    tree_DepolA          = (Double_t)(dpVal[dpA]);
+    tree_DepolC          = (Double_t)(dpVal[dpC]);
+    tree_DepolW          = (Double_t)(dpVal[dpW]);
     tree_Rellum          = (Double_t)(rellum);
     tree_X               = (Double_t)(x);
     tree_Mh              = (Double_t)(Mh);
@@ -1403,6 +1406,9 @@ void Asymmetry::ActivateTree(Bool_t isMC, InjectionModel *IM_) {
   tree->Branch("Theta",&tree_Theta,"Theta/D");
   tree->Branch("Depol2",&tree_Depol2,"Depol2/D");
   tree->Branch("Depol3",&tree_Depol3,"Depol3/D");
+  tree->Branch("DepolA",&tree_DepolA,"DepolA/D");
+  tree->Branch("DepolC",&tree_DepolC,"DepolC/D");
+  tree->Branch("DepolW",&tree_DepolW,"DepolW/D");
   tree->Branch("Rellum",&tree_Rellum,"Rellum/D");
   tree->Branch("X",&tree_X,"X/D");
   tree->Branch("Mh",&tree_Mh,"Mh/D");

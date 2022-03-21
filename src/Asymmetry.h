@@ -300,6 +300,9 @@ class Asymmetry : public TObject
     Double_t tree_PolErr;
     Double_t tree_Depol2;
     Double_t tree_Depol3;
+    Double_t tree_DepolA;
+    Double_t tree_DepolC;
+    Double_t tree_DepolW;
     Double_t tree_Rellum;
     Double_t tree_X;
     Double_t tree_Mh;
