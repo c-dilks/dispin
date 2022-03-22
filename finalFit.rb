@@ -5,8 +5,8 @@ require './DatasetLooper.rb'
 looper = DatasetLooper.new
 
 # settings #################
-subDir     = "bruspin.volatile"
-idString   = "nodepol.mar1"
+subDir     = "bruspin.work"
+idString   = "nodepol.mar22"
 datasets   = looper.allsetListLoopOnlyData
 mcsets     = looper.allsetListLoopOnlyMC
 minimizers = [
