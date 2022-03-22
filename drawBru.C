@@ -188,9 +188,40 @@ void drawBru(
       // add points to graph and write
       cnt=0;
       nextBin = TObjArrayIter(BBlist);
+      Int_t twist = moduList[i]->GetTw();
       while((BB = (BruBin*) nextBin())) {
-        paramGr[i]->SetPoint(cnt,BB->GetIvMean(0),BB->paramVal[i]);
-        paramGr[i]->SetPointError(cnt,0,BB->paramErr[i]);
+        Double_t asymVal = BB->paramVal[i];
+        Double_t asymErr = BB->paramErr[i];
+        //// test depolarization factor /////////////////////////
+        Double_t depol = 1;
+        /*
+        Double_t meanDepolA = BB->GetIvMean("DepolA");
+        Double_t meanDepolC = BB->GetIvMean("DepolC");
+        Double_t meanDepolW = BB->GetIvMean("DepolW");
+        Double_t meanDepol2 = BB->GetIvMean("Depol2");
+        Double_t meanDepol3 = BB->GetIvMean("Depol3");
+        */
+        /*//// <C>/<A> and <W>/<A>
+        if(meanDepolA==0) fprintf(stderr,"ERROR: meanDepolA=0, setting depol=1 for this bin\n");
+        else {
+          switch(twist) {
+            case 2: depol = meanDepolC / meanDepolA; break;
+            case 3: depol = meanDepolW / meanDepolA; break;
+          };
+        };
+        */
+        /*//// <C/A> and <W/A>
+        switch(twist) {
+          case 2: depol = meanDepol2; break;
+          case 3: depol = meanDepol3; break;
+        };
+        */
+        //// apply to asymVal and asymErr
+        asymVal /= depol;
+        asymErr /= depol;
+        /////////////////////////////////////////////////////////
+        paramGr[i]->SetPoint(cnt,BB->GetIvMean(0),asymVal);
+        paramGr[i]->SetPointError(cnt,0,asymErr);
         cnt++;
       };
       paramGr[i]->Write();
