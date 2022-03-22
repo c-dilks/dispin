@@ -192,3 +192,10 @@ FileUtils.rm sources if useWeighting
 
 # re-index
 gROOT.ProcessLine ".x IndexCatTree.C(\"#{target}\")"
+
+# strip weights
+if useWeighting
+  targetIdx = target.sub(/root$/,'idx.root')
+  gROOT.ProcessLine ".x #{ENV["BRUFIT"]}/macros/LoadBru.C"
+  gROOT.ProcessLine ".x StripTweights.C(\"#{targetIdx}\",\"Weight\",\"IO\",\"tree\")"
+end

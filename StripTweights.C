@@ -12,6 +12,7 @@ void StripTweights(
     )
 {
   // get input TTree
+  cout << "stripping weights from " << inFileName << " ..." << endl;
   TFile *inFile = new TFile(inFileName,"READ");
   TTree *inTree = (TTree*)inFile->Get(treeName);
 
