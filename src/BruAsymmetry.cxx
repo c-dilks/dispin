@@ -44,6 +44,9 @@ BruAsymmetry::BruAsymmetry(TString outdir_, TString minimizer_, Int_t whichSpinM
     FM->SetUp().LoadVariable( TString("DY")+Form("[%f,%f]",     0.0, 4.0  ));
     FM->SetUp().LoadVariable( TString("Q2")+Form("[%f,%f]",     0.0, 12.0 ));
     FM->SetUp().LoadVariable( TString("XF")+Form("[%f,%f]",     0.0, 1.0  ));
+    FM->SetUp().LoadVariable( TString("DepolA")+Form("[%f,%f]", 0.0, 2.0  )); // extra depol vars for <depol> study
+    FM->SetUp().LoadVariable( TString("DepolC")+Form("[%f,%f]", 0.0, 2.0  ));
+    FM->SetUp().LoadVariable( TString("DepolW")+Form("[%f,%f]", 0.0, 2.0  ));
   };
 
   // category for spin
