@@ -72,6 +72,7 @@ BruAsymmetry::BruAsymmetry(TString outdir_, TString minimizer_, Int_t whichSpinM
   denomFormu = "";
   ampNameList = "";
   formuNameList = "";
+  PDFweights = "";
   nDenomParams = 0;
 
   printf("constructed BruAsymmetry\n");
@@ -173,6 +174,8 @@ void BruAsymmetry::BuildPDF() {
     PDFstr += ","+obsList+","+ampNameList+","+formuNameList+")";
   };
 
+  // append weight information
+  if(PDFweights!="") PDFstr += PDFweights;
 
   // construct the extended likelihood
   this->PrintLog("construct PDF "+PDFstr);
@@ -190,8 +193,8 @@ void BruAsymmetry::LoadDataSets(
     TString dataFileN,
     TString mcFileN,
     TString weightFileN,
-    TString weightName,
-    TString treeName
+    TString weightN,
+    TString treeN
     )
 {
   printf("LoadDataSets:\n - dataFile = %s\n - mcFile = %s\n",dataFileN.Data(),mcFileN.Data());
@@ -199,7 +202,7 @@ void BruAsymmetry::LoadDataSets(
   // load data tree
   this->PrintLog("");
   this->PrintLog(Form("Data File: %s",dataFileN.Data()));
-  FM->LoadData(treeName,dataFileN);
+  FM->LoadData(treeN,dataFileN);
 
   // load MC data, for normalization integral
   if(mcFileN=="") {
@@ -208,20 +211,33 @@ void BruAsymmetry::LoadDataSets(
   } else {
     this->PrintLog(Form("MC INTEGRATION ENABLED, using %s",mcFileN.Data()));
     useMCint = true;
-    FM->LoadSimulated(treeName,mcFileN,"PWfit");
+    FM->LoadSimulated(treeN,mcFileN,"PWfit");
   };
 
   // load weights (a Tweights.root file, likely from sPlot)
-  if(weightFileN=="") {
-    useWeights = false;
-  } else {
+  if(weightFileN!="") {
     this->PrintLog(Form("WEIGHTS ENABLED, using weight %s from file %s",weightN.Data(),weightFileN.Data()));
-    useWeights = true;
-    FM->Data().LoadWeights(weightName,weightFileN);
+    FM->Data().LoadWeights(weightN,weightFileN);
   };
 
 };
 
+
+// load weights for MC data, used for likelihood PDF normalization term approximation
+// (must be called before BuildPDF)
+void BruAsymmetry::LoadPDFweights(
+    TString weightFileN,
+    TString weightN,
+    TString weightObjN
+    )
+{
+  PDFweights = Form("WEIGHTS@%s,%s,%s",
+      weightN.Data(),
+      weightFileN.Data(),
+      weightObjN.Data()
+      );
+  this->PrintLog(Form("PDF WEIGHTS FROM MC ENABLED, using %s",PDFweights.Data()));
+}
 
 // bin the data (and MC) according to specified binning scheme
 // ( see Binning::SetScheme )

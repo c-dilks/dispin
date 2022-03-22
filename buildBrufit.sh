@@ -28,10 +28,14 @@ build finished!
 
 >>> now running a brufit tutorial to build remaining
     shared libraries (e.g. PDFExpand)...
-
 """
 pushd tutorials/SphHarmonic
-root -b -q $BRUFIT/macros/LoadBru.C $* GenSphHarmonicMoments.C
+root -b -q $BRUFIT/macros/LoadBru.C $* GenSphHarmonicMoments.C > $DISPIN_HOME/tmp/build.log
+echo """
+
+>>> done, see tmp/build.log for stdout
+
+"""
 popd
 
 # finish
