@@ -13,7 +13,7 @@ void asymBruFit(
     TString minimizer="minuit", // minimizer (see comments above)
     TString weightDir="catTreeWeights/catTreeData.rga.bibending.all;catTreeWeights/catTreeMC.mc.bibending.all", // weights directory or directories (viz. sWeights, via outDir from `sPlotBru.C`); leave empty string if not using; use a semicolon and a second directory to specify MC weights for the MC usage in the PDF normalization approximation
     Int_t binschemeIVtype=2, // binning scheme (execute `buildSpinroot.exe` and see usage of `-i`)
-    Int_t nbins0=-1, // number of bins for each dimension
+    Int_t nbins0=6,  // number of bins for each dimension
     Int_t nbins1=-1, // - example: binschemeIVtype=32, nbins0=6, nbins1=3, runs fit in 6 bins of z (iv=3) for 3 bins of Mh (iv=2)
     Int_t nbins2=-1, // - leave `-1` to use defaults defined in `src/Binning.cxx`
     Int_t whichSpinMC=-1 // if >=0, use helicity from injected asymmetry (branch "SpinMC_`whichSpinMC`_idx")
@@ -26,6 +26,13 @@ void asymBruFit(
 
   // instantiate brufit
   BruAsymmetry * B = new BruAsymmetry(bruDir,minimizer,whichSpinMC);
+
+
+  // set binning scheme ------------------------------------------------------------------------------------
+  Binning * BS = new Binning();
+  BS->SetScheme(binschemeIVtype,nbins0,nbins1,nbins2);
+  B->Bin(BS);
+  B->PrintBinScheme();
 
 
   // build modulations -----------------------------------------------------------------------------
@@ -82,13 +89,6 @@ void asymBruFit(
 
   // build full PDF ----------------------------------------------------------------------------------------
   B->BuildPDF();
-
-
-  // set binning scheme ------------------------------------------------------------------------------------
-  Binning * BS = new Binning();
-  BS->SetScheme(binschemeIVtype,nbins0,nbins1,nbins2);
-  B->Bin(BS);
-  B->PrintBinScheme();
 
 
   // MCMC hyperparameters ------------------------------------------------------------------------------------
