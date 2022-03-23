@@ -9,7 +9,7 @@ R__LOAD_LIBRARY(DiSpin)
 void asymBruFit(
     TString dataTree="catTreeData.rga.bibending.all.idx.root", // data catTree
     TString mcTree="catTreeMC.mc.bibending.all.idx.root", // MC catTree (leave empty to disable)
-    TString bruDir="bruspin.test", // output directory
+    TString bruDir="bruspin.weightTest.rga", // output directory
     TString minimizer="minuit", // minimizer (see comments above)
     TString weightDir="catTreeWeights/catTreeData.rga.bibending.all;catTreeWeights/catTreeMC.mc.bibending.all", // weights directory or directories (viz. sWeights, via outDir from `sPlotBru.C`); leave empty string if not using; use a semicolon and a second directory to specify MC weights for the MC usage in the PDF normalization approximation
     Int_t binschemeIVtype=2, // binning scheme (execute `buildSpinroot.exe` and see usage of `-i`)
