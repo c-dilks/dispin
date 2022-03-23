@@ -133,7 +133,7 @@ class Asymmetry : public TObject
     Float_t diphM;
     Float_t theta;
     Int_t spinn;
-    Float_t pol;
+    Float_t pol,polErr;
     Float_t depol2,depol3;
     
 
@@ -297,6 +297,7 @@ class Asymmetry : public TObject
     Double_t tree_PhiD;
     Double_t tree_Theta;
     Double_t tree_Pol;
+    Double_t tree_PolErr;
     Double_t tree_Depol2;
     Double_t tree_Depol3;
     Double_t tree_Rellum;

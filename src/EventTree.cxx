@@ -578,6 +578,9 @@ Int_t EventTree::SpinState() {
 Float_t EventTree::Polarization() {
   return RundepPolarization(runnum);
 };
+Float_t EventTree::PolarizationError() {
+  return RundepPolarization(runnum,false);
+};
 
 // return relative luminosity, which can depend on HWP position
 Float_t EventTree::Rellum() {
