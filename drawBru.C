@@ -188,7 +188,7 @@ void drawBru(
       // add points to graph and write
       cnt=0;
       nextBin = TObjArrayIter(BBlist);
-      Int_t twist = moduList[i]->GetTw();
+      Int_t twist = moduList[i] ? moduList[i]->GetTw() : 0; // yield param is "twist 0"
       while((BB = (BruBin*) nextBin())) {
         Double_t asymVal = BB->paramVal[i];
         Double_t asymErr = BB->paramErr[i];
@@ -205,6 +205,7 @@ void drawBru(
         if(meanDepolA==0) fprintf(stderr,"ERROR: meanDepolA=0, setting depol=1 for this bin\n");
         else {
           switch(twist) {
+            case 0: depol = 1; break;
             case 2: depol = meanDepolC / meanDepolA; break;
             case 3: depol = meanDepolW / meanDepolA; break;
           };
@@ -212,6 +213,7 @@ void drawBru(
         */
         /*//// <C/A> and <W/A>
         switch(twist) {
+          case 0: depol = 1; break;
           case 2: depol = meanDepol2; break;
           case 3: depol = meanDepol3; break;
         };

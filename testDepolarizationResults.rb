@@ -20,8 +20,8 @@ outName = ARGV.first
 
 # loop over input fit result directories
 Dir.glob("#{subDir}/nodepol*").each do |dir|
-  system "echo root -b -q $BRUFIT/macros/LoadBru.C 'drawBru.C(\"#{dir}\",\"minuit\")'"
-  #outDir = dir.sub(/nodepol/,outName)
-  #FileUtils.mkdir_p outDir
-  #FileUtils.cp Dir.glob("#{dir}/asym*.root"), outDir, verbose: true
+  system "root -b -q $BRUFIT/macros/LoadBru.C 'drawBru.C(\"#{dir}\",\"minuit\")'"
+  outDir = dir.sub(/nodepol/,outName)
+  FileUtils.mkdir_p outDir
+  FileUtils.cp Dir.glob("#{dir}/asym*.root"), outDir, verbose: true
 end
