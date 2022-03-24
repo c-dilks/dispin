@@ -157,6 +157,7 @@ class DatasetLooper
       tok.gsub!(/^fa/,"Fall 20")
       tok.gsub!(/^sp/,"Spring 20")
       tok.gsub!(/^wi/,"Winter 20")
+      tok.gsub!(/bibending/,"combined inbending+outbending")
       tok
     end
     toks.delete("subset")
