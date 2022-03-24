@@ -10,10 +10,10 @@ class DatasetLooper
 
   # binning schemes and related options: `ivType` => { :bins=>[bn0,bn1,bn2], :option=>value, ... }
   BinHash = {
-    1  => { :bins=>[6] ,  :xTitle=>'$x$'          },
-    2  => { :bins=>[6] ,  :xTitle=>'$M_h$ [GeV]'  },
-    32 => { :bins=>[3,2], :xTitle=>'$z$',         :blTitle=>'$M_h$ __BL__' },
-    42 => { :bins=>[3,2], :xTitle=>'$p_T$ [GeV]', :blTitle=>'$M_h$ __BL__' },
+    1  => { :bins=>[6],   :xTitle=>'$x$',         :xTranslation=>0.006       },
+    2  => { :bins=>[6],   :xTitle=>'$M_h$ [GeV]', :xTranslation=>0.020       },
+    32 => { :bins=>[3,2], :xTitle=>'$z$',         :blTitle=>'$M_h$ __BL__', :xTranslation=>0.010 },
+    42 => { :bins=>[3,2], :xTitle=>'$p_T$ [GeV]', :blTitle=>'$M_h$ __BL__', :xTranslation=>0.015 },
   }
  
   #####################################

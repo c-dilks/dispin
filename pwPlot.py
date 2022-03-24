@@ -11,6 +11,7 @@ scheme = 2
 xTitle = ''
 extraTitle = ''
 outputEXT = 'png'
+translation = 0.0
 if len(sys.argv)-1 < 1:
     helpStr = f'''
     USAGE: {sys.argv[0]} [OPTION]... [FILE]...
@@ -39,6 +40,12 @@ if len(sys.argv)-1 < 1:
                 pdf
                 disabled: open interactive plot, no output
 
+        -t TRANSLATE
+            translate stacked plots, offsetting them horizontally, to improve legibility;
+            for each nth stacked plot after the first, the offset is +(n-1)*TRANSLATE;
+            default = 0 (disable translation)
+
+
     FILES
         brufit asym.root file(s), which will be stacked together on the output figure
     
@@ -48,7 +55,7 @@ if len(sys.argv)-1 < 1:
     print(helpStr,file=sys.stderr)
     exit(2)
 
-try: opts,args = getopt.getopt(sys.argv[1:],'s:x:e:o:')
+try: opts,args = getopt.getopt(sys.argv[1:],'s:x:e:o:t:')
 except getopt.GetoptError:
     print('\n\nERROR: invalid arguments')
     exit(2)
@@ -57,6 +64,7 @@ for opt,arg in opts:
     if(opt=="-x"): xTitle = arg
     if(opt=="-e"): extraTitle = arg
     if(opt=="-o"): outputEXT = arg
+    if(opt=="-t"): translation = float(arg)
 infiles = args
 print(f'''
 CALLING {sys.argv[0]}:
@@ -64,6 +72,7 @@ CALLING {sys.argv[0]}:
     xTitle = '{xTitle}'
     extraTitle = '{extraTitle}'
     outputEXT = {outputEXT}
+    translation = {translation}
     infiles = {infiles}
 ''')
 
@@ -146,7 +155,7 @@ else:
 
 # figure size and aspect ratio
 plt.rcParams.update({
-    "figure.figsize": [3*ncols,3*nrows],
+    "figure.figsize": [4*ncols,3*nrows],
     "figure.dpi": 300,
     "savefig.bbox": 'tight'
 })
@@ -243,7 +252,7 @@ for l,lmap in plotmap.items():
 
             # draw asymmetry graph to subplot
             axs[r,c].errorbar(
-                list(asym.GetX()),
+                list(map(lambda x:x+infileIdx*translation, asym.GetX())), # optionally offsets (translates) stacked plots
                 list(asym.GetY()),
                 yerr=list(asym.GetEY()),
                 marker=mkrSty,
