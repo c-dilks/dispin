@@ -73,7 +73,7 @@ vars.each do |var|
     end
     caption = "Comparisons of #{latexVarsStr} for inbending (left), outbending (middle), and the combined inbending and outbending data sets (right)."
     caption += " Light red closed circles are for RGA, and dark blue closed squares are for RGB."
-    caption += " The open circles denote MC data; for the combined inbending and outbending set, two MC sets are shown separately for RGA and RGB, with corresponding markers and colors."
+    caption += " The magenta open circles denote MC data."#+"; for the combined inbending and outbending set, two MC sets are shown separately for RGA and RGB, with corresponding markers and colors."
     caption += " The distributions are normalized by their respective dihadron yields."
     out.puts "\\caption{#{caption}}"
     out.puts "\\label{fig:stack:#{var}}"

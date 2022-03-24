@@ -217,31 +217,31 @@ int main(int argc, char** argv) {
       bn = BS->FindBin(ev);
 
       // fill histograms
-      distHash.at("Mh").at(bn)->Fill(ev->Mh);
-      distHash.at("X").at(bn)->Fill(ev->x);
-      distHash.at("Z").at(bn)->Fill(ev->Zpair);
-      distHash.at("Q2").at(bn)->Fill(ev->Q2);
-      distHash.at("PhPerp").at(bn)->Fill(ev->PhPerp);
-      distHash.at("PhiH").at(bn)->Fill(ev->PhiH);
-      distHash.at("PhiR").at(bn)->Fill(ev->PhiR);
-      distHash.at("Theta").at(bn)->Fill(ev->theta);
-      distHash.at("Mmiss").at(bn)->Fill(ev->Mmiss);
-      distHash.at("XF").at(bn)->Fill(ev->xF);
-      distHash.at("DYsgn").at(bn)->Fill(ev->DYsgn);
-      distHash.at("Helicity").at(bn)->Fill(ev->GetSpinIdx());
-      distHash.at("DepolCA").at(bn)->Fill(ev->GetDepol2());
-      distHash.at("DepolWA").at(bn)->Fill(ev->GetDepol3());
+      distHash.at("Mh").at(bn)->Fill(ev->Mh,ev->GetWeight());
+      distHash.at("X").at(bn)->Fill(ev->x,ev->GetWeight());
+      distHash.at("Z").at(bn)->Fill(ev->Zpair,ev->GetWeight());
+      distHash.at("Q2").at(bn)->Fill(ev->Q2,ev->GetWeight());
+      distHash.at("PhPerp").at(bn)->Fill(ev->PhPerp,ev->GetWeight());
+      distHash.at("PhiH").at(bn)->Fill(ev->PhiH,ev->GetWeight());
+      distHash.at("PhiR").at(bn)->Fill(ev->PhiR,ev->GetWeight());
+      distHash.at("Theta").at(bn)->Fill(ev->theta,ev->GetWeight());
+      distHash.at("Mmiss").at(bn)->Fill(ev->Mmiss,ev->GetWeight());
+      distHash.at("XF").at(bn)->Fill(ev->xF,ev->GetWeight());
+      distHash.at("DYsgn").at(bn)->Fill(ev->DYsgn,ev->GetWeight());
+      distHash.at("Helicity").at(bn)->Fill(ev->GetSpinIdx(),ev->GetWeight());
+      distHash.at("DepolCA").at(bn)->Fill(ev->GetDepol2(),ev->GetWeight());
+      distHash.at("DepolWA").at(bn)->Fill(ev->GetDepol3(),ev->GetWeight());
       if(useEventTree) {
-        distHash.at("Y").at(bn)->Fill(ev->y);
-        distHash.at("DepolA").at(bn)->Fill(ev->GetDepolarizationFactor('A'));
-        distHash.at("DepolC").at(bn)->Fill(ev->GetDepolarizationFactor('C'));
-        distHash.at("DepolW").at(bn)->Fill(ev->GetDepolarizationFactor('W'));
-        distHash.at("P0").at(bn)->Fill(0.5*(3*TMath::Power(TMath::Cos(ev->theta),2)-1));
-        distHash.at("P1").at(bn)->Fill(TMath::Sin(ev->theta));
-        distHash.at("F").at(bn)->Fill(TMath::Cos(ev->PhiH));
-        distHash.at("G").at(bn)->Fill(TMath::Sin(ev->PhiR));
-        distHash.at("FG").at(bn)->Fill(TMath::Sin(2*ev->PhiH-ev->PhiR)*TMath::Sin(ev->PhiH));
-        distHash.at("FGH").at(bn)->Fill( TMath::Sin(ev->PhiH-ev->PhiR) * TMath::Sin(ev->PhiH-ev->PhiR) * TMath::Cos(ev->PhiH) );
+        distHash.at("Y").at(bn)->Fill(ev->y,ev->GetWeight());
+        distHash.at("DepolA").at(bn)->Fill(ev->GetDepolarizationFactor('A'),ev->GetWeight());
+        distHash.at("DepolC").at(bn)->Fill(ev->GetDepolarizationFactor('C'),ev->GetWeight());
+        distHash.at("DepolW").at(bn)->Fill(ev->GetDepolarizationFactor('W'),ev->GetWeight());
+        distHash.at("P0").at(bn)->Fill(0.5*(3*TMath::Power(TMath::Cos(ev->theta),2)-1),ev->GetWeight());
+        distHash.at("P1").at(bn)->Fill(TMath::Sin(ev->theta),ev->GetWeight());
+        distHash.at("F").at(bn)->Fill(TMath::Cos(ev->PhiH),ev->GetWeight());
+        distHash.at("G").at(bn)->Fill(TMath::Sin(ev->PhiR),ev->GetWeight());
+        distHash.at("FG").at(bn)->Fill(TMath::Sin(2*ev->PhiH-ev->PhiR)*TMath::Sin(ev->PhiH),ev->GetWeight());
+        distHash.at("FGH").at(bn)->Fill( TMath::Sin(ev->PhiH-ev->PhiR) * TMath::Sin(ev->PhiH-ev->PhiR) * TMath::Cos(ev->PhiH) ,ev->GetWeight());
       }
     };
   };

@@ -58,7 +58,7 @@ DatasetLooper::BinHash.each do |ivType,binOpts|
       caption.sub!(/\.$/,", with rows corresponding to the #{highDimVar} bins.") if highDim
       caption += " Inbending data are in the left column, outbending in the middle, and the combined inbending and outbending data are in the right column."
       caption += " Light red closed circles are for RGA, and dark blue closed squares are for RGB; points are connected by solid lines."
-      caption += " The open circles and dashed lines denote MC data; for the combined inbending and outbending set, two MC sets are shown separately for RGA and RGB, with corresponding markers and colors."
+      caption += " The magenta open circles and dashed lines denote MC data."#+"; for the combined inbending and outbending set, two MC sets are shown separately for RGA and RGB, with corresponding markers and colors."
       if row==NumRows-1
         caption += " Continued on next figure."
       else

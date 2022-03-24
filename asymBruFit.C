@@ -7,13 +7,13 @@ R__LOAD_LIBRARY(DiSpin)
  */
 
 void asymBruFit(
-    TString dataTree="catTreeData.rga.inbending.all.idx.root", // data catTree
-    TString mcTree="catTreeMC.mc.inbending.bg45.0x34.idx.root", // MC catTree (leave empty to disable)
-    TString bruDir="bruspin", // output directory
+    TString dataTree="catTreeData.rga.bibending.all.idx.root", // data catTree
+    TString mcTree="catTreeMC.mc.bibending.all.idx.root", // MC catTree (leave empty to disable)
+    TString bruDir="bruspin.weightTest.rga", // output directory
     TString minimizer="minuit", // minimizer (see comments above)
-    TString sPlotDir="", // sPlot directory (leave empty string if not using, otherwise use outDir from `sPlotBru.C`)
+    TString weightDir="catTreeWeights/catTreeData.rga.bibending.all;catTreeWeights/catTreeMC.mc.bibending.all", // weights directory or directories (viz. sWeights, via outDir from `sPlotBru.C`); leave empty string if not using; use a semicolon and a second directory to specify MC weights for the MC usage in the PDF normalization approximation
     Int_t binschemeIVtype=2, // binning scheme (execute `buildSpinroot.exe` and see usage of `-i`)
-    Int_t nbins0=-1, // number of bins for each dimension
+    Int_t nbins0=6,  // number of bins for each dimension
     Int_t nbins1=-1, // - example: binschemeIVtype=32, nbins0=6, nbins1=3, runs fit in 6 bins of z (iv=3) for 3 bins of Mh (iv=2)
     Int_t nbins2=-1, // - leave `-1` to use defaults defined in `src/Binning.cxx`
     Int_t whichSpinMC=-1 // if >=0, use helicity from injected asymmetry (branch "SpinMC_`whichSpinMC`_idx")
@@ -26,6 +26,13 @@ void asymBruFit(
 
   // instantiate brufit
   BruAsymmetry * B = new BruAsymmetry(bruDir,minimizer,whichSpinMC);
+
+
+  // set binning scheme ------------------------------------------------------------------------------------
+  Binning * BS = new Binning();
+  BS->SetScheme(binschemeIVtype,nbins0,nbins1,nbins2);
+  B->Bin(BS);
+  B->PrintBinScheme();
 
 
   // build modulations -----------------------------------------------------------------------------
@@ -60,20 +67,28 @@ void asymBruFit(
   B->AddDenomMod(new Modulation(3,1,1,0,false,Modulation::kUU)); // cos(phiR)
   */
 
-  // build full PDF
-  B->BuildPDF();
-
-
-  // set binning scheme ------------------------------------------------------------------------------------
-  Binning * BS = new Binning();
-  BS->SetScheme(binschemeIVtype,nbins0,nbins1,nbins2);
-  B->Bin(BS);
-  B->PrintBinScheme();
-
 
   // load data and MC catTrees -------------------------------------------------------------------------------
-  if(sPlotDir=="") B->LoadDataSets( dataTree, mcTree  );
-  else             B->LoadDataSets( dataTree, mcTree, sPlotDir+"/Tweights.root", "Signal" );
+  if(weightDir=="") B->LoadDataSets( dataTree, mcTree  );
+  else {
+    // load weights
+    TObjArray *weightDirTokens = weightDir.Tokenize(";");
+    //// data weights
+    TString weightDir_data = ((TObjString*)weightDirTokens->At(0))->GetString(); // before ';' delimiter (if applicable)
+    TString weightClass = weightDir_data.Contains("splot") ? // weight class name
+      "Signal" :   // signal sWeights
+      "IO";        // inbending/outbending weights for bibending
+    B->LoadDataSets( dataTree, mcTree, weightDir_data+"/Tweights.root", weightClass );
+    //// MC weights (for PDF normalizer)
+    if(weightDirTokens->GetEntries()>1) {
+      TString weightDir_mc = ((TObjString*)weightDirTokens->At(1))->GetString(); // after ';' delimiter
+      B->LoadPDFweights( weightDir_mc+"/Tweights.root", weightClass, "HSsWeights" );
+    };
+  };
+
+
+  // build full PDF ----------------------------------------------------------------------------------------
+  B->BuildPDF();
 
 
   // MCMC hyperparameters ------------------------------------------------------------------------------------

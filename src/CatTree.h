@@ -26,6 +26,7 @@ class CatTree : public EventTree
     // CatTree-specific accessors
     Float_t GetDepol2() override { return (Float_t) d_Depol2; };
     Float_t GetDepol3() override { return (Float_t) d_Depol3; };
+    Double_t GetWeight() override { return d_Weight; };
     Int_t GetSpinIdx() override { return spinIdx; };
 
   private:
