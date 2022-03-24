@@ -21,7 +21,7 @@ outputSysUnc = Hash.new
 DatasetList.each do |dataset|
 
   # check existence
-  catTreeFileN = dl.catTreeBaseName(dataset)+".idx.root"
+  catTreeFileN = DatasetLooper.catTreeBaseName(dataset)+".idx.root"
   if not File.exist? catTreeFileN
     $stderr.puts "ERROR: #{catTreeFileN} not found"
     next
