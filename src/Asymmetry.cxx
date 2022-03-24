@@ -464,6 +464,7 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
 
   // set polarization
   pol = ev->Polarization();
+  polErr = ev->PolarizationError();
   if(pol<=0) return false;
 
   // set relative luminosity
@@ -526,6 +527,7 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
     tree_PhiD            = (Double_t)(PhiD);
     tree_Theta           = (Double_t)(theta);
     tree_Pol             = (Double_t)(pol);
+    tree_PolErr          = (Double_t)(polErr);
     tree_Depol2          = (Double_t)(depol2);
     tree_Depol3          = (Double_t)(depol3);
     tree_Rellum          = (Double_t)(rellum);
@@ -1414,6 +1416,7 @@ void Asymmetry::ActivateTree(Bool_t isMC, InjectionModel *IM_) {
   tree->Branch("diphM",&tree_diphM,"diphM/D");
   tree->Branch("Weight",&tree_Weight,"Weight/D");
   tree->Branch("Pol",&tree_Pol,"Pol/D");
+  tree->Branch("PolErr",&tree_PolErr,"PolErr/D");
   if(!isMC) {
     tree->Branch("Spin_idx",&tree_Spin_idx,"Spin_idx/I");
   } else {
