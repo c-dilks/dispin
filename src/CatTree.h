@@ -53,6 +53,7 @@ class CatTree : public EventTree
     Double_t d_Z;
     Double_t d_PhPerp;
     Double_t d_Q2;
+    Double_t d_Y;
     Double_t d_XF;
     Double_t d_DY;
     Double_t d_DYsgn;

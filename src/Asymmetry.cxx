@@ -405,6 +405,7 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
   PhPerp = ev->PhPerp;
   Ph = ev->Ph;
   Q2 = ev->Q2;
+  y = ev->y;
   xF = ev->xF;
   theta = ev->theta;
   diphM = ev->objDiphoton->M;
@@ -540,6 +541,7 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
     tree_Z               = (Double_t)(z);
     tree_PhPerp          = (Double_t)(PhPerp);
     tree_Q2              = (Double_t)(Q2);
+    tree_Y               = (Double_t)(y);
     tree_XF              = (Double_t)(xF);
     tree_DY              = (Double_t)(DY);
     tree_DYsgn           = (Double_t)(DYsgn);
@@ -1223,6 +1225,7 @@ void Asymmetry::ResetVars() {
   PhPerp = UNDEF;
   Ph = UNDEF;
   Q2 = UNDEF;
+  y = UNDEF;
   xF = UNDEF;
   for(int h=0; h<2; h++) YH[h]=UNDEF;
   DY = UNDEF;
@@ -1416,6 +1419,7 @@ void Asymmetry::ActivateTree(Bool_t isMC, InjectionModel *IM_) {
   tree->Branch("Z",&tree_Z,"Z/D");
   tree->Branch("PhPerp",&tree_PhPerp,"PhPerp/D");
   tree->Branch("Q2",&tree_Q2,"Q2/D");
+  tree->Branch("Y",&tree_Y,"Y/D");
   tree->Branch("XF",&tree_XF,"XF/D");
   tree->Branch("DY",&tree_DY,"DY/D");
   tree->Branch("DYsgn",&tree_DYsgn,"DYsgn/D");

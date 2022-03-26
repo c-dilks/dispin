@@ -22,6 +22,7 @@ CatTree::CatTree(TString treeFileN) : EventTree() {
   ctree->SetBranchAddress("Z",&d_Z);
   ctree->SetBranchAddress("PhPerp",&d_PhPerp);
   ctree->SetBranchAddress("Q2",&d_Q2);
+  ctree->SetBranchAddress("Y",&d_Y);
   ctree->SetBranchAddress("XF",&d_XF);
   ctree->SetBranchAddress("DY",&d_DY);
   ctree->SetBranchAddress("DYsgn",&d_DYsgn);
@@ -53,6 +54,7 @@ void CatTree::GetEvent(Long64_t i) {
   Zpair  = d_Z;
   PhPerp = d_PhPerp;
   Q2     = d_Q2;
+  y      = d_Y;
   xF     = d_XF;
   DY     = d_DY;
   DYsgn  = d_DYsgn;

@@ -127,6 +127,7 @@ class Asymmetry : public TObject
     Float_t PhPerp;
     Float_t Ph;
     Float_t Q2;
+    Float_t y;
     Float_t xF;
     Float_t YH[2];
     Float_t DY,DYsgn;
@@ -310,6 +311,7 @@ class Asymmetry : public TObject
     Double_t tree_Z;
     Double_t tree_PhPerp;
     Double_t tree_Q2;
+    Double_t tree_Y;
     Double_t tree_XF;
     Double_t tree_DY,tree_DYsgn;
     Double_t tree_diphM;
