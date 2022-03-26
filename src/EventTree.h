@@ -63,10 +63,10 @@ class EventTree : public TObject
     Trajectory * GetHadronTraj(Int_t h) { return trHad[h]; };
 
     //Float_t GetDepolarizationFactorApprox(Char_t kf);
-    Float_t GetDepolarizationFactor(Char_t kf);
-    Float_t GetDepolarizationRatio(Int_t twist);
-    virtual Float_t GetDepol2() { return GetDepolarizationFactor(2); }; // overridden in CatTree
-    virtual Float_t GetDepol3() { return GetDepolarizationFactor(3); }; // overridden in CatTree
+    virtual Float_t GetDepolarizationFactor(Char_t kf);
+    virtual Float_t GetDepolarizationRatio(Int_t twist);
+    virtual Float_t GetDepol2() { return GetDepolarizationRatio(2); }; // overridden in CatTree
+    virtual Float_t GetDepol3() { return GetDepolarizationRatio(3); }; // overridden in CatTree
     virtual Double_t GetWeight() { return 1.0; }; // not used in EventTree; overridden in CatTree
 
     void CalculateRapidity(

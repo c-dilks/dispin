@@ -24,6 +24,8 @@ class CatTree : public EventTree
     void GetEvent(Long64_t i) override;
 
     // CatTree-specific accessors
+    Float_t GetDepolarizationFactor(Char_t kf) override;
+    Float_t GetDepolarizationRatio(Int_t twist) override;
     Float_t GetDepol2() override { return (Float_t) d_Depol2; };
     Float_t GetDepol3() override { return (Float_t) d_Depol3; };
     Double_t GetWeight() override { return d_Weight; };
@@ -41,6 +43,9 @@ class CatTree : public EventTree
     Double_t d_Theta;
     Double_t d_Depol2;
     Double_t d_Depol3;
+    Double_t d_DepolA;
+    Double_t d_DepolC;
+    Double_t d_DepolW;
     Double_t d_Rellum;
     Double_t d_X;
     Double_t d_Mh;

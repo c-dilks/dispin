@@ -12,6 +12,9 @@ CatTree::CatTree(TString treeFileN) : EventTree() {
   ctree->SetBranchAddress("Theta",&d_Theta);
   ctree->SetBranchAddress("Depol2",&d_Depol2); // accessor: GetDepol2()
   ctree->SetBranchAddress("Depol3",&d_Depol3); // accessor: GetDepol3()
+  ctree->SetBranchAddress("DepolA",&d_DepolA);
+  ctree->SetBranchAddress("DepolC",&d_DepolC);
+  ctree->SetBranchAddress("DepolW",&d_DepolW);
   ctree->SetBranchAddress("Rellum",&d_Rellum);
   ctree->SetBranchAddress("X",&d_X);
   ctree->SetBranchAddress("Mh",&d_Mh);
@@ -54,6 +57,25 @@ void CatTree::GetEvent(Long64_t i) {
   DY     = d_DY;
   DYsgn  = d_DYsgn;
 
+};
+
+Float_t CatTree::GetDepolarizationFactor(Char_t kf) {
+  if(kf=='A')      return (Float_t) d_DepolA; // typecast to floats for backward compatibility...
+  else if(kf=='C') return (Float_t) d_DepolC;
+  else if(kf=='W') return (Float_t) d_DepolW;
+  else {
+    fprintf(stderr,"ERROR: unknown depolarization factor %c; returning 0\n",kf);
+    return 0.0;
+  };
+};
+Float_t CatTree::GetDepolarizationRatio(Int_t twist) {
+  switch(twist) {
+    case 2: return GetDepol2(); break;
+    case 3: return GetDepol3(); break;
+    default:
+            fprintf(stderr,"ERROR: unknown twist %d for depolarization factor ratio; return 0\n",twist);
+            return 0;
+  };
 };
 
 CatTree::~CatTree() {};
