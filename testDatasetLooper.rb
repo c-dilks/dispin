@@ -1,12 +1,19 @@
 #!/usr/bin/env ruby
 
-require 'pp'
+require 'awesome_print'
 require './DatasetLooper.rb'
-looper = DatasetLooper.new
-def sep() puts '='*50 end
-sep
+
+if ARGV.length<1
+  $stderr.puts "USAGE: #{$0} [TESTNUM] [DIHADRON(default='')]"
+  exit 2
+end
+testnum = ARGV[0].to_i
+dihadronTok = ARGV.length>1 ? ARGV[1] : ''
+looper = DatasetLooper.new(dihadronTok)
 
 ##############################
+def sep() puts '='*50 end
+sep
 puts "DatasetLooper::methods"
 sep
 puts (looper.methods - Class.methods).sort
@@ -23,7 +30,6 @@ sep
 
 ##############################
 
-testnum = ARGV.length==1 ? ARGV[0].to_i : 1
 puts "testnum=#{testnum}"
 sep
 
@@ -74,13 +80,37 @@ when 5
   sep
 # return just the lists by passing no blocks #################
 when 6
-  pp looper.datasetListLoop
+  ap looper.datasetListLoop
 when 7
-  pp looper.subsetListLoopOnlyData
+  ap looper.subsetListLoopOnlyData
 when 8
-  pp looper.allsetListLoopOnlyMC
+  ap looper.allsetListLoopOnlyMC
 when 9
-  pp looper.datasetListPairsOnlyMC
+  ap looper.datasetListPairsOnlyMC
+# test matching of Data and MC sets
+when 10
+  looper.allsetListLoopOnlyData do |elem|
+    ap [
+      elem,
+      looper.matchByTorus(elem,looper.allsetListLoopOnlyMC)
+    ]
+  end
+# test dataset titles
+when 11
+  looper.allsetListLoop do |elem|
+    ap [
+      elem,
+      DatasetLooper.datasetTitle(elem)
+    ]
+  end
+# test catTree names
+when 12
+  looper.allsetListLoop do |elem|
+    ap [
+      elem,
+      DatasetLooper.catTreeBaseName(elem)
+    ]
+  end
 #############
 else
   $stderr.puts "ERROR: unknown testnum"

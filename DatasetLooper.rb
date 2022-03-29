@@ -15,12 +15,15 @@ class DatasetLooper
     32 => { :bins=>[3,2], :xTitle=>'$z$',         :blTitle=>'$M_h$ __BL__' },
     42 => { :bins=>[3,2], :xTitle=>'$p_T$ [GeV]', :blTitle=>'$M_h$ __BL__' },
   }
+
+  # if used 'truncation' for yield balancing when buidling bibending sets, this should be true
+  UsedTruncation = false
  
   #####################################
   # construction
 
   # constructor
-  def initialize
+  def initialize(dihadronTok='')
 
     # list of datasets
     @datasetList = [
@@ -35,6 +38,14 @@ class DatasetLooper
       "rgb.outbending.fa19",
     ]
 
+    # add dihadron token to each dataset (if specified)
+    # - useful for creating an instance for a specific dihadron pairType
+    unless dihadronTok==''
+      @datasetList.map! do |dataset|
+        dataset.split('.').insert(1,dihadronTok).join('.')
+      end
+    end
+
     # make @subsetList
     @subsetList = @datasetList.map do |dataset|
       dataset+".subset"
@@ -46,13 +57,24 @@ class DatasetLooper
     end.uniq
 
     # add bibending sets to @allsetList only
-    @allsetList.append *[
-      # "mca.bibending.all",
-      # "mcb.bibending.all",
-      "mc.bibending.all",
-      "rga.bibending.all",
-      "rgb.bibending.all",
-    ]
+    @allsetList = @allsetList.map do |set|
+      if set.split('.').include?('outbending')
+        [ set, set.sub('outbending','bibending') ]
+      else
+        set
+      end
+    end.flatten
+
+    # if we used truncation, we have `mca` and `mcb` instead of `mc`
+    if UsedTruncation
+      @allsetList = @allsetList.map do |set|
+        if set.split('.').include?('mc') and set.split('.').include?('bibending')
+          [ set.sub('mc','mca'), set.sub('mc','mcb') ]
+        else
+          set
+        end
+      end.flatten
+    end
 
   end
 
@@ -150,14 +172,18 @@ class DatasetLooper
   end
 
   # convert dataset name to title
-  def datasetTitle(dataset)
+  def self.datasetTitle(dataset)
     toks = dataset.split('.').map do |tok|
       tok = tok.upcase if tok.match? /rga|rgb|mc/
       tok = tok.gsub(/bg/,"(BG-merged ") + " nA)" if tok.match? /^bg/
+      tok.gsub!(/MCA/,"MC")
+      tok.gsub!(/MCB/,"MC")
       tok.gsub!(/^fa/,"Fall 20")
       tok.gsub!(/^sp/,"Spring 20")
       tok.gsub!(/^wi/,"Winter 20")
       tok.gsub!(/bibending/,"combined inbending+outbending")
+      tok.gsub!(/0p/,'$\pip\pio$')
+      tok.gsub!(/0m/,'$\pim\pio$')
       tok
     end
     toks.delete("subset")
@@ -171,17 +197,19 @@ class DatasetLooper
   def matchByTorus(dataset,searchList)
     torus = dataset.split('.').find{ |tok| tok.include?"bending" }
     results = searchList.find_all{ |set| set.include? torus }
-    ### for bibending torus, if looking for MC match, return MCA (MCB) for RGA (RGB)
-    # if torus=='bibending' and results.find{ |result| result.include?"mc" }
-    #   if dataset.include?"rga"
-    #     return results.find{ |result| result.include?"mca" }
-    #   elsif dataset.include?"rgb"
-    #     return results.find{ |result| result.include?"mcb" }
-    #   else
-    #     $stderr.puts "ERROR in DatasetLooper.matchByTorus (see class)"
-    #     return results.first
-    #   end
-    # end
+    ### if truncation was used, match `mca` or `mcb`, rather than `mc`
+    if UsedTruncation
+      if torus=='bibending' and results.find{ |result| result.include?"mc" }
+        if dataset.include?"rga"
+          return results.find{ |result| result.include?"mca" }
+        elsif dataset.include?"rgb"
+          return results.find{ |result| result.include?"mcb" }
+        else
+          $stderr.puts "ERROR in DatasetLooper.matchByTorus (see class)"
+          return results.first
+        end
+      end
+    end
     return results.first
   end
 
