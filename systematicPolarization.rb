@@ -93,7 +93,7 @@ DatasetList.each do |dataset|
     percent(calcHash[dataset][:polCalibrationSystematic]),
   ].join(' \pm ') + "$"
   tex.puts [
-    dl.datasetTitle(dataset).sub(/ data set/,''),
+    DatasetLooper.datasetTitle(dataset).sub(/ data set/,''),
     polarizationTex,
     "$#{percent(outHash[dataset])}$",
   ].join(' & ') + '\\\\\hline'

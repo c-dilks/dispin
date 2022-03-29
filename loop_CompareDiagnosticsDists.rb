@@ -9,7 +9,7 @@ cmds = []
 looper.subsetListPairs do |pair|
 
   # convert dataset names to titles
-  pairTitles = pair.map{|set| looper.datasetTitle(set) }
+  pairTitles = pair.map{|set| DatasetLooper.datasetTitle(set) }
 
   # root arguments
   args = [
