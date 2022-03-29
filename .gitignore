@@ -35,6 +35,7 @@ myb2b*
 *.old
 pairs.list
 tmp/*
+!tmp/.keep
 *.tex
 tags
 files.list
