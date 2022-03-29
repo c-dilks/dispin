@@ -20,7 +20,8 @@ void asymBruFit(
 ) {
 
   // set PROOF sandbox (where log files etc. are written)
-  TString sandbox = TString(gSystem->Getenv("PWD")) + "/" + bruDir + "/prooflog";
+  // - you may need to create or symlink this directory (`pwd`/farmout)
+  TString sandbox = TString(gSystem->Getenv("PWD")) + "/farmout/" + bruDir + "/prooflog";
   gEnv->SetValue("ProofLite.Sandbox",sandbox.Data());
   printf("proof sandbox = %s\n",gEnv->GetValue("ProofLite.Sandbox","ERROR"));
 
@@ -111,14 +112,14 @@ void asymBruFit(
 
   // print acceptance rates
   TString cmd;
-  cmd = Form(".! ./mcmcAcceptanceRate.rb %s",bruDir.Data());
+  cmd = Form(".! ./mcmcAcceptanceRate.rb farmout/%s",bruDir.Data());
   printf("\nEXECUTE: %s\n\n",cmd.Data());
   gSystem->RedirectOutput(B->GetLogName());
   gROOT->ProcessLine(cmd.Data());
   gSystem->RedirectOutput(0);
 
   // print PROOF errors
-  cmd = Form(".! ./errorPrintProof.rb %s",bruDir.Data());
+  cmd = Form(".! ./errorPrintProof.rb farmout/%s",bruDir.Data());
   printf("\nEXECUTE: %s\n\n",cmd.Data());
   gSystem->RedirectOutput(B->GetLogName());
   gROOT->ProcessLine(cmd.Data());

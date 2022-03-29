@@ -74,6 +74,7 @@ puts '='*40
 print "\nDoes this look correct? Have you cross checked with errorPrintProofFast.rb or errorPrintFindInLog.rb? Farmout logfiles will be REMOVED! [y/N]\n> "
 execute = $stdin.gets.chomp=="y"
 if execute
-  FileUtils.rm Dir.glob('farmout/*'), verbose: true
+  FileUtils.rm Dir.glob('farmout/*.out'), verbose: true
+  FileUtils.rm Dir.glob('farmout/*.err'), verbose: true
   system "sbatch job.resubmit.slurm"
 end
