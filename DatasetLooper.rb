@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby
 # common methods for looping through the dataset lists
 # - see `testDatasetLooper.rb` for usage guidance
 
@@ -6,6 +5,7 @@ require 'pp'
 
 class DatasetLooper
 
+  #####################################
   # CONSTANTS
 
   # binning schemes and related options: `ivType` => { :bins=>[bn0,bn1,bn2], :option=>value, ... }
@@ -15,6 +15,17 @@ class DatasetLooper
     32 => { :bins=>[3,2], :xTitle=>'$z$',         :blTitle=>'$M_h$ __BL__', :xTranslation=>0.010 },
     42 => { :bins=>[3,2], :xTitle=>'$p_T$ [GeV]', :blTitle=>'$M_h$ __BL__', :xTranslation=>0.015 },
   }
+
+  # dihadron types
+  Dihadrons = {
+    :pm   => { :title=>'pi+pi-', :latex=>'$\pi^+\pi^-$', :pairType=>'0x34' },
+    :p0   => { :title=>'pi+pi0', :latex=>'$\pi^+\pi^0$', :pairType=>'0x3b' },
+    :m0   => { :title=>'pi0pi-', :latex=>'$\pi^0\pi^-$', :pairType=>'0xb4' },
+    :none => { :title=>'',       :latex=>'',             :pairType=>'0'    },
+  }
+
+  #####################################
+  # SETTINGS
 
   # if used 'truncation' for yield balancing when buidling bibending sets, this should be true
   UsedTruncation = false
@@ -40,7 +51,15 @@ class DatasetLooper
 
     # add dihadron token to each dataset (if specified)
     # - useful for creating an instance for a specific dihadron pairType
-    unless dihadronTok==''
+    dihadronTok = 'none' if dihadronTok==''
+    begin
+      @pairType = Dihadrons[dihadronTok.to_sym][:pairType]
+    rescue
+      $stderr.puts "\nERROR: unknown dihadron in DatasetLooper\n\n"
+      dihadronTok = 'none'
+      retry
+    end
+    unless dihadronTok=='none'
       @datasetList.map! do |dataset|
         dataset.split('.').insert(1,dihadronTok).join('.')
       end
@@ -85,8 +104,9 @@ class DatasetLooper
     :allsetList,
   ]
 
-  # generate list accessors
+  # generate accessors
   ListOfLists.each{ |sym| attr_accessor sym }
+  attr_accessor :pairType
 
 
   #####################################
@@ -182,8 +202,7 @@ class DatasetLooper
       tok.gsub!(/^sp/,"Spring 20")
       tok.gsub!(/^wi/,"Winter 20")
       tok.gsub!(/bibending/,"combined inbending+outbending")
-      tok.gsub!(/0p/,'$\pip\pio$')
-      tok.gsub!(/0m/,'$\pim\pio$')
+      Dihadrons.each do |k,v| tok.gsub!(/#{k.to_s}/,v[:latex]) end
       tok
     end
     toks.delete("subset")
