@@ -208,7 +208,7 @@ class Tools {
     };
 
     
-    static void ApplyProfile(TH2D * histo, Int_t whichAxis) {
+    static void ApplyProfile(TH2 * histo, Int_t whichAxis) {
       TProfile * prof;
       switch(whichAxis) {
         case 1: prof = histo->ProfileX(); break;

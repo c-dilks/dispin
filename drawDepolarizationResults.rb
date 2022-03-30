@@ -13,10 +13,11 @@ subDir     = "bruspin.depolStudy"
 idStrings  = [
   "raw",   # depolarization not used anywhere
   "depol", # depolarization in likelihood PDF
-  "ave1",  # divide raw result by <C>/<A> and <W>/<A>
-  "ave2",  # divide raw result by <C/A> and <W/A>
+  "ave1",  # divide raw result by <W>/<A>
+  "ave2",  # divide raw result by <W/A>
+  "ave3",  # divide raw result by divide by W(<y>)/A(<y>)
 ]
-dateString = "mar22"
+dateString = "mar28"
 datasets   = looper.allsetListLoopOnlyData.select{ |dataset| dataset.include?('bibending') }
 minimizers = [
   "minuit",

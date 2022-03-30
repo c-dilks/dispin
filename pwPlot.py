@@ -244,6 +244,9 @@ for l,lmap in plotmap.items():
             elif infileIdx==3:
                 mkrSty = 'v'
                 errCol = 'xkcd:violet'
+            elif infileIdx==4:
+                mkrSty = 'X'
+                errCol = 'xkcd:fluro green'
             else:
                 mkrSty = 'o'
                 errCol = 'xkcd:black'
