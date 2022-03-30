@@ -106,7 +106,7 @@ void BruAsymmetry::AddNumerMod(Modulation * modu) {
       fprintf(stderr,"unknown depolarization factor; setting to 1\n");
       depolVar = "1";
   };
-  depolVar = "1"; // OVERRIDE: disable depolarization factor in fit
+  //depolVar = "1"; // OVERRIDE: disable depolarization factor in fit
 
   TString polVar = "@Pol[]";
   TString spinVar = "@"+spinBranch+"[]";

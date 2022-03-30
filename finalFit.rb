@@ -6,7 +6,7 @@ looper = DatasetLooper.new
 
 # settings #################
 subDir     = "bruspin.work"
-idString   = "nodepol.mar22"
+idString   = "depol.mar28"
 datasets   = looper.allsetListLoopOnlyData.select{ |dataset| dataset.include?'bibending' }
 mcsets     = looper.allsetListLoopOnlyMC
 minimizers = [
