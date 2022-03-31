@@ -405,6 +405,7 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
   PhPerp = ev->PhPerp;
   Ph = ev->Ph;
   Q2 = ev->Q2;
+  y = ev->y;
   xF = ev->xF;
   theta = ev->theta;
   diphM = ev->objDiphoton->M;
@@ -530,6 +531,9 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
     tree_PolErr          = (Double_t)(polErr);
     tree_Depol2          = (Double_t)(depol2);
     tree_Depol3          = (Double_t)(depol3);
+    tree_DepolA          = (Double_t)(dpVal[dpA]);
+    tree_DepolC          = (Double_t)(dpVal[dpC]);
+    tree_DepolW          = (Double_t)(dpVal[dpW]);
     tree_Rellum          = (Double_t)(rellum);
     tree_X               = (Double_t)(x);
     tree_Mh              = (Double_t)(Mh);
@@ -537,6 +541,7 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
     tree_Z               = (Double_t)(z);
     tree_PhPerp          = (Double_t)(PhPerp);
     tree_Q2              = (Double_t)(Q2);
+    tree_Y               = (Double_t)(y);
     tree_XF              = (Double_t)(xF);
     tree_DY              = (Double_t)(DY);
     tree_DYsgn           = (Double_t)(DYsgn);
@@ -1220,6 +1225,7 @@ void Asymmetry::ResetVars() {
   PhPerp = UNDEF;
   Ph = UNDEF;
   Q2 = UNDEF;
+  y = UNDEF;
   xF = UNDEF;
   for(int h=0; h<2; h++) YH[h]=UNDEF;
   DY = UNDEF;
@@ -1403,6 +1409,9 @@ void Asymmetry::ActivateTree(Bool_t isMC, InjectionModel *IM_) {
   tree->Branch("Theta",&tree_Theta,"Theta/D");
   tree->Branch("Depol2",&tree_Depol2,"Depol2/D");
   tree->Branch("Depol3",&tree_Depol3,"Depol3/D");
+  tree->Branch("DepolA",&tree_DepolA,"DepolA/D");
+  tree->Branch("DepolC",&tree_DepolC,"DepolC/D");
+  tree->Branch("DepolW",&tree_DepolW,"DepolW/D");
   tree->Branch("Rellum",&tree_Rellum,"Rellum/D");
   tree->Branch("X",&tree_X,"X/D");
   tree->Branch("Mh",&tree_Mh,"Mh/D");
@@ -1410,6 +1419,7 @@ void Asymmetry::ActivateTree(Bool_t isMC, InjectionModel *IM_) {
   tree->Branch("Z",&tree_Z,"Z/D");
   tree->Branch("PhPerp",&tree_PhPerp,"PhPerp/D");
   tree->Branch("Q2",&tree_Q2,"Q2/D");
+  tree->Branch("Y",&tree_Y,"Y/D");
   tree->Branch("XF",&tree_XF,"XF/D");
   tree->Branch("DY",&tree_DY,"DY/D");
   tree->Branch("DYsgn",&tree_DYsgn,"DYsgn/D");

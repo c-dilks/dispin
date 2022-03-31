@@ -5,9 +5,9 @@ require './DatasetLooper.rb'
 looper = DatasetLooper.new
 
 # settings #################
-subDir     = "bruspin.volatile"
-idString   = "final.mar1"
-datasets   = looper.allsetListLoopOnlyData
+subDir     = "bruspin.work"
+idString   = "final.mar28"
+datasets   = looper.allsetListLoopOnlyData#.select{ |dataset| dataset.include?'bibending' }
 mcsets     = looper.allsetListLoopOnlyMC
 minimizers = [
   "minuit",

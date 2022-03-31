@@ -2,7 +2,7 @@
 # get MCMC acceptance rate
 
 if ARGV.length!=1
-  $stderr.puts "USAGE: #{$0} [bruDir]"
+  $stderr.puts "USAGE: #{$0}  [farmout bruDir]"
   exit 2
 end
 puts "\nMCMC acceptance rates, per PROOF worker:"

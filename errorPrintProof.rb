@@ -2,7 +2,7 @@
 # print errors in PROOF logs
 
 if ARGV.length<1
-  $stderr.puts "USAGE: #{$0} [bruDir(s)]"
+  $stderr.puts "USAGE: #{$0} [farmout bruDir(s)]"
   $stderr.puts "  globs allowed, no need for quotes"
   exit 2
 end

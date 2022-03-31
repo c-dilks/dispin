@@ -43,7 +43,11 @@ BruAsymmetry::BruAsymmetry(TString outdir_, TString minimizer_, Int_t whichSpinM
     FM->SetUp().LoadVariable( TString("PhPerp")+Form("[%f,%f]", 0.0, 3.0  ));
     FM->SetUp().LoadVariable( TString("DY")+Form("[%f,%f]",     0.0, 4.0  ));
     FM->SetUp().LoadVariable( TString("Q2")+Form("[%f,%f]",     0.0, 12.0 ));
+    FM->SetUp().LoadVariable( TString("Y")+Form("[%f,%f]",      0.0, 1.0  ));
     FM->SetUp().LoadVariable( TString("XF")+Form("[%f,%f]",     0.0, 1.0  ));
+    FM->SetUp().LoadVariable( TString("DepolA")+Form("[%f,%f]", 0.0, 2.0  )); // extra depol vars for <depol> study
+    FM->SetUp().LoadVariable( TString("DepolC")+Form("[%f,%f]", 0.0, 2.0  ));
+    FM->SetUp().LoadVariable( TString("DepolW")+Form("[%f,%f]", 0.0, 2.0  ));
   };
 
   // category for spin
@@ -102,6 +106,7 @@ void BruAsymmetry::AddNumerMod(Modulation * modu) {
       fprintf(stderr,"unknown depolarization factor; setting to 1\n");
       depolVar = "1";
   };
+  //depolVar = "1"; // OVERRIDE: disable depolarization factor in fit
 
   TString polVar = "@Pol[]";
   TString spinVar = "@"+spinBranch+"[]";

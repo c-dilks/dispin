@@ -1,5 +1,5 @@
 #!/bin/bash
-grep -E '.*' /farm_out/`whoami`/*.err |\
+grep -HE '.*' /farm_out/`whoami`/*.err |\
 grep -vE '█' |\
 grep -vE '═' |\
 grep -vE 'Physics Division' |\
