@@ -8,7 +8,7 @@ looper = DatasetLooper.new
 
 # settings #################
 subDir     = "bruspin.volatile"
-idString   = "nodepol.mar1"
+idString   = "final.mar28"
 datasets   = looper.allsetListLoopOnlyData
 minimizers = [
   "minuit",
