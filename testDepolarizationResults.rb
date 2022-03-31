@@ -1,15 +1,16 @@
 #!/usr/bin/env ruby
 # tests depolarization methods
-# - first, edit behavior of drawBru.C, for how you want to handle depolarization
+# - first, edit behavior of drawBru.C, for how you want to handle depolarization,
+#   in particular, the `version` number in the `getDepolarization()` call
 # - then run this script
-# - input fit result directories are looped over below
+# - input fit result directories are looped over below, given by `inputGlob`
 #   - drawBru.C will be re-executed for each
 #   - output files will be copied to the output directory specified by the prefix
 require 'fileutils'
 
-#######################
-subDir = "bruspin.work"
-#######################
+##############################################
+inputGlob = "bruspin.work/nodepol.*" # cf. regex in `outDir`
+##############################################
 
 if ARGV.length<1
   puts "ERROR: specify output prefix"
@@ -19,7 +20,7 @@ end
 outName = ARGV.first
 
 # loop over input fit result directories
-Dir.glob("#{subDir}/nodepol*").each do |dir|
+Dir.glob(inputGlob).each do |dir|
   system "root -b -q $BRUFIT/macros/LoadBru.C 'drawBru.C(\"#{dir}\",\"minuit\")'"
   outDir = dir.sub(/nodepol/,outName)
   FileUtils.mkdir_p outDir

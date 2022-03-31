@@ -1,6 +1,10 @@
 R__LOAD_LIBRARY(DiSpin)
 #include "Constants.h"
 
+Double_t getDepolarization(BruBin *B, Int_t version, Int_t twist);
+
+/////////////////////////////////////////////////////
+
 void drawBru(
   TString bruDir = "bruspin",
   TString minimizer_ = "minuit",
@@ -192,35 +196,11 @@ void drawBru(
       while((BB = (BruBin*) nextBin())) {
         Double_t asymVal = BB->paramVal[i];
         Double_t asymErr = BB->paramErr[i];
-        //// test depolarization factor /////////////////////////
-        Double_t depol = 1;
-        /*
-        Double_t meanDepolA = BB->GetIvMean("DepolA");
-        Double_t meanDepolC = BB->GetIvMean("DepolC");
-        Double_t meanDepolW = BB->GetIvMean("DepolW");
-        Double_t meanDepol2 = BB->GetIvMean("Depol2");
-        Double_t meanDepol3 = BB->GetIvMean("Depol3");
-        */
-        /*//// <C>/<A> and <W>/<A>
-        if(meanDepolA==0) fprintf(stderr,"ERROR: meanDepolA=0, setting depol=1 for this bin\n");
-        else {
-          switch(twist) {
-            case 0: depol = 1; break;
-            case 2: depol = meanDepolC / meanDepolA; break;
-            case 3: depol = meanDepolW / meanDepolA; break;
-          };
-        };
-        */
-        /*//// <C/A> and <W/A>
-        switch(twist) {
-          case 0: depol = 1; break;
-          case 2: depol = meanDepol2; break;
-          case 3: depol = meanDepol3; break;
-        };
-        */
-        //// apply to asymVal and asymErr
-        asymVal /= depol;
-        asymErr /= depol;
+        /////////////////////////////////////////////////////////
+        //// test depolarization factor usage downstream of likelihood fit
+        //Double_t depol = getDepolarization(BB,0,twist);
+        //asymVal /= depol;
+        //asymErr /= depol;
         /////////////////////////////////////////////////////////
         paramGr[i]->SetPoint(cnt,BB->GetIvMean(0),asymVal);
         paramGr[i]->SetPointError(cnt,0,asymErr);
@@ -305,4 +285,78 @@ void drawBru(
   //   };
   // };
 
+};
+
+
+
+/////////////////////////////////////////////////////
+
+
+
+Double_t getDepolarization(BruBin *B, Int_t version, Int_t twist) {
+  Double_t meanDepolA, meanDepolC, meanDepolW, meanDepol2, meanDepol3;
+  if(version>0) {
+    meanDepolA = B->GetIvMean("DepolA");
+    meanDepolC = B->GetIvMean("DepolC");
+    meanDepolW = B->GetIvMean("DepolW");
+    meanDepol2 = B->GetIvMean("Depol2");
+    meanDepol3 = B->GetIvMean("Depol3");
+  };
+  switch(version) {
+    case 0: { // ignore depolization (either you already have it in the likelihood, or you do not want it at all)
+      return 1.0;
+      break;
+    }
+    case 1: { // <C>/<A> and <W>/<A>
+      if(meanDepolA==0) {
+        fprintf(stderr,"ERROR: meanDepolA=0, setting depol=1.0 for this bin\n");
+        return 1.0;
+      } else {
+        switch(twist) {
+          case 0: return 1.0; break;
+          case 2: return meanDepolC / meanDepolA; break;
+          case 3: return meanDepolW / meanDepolA; break;
+        };
+      };
+      break;
+    }
+    case 2: { // <C/A> and <W/A>
+      switch(twist) {
+        case 0: return 1.0; break;
+        case 2: return meanDepol2; break;
+        case 3: return meanDepol3; break;
+      };
+      break;
+    }
+    case 3: { // C(<x>,<y>,<Q2>)/A(<x>,<y>,<Q2>) and W(<x>,<y>,<Q2>)/A(<x>,<y>,<Q2>)
+      Double_t meanQ2 = B->GetIvMean("Q2");
+      Double_t meanX  = B->GetIvMean("X");
+      Double_t meanY  = B->GetIvMean("Y");
+      Double_t gamma = 2*PartMass(kP)*meanX / TMath::Sqrt(meanQ2);
+      Double_t epsilon = ( 1 - meanY - TMath::Power(gamma*meanY,2)/4 ) /
+                         ( 1 - meanY + meanY*meanY/2 + TMath::Power(gamma*meanY,2)/4 );
+      Double_t depolA = meanY*meanY / (2 - 2*epsilon); // A(x,y)
+      Double_t depolB = depolA * epsilon;
+      Double_t depolC = depolA * TMath::Sqrt(1-epsilon*epsilon);
+      Double_t depolV = depolA * TMath::Sqrt(2*epsilon*(1+epsilon));
+      Double_t depolW = depolA * TMath::Sqrt(2*epsilon*(1-epsilon));
+      if(depolA==0) {
+        fprintf(stderr,"ERROR: depolA=0, setting depol=1.0 for this bin\n");
+        return 1.0;
+      } else {
+        switch(twist) {
+          case 0: return 1.0; break;
+          case 2: return depolC / depolA; break;
+          case 3: return depolW / depolA; break;
+        };
+      };
+      break;
+    }
+    default: {
+      fprintf(stderr,"ERROR: unknown version in getDepolarization\n");
+      return 1.0;
+    }
+  };
+  fprintf(stderr,"ERROR: impossible error in getDepolarization\n");
+  return 1.0;
 };
