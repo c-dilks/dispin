@@ -27,6 +27,7 @@ pairType = dlSpecific.pairType
 
 # zip generic and specific loopers
 dlGeneric.allsetListLoop.zip(dlSpecific.allsetListLoop) do |genericSet,specificSet|
+  next if genericSet.split('.').include?('bibending')
   datasetType = genericSet.split('.').include?('mc') ? 'mc' : 'data'
   catTreeFile = "#{subDir}/#{DatasetLooper.catTreeBaseName(specificSet)}.root"
   system "singleBinTreeMaker.sh outroot.#{genericSet} #{datasetType} -p #{pairType} -o #{catTreeFile}"
