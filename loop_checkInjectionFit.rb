@@ -47,6 +47,12 @@ bruDirList.each do |bruDir|
   # get list of asym*.root files
   asymFiles = Dir["#{bruDir}/asym_*.root"].reject{|f| f.include? "injectionTest"}.sort
 
+  # check for asym files
+  if asymFiles.length==0
+    failures << injNum
+    next
+  end
+
   # start list files
   unless listFiles.length>0
     listFiles = asymFiles.map do |f|
@@ -54,12 +60,6 @@ bruDirList.each do |bruDir|
       Dir.mkdir(outDirFull) unless Dir.exist? outDirFull
       File.open("#{outDirFull}/files.list","w")
     end
-  end
-
-  # check for asym files
-  if asymFiles.length==0
-    failures << injNum
-    next
   end
 
   # run checkInjectionFit.C on each asym file
