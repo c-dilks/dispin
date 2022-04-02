@@ -2,6 +2,7 @@
 # - see `testDatasetLooper.rb` for usage guidance
 
 require 'pp'
+require 'colorize'
 
 class DatasetLooper
 
@@ -189,6 +190,15 @@ class DatasetLooper
       # pp onlyMC   instance_variable_get("@#{list}")
       # pp onlyData instance_variable_get("@#{list}")
     end
+  end
+
+  # print available dihadrons
+  def self.printDihadrons
+    puts "\n  DIHADRON can be:"
+    DatasetLooper::Dihadrons.each do |k,v|
+      puts "  - #{k.to_s.colorize(:light_red)}: #{v[:title]}" unless k==:none
+    end
+    puts ""
   end
 
   # convert dataset name to title

@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# run singleBinTreeMaker.rb for all the datasets
+# run singleBinTreeMaker.sh for all the datasets
 
 require './DatasetLooper.rb'
 require 'colorize'
@@ -10,13 +10,8 @@ subDir = 'catTrees' # output directory for catTrees (MUST EXIST BEFORE EXECUTION
 
 # args
 if ARGV.length!=1
-  $stderr.puts """
-  USAGE #{$0} [DIHADRON]
-
-  DIHADRON can be:"""
-  DatasetLooper::Dihadrons.each do |k,v|
-    puts "  - #{k.to_s.colorize(:light_red)}: #{v[:title]}" unless k==:none
-  end
+  $stderr.puts "USAGE #{$0} [DIHADRON]"
+  DatasetLooper.printDihadrons
   exit 2
 end
 
