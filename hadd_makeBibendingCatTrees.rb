@@ -32,6 +32,7 @@ Dihadron,Pattern = ARGV
 # search for source files
 sources = Dir.glob("#{SubDir}/catTree*.root")
   .grep(/#{Pattern}/)
+  .grep(/#{Dihadron}/)
   .grep_v(/bibending/)
   .grep_v(/idx.root$/)
   .grep_v(/TRUNCATED/)

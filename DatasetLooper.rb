@@ -18,18 +18,13 @@ class DatasetLooper
   }
 
   # dihadron types
+  # - if used 'truncation' for yield balancing when buidling bibending sets, :useTruncation should be true
   Dihadrons = {
-    :pm   => { :title=>'pi+pi-', :latex=>'$\pi^+\pi^-$', :pairType=>'0x34' },
-    :p0   => { :title=>'pi+pi0', :latex=>'$\pi^+\pi^0$', :pairType=>'0x3b' },
-    :m0   => { :title=>'pi0pi-', :latex=>'$\pi^0\pi^-$', :pairType=>'0xb4' },
-    :none => { :title=>'',       :latex=>'',             :pairType=>'0'    },
+    :pm   => { :title=>'pi+pi-', :latex=>'$\pi^+\pi^-$', :pairType=>'0x34', :useTruncation=>false },
+    :p0   => { :title=>'pi+pi0', :latex=>'$\pi^+\pi^0$', :pairType=>'0x3b', :useTruncation=>true  },
+    :m0   => { :title=>'pi0pi-', :latex=>'$\pi^0\pi^-$', :pairType=>'0xb4', :useTruncation=>true  },
+    :none => { :title=>'',       :latex=>'',             :pairType=>'0',    :useTruncation=>false },
   }
-
-  #####################################
-  # SETTINGS
-
-  # if used 'truncation' for yield balancing when buidling bibending sets, this should be true
-  UsedTruncation = false
  
   #####################################
   # construction
@@ -54,7 +49,8 @@ class DatasetLooper
     # - useful for creating an instance for a specific dihadron pairType
     dihadronTok = 'none' if dihadronTok==''
     begin
-      @pairType = Dihadrons[dihadronTok.to_sym][:pairType]
+      @pairType      = Dihadrons[dihadronTok.to_sym][:pairType]
+      @useTruncation = Dihadrons[dihadronTok.to_sym][:useTruncation]
     rescue
       $stderr.puts "\nERROR: unknown dihadron in DatasetLooper\n\n"
       dihadronTok = 'none'
@@ -86,7 +82,7 @@ class DatasetLooper
     end.flatten
 
     # if we used truncation, we have `mca` and `mcb` instead of `mc`
-    if UsedTruncation
+    if @useTruncation
       @allsetList = @allsetList.map do |set|
         if set.split('.').include?('mc') and set.split('.').include?('bibending')
           [ set.sub('mc','mca'), set.sub('mc','mcb') ]
@@ -108,6 +104,7 @@ class DatasetLooper
   # generate accessors
   ListOfLists.each{ |sym| attr_accessor sym }
   attr_accessor :pairType
+  attr_accessor :useTruncation
 
 
   #####################################
@@ -227,7 +224,7 @@ class DatasetLooper
     torus = dataset.split('.').find{ |tok| tok.include?"bending" }
     results = searchList.find_all{ |set| set.include? torus }
     ### if truncation was used, match `mca` or `mcb`, rather than `mc`
-    if UsedTruncation
+    if @useTruncation
       if torus=='bibending' and results.find{ |result| result.include?"mc" }
         if dataset.include?"rga"
           return results.find{ |result| result.include?"mca" }
