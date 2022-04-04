@@ -24,7 +24,7 @@ void TrimCatTree(TString infileN="catTreeMC.mc.PRL.0x3b.idx.root", TString treeN
     //trimCut = "diphMCmatchDist<0.02 && diphIsMCpi0"; // MC pi0 decays, no diphM cut
     //trimCut = "diphIsMCpi0"; // MC pi0 decays, no diphM cut
   } else { // data file
-    trimCut = "0.08<diphM && diphM<0.2"; // match sPlotBru.C fit range
+    trimCut = "0.08<diphM && diphM<0.2"; // IMPORTANT: must match sPlotBru.C fit range
   };
   cout << "trimCut = " << trimCut << endl;
 

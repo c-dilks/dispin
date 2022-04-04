@@ -43,7 +43,6 @@ jobFile.puts "#!/bin/bash" unless slurm
 
 # reformat some settings
 ivTypes = DatasetLooper::BinHash.keys
-DatasetLooper::BinHash.each{ |_,opts| opts[:bins].replace (opts[:bins]+[-1,-1])[0..2] } # fill rest of nbins Arrays with default `-1` values
 
 # loop over all possible settings, defining asymBruFit.C calls, and generate job list
 # - there will be one job per possible setting

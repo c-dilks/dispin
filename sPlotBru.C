@@ -1,16 +1,23 @@
 R__LOAD_LIBRARY(DiSpin)
+#include "Constants.h"
 //
 // IMPORTANT: run with `brufit -b -q sPlotBru.C`
 //
 
 void sPlotBru(
+    TString infileN="catTreeData.rga_inbending_all.0x3b.idx.trimmed.root",
     TString outDir="splot",
     Int_t binschemeIVtype=2,
     Int_t nbins0=-1, Int_t nbins1=-1, Int_t nbins2=-1
     ) {
 
-  // input file name and tree name
-  TString infileN="catTreeData.rga_inbending_all.0x3b.idx.trimmed.root";
+  // set PROOF sandbox (where log files etc. are written)
+  // - you may need to create or symlink this directory (`pwd`/farmout)
+  TString sandbox = TString(gSystem->Getenv("PWD")) + "/farmout/" + outDir + "/prooflog";
+  gEnv->SetValue("ProofLite.Sandbox",sandbox.Data());
+  printf("proof sandbox = %s\n",gEnv->GetValue("ProofLite.Sandbox","ERROR"));
+
+  // input tree name
   TString treeName = "tree";
 
   // determine fit range
@@ -129,7 +136,7 @@ void sPlotBru(
 
     // save output canvas
     Tools::UnzoomVertical(canv->GetPad(1),varTitle+" comparison");
-    canv->SaveAs(outDir+"/fitcanv__sWeighted_"+varName+".png");
+    canv->SaveAs(outDir+"/sWeighted__"+varName+"__dist.png");
     canv->SaveAs(outDir+"/sWeighted__"+varName+"__dist.root");
   };
 

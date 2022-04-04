@@ -80,6 +80,26 @@ void GraphBruParameters(TString DirName,TString Var){
     //TGraphErrors* graph=Graphs->Get(redName);
   }
 
+  // draw graphs
+  Int_t nGraphs = Graphs->GetEntries();
+  Int_t ncols = 3;
+  Int_t nrows = 1+(nGraphs-1)/ncols;
+  TCanvas *paramCanv = new TCanvas("paramCanv","paramCanv",ncols*800,nrows*500);
+  paramCanv->Divide(ncols,nrows);
+  Int_t n=1;
+  TListIter GraphsIter(Graphs);
+  while(TGraphErrors *gr = (TGraphErrors*) GraphsIter()) {
+    paramCanv->cd(n);
+    paramCanv->GetPad(n)->SetGrid(1,1);
+    paramCanv->GetPad(n)->SetLeftMargin(0.15);
+    paramCanv->GetPad(n)->SetBottomMargin(0.15);
+    gr->SetMarkerStyle(kFullCircle);
+    gr->Draw("APE");
+    n++;
+  };
+  paramCanv->SaveAs(DirName+"ParGraphs"+Var+".png");
+  
+
   TFile* fileG=new TFile(DirName+"ParGraphs"+Var+".root","recreate");
   Graphs->Write();
   Canvases->Write();
