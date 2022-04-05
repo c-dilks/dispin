@@ -1,4 +1,8 @@
 R__LOAD_LIBRARY(DiSpin)
+#include "Constants.h"
+
+// DrawSweightedDists ////////////////////////////////////
+//
 // draw sWeighted distributions (for making presentation plots)
 // (cf. draw code in sPlotBru.C, which makes more detailed plots)
 //
@@ -67,8 +71,8 @@ void Draw(TString varN, TString varT, TString units, Int_t nbins, Double_t lb, D
 /////////////////////////////////////
 
 void DrawSweightedDists(
-  TString splotDir_="splot.singlebin",
-  TString mcFileN="catTreeMC.mc.PRL.0x3b.idx.trimmed.root"
+  TString splotDir_="splots/apr4.rga.p0.inbending.all.singlebin",
+  TString mcFileN="catTrees/catTreeMC.mc.p0.inbending.all.idx.trimmed.root"
 ) {
   // open files
   gStyle->SetOptStat(0);
@@ -100,4 +104,5 @@ void DrawSweightedDists(
   // cleanup
   splotFile->Close();
   mcFile->Close();
+  cout << endl << "produced " << splotDir << "/kindist*.png" << endl << endl;
 };
