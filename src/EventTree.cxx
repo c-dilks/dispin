@@ -943,6 +943,29 @@ Float_t EventTree::GetDepolarizationRatio(Int_t twist) {
             return 0;
   }
 }
+// get depolarization ratio from generated kinematics
+Float_t EventTree::GetDepolarizationRatio_gen(Int_t twist) {
+  if(!MCrecMode) {
+    fprintf(stderr,"ERROR: not an MC file, calling GetDepolarizationRatio instead\n");
+    return GetDepolarizationRatio(twist);
+  };
+  // store current y, gamma, epsilon (reconstructed values)
+  Float_t y_tmp       = y;
+  Float_t gamma_tmp   = gamma;
+  Float_t epsilon_tmp = epsilon;
+  // compute y, gamma, epsilon from generated values
+  y = gen_y;
+  gamma = 2*PartMass(kP)*gen_x / TMath::Sqrt(gen_Q2);
+  epsilon = ( 1 - gen_y - TMath::Power(gamma*gen_y,2)/4 ) /
+    ( 1 - gen_y + gen_y*gen_y/2 + TMath::Power(gamma*gen_y,2)/4 );
+  // calculate depolarization ratio
+  Float_t depol_gen = GetDepolarizationRatio(twist);
+  // revert y, gamma, epsilon to be the reconstructed values
+  y       = y_tmp;
+  gamma   = gamma_tmp;
+  epsilon = epsilon_tmp;
+  return depol_gen;
+};
 
 // general method to calculate rapidity
 // - calculate the rapidity of `momentumVec`, where `momentumVec` is boosted by

@@ -69,6 +69,8 @@ class EventTree : public TObject
     virtual Float_t GetDepol3() { return GetDepolarizationRatio(3); }; // overridden in CatTree
     virtual Double_t GetWeight() { return 1.0; }; // not used in EventTree; overridden in CatTree
 
+    Float_t GetDepolarizationRatio_gen(Int_t twist); // get depolarization ratio from generated kinematics
+
     void CalculateRapidity(
       TLorentzVector momentumVec_,
       TVector3 boostVec, TVector3 zAxis,

@@ -136,6 +136,12 @@ TFile.open("#{brudir}/pulls.root","RECREATE") do |outFile|
   fitParamCanvHash = [:Mean,:Sigma].map{ |par| [par,makeCanvas.call("#{par.to_s.downcase}Canv")] }.to_h
   fitParamIdealVal = {:Mean=>0.0,  :Sigma=>1.0}
   fitParamGraphCol = {:Mean=>KRed, :Sigma=>KGreen+2}
+  fitParamPlotRange = {
+    :Mean=>[-2,2],
+    :Sigma=>[-1,3],
+    #:Mean=>[-0.75,0.75],
+    #:Sigma=>[0.75,2.5],
+  }
 
   # loop over modulations
   pullCanvList = []
@@ -176,7 +182,7 @@ TFile.open("#{brudir}/pulls.root","RECREATE") do |outFile|
       graph.SetMarkerColor fitParamGraphCol[parSym]
       graph.SetLineColor fitParamGraphCol[parSym]
       graph.SetMarkerStyle KFullCircle
-      graph.GetYaxis.SetRangeUser(idealVal-2,idealVal+2)
+      graph.GetYaxis.SetRangeUser(*fitParamPlotRange[parSym])
       graph.Draw "APE"
       line = TLine.new( graph.GetXaxis.GetXmin, idealVal, graph.GetXaxis.GetXmax, idealVal )
       line.SetLineColor KBlack

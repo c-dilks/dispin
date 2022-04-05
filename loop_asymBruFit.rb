@@ -3,11 +3,11 @@
 # - main purpose is for asymmetry injection studies
 
 # settings #################
-ivString  = "z.long"
-ivType    = 3
-nbins     = [-1, -1, -1]
+idString  = "depol.x"
+ivType    = 1
+nbins     = [6, -1, -1]
 injSeq    = (0..99).to_a  # Array of injection numbers
-minimizer = "mcmccov"
+minimizer = "minuit"
 nCPUs     = 6   # number of CPUs per node to allocate for slurm
 timeLim   = 48 # time limit [hr]
 #timeLim   = (17000*0.00167).to_i+1 # time limit [hr] ~<~ numSteps*time/step
@@ -20,16 +20,16 @@ puts slurm ?
   "MODE: not on ifarm, run SEQUENTIALLY"
 
 # start job list file
-jobFileName = "jobs.asymBruFit.#{minimizer}.#{ivString}.slurm"
+jobFileName = "jobs.asymBruFit.#{minimizer}.#{idString}.slurm"
 slurmFileName = jobFileName.gsub(/^jobs/,"job") if slurm
 jobFile = File.open(jobFileName,"w")
 
 # define asymBruFit.C call, and append to job list
 fit = Proc.new do |whichSpinMC|
   bruArgs = [
-    "catTreeMC.mc.PRL.DIS.0x34.inj_zm.idx.root",
+    "catTreeMC.mc.inbending.bg45.diph.depol.idx.root",
     "",
-    "bruspin.volatile/bruspin.#{minimizer}.#{ivString}.inj#{whichSpinMC}",
+    "bruspin.volatile/bruspin.#{minimizer}.#{idString}.inj#{whichSpinMC}",
     minimizer,
     "",
     ivType,

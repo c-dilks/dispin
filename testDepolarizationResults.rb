@@ -9,20 +9,21 @@
 require 'fileutils'
 
 ##############################################
-inputGlob = "bruspin.work/nodepol.*" # cf. regex in `outDir`
+inputGlob = "bruspin.volatile/bruspin.minuit.ave1.*" # cf. regex in `outDir`
 ##############################################
 
-if ARGV.length<1
-  puts "ERROR: specify output prefix"
-  exit 2
-end
+### DISABLED: safer to copy full bruDir, leaving the original as backup
+# if ARGV.length<1
+#   puts "ERROR: specify output prefix"
+#   exit 2
+# end
 
 outName = ARGV.first
 
 # loop over input fit result directories
 Dir.glob(inputGlob).each do |dir|
   system "root -b -q $BRUFIT/macros/LoadBru.C 'drawBru.C(\"#{dir}\",\"minuit\")'"
-  outDir = dir.sub(/nodepol/,outName)
-  FileUtils.mkdir_p outDir
-  FileUtils.cp Dir.glob("#{dir}/asym*.root"), outDir, verbose: true
+  #   outDir = dir.sub(/nodepol/,outName)
+  #   FileUtils.mkdir_p outDir
+  #   FileUtils.cp Dir.glob("#{dir}/asym*.root"), outDir, verbose: true
 end
