@@ -121,7 +121,7 @@ Int_t InjectionModel::InjectHelicity(EventTree *ev, int modelNum) {
     // calculate modulation amount
     moduVal = modu->Evaluate(phiR,phiH,theta);
 
-    // calculate asymmetry (note that generated kinematics are used for depolarization)
+    // calculate asymmetry
     asymInj += amp * moduVal * ev->Polarization() * ev->GetDepolarizationRatio_gen(modu->GetTw());
   }
 
