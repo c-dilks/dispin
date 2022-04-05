@@ -31,7 +31,7 @@ class BruBin : public TObject
 
     // actions
     void CalculateStats(); // calculate bin means, etc.
-    void OpenResultFile(Int_t minimizer); // open fit results file
+    Bool_t OpenResultFile(Int_t minimizer); // open fit results file
 
     // accessors
     TAxis    GetAxis(Int_t dim);

@@ -65,7 +65,7 @@ void drawBru(
     nextBin = TObjArrayIter(BBlist);
     while((BB = (BruBin*) nextBin())) {
       BB->CalculateStats();
-      BB->OpenResultFile(minimizer);
+      if( ! BB->OpenResultFile(minimizer)) return;
     };
   };
 

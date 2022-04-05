@@ -86,12 +86,16 @@ void BruBin::CalculateStats() {
 };
 
 
-// open result file, read tree, prepare other objects
-void BruBin::OpenResultFile(Int_t minimizer) {
+// open result file, read tree, prepare other objects; return true if successful
+Bool_t BruBin::OpenResultFile(Int_t minimizer) {
 
   // open result file and tree
   TString resultFileN = BrufitResultsFileName(minimizer);
   resultFile = new TFile(bruDir+"/"+bruName+"/"+resultFileN,"READ");
+  if(!resultFile->IsOpen()) {
+    fprintf(stderr,"ERROR: BruBin cannot find results file\n");
+    return false;
+  };
   resultTree = (TTree*) resultFile->Get("ResultTree");
 
   // if MCMC, prepare some additional plots
@@ -110,6 +114,7 @@ void BruBin::OpenResultFile(Int_t minimizer) {
     mcmcTree = new TTree();
     nllVsSampleHist = new TH1D();
   };
+  return true;
 };
 
 
