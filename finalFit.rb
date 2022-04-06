@@ -19,12 +19,13 @@ subDir     = "bruspin.volatile"
 idString   = "apr4"
 catTreeDir = "catTrees"
 splotDir   = "splots"
-datasets   = dl.allsetListLoopOnlyData.select{ |dataset| dataset.include?'bibending' }
+datasets   = dl.allsetListLoopOnlyData#.select{ |dataset| dataset.include?'bibending' }
 mcsets     = dl.allsetListLoopOnlyMC
 minimizers = [
   "minuit",
   # "mcmccov"
 ]
+ivTypes = DatasetLooper::BinHash.keys#.select{|i|i==2}
 timeLim = minimizers.include?("mcmccov") ? 48 : 8 # time limit [hr]
 memory  = 1500 # memory allocation per CPU [MB]
 ############################
@@ -52,9 +53,6 @@ jobFileName = "jobs.#{idString}.slurm"
 slurmFileName = jobFileName.gsub(/^jobs/,"job") if slurm
 jobFile = File.open(jobFileName,"w")
 jobFile.puts "#!/bin/bash" unless slurm
-
-# reformat some settings
-ivTypes = DatasetLooper::BinHash.keys
 
 # loop over all possible settings, defining asymBruFit.C calls, and generate job list
 # - there will be one job per possible setting
@@ -120,6 +118,8 @@ if slurm
   slurmFile.puts "srun $(head -n$SLURM_ARRAY_TASK_ID #{jobFileName} | tail -n1)"
   slurmFile.close()
 end
+
+# exit # premature exit for testing
 
 # execution
 if slurm # run on slurm

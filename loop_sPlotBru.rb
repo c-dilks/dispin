@@ -2,6 +2,7 @@
 # run sPlotBru.C with arguments for the final fit
 
 require './DatasetLooper.rb'
+require 'awesome_print'
 
 # args
 if ARGV.length!=1
@@ -36,8 +37,10 @@ datasets.product(ivTypes).each do |dataset,ivType|
     *binSchemes[ivType][:bins],
   ]
   bruArgs.map!{ |arg| if arg.class==String then "\"#{arg}\"" else arg end } # add quotes around strings
+  ap bruArgs
   brufit = "root -b -q $BRUFIT/macros/LoadBru.C"
-  cmds << "#{brufit} 'sPlotBru.C(#{bruArgs.join ','})'"
+  cmd = "#{brufit} 'sPlotBru.C(#{bruArgs.join ','})'"
+  cmds << cmd
 end
 
 # execution
