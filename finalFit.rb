@@ -85,7 +85,7 @@ settings = datasets.product(ivTypes,minimizers).each do |dataset,ivType,minimize
     "#{subDir}/" + [idString,dataset,ivName,minimizer].join('.'),
     minimizer,
     weightDir[dihadronSym] || '',
-    DatasetLooper::Dihadrons[dihadronSym][:binSchemeVersion] || 'PM',
+    dl.pairType,
     ivType,
     *DatasetLooper::BinHash[ivType][:bins],
   ]

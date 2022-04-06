@@ -10,6 +10,7 @@ void injectAsymModel(
   // OPTIONS //////////////////////
   // define binning scheme in order to store IV names; the number
   // of bins is irrelevant, just use single-bins
+  const Int_t pairType = 0x34;
   const Int_t ivType = 1;
   // approximate scale of asymmetry amplitude to inject; check `maxAdist`,
   // etc. which are histograms filled with min and max amplitude values to
@@ -28,7 +29,7 @@ void injectAsymModel(
   // injection model
   InjectionModel *IM = new InjectionModel();
   IM->FillModuList(0);
-  IM->SetIVtype(ivType);
+  IM->SetIVtype(pairType,ivType);
   Binning *BS = IM->GetBinning();
 
   // RNG; fix seed for reproducibility

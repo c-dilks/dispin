@@ -11,8 +11,8 @@ InjectionModel::InjectionModel()
   RNG = new TRandom(); // (cannot instantiate preferred TRandomMixMax until later, otherwise streaming fails)
 };
 
-void InjectionModel::SetIVtype(Int_t ivType) {
-  BS->SetScheme(ivType,1,1,1); // single bin, useful for ranges
+void InjectionModel::SetIVtype(Int_t pairType, Int_t ivType) {
+  BS->SetScheme(pairType,ivType,1,1,1); // single bin, useful for ranges
 };
 
 void InjectionModel::FillModuList(int preset) {

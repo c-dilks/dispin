@@ -157,7 +157,24 @@ TString Binning::GetBoundStr(Int_t bn, Int_t dim) {
 };
 
 
-Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
+Bool_t Binning::SetScheme(Int_t pairType, Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
+
+  // set whichHad from pairType
+  DecodePairType(pairType,whichHad[qA],whichHad[qB]);
+
+  // set scheme version from pairType
+  if( whichHad[qA]==kDiphBasic || whichHad[qB]==kDiphBasic ) schemeVersion="PI0"; // if there's a diphoton, assume pi+pi0 or pi-pi0
+  else schemeVersion="PM"; // otherwise assume pi+pi-
+  printf("\n\nBinning SCHEME VERSION = %s\n\n",schemeVersion.Data());
+  // print scheme version
+  if(schemeVersion=="PM")       printf("Binning scheme version set for pi+pi- analysis for RGA vs. RGB\n");
+  else if(schemeVersion=="PI0") printf("Binning scheme version set for pi+pi0 and pi-pi0 analyses for RGA vs. RGB\n");
+  else if(schemeVersion=="DIS") printf("Binning scheme version set for pi+pi- analysis for DIS2021\n");
+  else if(schemeVersion=="PRL") printf("Binning scheme version set for pi+pi- analysis for PRL arXiv:2101.04842\n");
+  else {
+    fprintf(stderr,"ERROR: unknown schemeVersion %s; setting to default value\n",schemeVersion.Data());
+    schemeVersion="PM";
+  };
 
   // clear current scheme
   binVec.clear();
@@ -520,21 +537,6 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
 
   return true;
 }; // eo Binning::SetScheme
-
-// set scheme version
-void Binning::SetSchemeVersion(TString schemeVersion_) {
-  if(schemeVersion_=="PM")       printf("Binning scheme version set for pi+pi- analysis for RGA vs. RGB\n");
-  else if(schemeVersion_=="PI0") printf("Binning scheme version set for pi+pi0 and pi-pi0 analyses for RGA vs. RGB\n");
-  else if(schemeVersion_=="DIS") printf("Binning scheme version set for pi+pi- analysis for DIS2021\n");
-  else if(schemeVersion_=="PRL") printf("Binning scheme version set for pi+pi- analysis for PRL arXiv:2101.04842\n");
-  else {
-    fprintf(stderr,"ERROR: unknown schemeVersion %s; setting to default value\n",schemeVersion_.Data());
-    this->SetSchemeVersion("PM");
-    return;
-  };
-  schemeVersion = schemeVersion_;
-};
-
 
 
 // scheme accessors

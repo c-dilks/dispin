@@ -5,13 +5,13 @@ void testBinning() {
   Tools::PrintSeparator(50,"o");
 
   /*
-  BS->SetScheme(2,2);
-  BS->SetScheme(42);
-  BS->SetScheme(421,6,4,12);
-  BS->SetScheme(2,20);
-  BS->SetScheme(1,1);
+  BS->SetScheme(0x34,2,2);
+  BS->SetScheme(0x34,42);
+  BS->SetScheme(0x34,421,6,4,12);
+  BS->SetScheme(0x34,2,20);
+  BS->SetScheme(0x34,1,1);
   */
-  BS->SetScheme(32);
+  BS->SetScheme(0x34,32);
 
   Tools::PrintSeparator(50,"o");
 
@@ -26,7 +26,7 @@ void testBinning() {
 
   Tools::PrintSeparator(50,"o");
 
-  BruAsymmetry * bru = new BruAsymmetry("tmpdir");
+  BruAsymmetry * bru = new BruAsymmetry("tmpdir","minuit");
   bru->Bin(BS);
   bru->PrintBinScheme();
   gROOT->ProcessLine(".! rm -r tmpdir");

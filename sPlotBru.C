@@ -7,7 +7,8 @@ R__LOAD_LIBRARY(DiSpin)
 void sPlotBru(
     TString infileN="catTreeData.rga_inbending_all.0x3b.idx.trimmed.root",
     TString outDir="splot",
-    Int_t binschemeIVtype=2,
+    Int_t pairType=0x3b,
+    Int_t ivType=2,
     Int_t nbins0=-1, Int_t nbins1=-1, Int_t nbins2=-1
     ) {
 
@@ -61,7 +62,7 @@ void sPlotBru(
 
   // set binning scheme
   Binning *BS = new Binning();
-  BS->SetScheme(binschemeIVtype,nbins0,nbins1,nbins2);
+  BS->SetScheme(pairType,ivType,nbins0,nbins1,nbins2);
   Int_t nBins=0;
   for(int d=0; d<BS->dimensions; d++) {
     nBins += BS->GetNbins(d);

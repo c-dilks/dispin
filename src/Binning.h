@@ -41,8 +41,7 @@ class Binning : public TObject
     Int_t GetBin(Int_t v_, Float_t iv_);
     TString GetBoundStr(Int_t bn, Int_t dim);
 
-    Bool_t SetScheme(Int_t ivType, Int_t nb0=-1, Int_t nb1=-1, Int_t nb2=-1);
-    void SetSchemeVersion(TString schemeVersion_);
+    Bool_t SetScheme(Int_t pairType, Int_t ivType, Int_t nb0=-1, Int_t nb1=-1, Int_t nb2=-1);
 
 
     // enumerators 
@@ -105,10 +104,6 @@ class Binning : public TObject
     Int_t gridDim;
 
     Int_t whichHad[2];
-    void SetPairType(Int_t pairType_) { 
-      DecodePairType(pairType_,whichHad[qA],whichHad[qB]);
-    };
-
     
   private:
 

@@ -33,6 +33,7 @@ datasets.product(ivTypes).each do |dataset,ivType|
   bruArgs = [
     "#{subDirIn}/catTreeData.#{dataset}.idx.trimmed.root",
     "#{subDirOut}/#{idString}.#{dataset}.#{binSchemes[ivType][:name]}",
+    dl.pairType,
     ivType>0 ? ivType : 1,
     *binSchemes[ivType][:bins],
   ]

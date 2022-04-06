@@ -20,10 +20,10 @@ class DatasetLooper
   # dihadron types
   # - if used 'truncation' for yield balancing when buidling bibending sets, :useTruncation should be true
   Dihadrons = {
-    :pm   => { :title=>'pi+pi-', :latex=>'$\pi^+\pi^-$', :pairType=>'0x34', :useTruncation=>false, :binSchemeVersion=>'PM'  },
-    :p0   => { :title=>'pi+pi0', :latex=>'$\pi^+\pi^0$', :pairType=>'0x3b', :useTruncation=>true,  :binSchemeVersion=>'PI0' },
-    :m0   => { :title=>'pi0pi-', :latex=>'$\pi^0\pi^-$', :pairType=>'0xb4', :useTruncation=>true,  :binSchemeVersion=>'PI0' },
-    :none => { :title=>'',       :latex=>'',             :pairType=>'0',    :useTruncation=>false, :binSchemeVersion=>'PM'  },
+    :pm   => { :title=>'pi+pi-', :latex=>'$\pi^+\pi^-$', :pairType=>0x34, :useTruncation=>false },
+    :p0   => { :title=>'pi+pi0', :latex=>'$\pi^+\pi^0$', :pairType=>0x3b, :useTruncation=>true  },
+    :m0   => { :title=>'pi0pi-', :latex=>'$\pi^0\pi^-$', :pairType=>0xb4, :useTruncation=>true  },
+    :none => { :title=>'',       :latex=>'',             :pairType=>0,    :useTruncation=>false },
   }
  
   #####################################
