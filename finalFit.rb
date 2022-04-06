@@ -3,6 +3,7 @@
 
 require './DatasetLooper.rb'
 require 'awesome_print'
+require 'pry'
 
 # args
 if ARGV.length!=1
@@ -74,19 +75,18 @@ settings = datasets.product(ivTypes,minimizers).each do |dataset,ivType,minimize
     ].join(';')
   end
   weightDir = {
-    :pm   => bibendingWeightsDir,
-    :p0   => splotSubDir,
-    :m0   => splotSubDir,
-    :none => '',
+    :pm => bibendingWeightsDir,
+    :p0 => splotSubDir,
+    :m0 => splotSubDir,
   }
 
   # asymBrufit.C arguments
   bruArgs = [
-    "catTreeData.#{dataset}.idx.root",
-    "catTreeMC.#{mcset}.idx.root",
+    "#{catTreeDir}/catTreeData.#{dataset}.idx.root",
+    "#{catTreeDir}/catTreeMC.#{mcset}.idx.root",
     "#{subDir}/" + [idString,dataset,ivName,minimizer].join('.'),
     minimizer,
-    weightDir[dihadronSym],
+    weightDir[dihadronSym] || '',
     ivType,
     *DatasetLooper::BinHash[ivType][:bins],
   ]
@@ -95,13 +95,11 @@ settings = datasets.product(ivTypes,minimizers).each do |dataset,ivType,minimize
   cmd = slurm ?
     "#{brufit} asymBruFit.C(#{bruArgs.join ','})" :
     "#{brufit} 'asymBruFit.C(#{bruArgs.join ','})'"
-  ap cmd
   ap bruArgs
   jobFile.puts cmd
 
 end
 jobFile.close
-exit ##############################################<<<<<<<<<<<<<<<<<<<
 
 # generate slurm file
 if slurm
