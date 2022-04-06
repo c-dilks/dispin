@@ -42,7 +42,7 @@ class Binning : public TObject
     TString GetBoundStr(Int_t bn, Int_t dim);
 
     Bool_t SetScheme(Int_t ivType, Int_t nb0=-1, Int_t nb1=-1, Int_t nb2=-1);
-
+    void SetSchemeVersion(TString schemeVersion_);
 
 
     // enumerators 
@@ -111,6 +111,8 @@ class Binning : public TObject
 
     
   private:
+
+    TString schemeVersion;
 
 
   ClassDef(Binning,1);
