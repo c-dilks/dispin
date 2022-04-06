@@ -30,7 +30,7 @@ class DatasetLooper
   # construction
 
   # constructor
-  def initialize(dihadronTok='')
+  def initialize(dihadronTok=:none)
 
     # list of datasets
     @datasetList = [
@@ -47,18 +47,17 @@ class DatasetLooper
 
     # add dihadron token to each dataset (if specified)
     # - useful for creating an instance for a specific dihadron pairType
-    dihadronTok = 'none' if dihadronTok==''
     begin
-      @pairType      = Dihadrons[dihadronTok.to_sym][:pairType]
-      @useTruncation = Dihadrons[dihadronTok.to_sym][:useTruncation]
+      @pairType      = Dihadrons[dihadronTok][:pairType]
+      @useTruncation = Dihadrons[dihadronTok][:useTruncation]
     rescue
       $stderr.puts "\nERROR: unknown dihadron in DatasetLooper\n\n"
-      dihadronTok = 'none'
+      dihadronTok = :none
       retry
     end
-    unless dihadronTok=='none'
+    unless dihadronTok==:none
       @datasetList.map! do |dataset|
-        dataset.split('.').insert(1,dihadronTok).join('.')
+        dataset.split('.').insert(1,dihadronTok.to_s).join('.')
       end
     end
 

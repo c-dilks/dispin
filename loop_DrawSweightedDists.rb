@@ -9,7 +9,7 @@ if ARGV.length!=1
   DatasetLooper.printDihadrons
   exit 2
 end
-dl = DatasetLooper.new(ARGV[0])
+dl = DatasetLooper.new(ARGV[0].to_sym)
 
 # settings ###############################################
 idString   = "apr4" # output ID

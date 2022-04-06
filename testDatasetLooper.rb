@@ -9,7 +9,7 @@ if ARGV.length<1
   exit 2
 end
 testnum = ARGV[0].to_i
-dihadronTok = ARGV.length>1 ? ARGV[1] : ''
+dihadronTok = ARGV.length>1 ? ARGV[1].to_sym : :none
 looper = DatasetLooper.new(dihadronTok)
 
 ##############################

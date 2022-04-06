@@ -16,8 +16,8 @@ if ARGV.length!=1
 end
 
 # dataset loopers
-dlGeneric  = DatasetLooper.new           # any dihadron
-dlSpecific = DatasetLooper.new(ARGV[0])  # specific dihadron
+dlGeneric  = DatasetLooper.new                  # any dihadron
+dlSpecific = DatasetLooper.new(ARGV[0].to_sym)  # specific dihadron
 pairType = dlSpecific.pairType
 
 # zip generic and specific loopers

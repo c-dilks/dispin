@@ -2,13 +2,24 @@
 # run asymBruFit.C with arguments for the final fit
 
 require './DatasetLooper.rb'
-looper = DatasetLooper.new
+require 'awesome_print'
+
+# args
+if ARGV.length!=1
+  $stderr.puts "USAGE #{$0} [DIHADRON]"
+  DatasetLooper.printDihadrons
+  exit 2
+end
+dihadronSym = ARGV[0].to_sym
+dl = DatasetLooper.new(dihadronSym)
 
 # settings #################
-subDir     = "bruspin.work"
-idString   = "final.mar28"
-datasets   = looper.allsetListLoopOnlyData#.select{ |dataset| dataset.include?'bibending' }
-mcsets     = looper.allsetListLoopOnlyMC
+subDir     = "bruspin.volatile"
+idString   = "apr4"
+catTreeDir = "catTrees"
+splotDir   = "splots"
+datasets   = dl.allsetListLoopOnlyData.select{ |dataset| dataset.include?'bibending' }
+mcsets     = dl.allsetListLoopOnlyMC
 minimizers = [
   "minuit",
   # "mcmccov"
@@ -50,15 +61,32 @@ sep.call "job list"
 settings = datasets.product(ivTypes,minimizers).each do |dataset,ivType,minimizer|
 
   # match mcset to dataset
-  mcset = looper.matchByTorus(dataset,mcsets)
+  mcset = dl.matchByTorus(dataset,mcsets)
+
+  # set weights directory
+  ivName = DatasetLooper::BinHash[ivType][:name]
+  splotSubDir = "#{splotDir}/#{idString}.#{dataset}.#{ivName}" # sWeights for data
+  bibendingWeightsDir = ''
+  if dataset.include?('bibending') and not dl.useTruncation    # bibending weights for data and MC
+    bibendingWeightsDir = [
+      "catTreeWeights/catTreeData.#{dataset}",
+      "catTreeWeights/catTreeMC.#{mcset}"
+    ].join(';')
+  end
+  weightDir = {
+    :pm   => bibendingWeightsDir,
+    :p0   => splotSubDir,
+    :m0   => splotSubDir,
+    :none => '',
+  }
 
   # asymBrufit.C arguments
   bruArgs = [
     "catTreeData.#{dataset}.idx.root",
     "catTreeMC.#{mcset}.idx.root",
-    "#{subDir}/" + [idString,dataset,ivType,minimizer].join('.'),
+    "#{subDir}/" + [idString,dataset,ivName,minimizer].join('.'),
     minimizer,
-    "",
+    weightDir[dihadronSym],
     ivType,
     *DatasetLooper::BinHash[ivType][:bins],
   ]
@@ -67,12 +95,13 @@ settings = datasets.product(ivTypes,minimizers).each do |dataset,ivType,minimize
   cmd = slurm ?
     "#{brufit} asymBruFit.C(#{bruArgs.join ','})" :
     "#{brufit} 'asymBruFit.C(#{bruArgs.join ','})'"
-  # puts "#{bruArgs}"
-  puts cmd
+  ap cmd
+  ap bruArgs
   jobFile.puts cmd
 
 end
 jobFile.close
+exit ##############################################<<<<<<<<<<<<<<<<<<<
 
 # generate slurm file
 if slurm
