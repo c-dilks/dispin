@@ -2,10 +2,12 @@
 # run singleBinTreeMaker.sh for all the datasets
 
 require './DatasetLooper.rb'
-require 'colorize'
+require 'awesome_print'
 
 ####### SETTINGS ########
 subDir = 'catTrees' # output directory for catTrees (MUST EXIST BEFORE EXECUTION)
+# CAUTION: if DatasetLooper.rb has been updated, this script may not work correctly;
+#          check the singleBinTreeMaker.sh arguments before execution
 #########################
 
 # args
@@ -16,13 +18,25 @@ if ARGV.length!=1
 end
 
 # dataset loopers
-dlGeneric  = DatasetLooper.new                  # any dihadron
-dlSpecific = DatasetLooper.new(ARGV[0].to_sym)  # specific dihadron
-pairType = dlSpecific.pairType
+dl = {
+  :generic  => DatasetLooper.new,                 # any dihadron
+  :specific => DatasetLooper.new(ARGV[0].to_sym), # specific dihadron
+}
+pairType = dl[:specific].pairType
+
+# get allset lists, applying a filter, and sort
+allsetList = dl.map do |k,dlObj|
+  list = dlObj.allsetListLoop
+    .reject{ |d| d.include?'bibending' }
+    .sort
+  [k,list]
+end.to_h
+puts "ALLSET LISTS = "
+ap allsetList
 
 # zip generic and specific loopers
-dlGeneric.allsetListLoop.zip(dlSpecific.allsetListLoop) do |genericSet,specificSet|
-  next if genericSet.split('.').include?('bibending')
+allsetList[:generic].zip(allsetList[:specific]) do |genericSet,specificSet|
+  ap [genericSet,specificSet]
   datasetType = genericSet.split('.').include?('mc') ? 'mc' : 'data'
   catTreeFile = "#{subDir}/#{DatasetLooper.catTreeBaseName(specificSet)}.root"
   system "singleBinTreeMaker.sh outroot.#{genericSet} #{datasetType} -p #{pairType} -o #{catTreeFile}"
