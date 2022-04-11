@@ -21,6 +21,9 @@ logfiles.each do |logfile|
   cmd += "|grep -v \"plotOn: WARNING: variable is not an explicit dependent:\""
   cmd += "|grep -v \" is not a dependent and will be ignored.\""
   cmd += "|grep -v \"cache/libRooStats_rdict.pcm file does not exist\""
+  cmd += "|grep -v \"out of this region. Error log follows.\""
+  cmd += "|grep -vi \"error matrix\""
+  cmd += "|grep -v \"Minimized function has error status.\""
   res = `#{cmd}`
   puts "\n------->>> #{logfile}:\n#{res}" if $?.success?
 end
