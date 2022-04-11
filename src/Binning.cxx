@@ -326,6 +326,10 @@ Bool_t Binning::SetScheme(Int_t pairType, Int_t ivType, Int_t nb0, Int_t nb1, In
     else if(ivVar[d] == vX) {
       switch(nb[d]) {
         case 1: break; // single bin
+        case 3:
+          AddBinBound(vX,0.158); // based on RGA pi+pi0 bibending
+          AddBinBound(vX,0.246);
+          break;
         case 4:
           AddBinBound(vX,0.149); // DSIDIS 2D binning
           AddBinBound(vX,0.199);
