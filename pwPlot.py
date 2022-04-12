@@ -24,6 +24,8 @@ if len(sys.argv)-1 < 1:
                 2: twist2
                 3: twist3 (m=0 included if includeMeq0==True)
                 4: DSIDIS terms
+                12: twist2, no theta-dependence
+                13: twist3, no theta-dependence
                 2000+: individual PW
                     digits: twist|L|M|sign(m)
                                       0:+,1:-
@@ -104,6 +106,7 @@ if enableOutput:
 # determine nrows and ncols, and plotmap
 # plotmap maps L->M->[row,col], where row,col is of subplot
 plotmap = {l:{} for l in range(3)}
+enablePW = True
 if scheme==0: # twist3 m==0 states only
     nrows,ncols = 1,3
     twist=3
@@ -142,6 +145,21 @@ elif scheme==4: # DSIDIS
     twist=2
     plotmap[1][0] = [0,0] # (does not use l and m)
     plotmap[1][1] = [0,1]
+elif scheme==12: # twist2, no theta-dependence
+    nrows,ncols = 1,2
+    twist=2
+    enablePW = False
+    plotmap[1][1] = [0,0]
+    plotmap[2][2] = [0,1]
+elif scheme==13: # twist3, no theta-dependence
+    nrows,ncols = 3,2
+    twist=3
+    enablePW = False
+    plotmap[0][0]  = [0,0]
+    plotmap[1][-1] = [1,0]
+    plotmap[1][1]  = [1,1]
+    plotmap[2][-2] = [2,0]
+    plotmap[2][2]  = [2,1]
 elif scheme>=2000: # single plot
     twist=int(scheme/1000)
     ell=int(scheme%1000/100)
@@ -171,14 +189,14 @@ plt.subplots_adjust(wspace=0,hspace=0)
 
 
 # main title
-if scheme==2 or scheme==3:
-    mainTitle = "Twist-"+str(twist)+" $A_{LU}$ Amplitudes"
+if scheme==2 or scheme==3 or scheme==12 or scheme==13:
+    mainTitle = "Twist-"+str(twist)+" $F_{LU}/F_{UU}$ Amplitudes"
 elif scheme==0:
-    mainTitle = "Twist-"+str(twist)+" $m=0$ $A_{LU}$ Amplitudes"
+    mainTitle = "Twist-"+str(twist)+" $m=0$ $F_{LU}/F_{UU}$ Amplitudes"
 elif scheme==4:
-    mainTitle = "Twist-2 $A_{LU}$ DSIDIS Amplitudes"
+    mainTitle = "Twist-2 $F_{LU}/F_{UU}$ DSIDIS Amplitudes"
 elif scheme>=2000:
-    mainTitle = "Twist-"+str(twist)+" $A_{LU}^{|"+str(ell)+","+str(emm)+"\\rangle}$"
+    mainTitle = "Twist-"+str(twist)+" $F_{LU}^{|"+str(ell)+","+str(emm)+"\\rangle}/F_{UU}$"
 if extraTitle!='':
     mainTitle += ', '+extraTitle
 fig.suptitle(
@@ -208,6 +226,12 @@ for l,lmap in plotmap.items():
         elif scheme==4:
             drawX = True
             drawY = m==0
+        elif scheme==12:
+            drawX = True
+            drawY = m==1
+        elif scheme==13:
+            drawX = l==2
+            drawY = m<=0
         elif scheme>=2000:
             drawX,drawY = True,True
         if not drawY:
@@ -224,7 +248,8 @@ for l,lmap in plotmap.items():
             infile = root.TFile(infileN,"READ")
             blStr = infileN.split('/')[-1].split('_')[-1].split('.')[0]
             endStr = "Lv0P0_"+blStr
-            asymN = "gr_pwAmp"+twStr+lStr+mStr+endStr
+            prefix = "gr_pwAmp" if enablePW else "gr_Amp"
+            asymN = prefix+twStr+lStr+mStr+endStr
             if scheme==4:
                 if m==0:   asymN = "gr_AmpT2L0Mp0Lv0P4_"+blStr
                 elif m==1: asymN = "gr_AmpT2L0Mp0Lv1P4_"+blStr
@@ -293,19 +318,25 @@ for l,lmap in plotmap.items():
         # axis labels
         if drawX: axs[r,c].set_xlabel(xTitle)
         if scheme==0: yeig = "\\ell,0"
-        elif scheme==2 or scheme==3: yeig = str(l)+",m"
+        elif scheme==2 or scheme==3 or scheme==12 or scheme==13: yeig = str(l)+",m"
         elif scheme==4: yeig = "DSIDIS"
         elif scheme>=2000: yeig = str(l)+","+str(m)
-        ytitle = "$A_{LU}^{|"+yeig+"\\rangle}$"
+        if enablePW:
+            ytitle = "$F_{LU}^{|"+yeig+"\\rangle}/F_{UU}$"
+        else:
+            ytitle = "$F_{LU}/F_{UU}$"
         if drawY:
             if enableOutput:
                 axs[r,c].set_ylabel(ytitle)
             else:
-                axs[r,c].set_ylabel("$A_{LU}$")
+                axs[r,c].set_ylabel("$F_{LU}/F_{UU}$")
 
         # partial wave labels
         # |l,m>
-        ket = "$|"+str(l)+","+str(m)+"\\rangle$"
+        if enablePW:
+            ket = "$|"+str(l)+","+str(m)+"\\rangle$"
+        else:
+            ket = "$|\\ell,"+str(m)+"\\rangle$"
         if scheme==4:
             if m==0: ket="$|\sin(\Delta\phi)\\rangle$"
             elif m==1: ket="$|\sin(2\Delta\phi)\\rangle$"
@@ -322,16 +353,24 @@ for l,lmap in plotmap.items():
         elif twist==3:
             diffFF = "H"
             diffT = "\\sphericalangle" if m>0 else "\\perp"
-        if l==0:
-            diffP = "OO"
-            diffT += " ss+pp"
-        elif l==1:
-            if m==0: diffP = "OL"
-            elif abs(m)==1: diffP = "OT"
-        elif l==2:
-            if m==0: diffP = "LL"
-            elif abs(m)==1: diffP = "LT"
-            elif abs(m)==2: diffP = "TT"
+        if enablePW:
+            if l==0:
+                diffP = "OO"
+                diffT += " ss+pp"
+            elif l==1:
+                if m==0: diffP = "OL"
+                elif abs(m)==1: diffP = "OT"
+            elif l==2:
+                if m==0: diffP = "LL"
+                elif abs(m)==1: diffP = "LT"
+                elif abs(m)==2: diffP = "TT"
+        else:
+            if abs(m)==0:
+                diffP = "OO+OL+LL"
+            elif abs(m)==1:
+                diffP = "OT+LT"
+            elif abs(m)==2:
+                diffP = "TT"
         diff = "$"+diffFF+"_{1,"+diffP+"}^{"+diffT+"}$"
         if enableOutput and scheme!=4:
             axs[r,c].text(
