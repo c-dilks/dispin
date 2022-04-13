@@ -22,12 +22,15 @@ minimizers = [
   "minuit",
   # "mcmccov"
 ]
-# schemes = [0,2,3]
-schemes = [12,13]
+schemes = {
+  :pm => [0,2,3],
+  :p0 => [12,13],
+  :m0 => [12,13],
+}
 tori = [
   "inbending",
-  # "outbending",
-  # "bibending",
+  "outbending",
+  "bibending",
 ]
 Verbose = true
 outputFormat = "png"
@@ -56,7 +59,7 @@ sep = "\n\n"+"#{'S'*50}\n"*3+"\n\n"
 
 pwPlotCmds = []
 outputDirs = []
-looper.binHash.keys.product(tori,minimizers,schemes).each do |ivType,torus,minimizer,scheme|
+looper.binHash.keys.product(tori,minimizers,schemes[dihadronSym]).each do |ivType,torus,minimizer,scheme|
 
   ivName = looper.binHash[ivType][:name]
   puts "\n#{"="*30} PLOT: #{[torus,ivName,minimizer,scheme].join ' '}" if Verbose
