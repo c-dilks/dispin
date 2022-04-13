@@ -44,7 +44,6 @@ bruspin.*
 catTree*.bak
 catTree.archive*
 catTrees
-xcheck/2.28
 xcheck/2.28/*.txt
 xcheck/4.12/*.txt
 xcheck/4.12/assumed_cuts_only
