@@ -21,11 +21,11 @@ catTreeDir = "catTrees"
 splotDir   = "splots"
 datasets   = dl.allsetListLoopOnlyData#.select{ |dataset| dataset.include?'bibending' }
 mcsets     = dl.allsetListLoopOnlyMC
+ivTypes    = DatasetLooper::BinHash.keys#.select{|i|i==2}
 minimizers = [
   "minuit",
   # "mcmccov"
 ]
-ivTypes = DatasetLooper::BinHash.keys#.select{|i|i==2}
 timeLim = minimizers.include?("mcmccov") ? 48 : 8 # time limit [hr]
 memory  = 1500 # memory allocation per CPU [MB]
 ############################
