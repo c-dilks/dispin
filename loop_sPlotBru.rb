@@ -17,10 +17,10 @@ idString   = "apr4" # output ID
 subDirIn   = "catTrees"
 subDirOut  = "splots"
 datasets   = dl.allsetListLoopOnlyData#.select{ |dataset| dataset.include?'bibending' }
-binSchemes = DatasetLooper::BinHash
+binSchemes = dl.binHash
 ##########################################################
 
-# add single bin scheme to BinHash; this is useful for `DrawSweightedDists.C` for 
+# add single bin scheme to binHash; this is useful for `DrawSweightedDists.C` for 
 # the comparison of sWeighted data to MC
 binSchemes[0] = { :bins=>[1], :name=>'singlebin', :xTitle=>'single bin', :xTranslation=>0.0 }
 

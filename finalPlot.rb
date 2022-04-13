@@ -43,7 +43,7 @@ def printDebug(title,data)
   end
 end
 
-# mapping certain `BinHash` options to `pwPlot.py` options
+# mapping certain `binHash` options to `pwPlot.py` options
 pwOpts = {
   :xTitle  => '-x',
   :blTitle => '-e',
@@ -56,9 +56,9 @@ sep = "\n\n"+"#{'S'*50}\n"*3+"\n\n"
 
 pwPlotCmds = []
 outputDirs = []
-DatasetLooper::BinHash.keys.product(tori,minimizers,schemes).each do |ivType,torus,minimizer,scheme|
+looper.binHash.keys.product(tori,minimizers,schemes).each do |ivType,torus,minimizer,scheme|
 
-  ivName = DatasetLooper::BinHash[ivType][:name]
+  ivName = looper.binHash[ivType][:name]
   puts "\n#{"="*30} PLOT: #{[torus,ivName,minimizer,scheme].join ' '}" if Verbose
 
   # list of bruDirs, one for each dataset, filtered for the given torus polarity
@@ -89,7 +89,7 @@ DatasetLooper::BinHash.keys.product(tori,minimizers,schemes).each do |ivType,tor
     bl = blList.first
 
     # set title options for pwPlot.py
-    titleOpts = DatasetLooper::BinHash[ivType].map do |opt,val|
+    titleOpts = looper.binHash[ivType].map do |opt,val|
       title = val.gsub("__BL__","bin #{bl}") if val.is_a? String
       pwOpt = pwOpts[opt]
       pwOpt += "'#{title}'" unless pwOpt==nil

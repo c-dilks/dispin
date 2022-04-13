@@ -21,7 +21,7 @@ catTreeDir = "catTrees"
 splotDir   = "splots"
 datasets   = dl.allsetListLoopOnlyData#.select{ |dataset| dataset.include?'bibending' }
 mcsets     = dl.allsetListLoopOnlyMC
-ivTypes    = DatasetLooper::BinHash.keys#.select{|i|i==2}
+ivTypes    = dl.binHash.keys#.select{|i|i==2}
 minimizers = [
   "minuit",
   # "mcmccov"
@@ -40,7 +40,7 @@ puts slurm ?
   "Mode: not on ifarm, run sequentially"
 
 # determine number of CPUs to allocate per slurm node
-numBins = DatasetLooper::BinHash.values.map{ |opts| opts[:bins].inject :* }
+numBins = dl.binHash.values.map{ |opts| opts[:bins].inject :* }
 nCPUs = numBins.max # use max number of bins from any job -> could waste resources if some jobs have less bins
 # nCPUs = numBins.min # use min number of bins from any job -> jobs with more bins will take longer
 if slurm
@@ -63,7 +63,7 @@ settings = datasets.product(ivTypes,minimizers).each do |dataset,ivType,minimize
   mcset = dl.matchByTorus(dataset,mcsets)
 
   # set weights directory
-  ivName = DatasetLooper::BinHash[ivType][:name]
+  ivName = dl.binHash[ivType][:name]
   splotSubDir = "#{splotDir}/#{idString}.#{dataset}.#{ivName}" # sWeights for data
   bibendingWeightsDir = ''
   if dataset.include?('bibending') and not dl.useTruncation    # bibending weights for data and MC
@@ -87,7 +87,7 @@ settings = datasets.product(ivTypes,minimizers).each do |dataset,ivType,minimize
     weightDir[dihadronSym] || '',
     dl.pairType,
     ivType,
-    *DatasetLooper::BinHash[ivType][:bins],
+    *dl.binHash[ivType][:bins],
   ]
   bruArgs.map!{ |arg| if arg.class==String then "\"#{arg}\"" else arg end } # add quotes around strings
   brufit = "root -b -q $BRUFIT/macros/LoadBru.C"

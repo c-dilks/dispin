@@ -9,18 +9,6 @@ class DatasetLooper
   #####################################
   # CONSTANTS
 
-  # binning schemes and related options: `ivType` => { :bins=>[bn0,bn1,bn2], :option=>value, ... }
-  BinHash = {
-    # 1  => { :bins=>[6],   :name=>'x',   :xTitle=>'$x$',         :xTranslation=>0.006      },
-    # 2  => { :bins=>[6],   :name=>'m',   :xTitle=>'$M_h$ [GeV]', :xTranslation=>0.020      },
-    # 32 => { :bins=>[3,2], :name=>'zm',  :xTitle=>'$z$',         :blTitle=>'$M_h$ __BL__', :xTranslation=>0.010 },
-    # 42 => { :bins=>[3,2], :name=>'ptm', :xTitle=>'$p_T$ [GeV]', :blTitle=>'$M_h$ __BL__', :xTranslation=>0.015 },
-    #### pi0: # TODO: make BinHash dependent on dihadronTok
-    1 => { :bins=>[3], :name=>'x', :xTitle=>'$x$',         :xTranslation=>0.006 },
-    2 => { :bins=>[3], :name=>'m', :xTitle=>'$M_h$ [GeV]', :xTranslation=>0.020 },
-    3 => { :bins=>[3], :name=>'z', :xTitle=>'$z$',         :xTranslation=>0.010 },
-  }
-
   # dihadron types
   # - if used 'truncation' for yield balancing when buidling bibending sets, :useTruncation should be true
   Dihadrons = {
@@ -95,7 +83,25 @@ class DatasetLooper
       end.flatten
     end
 
-  end
+    # binning schemes and related options: `ivType` => { :bins=>[bn0,bn1,bn2], :option=>value, ... } #############
+    @binHash = Hash.new
+    if dihadronTok==:p0 or dihadronTok==:m0 # less pi0 statistics, coarser binning
+      @binHash = {
+        1 => { :bins=>[3], :name=>'x', :xTitle=>'$x$',         :xTranslation=>0.006 },
+        2 => { :bins=>[3], :name=>'m', :xTitle=>'$M_h$ [GeV]', :xTranslation=>0.020 },
+        3 => { :bins=>[3], :name=>'z', :xTitle=>'$z$',         :xTranslation=>0.010 },
+      }
+    else # pi+pi- binning scheme
+      @binHash = {
+        1  => { :bins=>[6],   :name=>'x',   :xTitle=>'$x$',         :xTranslation=>0.006      },
+        2  => { :bins=>[6],   :name=>'m',   :xTitle=>'$M_h$ [GeV]', :xTranslation=>0.020      },
+        32 => { :bins=>[3,2], :name=>'zm',  :xTitle=>'$z$',         :blTitle=>'$M_h$ __BL__', :xTranslation=>0.010 },
+        42 => { :bins=>[3,2], :name=>'ptm', :xTitle=>'$p_T$ [GeV]', :blTitle=>'$M_h$ __BL__', :xTranslation=>0.015 },
+      }
+    end
+    ###########################
+
+  end # end of constructor ##########################
 
   # list of lists that have been defined above
   ListOfLists = [
@@ -108,6 +114,7 @@ class DatasetLooper
   ListOfLists.each{ |sym| attr_accessor sym }
   attr_accessor :pairType
   attr_accessor :useTruncation
+  attr_accessor :binHash
 
 
   #####################################

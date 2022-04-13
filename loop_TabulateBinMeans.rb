@@ -7,7 +7,7 @@ looper = DatasetLooper.new
 
 cmds = []
 looper.allsetListLoop do |dataset|
-  DatasetLooper::BinHash.each do |ivType,binOpts|
+  looper.binHash.each do |ivType,binOpts|
     args = [
       '-c',
       "-f #{DatasetLooper.catTreeBaseName(dataset)}.idx.root",
