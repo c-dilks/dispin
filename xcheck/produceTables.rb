@@ -5,11 +5,16 @@ require 'pry'
 require '../DatasetLooper.rb'
 dl=DatasetLooper.new
 
-# build list of files and run numbers
-subdir="2.28"
+### build list of files and run numbers
+# subdir="2.28"
+# timothyFiles = Dir.glob("#{subdir}/timothy*.txt")
+# chrisFiles = timothyFiles.map{|f|f.sub('timothy','chris')}
+# runNums = chrisFiles.map{ |f| File.basename(f,'.txt').split('_').last }
+###
+subdir="4.12"
 timothyFiles = Dir.glob("#{subdir}/timothy*.txt")
 chrisFiles = timothyFiles.map{|f|f.sub('timothy','chris')}
-runNums = chrisFiles.map{ |f| File.basename(f,'.txt').split('_').last }
+runNums = chrisFiles.map{ |f| File.basename(f,'.txt').split('_')[1] }
 
 # find outroot file for each run number
 pwd = Dir.pwd

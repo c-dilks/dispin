@@ -9,14 +9,13 @@ plt = Matplotlib::Pyplot
 pool = Thread.pool(`nproc`.to_i-2)
 
 # list of humans: each event in human[0]'s table will be searched for in human[1]'s
-# (human[0] should have the smaller table, if cross checking a subset)
 # - output files will be named "...human0_human1..."
 humans = []
-humans << "timothy"
 humans << "chris"
+humans << "timothy"
 
 # build list pairs of files to compare
-subdir="2.28"
+subdir="4.12"
 tableFiles = humans.map{ |human|
   Dir.glob("#{subdir}/#{human}*.txt").sort
 }.inject(:zip)
@@ -81,7 +80,7 @@ xcheck = Proc.new{ |table|
   # loop through human0's table
   cnt=0
   File.readlines(table[0]).each{ |line0|
-    # if cnt>100 then break else cnt+=1 end # limiter
+    if cnt>10000 then break else cnt+=1 end # limiter
 
     # get human0's columns:
     cols0 = line0.split(' ') # list of strings, one element per column
@@ -159,6 +158,7 @@ xcheck = Proc.new{ |table|
     ax.set_title sym.to_s
     ax.set_yscale 'log'
     ax.hist(diffHists[sym], bins: 100)
+    ax.set_ylim bottom: 0.1
   end
   pngN =outFileN.sub(/\.txt$/,'.png')
   plt.savefig(pngN)
