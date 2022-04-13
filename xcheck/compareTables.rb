@@ -11,8 +11,8 @@ pool = Thread.pool(`nproc`.to_i-2)
 # list of humans: each event in human[0]'s table will be searched for in human[1]'s
 # - output files will be named "...human0_human1..."
 humans = []
-humans << "chris"
 humans << "timothy"
+humans << "chris"
 
 # build list pairs of files to compare
 subdir="4.12"

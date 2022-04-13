@@ -53,6 +53,8 @@ class EventTree : public TObject
     Bool_t CheckHadChi2pid(Int_t had);
     Bool_t CheckMissingMass();
 
+    Bool_t Check_nSidis_skim_cut();
+
     void PrintEventVerbose();
     void PrintEvent();
     void PrintEventLine();

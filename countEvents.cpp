@@ -81,20 +81,23 @@ int main(int argc, char** argv) {
      if(printEvents && nValid>=numToPrint) { printf("--- limiter ---\n"); break; };
      ev->GetEvent(i);
 
+     // in case we are looking at an older SISIS skim file, make sure the SIDIS skim file cut matches
+     if( ! ev->Check_nSidis_skim_cut() ) continue; // <--------------------!!!!!!!!!!! XCHECK
+
      // full cut set
      if(ev->Valid()) {
        nValid++;
        if(printEvents && nValid<=numToPrint) {
          //PrintEvent();
          //PrintEvent2();
-         // PrintEvent_xcheck_2_28(); // <-------------------------------- !!!!!!!!!!!!!!!!!!
+         PrintEvent_xcheck_2_28(); // <-------------------------------- !!!!!!!!!!!!!!!!!! XCHECK
        }
      };
 
      // counts for each cut
      if(Tools::PairSame(ev->hadIdx[qA],ev->hadIdx[qB],whichHad[qA],whichHad[qB])) {
        nTotal++;
-       PrintEvent_xcheck_2_28(); // <-------------------------------- !!!!!!!!!!!!!!!!!!!!!
+       // PrintEvent_xcheck_2_28(); // <-------------------------------- !!!!!!!!!!!!!!!!!!!!! XCHECK
        // main cuts
        if(ev->cutDIS) nCutDIS++;
        if(ev->cutDihadron) nCutDihadron++;

@@ -775,6 +775,23 @@ Bool_t EventTree::CheckHadChi2pid(Int_t had) {
 };
 
 
+// the newer 'nSidis' skim files have a tighter cut than the older 'skim4' skim files;
+// this method is the tighter cut
+// - it is not needed, since our full cut set is much tighter
+// - this method exists for cross checking purposes
+// - the cut: e- in FD, Q2 > 1 GeV2, W > 2 GeV, p > 2 GeV, -25 < Z < 20 in FD
+Bool_t EventTree::Check_nSidis_skim_cut() {
+  // note: e- in FD: cut upstream
+  return
+    Q2   > 1.0 &&
+    W    > 2.0 &&
+    eleP > 2.0 &&
+    eleVertex[eZ] > -25.0 &&
+    eleVertex[eZ] < 20
+    ;
+};
+
+
 void EventTree::PrintEventVerbose() {
   printf("[---] Event Info\n");
   printf("  evnum=%d",evnum);
