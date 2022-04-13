@@ -54,6 +54,7 @@ Binning::Binning() {
   gridDim = 1;
   for(int h=0; h<2; h++) whichHad[h]=-1;
   for(int d=0; d<3; d++) binArray[d] = new TArrayD();
+  schemeVersion = "PM"; // default scheme version
 };
 
 
@@ -156,7 +157,24 @@ TString Binning::GetBoundStr(Int_t bn, Int_t dim) {
 };
 
 
-Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
+Bool_t Binning::SetScheme(Int_t pairType, Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
+
+  // set whichHad from pairType
+  DecodePairType(pairType,whichHad[qA],whichHad[qB]);
+
+  // set scheme version from pairType
+  if( whichHad[qA]==kDiphBasic || whichHad[qB]==kDiphBasic ) schemeVersion="PI0"; // if there's a diphoton, assume pi+pi0 or pi-pi0
+  else schemeVersion="PM"; // otherwise assume pi+pi-
+  printf("\n\nBinning SCHEME VERSION = %s\n\n",schemeVersion.Data());
+  // print scheme version
+  if(schemeVersion=="PM")       printf("Binning scheme version set for pi+pi- analysis for RGA vs. RGB\n");
+  else if(schemeVersion=="PI0") printf("Binning scheme version set for pi+pi0 and pi-pi0 analyses for RGA vs. RGB\n");
+  else if(schemeVersion=="DIS") printf("Binning scheme version set for pi+pi- analysis for DIS2021\n");
+  else if(schemeVersion=="PRL") printf("Binning scheme version set for pi+pi- analysis for PRL arXiv:2101.04842\n");
+  else {
+    fprintf(stderr,"ERROR: unknown schemeVersion %s; setting to default value\n",schemeVersion.Data());
+    schemeVersion="PM";
+  };
 
   // clear current scheme
   binVec.clear();
@@ -220,21 +238,16 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
 
 
   // default binning schemes for each IV, if they weren't specified as args
+  // - the more up-to-date schemes are maintained in DatasetLooper.rb
   Int_t nb[3];
-  TString defaultScheme = "AB"; // <------------------ main switch
   if( nb0==-1 && nb1==-1 && nb2==-1) {
-    if(defaultScheme=="AB") { // RGA vs. RGB
-      if(ivVar[0]==vX) nb0=12;
-      if(ivVar[0]==vM) nb0=12;
-      if(ivVar[0]==vZ) nb0=12;
-      if(ivVar[0]==vZ  && ivVar[1]==vM)  { nb0=4; nb1=3; };
-      if(ivVar[0]==vPt && ivVar[1]==vM)  { nb0=4; nb1=3; };
-      if(ivVar[0]==vX  && ivVar[1]==vDY) { nb0=4; nb1=3; };
-      if(ivVar[0]==vM  && ivVar[1]==vDY) { nb0=4; nb1=3; };
-      if(ivVar[0]==vX  && ivVar[1]==vM && ivVar[2]==vDY) { nb0=3; nb1=2; nb2=2; };
-      if(ivVar[0]==vDY) nb0=12;
+    if(schemeVersion=="PM" || schemeVersion=="PI0") { // pi+pi-, pi+pi0, pi-pi0, for RGA vs. RGB
+      if(ivVar[0]==vX) nb0=6;
+      if(ivVar[0]==vM) nb0=6;
+      if(ivVar[0]==vZ  && ivVar[1]==vM)  { nb0=3; nb1=2; };
+      if(ivVar[0]==vPt && ivVar[1]==vM)  { nb0=3; nb1=2; };
     };
-    if(defaultScheme=="DIS") { // DIS2021: RGA fa18+sp19 inbending data
+    if(schemeVersion=="DIS") { // DIS2021: RGA fa18+sp19 inbending data
       if(ivVar[0]==vX) nb0=12;
       if(ivVar[0]==vM) nb0=12;
       if(ivVar[0]==vZ  && ivVar[1]==vM)  { nb0=4; nb1=3; };
@@ -244,7 +257,7 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
       if(ivVar[0]==vX  && ivVar[1]==vM && ivVar[2]==vDY) { nb0=3; nb1=2; nb2=2; };
       if(ivVar[0]==vDY) nb0=12;
     };
-    if(defaultScheme=="PRL") { // PRL: RGA fa18 inbending data
+    if(schemeVersion=="PRL") { // PRL: RGA fa18 inbending data
       if(ivVar[0]==vX) nb0=12;
       if(ivVar[0]==vM) nb0=12;
       if(ivVar[0]==vZ  && ivVar[1]==vM) { nb0=6; nb1=2; };
@@ -271,20 +284,29 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
           AddBinBound(vM,0.60); // DIS 2D binning
           AddBinBound(vM,0.95);
           break;
-        case 4:
-          AddBinBound(vM,0.572);
-          AddBinBound(vM,0.774);
-          AddBinBound(vM,0.972);
-          break;
         case 6:
-          AddBinBound(vM,0.488);
-          AddBinBound(vM,0.654);
-          AddBinBound(vM,0.774);
-          AddBinBound(vM,0.895);
-          AddBinBound(vM,1.075);
+          if(schemeVersion=="PM") { // based on RGA bibending pi+pi-
+            AddBinBound(vM,0.473);
+            AddBinBound(vM,0.627);
+            AddBinBound(vM,0.751);
+            AddBinBound(vM,0.856);
+            AddBinBound(vM,1.011);
+          } else if(schemeVersion=="PI0") { // based on RGA bibending pi+pi0
+            AddBinBound(vM,0.404);
+            AddBinBound(vM,0.518);
+            AddBinBound(vM,0.653);
+            AddBinBound(vM,0.777);
+            AddBinBound(vM,0.930);
+          } else { // old pi+pi-
+            AddBinBound(vM,0.488);
+            AddBinBound(vM,0.654);
+            AddBinBound(vM,0.774);
+            AddBinBound(vM,0.895);
+            AddBinBound(vM,1.075);
+          };
           break;
         case 12:
-          AddBinBound(vM,0.381); // PRL 1D binning
+          AddBinBound(vM,0.381); // PRL 1D binning // DIS 1D binning
           AddBinBound(vM,0.462);
           AddBinBound(vM,0.531);
           AddBinBound(vM,0.606);
@@ -296,25 +318,6 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
           AddBinBound(vM,0.981);
           AddBinBound(vM,1.125);
           break;
-        case 18:
-          AddBinBound(vM,0.371);
-          AddBinBound(vM,0.432);
-          AddBinBound(vM,0.488);
-          AddBinBound(vM,0.544);
-          AddBinBound(vM,0.600);
-          AddBinBound(vM,0.654);
-          AddBinBound(vM,0.702);
-          AddBinBound(vM,0.741);
-          AddBinBound(vM,0.774);
-          AddBinBound(vM,0.809);
-          AddBinBound(vM,0.849);
-          AddBinBound(vM,0.895);
-          AddBinBound(vM,0.945);
-          AddBinBound(vM,1.002);
-          AddBinBound(vM,1.075);
-          AddBinBound(vM,1.168);
-          AddBinBound(vM,1.290);
-          break;
         default:
           fprintf(stderr,"ERROR: unknown nb for %s\n",GetIVname(d).Data());
       };
@@ -324,20 +327,34 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
       switch(nb[d]) {
         case 1: break; // single bin
         case 3:
-          AddBinBound(vX,0.165);
-          AddBinBound(vX,0.242);
+          AddBinBound(vX,0.158); // based on RGA pi+pi0 bibending
+          AddBinBound(vX,0.246);
           break;
         case 4:
-          AddBinBound(vX,0.149);
+          AddBinBound(vX,0.149); // DSIDIS 2D binning
           AddBinBound(vX,0.199);
           AddBinBound(vX,0.270);
           break;
         case 6:
-          AddBinBound(vX,0.133); // DIS 2D binning
-          AddBinBound(vX,0.165);
-          AddBinBound(vX,0.199);
-          AddBinBound(vX,0.242);
-          AddBinBound(vX,0.308);
+          if(schemeVersion=="PM") { // based on RGA bibending pi+pi-
+            AddBinBound(vX,0.109);
+            AddBinBound(vX,0.139);
+            AddBinBound(vX,0.173);
+            AddBinBound(vX,0.216);
+            AddBinBound(vX,0.283);
+          } else if(schemeVersion=="PI0") { // based on RGA bibending pi+pi0
+            AddBinBound(vX,0.124);
+            AddBinBound(vX,0.158);
+            AddBinBound(vX,0.197);
+            AddBinBound(vX,0.246);
+            AddBinBound(vX,0.322);
+          } else { // old pi+pi-
+            AddBinBound(vX,0.133);
+            AddBinBound(vX,0.165);
+            AddBinBound(vX,0.199);
+            AddBinBound(vX,0.242);
+            AddBinBound(vX,0.308);
+          };
           break;
         case 12:
           AddBinBound(vX,0.118); // PRL 1D binning
@@ -352,25 +369,6 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
           AddBinBound(vX,0.315);
           AddBinBound(vX,0.375);
           break;
-        case 18:
-          AddBinBound(vX,0.109);
-          AddBinBound(vX,0.122);
-          AddBinBound(vX,0.133);
-          AddBinBound(vX,0.144);
-          AddBinBound(vX,0.154);
-          AddBinBound(vX,0.165);
-          AddBinBound(vX,0.175);
-          AddBinBound(vX,0.187);
-          AddBinBound(vX,0.199);
-          AddBinBound(vX,0.212);
-          AddBinBound(vX,0.226);
-          AddBinBound(vX,0.242);
-          AddBinBound(vX,0.260);
-          AddBinBound(vX,0.282);
-          AddBinBound(vX,0.308);
-          AddBinBound(vX,0.344);
-          AddBinBound(vX,0.398);
-          break;
         default:
           fprintf(stderr,"ERROR: unknown nb for %s\n",GetIVname(d).Data());
       };
@@ -379,15 +377,20 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
     else if(ivVar[d] == vZ) {
       switch(nb[d]) {
         case 1: break; // single bin
-        case 2:
-          AddBinBound(vZ,0.55);
-          break;
         case 3:
-          AddBinBound(vZ,0.510);
-          AddBinBound(vZ,0.614);
+          if(schemeVersion=="PM") { // based on RGA bibending pi+pi-
+            AddBinBound(vZ,0.512);
+            AddBinBound(vZ,0.619);
+          } else if(schemeVersion=="PI0") { // based on RGA bibending pi+pi0
+            AddBinBound(vZ,0.507);
+            AddBinBound(vZ,0.625);
+          } else { // old pi+pi-
+            AddBinBound(vZ,0.510);
+            AddBinBound(vZ,0.614);
+          };
           break;
         case 4:
-          AddBinBound(vZ,0.468);
+          AddBinBound(vZ,0.468); // DIS2021 2D binning
           AddBinBound(vZ,0.548);
           AddBinBound(vZ,0.633);
           break;
@@ -407,11 +410,19 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
       switch(nb[d]) {
         case 1: break; // single bin
         case 3:
-          AddBinBound(vPt,0.369);
-          AddBinBound(vPt,0.584);
+          if(schemeVersion=="PM") { // based on RGA bibending pi+pi-
+            AddBinBound(vPt,0.368);
+            AddBinBound(vPt,0.586);
+          } else if(schemeVersion=="PI0") { // based on RGA bibending pi+pi0
+            AddBinBound(vPt,0.358);
+            AddBinBound(vPt,0.578);
+          } else { // old pi+pi-
+            AddBinBound(vPt,0.369);
+            AddBinBound(vPt,0.584);
+          };
           break;
         case 4:
-          AddBinBound(vPt,0.321);
+          AddBinBound(vPt,0.321); // DIS2021 2D binning
           AddBinBound(vPt,0.484);
           AddBinBound(vPt,0.662);
           break;
@@ -434,7 +445,7 @@ Bool_t Binning::SetScheme(Int_t ivType, Int_t nb0, Int_t nb1, Int_t nb2) {
           AddBinBound(vDY,0.7);
           break;
         case 3:
-          AddBinBound(vDY,0.3); // DIS 2D binning
+          AddBinBound(vDY,0.3); // DSIDIS 2D binning
           AddBinBound(vDY,0.7);
           break;
         case 6:

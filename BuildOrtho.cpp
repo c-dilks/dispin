@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
 
   // set binning scheme
   BS = new Binning();
-  Bool_t schemeSuccess = BS->SetScheme(ivType);
+  Bool_t schemeSuccess = BS->SetScheme(pairType,ivType);
   if(!schemeSuccess) {
     fprintf(stderr,"ERROR: Binning::SetScheme failed\n");
     return 0;

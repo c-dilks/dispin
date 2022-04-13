@@ -1,4 +1,5 @@
 R__LOAD_LIBRARY(DiSpin)
+#include "Constants.h"
 #include "BruAsymmetry.h"
 
 // IMPORTANT: run with `brufit -b -q asymBruFit.C`
@@ -12,9 +13,10 @@ void asymBruFit(
     TString bruDir="bruspin.weightTest.rga", // output directory
     TString minimizer="minuit", // minimizer (see comments above)
     TString weightDir="catTreeWeights/catTreeData.rga.bibending.all;catTreeWeights/catTreeMC.mc.bibending.all", // weights directory or directories (viz. sWeights, via outDir from `sPlotBru.C`); leave empty string if not using; use a semicolon and a second directory to specify MC weights for the MC usage in the PDF normalization approximation
-    Int_t binschemeIVtype=2, // binning scheme (execute `buildSpinroot.exe` and see usage of `-i`)
+    Int_t pairType=0x34, // pairType, needed for Binning scheme
+    Int_t ivType=2, // binning scheme (execute `buildSpinroot.exe` and see usage of `-i`)
     Int_t nbins0=6,  // number of bins for each dimension
-    Int_t nbins1=-1, // - example: binschemeIVtype=32, nbins0=6, nbins1=3, runs fit in 6 bins of z (iv=3) for 3 bins of Mh (iv=2)
+    Int_t nbins1=-1, // - example: ivType=32, nbins0=6, nbins1=3, runs fit in 6 bins of z (iv=3) for 3 bins of Mh (iv=2)
     Int_t nbins2=-1, // - leave `-1` to use defaults defined in `src/Binning.cxx`
     Int_t whichSpinMC=-1 // if >=0, use helicity from injected asymmetry (branch "SpinMC_`whichSpinMC`_idx")
 ) {
@@ -31,38 +33,44 @@ void asymBruFit(
 
   // set binning scheme ------------------------------------------------------------------------------------
   Binning * BS = new Binning();
-  BS->SetScheme(binschemeIVtype,nbins0,nbins1,nbins2);
+  BS->SetScheme(pairType,ivType,nbins0,nbins1,nbins2);
   B->Bin(BS);
   B->PrintBinScheme();
 
 
   // build modulations -----------------------------------------------------------------------------
-  /* // 7 amps (PRL)
-  B->AddNumerMod(new Modulation(3,0,0));
-  B->AddNumerMod(new Modulation(2,1,1));
-  B->AddNumerMod(new Modulation(3,1,1));
-  B->AddNumerMod(new Modulation(3,1,-1));
-  B->AddNumerMod(new Modulation(2,2,2));
-  B->AddNumerMod(new Modulation(3,2,2));
-  B->AddNumerMod(new Modulation(3,2,-2));
-  */
-  ///* // all 12 PWs up to L=Lmax
-  const Int_t Lmax = 2;
-  for(int L=0; L<=Lmax; L++) {
-    for(int M=0; M<=L; M++) {
-      for(int T=2; T<=3; T++) {
-        if(T==2 && M==0) continue;
-        B->AddNumerMod(new Modulation(T,L,M,0,true));
-        if(T==3 && M>0) B->AddNumerMod(new Modulation(T,L,-M,0,true));
+  Int_t whichHad[2];
+  DecodePairType(pairType,whichHad[qA],whichHad[qB]);
+  Bool_t usePWexpansion = !( whichHad[qA]==kDiphBasic || whichHad[qB]==kDiphBasic ); // if there's a diphoton, sWeights may cause difficulty in PW fits, since M_gg correlates with theta
+  printf("\nFit with %s\n\n", usePWexpansion ? "FULL PARTIAL WAVE EXPANSION" : "AZIMUTHAL MODULATIONS ONLY");
+  if(usePWexpansion) {
+    // all A_LU partial waves up to L=Lmax
+    const Int_t Lmax = 2;
+    for(int L=0; L<=Lmax; L++) {
+      for(int M=0; M<=L; M++) {
+        for(int T=2; T<=3; T++) {
+          if(T==2 && M==0) continue;
+          B->AddNumerMod(new Modulation(T,L,M,0,true));
+          if(T==3 && M>0) B->AddNumerMod(new Modulation(T,L,-M,0,true));
+        };
       };
     };
+  } else {
+    // 7 azimuthal modulations (PRL, arXiv:2101.04842)
+    B->AddNumerMod(new Modulation(3,0,0));
+    B->AddNumerMod(new Modulation(2,1,1));
+    B->AddNumerMod(new Modulation(3,1,1));
+    B->AddNumerMod(new Modulation(3,1,-1));
+    B->AddNumerMod(new Modulation(2,2,2));
+    B->AddNumerMod(new Modulation(3,2,2));
+    B->AddNumerMod(new Modulation(3,2,-2));
   };
-  //*/
+  // additional modulations for testing:
   /* // DSIDIS
   B->AddNumerMod(new Modulation(2,0,0,0,false,Modulation::kDSIDIS)); // sin(PhiD)
   B->AddNumerMod(new Modulation(2,0,0,1,false,Modulation::kDSIDIS)); // sin(2*PhiD)
   */
-  /* // denominators
+  /* // UU modulations
   B->AddDenomMod(new Modulation(2,1,1,0,false,Modulation::kUU)); // cos(phiH-phiR)
   B->AddDenomMod(new Modulation(3,0,0,0,false,Modulation::kUU)); // cos(phiH)
   B->AddDenomMod(new Modulation(3,1,1,0,false,Modulation::kUU)); // cos(phiR)

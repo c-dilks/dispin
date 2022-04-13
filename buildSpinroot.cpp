@@ -139,11 +139,10 @@ int main(int argc, char** argv) {
 
   // set binning scheme
   BS = new Binning();
-  BS->SetPairType(pairType);
   BS->SetOAnums(oaTw,oaL,oaM);
   BS->useWeighting = useWeighting;
   BS->gridDim = gridDim;
-  Bool_t schemeSuccess = BS->SetScheme(ivType,nBins[0],nBins[1],nBins[2]);
+  Bool_t schemeSuccess = BS->SetScheme(pairType,ivType,nBins[0],nBins[1],nBins[2]);
   if(!schemeSuccess) {
     fprintf(stderr,"ERROR: Binning::SetScheme failed\n");
     return 0;

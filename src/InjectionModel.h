@@ -34,7 +34,7 @@ class InjectionModel : public TObject
 
     // set IV type, by defining a Binning scheme with 1 bin; the Binning
     // scheme's ivVars will be associated with "x","y","z" of the model functions
-    void SetIVtype(Int_t ivType);
+    void SetIVtype(Int_t pairType, Int_t ivType);
     Binning *GetBinning() { return BS; };
 
     // modulations ---

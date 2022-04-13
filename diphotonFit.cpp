@@ -44,7 +44,7 @@ using std::pair;
 TString infileN, outfileN;
 TFile *infile, *outfile;
 TTree *intr, *outtr;
-Int_t ivType;
+Int_t pairType,ivType;
 Int_t numBin[3];
 
 Binning *BS;
@@ -252,6 +252,8 @@ int main(int argc, char** argv) {
          << "   separated by spaces (default is single bin)" << endl;
     return 1;
   };
+  pairType = 0x34; // TODO: do not hardcode, make this an argument
+  cout << endl << endl << "WARNING: pairType is set to " << pairType << " (TODO: make this an argument)" << endl << endl;
   infileN = TString(argv[1]);
   ivType = (Int_t)strtof(argv[2],NULL);
   for(int i=0; i<3; i++) numBin[i]=-1;

@@ -38,7 +38,7 @@ def printDebug(title,data)
   end
 end
 
-# mapping certain `BinHash` options to `pwPlot.py` options
+# mapping certain `binHash` options to `pwPlot.py` options
 pwOpts = {
   :xTitle       => '-x',
   :blTitle      => '-e',
@@ -52,7 +52,7 @@ sep = "\n\n"+"#{'S'*50}\n"*3+"\n\n"
 
 pwPlotCmds = []
 outputDirs = []
-DatasetLooper::BinHash.keys.product(datasets,minimizers,schemes).each do |ivType,dataset,minimizer,scheme|
+looper.binHash.keys.product(datasets,minimizers,schemes).each do |ivType,dataset,minimizer,scheme|
 
   puts "\n#{"="*30} PLOT: #{[dataset,ivType,minimizer,scheme].join ' '}" if Verbose
 
@@ -84,7 +84,7 @@ DatasetLooper::BinHash.keys.product(datasets,minimizers,schemes).each do |ivType
     bl = blList.first
 
     # set extra options for pwPlot.py
-    extraOpts = DatasetLooper::BinHash[ivType].map do |opt,val|
+    extraOpts = looper.binHash[ivType].map do |opt,val|
       title = val.gsub("__BL__","bin #{bl}") if val.is_a? String
       pwOpt = pwOpts[opt]
       unless pwOpt==nil

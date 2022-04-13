@@ -2,13 +2,26 @@
 # run asymBruFit.C with arguments for the final fit
 
 require './DatasetLooper.rb'
-looper = DatasetLooper.new
+require 'awesome_print'
+require 'pry'
+
+# args
+if ARGV.length!=1
+  $stderr.puts "USAGE #{$0} [DIHADRON]"
+  DatasetLooper.printDihadrons
+  exit 2
+end
+dihadronSym = ARGV[0].to_sym
+dl = DatasetLooper.new(dihadronSym)
 
 # settings #################
-subDir     = "bruspin.work"
-idString   = "final.mar28"
-datasets   = looper.allsetListLoopOnlyData#.select{ |dataset| dataset.include?'bibending' }
-mcsets     = looper.allsetListLoopOnlyMC
+subDir     = "bruspin.volatile"
+idString   = "apr4"
+catTreeDir = "catTrees"
+splotDir   = "splots"
+datasets   = dl.allsetListLoopOnlyData#.select{ |dataset| dataset.include?'bibending' }
+mcsets     = dl.allsetListLoopOnlyMC
+ivTypes    = dl.binHash.keys#.select{|i|i==2}
 minimizers = [
   "minuit",
   # "mcmccov"
@@ -27,7 +40,7 @@ puts slurm ?
   "Mode: not on ifarm, run sequentially"
 
 # determine number of CPUs to allocate per slurm node
-numBins = DatasetLooper::BinHash.values.map{ |opts| opts[:bins].inject :* }
+numBins = dl.binHash.values.map{ |opts| opts[:bins].inject :* }
 nCPUs = numBins.max # use max number of bins from any job -> could waste resources if some jobs have less bins
 # nCPUs = numBins.min # use min number of bins from any job -> jobs with more bins will take longer
 if slurm
@@ -41,35 +54,47 @@ slurmFileName = jobFileName.gsub(/^jobs/,"job") if slurm
 jobFile = File.open(jobFileName,"w")
 jobFile.puts "#!/bin/bash" unless slurm
 
-# reformat some settings
-ivTypes = DatasetLooper::BinHash.keys
-DatasetLooper::BinHash.each{ |_,opts| opts[:bins].replace (opts[:bins]+[-1,-1])[0..2] } # fill rest of nbins Arrays with default `-1` values
-
 # loop over all possible settings, defining asymBruFit.C calls, and generate job list
 # - there will be one job per possible setting
 sep.call "job list"
 settings = datasets.product(ivTypes,minimizers).each do |dataset,ivType,minimizer|
 
   # match mcset to dataset
-  mcset = looper.matchByTorus(dataset,mcsets)
+  mcset = dl.matchByTorus(dataset,mcsets)
+
+  # set weights directory
+  ivName = dl.binHash[ivType][:name]
+  splotSubDir = "#{splotDir}/#{idString}.#{dataset}.#{ivName}" # sWeights for data
+  bibendingWeightsDir = ''
+  if dataset.include?('bibending') and not dl.useTruncation    # bibending weights for data and MC
+    bibendingWeightsDir = [
+      "catTreeWeights/catTreeData.#{dataset}",
+      "catTreeWeights/catTreeMC.#{mcset}"
+    ].join(';')
+  end
+  weightDir = {
+    :pm => bibendingWeightsDir,
+    :p0 => splotSubDir,
+    :m0 => splotSubDir,
+  }
 
   # asymBrufit.C arguments
   bruArgs = [
-    "catTreeData.#{dataset}.idx.root",
-    "catTreeMC.#{mcset}.idx.root",
-    "#{subDir}/" + [idString,dataset,ivType,minimizer].join('.'),
+    "#{catTreeDir}/catTreeData.#{dataset}.idx.root",
+    "#{catTreeDir}/catTreeMC.#{mcset}.idx.root",
+    "#{subDir}/" + [idString,dataset,ivName,minimizer].join('.'),
     minimizer,
-    "",
+    weightDir[dihadronSym] || '',
+    dl.pairType,
     ivType,
-    *DatasetLooper::BinHash[ivType][:bins],
+    *dl.binHash[ivType][:bins],
   ]
   bruArgs.map!{ |arg| if arg.class==String then "\"#{arg}\"" else arg end } # add quotes around strings
   brufit = "root -b -q $BRUFIT/macros/LoadBru.C"
   cmd = slurm ?
     "#{brufit} asymBruFit.C(#{bruArgs.join ','})" :
     "#{brufit} 'asymBruFit.C(#{bruArgs.join ','})'"
-  # puts "#{bruArgs}"
-  puts cmd
+  ap bruArgs
   jobFile.puts cmd
 
 end
@@ -93,6 +118,8 @@ if slurm
   slurmFile.puts "srun $(head -n$SLURM_ARRAY_TASK_ID #{jobFileName} | tail -n1)"
   slurmFile.close()
 end
+
+# exit # premature exit for testing
 
 # execution
 if slurm # run on slurm

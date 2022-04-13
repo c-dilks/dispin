@@ -1,29 +1,28 @@
-#!/usr/bin/env ruby
 # common methods for looping through the dataset lists
 # - see `testDatasetLooper.rb` for usage guidance
 
 require 'pp'
+require 'colorize'
 
 class DatasetLooper
 
+  #####################################
   # CONSTANTS
 
-  # binning schemes and related options: `ivType` => { :bins=>[bn0,bn1,bn2], :option=>value, ... }
-  BinHash = {
-    1  => { :bins=>[6],   :xTitle=>'$x$',         :xTranslation=>0.006       },
-    2  => { :bins=>[6],   :xTitle=>'$M_h$ [GeV]', :xTranslation=>0.020       },
-    32 => { :bins=>[3,2], :xTitle=>'$z$',         :blTitle=>'$M_h$ __BL__', :xTranslation=>0.010 },
-    42 => { :bins=>[3,2], :xTitle=>'$p_T$ [GeV]', :blTitle=>'$M_h$ __BL__', :xTranslation=>0.015 },
+  # dihadron types
+  # - if used 'truncation' for yield balancing when buidling bibending sets, :useTruncation should be true
+  Dihadrons = {
+    :pm   => { :title=>'pi+pi-', :latex=>'$\pi^+\pi^-$', :pairType=>0x34, :useTruncation=>false },
+    :p0   => { :title=>'pi+pi0', :latex=>'$\pi^+\pi^0$', :pairType=>0x3b, :useTruncation=>true  },
+    :m0   => { :title=>'pi0pi-', :latex=>'$\pi^0\pi^-$', :pairType=>0xb4, :useTruncation=>true  },
+    :none => { :title=>'',       :latex=>'',             :pairType=>0,    :useTruncation=>false },
   }
-
-  # if used 'truncation' for yield balancing when buidling bibending sets, this should be true
-  UsedTruncation = false
  
   #####################################
   # construction
 
   # constructor
-  def initialize(dihadronTok='')
+  def initialize(dihadronTok=:none)
 
     # list of datasets
     @datasetList = [
@@ -40,9 +39,17 @@ class DatasetLooper
 
     # add dihadron token to each dataset (if specified)
     # - useful for creating an instance for a specific dihadron pairType
-    unless dihadronTok==''
+    begin
+      @pairType      = Dihadrons[dihadronTok][:pairType]
+      @useTruncation = Dihadrons[dihadronTok][:useTruncation]
+    rescue
+      $stderr.puts "\nERROR: unknown dihadron in DatasetLooper\n\n"
+      dihadronTok = :none
+      retry
+    end
+    unless dihadronTok==:none
       @datasetList.map! do |dataset|
-        dataset.split('.').insert(1,dihadronTok).join('.')
+        dataset.split('.').insert(1,dihadronTok.to_s).join('.')
       end
     end
 
@@ -66,7 +73,7 @@ class DatasetLooper
     end.flatten
 
     # if we used truncation, we have `mca` and `mcb` instead of `mc`
-    if UsedTruncation
+    if @useTruncation
       @allsetList = @allsetList.map do |set|
         if set.split('.').include?('mc') and set.split('.').include?('bibending')
           [ set.sub('mc','mca'), set.sub('mc','mcb') ]
@@ -76,7 +83,25 @@ class DatasetLooper
       end.flatten
     end
 
-  end
+    # binning schemes and related options: `ivType` => { :bins=>[bn0,bn1,bn2], :option=>value, ... } #############
+    @binHash = Hash.new
+    if dihadronTok==:p0 or dihadronTok==:m0 # less pi0 statistics, coarser binning
+      @binHash = {
+        1 => { :bins=>[3], :name=>'x', :xTitle=>'$x$',         :xTranslation=>0.006 },
+        2 => { :bins=>[3], :name=>'m', :xTitle=>'$M_h$ [GeV]', :xTranslation=>0.020 },
+        3 => { :bins=>[3], :name=>'z', :xTitle=>'$z$',         :xTranslation=>0.010 },
+      }
+    else # pi+pi- binning scheme
+      @binHash = {
+        1  => { :bins=>[6],   :name=>'x',   :xTitle=>'$x$',         :xTranslation=>0.006      },
+        2  => { :bins=>[6],   :name=>'m',   :xTitle=>'$M_h$ [GeV]', :xTranslation=>0.020      },
+        32 => { :bins=>[3,2], :name=>'zm',  :xTitle=>'$z$',         :blTitle=>'$M_h$ __BL__', :xTranslation=>0.010 },
+        42 => { :bins=>[3,2], :name=>'ptm', :xTitle=>'$p_T$ [GeV]', :blTitle=>'$M_h$ __BL__', :xTranslation=>0.015 },
+      }
+    end
+    ###########################
+
+  end # end of constructor ##########################
 
   # list of lists that have been defined above
   ListOfLists = [
@@ -85,8 +110,11 @@ class DatasetLooper
     :allsetList,
   ]
 
-  # generate list accessors
+  # generate accessors
   ListOfLists.each{ |sym| attr_accessor sym }
+  attr_accessor :pairType
+  attr_accessor :useTruncation
+  attr_accessor :binHash
 
 
   #####################################
@@ -171,6 +199,15 @@ class DatasetLooper
     end
   end
 
+  # print available dihadrons
+  def self.printDihadrons
+    puts "\n  DIHADRON can be:"
+    DatasetLooper::Dihadrons.each do |k,v|
+      puts "  - #{k.to_s.colorize(:light_red)}: #{v[:title]}" unless k==:none
+    end
+    puts ""
+  end
+
   # convert dataset name to title
   def self.datasetTitle(dataset)
     toks = dataset.split('.').map do |tok|
@@ -182,8 +219,7 @@ class DatasetLooper
       tok.gsub!(/^sp/,"Spring 20")
       tok.gsub!(/^wi/,"Winter 20")
       tok.gsub!(/bibending/,"combined inbending+outbending")
-      tok.gsub!(/0p/,'$\pip\pio$')
-      tok.gsub!(/0m/,'$\pim\pio$')
+      Dihadrons.each do |k,v| tok.gsub!(/#{k.to_s}/,v[:latex]) end
       tok
     end
     toks.delete("subset")
@@ -198,7 +234,7 @@ class DatasetLooper
     torus = dataset.split('.').find{ |tok| tok.include?"bending" }
     results = searchList.find_all{ |set| set.include? torus }
     ### if truncation was used, match `mca` or `mcb`, rather than `mc`
-    if UsedTruncation
+    if @useTruncation
       if torus=='bibending' and results.find{ |result| result.include?"mc" }
         if dataset.include?"rga"
           return results.find{ |result| result.include?"mca" }

@@ -24,7 +24,7 @@ looper.allsetListLoopOnlyRGA do |rgaSet|
   catTrees = stack.map{ |set| DatasetLooper.catTreeBaseName(set)+".idx.root" }
 
   # loop through ivTypes
-  DatasetLooper::BinHash.keys.each do |ivType|
+  looper.binHash.keys.each do |ivType|
     rootInFiles = catTrees.map{ |catTree| "meanvmean/meanvmean.#{ivType}.#{catTree}" }
     system "./drawBinMeans.rb #{rootInFiles.join ' '}"
     Dir.glob("meanvmean/canv*.png") do |png|

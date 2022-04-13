@@ -11,9 +11,15 @@ require 'pry'
 require 'RubyROOT'
 include Root
 
-if ARGV.length!=1
+####### SETTINGS ########
+SubDir = 'catTrees'
+#########################
+
+if ARGV.length!=2
   puts """
-  USAGE: $0 [search pattern regexp = (rga,rgb,mc)]
+  USAGE: $0 [DIHADRON] [SEARCH PATTERN REGEXP = (rga,rgb,mc)]"""
+  DatasetLooper.printDihadrons
+  puts """  PATTERN:
   - uses search pattern to identify which catTrees to hadd, then hadds them
   - it will look for trees which have not been indexed, hadd them, then 
     re-index the hadded tree
@@ -21,11 +27,12 @@ if ARGV.length!=1
   """
   exit 2
 end
-pattern = ARGV[0]
+Dihadron,Pattern = ARGV
 
 # search for source files
-sources = Dir.glob("catTree*.root")
-  .grep(/#{pattern}/)
+sources = Dir.glob("#{SubDir}/catTree*.root")
+  .grep(/#{Pattern}/)
+  .grep(/#{Dihadron}/)
   .grep_v(/bibending/)
   .grep_v(/idx.root$/)
   .grep_v(/TRUNCATED/)
@@ -55,9 +62,9 @@ exit unless correct
 def getYields(dataset)
   tori = [:inbending,:outbending]
   yields = Hash.new
-  catTreePrefix = DatasetLooper.catTreeBaseName(dataset)
+  catTreePrefix = DatasetLooper.catTreeBaseName("#{dataset}.#{Dihadron}")
   tori.each{ |torus| 
-    catTreeFile = "#{catTreePrefix}.#{torus.to_s}.all.root"
+    catTreeFile = "#{SubDir}/#{catTreePrefix}.#{torus.to_s}.all.root"
     puts "getting yields for #{catTreeFile}"
     TFile.open(catTreeFile, "READ"){ |inFile|
       yields[torus] = inFile.Get('tree').auto_cast.GetEntries.to_f
@@ -69,7 +76,7 @@ end
 # ask if and how we want to do balancing
 useWeighting = ask("\nDo you want re-weight data to balance relative inbending to outbending yields? [y/N]")=="y"
 useTruncation = false
-if pattern.include?"mc" and not useWeighting
+if Pattern.include?"mc" and not useWeighting
   useTruncation = ask("\nThese are MC data. Would you rather truncate MC data for yield balancing? If you say yes, re-weighting will not be done. [y/N]")=="y"
 end
 useWeight=false if useTruncation
@@ -145,7 +152,7 @@ end
 if useWeighting
 
   # get inbending and outbending yields and calucate weights
-  yields = getYields(pattern)
+  yields = getYields(Pattern)
   weights = {
     :inbending  => ( yields[:inbending] + yields[:outbending] ) / ( 2*yields[:inbending]  ),
     :outbending => ( yields[:inbending] + yields[:outbending] ) / ( 2*yields[:outbending] ),

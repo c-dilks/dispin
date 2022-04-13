@@ -1,20 +1,32 @@
 #!/usr/bin/env ruby
 # wrapper for pwPlot.py to produce and organize output plots
-require 'pp'
+require 'awesome_print'
 require 'fileutils'
 
 require './DatasetLooper.rb'
-looper = DatasetLooper.new
+
+# args
+if ARGV.length!=1
+  $stderr.puts "USAGE #{$0} [DIHADRON]"
+  DatasetLooper.printDihadrons
+  exit 2
+end
+dihadronSym = ARGV[0].to_sym
+looper = DatasetLooper.new(dihadronSym)
 
 # settings #################
 subDir     = "bruspin.volatile"
-idString   = "final.mar28"
+idString   = "apr4"
 datasets   = looper.allsetListLoopOnlyData
 minimizers = [
   "minuit",
   # "mcmccov"
 ]
-schemes = [0,2,3]
+schemes = {
+  :pm => [0,2,3],
+  :p0 => [12,13],
+  :m0 => [12,13],
+}
 tori = [
   "inbending",
   "outbending",
@@ -30,11 +42,11 @@ outputFormat = "png"
 def printDebug(title,data)
   if Verbose
     print (title+": ").sub(/\n: /,":\n")
-    pp data
+    ap data
   end
 end
 
-# mapping certain `BinHash` options to `pwPlot.py` options
+# mapping certain `binHash` options to `pwPlot.py` options
 pwOpts = {
   :xTitle  => '-x',
   :blTitle => '-e',
@@ -47,13 +59,14 @@ sep = "\n\n"+"#{'S'*50}\n"*3+"\n\n"
 
 pwPlotCmds = []
 outputDirs = []
-DatasetLooper::BinHash.keys.product(tori,minimizers,schemes).each do |ivType,torus,minimizer,scheme|
+looper.binHash.keys.product(tori,minimizers,schemes[dihadronSym]).each do |ivType,torus,minimizer,scheme|
 
-  puts "\n#{"="*30} PLOT: #{[torus,ivType,minimizer,scheme].join ' '}" if Verbose
+  ivName = looper.binHash[ivType][:name]
+  puts "\n#{"="*30} PLOT: #{[torus,ivName,minimizer,scheme].join ' '}" if Verbose
 
   # list of bruDirs, one for each dataset, filtered for the given torus polarity
   bruDirs = datasets.select{|set|set.include?torus}.map do |dataset|
-    "#{subDir}/" + [idString,dataset,ivType,minimizer].join('.')
+    "#{subDir}/" + [idString,dataset,ivName,minimizer].join('.')
   end
   outputDirs << bruDirs[0] # (only need the first one, where output files are produced)
   printDebug("bruDirs\n",bruDirs)
@@ -79,11 +92,11 @@ DatasetLooper::BinHash.keys.product(tori,minimizers,schemes).each do |ivType,tor
     bl = blList.first
 
     # set title options for pwPlot.py
-    titleOpts = DatasetLooper::BinHash[ivType].map do |opt,val|
+    titleOpts = looper.binHash[ivType].map do |opt,val|
       title = val.gsub("__BL__","bin #{bl}") if val.is_a? String
       pwOpt = pwOpts[opt]
       pwOpt += "'#{title}'" unless pwOpt==nil
-    end
+    end.compact
     printDebug("titleOpts",titleOpts)
 
     # build pwPlot command
