@@ -13,8 +13,6 @@ dl = DatasetLooper.new(ARGV[0].to_sym)
 
 # settings ###############################################
 idString   = "apr4" # output ID
-catTreeDir = "catTrees"
-splotDir   = "splots"
 datasets   = dl.allsetListLoopOnlyData#.select{ |dataset| dataset.include?'bibending' }
 ##########################################################
 
@@ -24,11 +22,11 @@ datasets.each do |dataset|
 
   # find matching MC catTree
   datasetMC = dl.matchByTorus(dataset,dl.allsetListLoopOnlyMC)
-  catTreeMC = "#{catTreeDir}/#{DatasetLooper.catTreeBaseName(datasetMC)}.idx.trimmed.root"
+  catTreeMC = "#{DatasetLooper.catTreeBaseName(datasetMC)}.idx.trimmed.root"
 
   # macro arguments
   args = [
-    "#{splotDir}/#{idString}.#{dataset}.singlebin", # only comparing single bin sPlots
+    "#{DatasetLooper::SplotDir}/#{idString}.#{dataset}.singlebin", # only comparing single bin sPlots
     "#{catTreeMC}",
   ]
   args.map!{ |arg| if arg.class==String then "\"#{arg}\"" else arg end } # add quotes around strings

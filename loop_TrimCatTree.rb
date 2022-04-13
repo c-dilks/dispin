@@ -3,10 +3,6 @@
 
 require './DatasetLooper.rb'
 
-####### SETTINGS ########
-subDir = 'catTrees'
-#########################
-
 # args
 if ARGV.length!=1
   $stderr.puts "USAGE #{$0} [DIHADRON]"
@@ -17,6 +13,6 @@ dl = DatasetLooper.new(ARGV[0].to_sym)
 
 # loop over allsets
 dl.allsetListLoop.each do |dataset|
-  catTreeFile = "#{subDir}/#{DatasetLooper.catTreeBaseName(dataset)}.idx.root"
+  catTreeFile = "#{DatasetLooper.catTreeBaseName(dataset)}.idx.root"
   system "root -b -q 'TrimCatTree.C(\"#{catTreeFile}\")'"
 end

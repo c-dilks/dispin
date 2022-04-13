@@ -17,8 +17,6 @@ dl = DatasetLooper.new(dihadronSym)
 # settings #################
 subDir     = "bruspin.volatile"
 idString   = "apr4"
-catTreeDir = "catTrees"
-splotDir   = "splots"
 datasets   = dl.allsetListLoopOnlyData#.select{ |dataset| dataset.include?'bibending' }
 mcsets     = dl.allsetListLoopOnlyMC
 ivTypes    = dl.binHash.keys#.select{|i|i==2}
@@ -64,12 +62,12 @@ settings = datasets.product(ivTypes,minimizers).each do |dataset,ivType,minimize
 
   # set weights directory
   ivName = dl.binHash[ivType][:name]
-  splotSubDir = "#{splotDir}/#{idString}.#{dataset}.#{ivName}" # sWeights for data
+  splotSubDir = "#{DatasetLooper::SplotDir}/#{idString}.#{dataset}.#{ivName}" # sWeights for data
   bibendingWeightsDir = ''
   if dataset.include?('bibending') and not dl.useTruncation    # bibending weights for data and MC
     bibendingWeightsDir = [
-      "catTreeWeights/catTreeData.#{dataset}",
-      "catTreeWeights/catTreeMC.#{mcset}"
+      "catTreeWeights/#{DatasetLooper.catTreeBaseName(dataset)}",
+      "catTreeWeights/#{DatasetLooper.catTreeBaseName(mcset)}",
     ].join(';')
   end
   weightDir = {
@@ -80,8 +78,8 @@ settings = datasets.product(ivTypes,minimizers).each do |dataset,ivType,minimize
 
   # asymBrufit.C arguments
   bruArgs = [
-    "#{catTreeDir}/catTreeData.#{dataset}.idx.root",
-    "#{catTreeDir}/catTreeMC.#{mcset}.idx.root",
+    "#{DatasetLooper.catTreeBaseName(dataset)}.idx.root",
+    "#{DatasetLooper.catTreeBaseName(mcset)}.idx.root",
     "#{subDir}/" + [idString,dataset,ivName,minimizer].join('.'),
     minimizer,
     weightDir[dihadronSym] || '',

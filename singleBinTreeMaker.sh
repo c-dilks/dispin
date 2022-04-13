@@ -50,6 +50,7 @@ if [ -z "$outfile" ]; then
   outfile=catTree${suffix}.root
 fi
 echo "outfile=$outfile"
+mkdir -p `dirname $outfile`
 
 
 # call buildSpinroot.exe on condor or slurm

@@ -14,8 +14,6 @@ dl = DatasetLooper.new(ARGV[0].to_sym)
 
 # settings ###############################################
 idString   = "apr4" # output ID
-subDirIn   = "catTrees"
-subDirOut  = "splots"
 datasets   = dl.allsetListLoopOnlyData#.select{ |dataset| dataset.include?'bibending' }
 binSchemes = dl.binHash
 ##########################################################
@@ -31,8 +29,8 @@ datasets.product(ivTypes).each do |dataset,ivType|
 
   # sPlotBru.C arguments
   bruArgs = [
-    "#{subDirIn}/catTreeData.#{dataset}.idx.trimmed.root",
-    "#{subDirOut}/#{idString}.#{dataset}.#{binSchemes[ivType][:name]}",
+    "#{DatasetLooper::CatTreeDir}/catTreeData.#{dataset}.idx.trimmed.root",
+    "#{DatasetLooper::SplotDir}/#{idString}.#{dataset}.#{binSchemes[ivType][:name]}",
     dl.pairType,
     ivType>0 ? ivType : 1,
     *binSchemes[ivType][:bins],

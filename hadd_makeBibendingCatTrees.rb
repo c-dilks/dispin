@@ -11,10 +11,6 @@ require 'pry'
 require 'RubyROOT'
 include Root
 
-####### SETTINGS ########
-SubDir = 'catTrees'
-#########################
-
 if ARGV.length!=2
   puts """
   USAGE: $0 [DIHADRON] [SEARCH PATTERN REGEXP = (rga,rgb,mc)]"""
@@ -30,7 +26,7 @@ end
 Dihadron,Pattern = ARGV
 
 # search for source files
-sources = Dir.glob("#{SubDir}/catTree*.root")
+sources = Dir.glob("#{DatasetLooper::CatTreeDir}/catTree*.root")
   .grep(/#{Pattern}/)
   .grep(/#{Dihadron}/)
   .grep_v(/bibending/)
@@ -64,7 +60,7 @@ def getYields(dataset)
   yields = Hash.new
   catTreePrefix = DatasetLooper.catTreeBaseName("#{dataset}.#{Dihadron}")
   tori.each{ |torus| 
-    catTreeFile = "#{SubDir}/#{catTreePrefix}.#{torus.to_s}.all.root"
+    catTreeFile = "#{catTreePrefix}.#{torus.to_s}.all.root"
     puts "getting yields for #{catTreeFile}"
     TFile.open(catTreeFile, "READ"){ |inFile|
       yields[torus] = inFile.Get('tree').auto_cast.GetEntries.to_f

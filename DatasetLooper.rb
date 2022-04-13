@@ -17,6 +17,10 @@ class DatasetLooper
     :m0   => { :title=>'pi0pi-', :latex=>'$\pi^0\pi^-$', :pairType=>0xb4, :useTruncation=>true  },
     :none => { :title=>'',       :latex=>'',             :pairType=>0,    :useTruncation=>false },
   }
+
+  # directories
+  CatTreeDir = "catTrees"
+  SplotDir = "splot"
  
   #####################################
   # construction
@@ -249,10 +253,10 @@ class DatasetLooper
     return results.first
   end
 
-  # get catTree file basename (does not include ".root" or ".idx.root" extensions
+  # get catTree file directory+basename (does not include ".root" or ".idx.root" extensions)
   def self.catTreeBaseName(dataset)
     prefix = dataset.split('.').find{|tok|tok.match?(/^mc/)} ? 'catTreeMC' : 'catTreeData'
-    return "#{prefix}.#{dataset}"
+    return "#{CatTreeDir}/#{prefix}.#{dataset}"
   end
 
 end

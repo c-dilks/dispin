@@ -4,12 +4,6 @@
 require './DatasetLooper.rb'
 require 'awesome_print'
 
-####### SETTINGS ########
-subDir = 'catTrees' # output directory for catTrees (MUST EXIST BEFORE EXECUTION)
-# CAUTION: if DatasetLooper.rb has been updated, this script may not work correctly;
-#          check the singleBinTreeMaker.sh arguments before execution
-#########################
-
 # args
 if ARGV.length!=1
   $stderr.puts "USAGE #{$0} [DIHADRON]"
@@ -38,6 +32,6 @@ ap allsetList
 allsetList[:generic].zip(allsetList[:specific]) do |genericSet,specificSet|
   ap [genericSet,specificSet]
   datasetType = genericSet.split('.').include?('mc') ? 'mc' : 'data'
-  catTreeFile = "#{subDir}/#{DatasetLooper.catTreeBaseName(specificSet)}.root"
+  catTreeFile = "#{DatasetLooper.catTreeBaseName(specificSet)}.root"
   system "singleBinTreeMaker.sh outroot.#{genericSet} #{datasetType} -p #{pairType} -o #{catTreeFile}"
 end
