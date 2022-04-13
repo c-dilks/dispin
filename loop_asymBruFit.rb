@@ -3,15 +3,15 @@
 # - main purpose is for asymmetry injection studies
 
 # settings #################
-idString         = "depol.x"
-ivType           = 1
-nbins            = [6, -1, -1]
-injSeq           = (0..99).to_a  # Array of injection numbers
-minimizer        = "minuit"
-pairType         = 0x34
-nCPUs            = 6   # number of CPUs per node to allocate for slurm
-timeLim          = 48 # time limit [hr]
-# timeLim          = (17000*0.00167).to_i+1 # time limit [hr] ~<~ numSteps*time/step
+idString  = "depol.x"
+ivType    = 1
+nbins     = [6, -1, -1]
+injSeq    = (0..99).to_a  # Array of injection numbers
+minimizer = "minuit"
+pairType  = 0x34
+nCPUs     = 6   # number of CPUs per node to allocate for slurm
+timeLim   = 48 # time limit [hr]
+# timeLim   = (17000*0.00167).to_i+1 # time limit [hr] ~<~ numSteps*time/step
 ############################
 
 # if on ifarm, use slurm; otherwise, run sequentially
