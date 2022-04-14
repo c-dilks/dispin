@@ -120,10 +120,8 @@ int main(int argc, char** argv) {
 
    };
 
-   printf("total number of %s pairs = %ld\n",
-     PairName(whichHad[qA],whichHad[qB]).Data(),
-     nTotal);
-   PrintCount("total number which satisfies all cuts",nValid,nTotal);
+   PrintCount("nAllCuts",nValid,nTotal);
+   PrintCount("nNoCuts",nTotal,nTotal);
    PrintCount("nCutDIS",nCutDIS,nTotal);
    PrintCount("nCutDihadron",nCutDihadron,nTotal);
    PrintCount("nCutHelicity",nCutHelicity,nTotal);
@@ -150,9 +148,16 @@ int main(int argc, char** argv) {
 
 // print counts
 void PrintCount(TString cntName,Long64_t numer,Long64_t denom) {
-  printf("%s = %lld  (%.3f%%)\n",
+  //// print with percentage
+  // printf("%s = %lld  (%.3f%%)\n",
+  //     cntName.Data(),
+  //     numer,
+  //     100*(Double_t)numer/denom
+  //     );
+  //// print without percentage
+  printf("%s   %lld\n",
       cntName.Data(),
-      numer,100*(Double_t)numer/denom
+      numer
       );
 };
 

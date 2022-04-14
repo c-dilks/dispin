@@ -15,7 +15,7 @@ humans << "timothy"
 humans << "chris"
 
 # build list pairs of files to compare
-subdir="4.12"
+subdir="4.14"
 tableFiles = humans.map{ |human|
   Dir.glob("#{subdir}/#{human}*.txt").sort
 }.inject(:zip)
