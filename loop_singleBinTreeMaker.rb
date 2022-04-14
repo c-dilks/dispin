@@ -21,7 +21,8 @@ pairType = dl[:specific].pairType
 # get allset lists, applying a filter, and sort
 allsetList = dl.map do |k,dlObj|
   list = dlObj.allsetListLoop
-    .reject{ |d| d.include?'bibending' }
+    .reject{ |d| d.include?'bibending' }  # remove bibending datasets
+    .map{ |d| d.sub(/^#{dlObj.mcPrefix}/,dl[:specific].mcPrefix) }  # make sure to use dlSpecific's mcPrefix
     .sort
   [k,list]
 end.to_h
