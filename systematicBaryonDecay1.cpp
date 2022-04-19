@@ -173,6 +173,8 @@ int main(int argc, char** argv) {
   //-----------------------------------------------------
   Bool_t eventAdded;
   Double_t evCount = 0;
+  Float_t deltaPhiDeg[2];
+  Float_t deltaThetaDeg[2];
 
   printf("begin loop through %lld events...\n",ev->ENT);
   for(int i=0; i<ev->ENT; i++) {
@@ -180,6 +182,15 @@ int main(int argc, char** argv) {
 
     ev->GetEvent(i);
     if(ev->Valid()) {
+
+      // MATCHING CUT
+      for(int h=0; h<2; h++) {
+        deltaPhiDeg[h] = Tools::AdjAngle( ev->hadPhi[h] - ev->gen_hadPhi[h] ) * TMath::RadToDeg();
+        deltaThetaDeg[h] = Tools::AdjAngleDeg( ev->hadTheta[h] - ev->gen_hadTheta[h] );
+      }
+      if( deltaPhiDeg[qA]>3.0 || deltaThetaDeg[qA]>1.0 ||
+          deltaPhiDeg[qB]>3.0 || deltaThetaDeg[qB]>1.0 )
+        continue;
 
       // find the bin, and IV values
       Int_t binnum = BS->FindBin(ev);
