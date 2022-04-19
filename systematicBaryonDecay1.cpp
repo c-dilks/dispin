@@ -26,6 +26,7 @@ using std::pair;
 
 // argument variables
 TString inputData;
+TString outFileN;
 Int_t pairType;
 Int_t nBins[3];
 Int_t ivType;
@@ -51,7 +52,7 @@ int main(int argc, char** argv) {
   enum inputType_enum {iFile,iDir};
   Int_t inputType = -1;
   Int_t nd=0;
-  while( (opt=getopt(argc,argv,"f:d:p:i:n:")) != -1 ) {
+  while( (opt=getopt(argc,argv,"f:d:o:p:i:n:")) != -1 ) {
     switch(opt) {
       case 'f': /* input file */
         if(inputType>=0) return PrintUsage();
@@ -62,6 +63,9 @@ int main(int argc, char** argv) {
         if(inputType>=0) return PrintUsage();
         inputData = optarg;
         inputType = iDir;
+        break;
+      case 'o': /* output file name */
+        outFileN = optarg;
         break;
       case 'p': /* pair type (hexadecimal number) */
         pairType = (Int_t) strtof(optarg,NULL);
@@ -108,17 +112,18 @@ int main(int argc, char** argv) {
   ev = new EventTree(inputData+(inputType==iDir?"/*.root":""),pairType);
 
   // define output file
-  TString outFileN;
-  gROOT->ProcessLine(".! mkdir -p baryonTrees");
-  if(inputType==iDir) {
-    outFileN = "baryonTrees/tree";
-    outFileN += "_" + PairName(pairType);
-    for(int d=0; d<BS->dimensions; d++) outFileN += "_" + BS->GetIVname(d);
-    outFileN += ".root";
-  } else if(inputType==iFile) {
-    outFileN = inputData;
-    outFileN(TRegexp("^.*/")) = "baryonTrees/tree.";
-  };
+  if(outFileN=="") {
+    gROOT->ProcessLine(".! mkdir -p baryonTrees");
+    if(inputType==iDir) {
+      outFileN = "baryonTrees/tree";
+      outFileN += "_" + PairName(pairType);
+      for(int d=0; d<BS->dimensions; d++) outFileN += "_" + BS->GetIVname(d);
+      outFileN += ".root";
+    } else if(inputType==iFile) {
+      outFileN = inputData;
+      outFileN(TRegexp("^.*/")) = "baryonTrees/tree.";
+    };
+  }
   printf("\nCREATING TREE FILE = %s\n\n",outFileN.Data());
   outFile = new TFile(outFileN,"RECREATE");
 
@@ -224,6 +229,7 @@ int main(int argc, char** argv) {
 // set default arguments
 void SetDefaultArgs() {
   inputData = "";
+  outFileN = "";
   pairType = EncodePairType(kPip,kPim);
   ivType = Binning::vM + 1;
   for(int d=0; d<3; d++) nBins[d] = -1;
@@ -244,6 +250,9 @@ int PrintUsage() {
   printf("\n");
 
   printf("OPTIONS:\n");
+
+  printf(" -o\toutput file name\n");
+  printf("   \tdefault is a name based on the input file or directory name\n\n");
 
   printf(" -p\tpair type, specified as a hexadecimal number\n");
   printf("   \trun PrintEnumerators.C for notation\n");

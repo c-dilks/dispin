@@ -6,6 +6,7 @@
 
 require 'pry'
 require 'awesome_print'
+require 'json'
 
 ### import matplotlib
 # - matplotlib interactivity + pyroot interactivity = segfaults galore
@@ -46,7 +47,14 @@ pyimport 'uproot',  as: :up
 
 ########################################################
 
-inFileN =  'baryonTrees/tree.DIS_pass1_1003_1008.hipo.root'
+if ARGV.length < 1
+  $stderr.puts "USAGE: #{$0} [baryonTrees/ root file] [output file prefix (optional)]"
+  exit 2
+end
+inFileN = ARGV[0]
+puts "reading baryon tree #{inFileN}..."
+outFilePrefix = inFileN.sub(/\.root$/,'')
+outFilePrefix = ARGV[1] if ARGV.length > 1
 
 # open baryonTree file, with PyRoot and Uproot
 inFilePy = root.TFile.new inFileN, 'READ'
@@ -110,6 +118,7 @@ pidLut = {
   3112 => { :name=>'\Sigma^-',    :species=>:baryon },
   3114 => { :name=>'\Sigma^{*-}', :species=>:baryon },
   3122 => { :name=>'\Lambda',     :species=>:baryon },
+  3214 => { :name=>'\Sigma^{*0}', :species=>:baryon },
   3222 => { :name=>'\Sigma^+',    :species=>:baryon },
   3224 => { :name=>'\Sigma^{*+}', :species=>:baryon },
 }
@@ -177,6 +186,9 @@ baryonHash = treeHash.map do |binNum,tree|
     res[:fBaryonErr] = 0.0
   end
 
+  ### compute systematic on aLU
+  res[:asymmetrySystematicUncertainty] = res[:fBaryon] / ( 1 - res[:fBaryon] )
+
   [binNum,res]
 end.to_h
 
@@ -232,7 +244,7 @@ plotPoints.each do |bl,points|
     capsize:    2,
     zorder:     1,
   )
-  ax.set_xlabel ivName[0]
+  ax.set_xlabel "$#{ivName[0]}$"
   ax.set_ylabel '$f_B$'
   ax.set_title "$#{ivName[1]}$ Bin #{bl+1}" if blList.length>1
   ax.grid(
@@ -247,4 +259,15 @@ plotPoints.each do |bl,points|
 end
 fig.tight_layout
 
-plt.savefig('test.png')
+### save output PNG and JSON
+##
+plt.savefig("#{outFilePrefix}.png")
+puts "produced #{outFilePrefix}.png"
+##
+File.open("#{outFilePrefix}.json",'w') do |j| j.puts baryonHash.to_json end
+puts "produced #{outFilePrefix}.json"
+## example: parse JSON to Hash
+File.open("#{outFilePrefix}.json") do |j| 
+  parsedHash = JSON.parse(j.read)
+  ap parsedHash
+end
