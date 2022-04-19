@@ -1,50 +1,76 @@
 #!/usr/bin/env ruby
 # step 2: calculate systematic uncertainty from baryonic decays
+#
+# - WARNING: this script tests using uproot and pyroot, and thus has some additional dependencies
+#
 
 require 'pry'
 require 'awesome_print'
+
+### import matplotlib
+# - matplotlib interactivity + pyroot interactivity = segfaults galore
+# - workaround: switch to non-interactive matplotlib backend 'agg'
+# - see https://sft.its.cern.ch/jira/browse/ROOT-7909
+require 'matplotlib'
+Matplotlib.use('Agg') # workaround
 require 'matplotlib/pyplot'
 plt = Matplotlib::Pyplot
+
+### import numpy
 require 'numpy'
 np = Numpy
+
+### import pyroot and uproot via pycall
 require 'pycall/import'
 include PyCall::Import
+pyimport 'ROOT',    as: :root
 pyimport 'uproot',  as: :up
-pyimport 'awkward', as: :ak
-pyimport 'mplhep',  as: :hep
-
-
-#### example: histogram a branch
-# t = file['tree_1']
-# ap t.keys.to_a
-# b = t.arrays
-# ap b[0].tolist.to_h
-# plt.hist b['parentPid'], bins: 400
-# plt.show
-
-#### example: plot t2h with mplhep
-# h = file['iv_1']
-# hep.hist2dplot(h.to_numpy)
-# plt.show
 
 ########################################################
 
-# open baryonTree file
-file = up.open 'baryonTrees/tree.DIS_pass1_1003_1008.hipo.root'
+# uproot notes
+##### uproot example: histogram a branch
+## t = file['tree_1']
+## ap t.keys.to_a
+## b = t.arrays
+## ap b[0].tolist.to_h
+## plt.hist b['parentPid'], bins: 400
+## plt.show
+#
+##### uproot example: plot t2h with mplhep
+## pyimport 'mplhep',  as: :hep
+## h = file['iv_1']
+## hep.hist2dplot(h.to_numpy)
+## plt.show
+#
 
-# read keys into hashes : binNum => object
-treeHash = Hash.new
-ivDistHash = Hash.new
-dimensions = 0
-file.keys.each do |key|
+########################################################
+
+inFileN =  'baryonTrees/tree.DIS_pass1_1003_1008.hipo.root'
+
+# open baryonTree file, with PyRoot and Uproot
+inFilePy = root.TFile.new inFileN, 'READ'
+inFileUp = up.open inFileN
+
+# read trees and histograms
+treeHash = Hash.new    # { binNum => tree }
+ivMeanHash = Hash.new  # { binNum => mean IV value }
+ivName = Array.new(2,'')
+inFileUp.keys.each do |key|
   binNum = key.split(';').first.split('_').last.to_i
   if key.match?(/^tree_/)
-    treeHash[binNum] = file[key]
+    ### read trees with uproot, to use numpy methods
+    treeHash[binNum] = inFileUp[key]
   elsif key.match?(/^iv_/)
-    ivDistHash[binNum] = file[key]
-    dimensions = file[key].counts.ndim
+    ### read histograms with pyroot, so we can just use ROOT to get their means
+    ivDist = inFilePy.Get key
+    ivMeanHash[binNum] = ivDist.GetMean 1
+    ivName[0] = ivDist.GetXaxis.GetTitle
+    ivName[1] = ivDist.GetYaxis.GetTitle if ivDist.GetDimension>1
   end
 end
+
+inFilePy.Close # done with pyroot
 
 
 ########################################################
@@ -88,32 +114,10 @@ pidLut = {
   3224 => { :name=>'\Sigma^{*+}', :species=>:baryon },
 }
 
-# PID Lut PROCs
-# filter PID Lut: return list of PIDs that pass `propFilter`
-# - `propFilter` should be a block with argument `properties` that returns a boolean
-filterPidLut = Proc.new do |&propFilter|
-  pidLut.filter do |pid,props|
-    propFilter.call(props)
-  end
-end
-# filter by species
-filterPidLutBySpecies = Proc.new do |species|
-  filterPidLut.call{ |p| p[:species]==species }
-end
-# print list of baryons
-puts "list of baryons:"
-ap filterPidLutBySpecies.call(:baryon)
-  .map{ |pid,props| [ pid, props[:name] ] }
-  .to_h
-
-#####
-
 # get list of parent PIDs from treeHash
 parentPidList = treeHash.values.map do |tree|
   np.unique( tree.arrays['parentPid'].to_numpy.flatten ).to_a
 end.flatten.sort.uniq
-puts "parent PIDs list:"
-ap parentPidList
 
 # add missing particles to PID table
 parentPidList.each do |pid|
@@ -121,37 +125,126 @@ parentPidList.each do |pid|
     pidLut[pid] = { :name=>"PID=#{pid}", :species=>:unknown }
   end
 end
-puts "unknown parent PIDs:"
-ap filterPidLutBySpecies.call(:unknown).keys
+unknownPids = pidLut.select do |pid,props|
+  props[:species]==:unknown
+end.keys
+if unknownPids.length>0
+  puts "WARNING: unknown parent PIDs:"
+  ap unknownPids
+end
 
 
 ########################################################
 
-# figure out how many higher dimensional bins there are (BL=BinList number)
+# decode binning
+# - BL = BinList number, for higher dimension bins (IV1,IV2)
+# - BN = bin number, 1st dimension (IV0)
 def toBL(binNum) binNum>>4 end
 def toBN(binNum) binNum & 0xF end
-binNumList = treeHash.keys
-blList = binNumList.map do |binNum| toBL(binNum) end.uniq # list of higher dimensional bins
+blList = treeHash.keys.map do |binNum| toBL(binNum) end.uniq # list of higher dimensional bins
+nBins  = treeHash.keys.map do |binNum| toBN(binNum) end.uniq.length # number of IV0 bins
 
-# figure out how many IV0 bins there are
-nBins = binNumList.map do |binNum| toBN(binNum) end.uniq.length
+########################################################
 
-# build yieldHash:
-#    BL (binNum>>4) => species => PID => count vs. bin mean
-yieldHash = Hash.new
-blList.each do |bl| yieldHash[bl] = Hash.new end
-blList.product(speciesList).each do |bl,species|
-  yieldHash[bl][species] = Hash.new
-  filterPidLutBySpecies.call(species).keys.each do |pid|
-    yieldHash[bl][species][pid] = Hash.new
-    yieldHash[bl][species][pid][:yield] = Array.new(nBins,0)
+
+# loop over trees for each bin, calculating fraction of dihadrons from baryonic decays;
+# return a Hash with all the necessary values for each bin
+baryonHash = treeHash.map do |binNum,tree|
+
+  ### begin resulting Hash
+  res = Hash.new
+  res[:ivMean] = ivMeanHash[binNum]
+  res[:nTotal] = tree.num_entries.to_f
+
+  ### read branches
+  parentIdxArr = tree.arrays['parentIdx']
+  parentPidArr = tree.arrays['parentPid']
+  bl = toBL binNum # decode binNum
+  bn = toBN binNum
+
+  ### count number of dihadrons where one or both parents are baryons
+  # - Hash method .[] does not accept vectorized input; cannot use np.vectorize; instead, use native Array.count
+  res[:nBaryon] = parentPidArr.to_numpy.to_a.count do |hadParentPids|
+    hadParentPids.any?{ |pid| pidLut[pid][:species] == :baryon }
+  end.to_f
+
+  ### compute f_baryon and error
+  if res[:nTotal]>0 and res[:nBaryon]>0
+    res[:fBaryon] = res[:nBaryon] / res[:nTotal]
+    res[:fBaryonErr] = Math.sqrt( res[:fBaryon]*(1-res[:fBaryon]) / res[:nTotal] ) # two outcomes -> bernoulli process -> binomial error propagation
+  else
+    res[:fBaryon]    = 0.0
+    res[:fBaryonErr] = 0.0
   end
+
+  [binNum,res]
+end.to_h
+
+inFileUp.close # done with uproot
+
+######################################################
+
+### data structure for plot points
+# plotPoints { BL => { :x=>x_array, :y=>y_array, ... } }
+plotPoints = blList.map do |bl|
+  arrs = [:x,:y,:yerr].map do |sym|
+    [ sym, Array.new(nBins,0.0) ]
+  end.to_h
+  [bl,arrs]
+end.to_h
+
+### fill plot points
+baryonHash.each do |binNum,props|
+  bl = toBL binNum
+  bn = toBN binNum
+  plotPoints[bl][:x][bn]    = props[:ivMean]
+  plotPoints[bl][:y][bn]    = props[:fBaryon]
+  plotPoints[bl][:yerr][bn] = props[:fBaryonErr]
 end
 
-# TODO: create mask for cases where hadrons come from the same parent Idx
-arr = treeHash[0].arrays['parentIdx'].to_numpy
-sameParentMask = arr[0..,0] == arr[0..,1]
+### draw plots
+nrows = 1
+ncols = blList.length
+plt.rcParams.update({
+  'font.size'           => 12,
+  'figure.figsize'      => [4*ncols,3*nrows],
+  'figure.dpi'          => 300,
+  'savefig.bbox'        => 'tight',
+  'text.usetex'         => true,
+  'font.family'         => 'serif',
+  'font.serif'          => ['Times'],
+  'text.latex.preamble' => '\usepackage{amssymb}'
+})
+fig,axs = plt.subplots(nrows, ncols, squeeze: false)
+col = 0
+plotPoints.each do |bl,points|
+  ax = axs[0,col]
+  ax.errorbar(
+    points[:x],
+    points[:y],
+    yerr:       points[:yerr],
+    marker:     'o',
+    color:      'xkcd:cornflower blue',
+    ecolor:     'xkcd:cornflower blue',
+    linestyle:  'None',
+    elinewidth: 2,
+    markersize: 3,
+    capsize:    2,
+    zorder:     1,
+  )
+  ax.set_xlabel ivName[0]
+  ax.set_ylabel '$f_B$'
+  ax.set_title "$#{ivName[1]}$ Bin #{bl+1}" if blList.length>1
+  ax.grid(
+    true,
+    'major',
+    'both',
+    color:     'xkcd:light grey',
+    linewidth: 0.5,
+    zorder:    0,
+  )
+  col += 1
+end
+fig.tight_layout
 
-
-binding.pry
-file.close
+plt.savefig('test.png')
