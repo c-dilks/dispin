@@ -12,7 +12,8 @@ dl=DatasetLooper.new
 # runNums = chrisFiles.map{ |f| File.basename(f,'.txt').split('_').last }
 ###
 # subdir="4.12"
-subdir="4.14"
+# subdir="4.14"
+subdir="4.19"
 timothyFiles = Dir.glob("#{subdir}/timothy*.txt")
 chrisFiles = timothyFiles.map{|f|f.sub('timothy','chris')}
 runNums = chrisFiles.map{ |f| File.basename(f,'.txt').split('_')[1] }

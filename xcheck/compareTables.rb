@@ -8,14 +8,20 @@ require 'matplotlib/pyplot'
 plt = Matplotlib::Pyplot
 pool = Thread.pool(`nproc`.to_i-2)
 
+##### SETTINGS #########################################
+# truncation limit: large files will take a long time, consider truncating them during reading
+# - if nonzero, will only read the first #{limiter} lines
+# - set to '-1' to read all of the lines
+limiter = 10000 
 # list of humans: each event in human[0]'s table will be searched for in human[1]'s
 # - output files will be named "...human0_human1..."
 humans = []
-humans << "timothy"
 humans << "chris"
+humans << "timothy"
+########################################################
 
 # build list pairs of files to compare
-subdir="4.14"
+subdir="4.19"
 tableFiles = humans.map{ |human|
   Dir.glob("#{subdir}/#{human}*.txt").sort
 }.inject(:zip)
@@ -65,33 +71,38 @@ plt.rcParams.update(
 )
 
 # cross check
-xcheck = Proc.new{ |table|
+linesArr = Array.new(2)
+xcheck = Proc.new{ |tablePair|
   puts "-> compare:"
-  puts table
+  puts tablePair
 
   # start output file
-  outFileN = table[0].sub(/#{humans[0]}/,"compare_#{humans.join('_')}")
+  outFileN = tablePair[0].sub(/#{humans[0]}/,"compare_#{humans.join('_')}")
   outFile = File.open(outFileN,'w')
   outFile.puts '%12s '*colSyms.length % colSyms.map(&:to_s) # header
 
   # histograms (Arrays)
   diffHists = colSyms.map{ |sym| [sym,Array.new] }.to_h
 
-  # loop through human0's table
+  # read lines of each tablePair, truncating to #{limiter} lines
+  linesArr = tablePair.map{ |table|
+    File.readlines(table)[0..limiter].map(&:chomp)
+  }
+
+  # loop through human0's tablePair
   cnt=0
-  File.readlines(table[0]).each{ |line0|
-    if cnt>10000 then break else cnt+=1 end # limiter
+  linesArr[0].each{ |line0|
+    puts "progress: #{100*cnt.to_f/linesArr[0].length.to_f}%" if cnt%1000==1
 
     # get human0's columns:
     cols0 = line0.split(' ') # list of strings, one element per column
     vals0 = getvals(cols0) # hash: sym => value
 
-    # find matching evnum in human1's table: grep for the event number, then make sure
+    # find matching evnum in human1's tablePair: grep for the event number, then make sure
     # the matching number is in the event number column
     runnum = cols0.at(@colIdxs[:runnum]) # (faster to grep for string)
     evnum = cols0.at(@colIdxs[:evnum])
-    line1grep = File.readlines(table[1])
-      .map(&:chomp)
+    line1grep = linesArr[1]
       .grep(/#{evnum}/)
       .select{ |res| evnum==res.split(' ').at(@colIdxs[:evnum]) }
     found = line1grep.length>0
@@ -146,6 +157,7 @@ xcheck = Proc.new{ |table|
     comparisonStr = '%12s '*valsDiffRounded.length % valsDiffRounded
     comparisonStr += " // #{comments.join('; ')}" if comments.length>0
     outFile.puts comparisonStr
+    cnt += 1
   }
   outFile.close
   puts "wrote #{outFileN}"
@@ -167,8 +179,8 @@ xcheck = Proc.new{ |table|
 
 
 # execution
-tableFiles.each{ |table|
-  # pool.process{ xcheck.call(table) } #FIXME: matplotlib GUI must be in main thread, for now multi-threading is not possible
-  xcheck.call(table) # single-threaded
+tableFiles.each{ |tablePair|
+  # pool.process{ xcheck.call(tablePair) } #FIXME: matplotlib GUI must be in main thread, for now multi-threading is not possible
+  xcheck.call(tablePair) # single-threaded
 }
 pool.shutdown

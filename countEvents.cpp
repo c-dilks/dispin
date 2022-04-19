@@ -21,7 +21,7 @@ EventTree * ev;
 void PrintCount(TString cntName,Long64_t numer,Long64_t denom);
 void PrintEvent();
 void PrintEvent2();
-void PrintEvent_xcheck_2_28(); // also valid for 4.12
+void PrintEvent_xcheck();
 Bool_t first;
 Bool_t hasDiphoton;
 
@@ -88,16 +88,18 @@ int main(int argc, char** argv) {
      if(ev->Valid()) {
        nValid++;
        if(printEvents && nValid<=numToPrint) {
-         //PrintEvent();
-         //PrintEvent2();
-         PrintEvent_xcheck_2_28(); // <-------------------------------- !!!!!!!!!!!!!!!!!! XCHECK
+         // PrintEvent_xcheck();
        }
      };
 
      // counts for each cut
      if(Tools::PairSame(ev->hadIdx[qA],ev->hadIdx[qB],whichHad[qA],whichHad[qB])) {
        nTotal++;
-       // PrintEvent_xcheck_2_28(); // <-------------------------------- !!!!!!!!!!!!!!!!!!!!! XCHECK
+
+       // print events
+       // PrintEvent_xcheck();
+       if(ev->cutFiducial) PrintEvent_xcheck(); // <-------------------------------- !!!!!!!!!!!!!!!!!!!!! XCHECK
+
        // main cuts
        if(ev->cutDIS) nCutDIS++;
        if(ev->cutDihadron) nCutDihadron++;
@@ -240,7 +242,7 @@ void PrintEvent2() {
 };
 
 
-void PrintEvent_xcheck_2_28() {
+void PrintEvent_xcheck() {
   if(first) {
     gSystem->RedirectOutput(tableFile,"w");
     first = false;
