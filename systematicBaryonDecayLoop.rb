@@ -18,6 +18,7 @@ dl = DatasetLooper.new(dihadronSym)
 # settings #################
 mcSets  = dl.allsetListLoopOnlyMC.reject{|f|f.include?'bibending'} # do not include bibending
 ivTypes = dl.binHash.keys#.select{|i|i==2}
+limiter = 3_000_000 # this many events, per dataset (set to zero to take all)
 ############################
 
 
@@ -26,31 +27,28 @@ step1cmds = []
 step2cmds = []
 mcSets.product(ivTypes).each do |mcSet,ivType|
 
-  # select MC file: largest file in the MC allSet directory
-  mcAllSet = mcSet.split('.').reject{|m|m==dihadronSym.to_s}.join('.') # remove pair name from `mcSet`
-  mcFile = Dir.glob("outroot.#{mcAllSet}/*.root").max_by do |f|
-    if File.symlink?(f)
-      File.size(File.readlink f)
-    else
-      File.size(f)
-    end
-  end
-
   # set treeFile name
-  ivName = dl.binHash[ivType][:name]
+  ivName   = dl.binHash[ivType][:name]
   treeFile = "baryonTrees/#{mcSet}.#{ivName}.root"
 
-  # step 1 command
+  # remove dihadorn pair name from `mcSet`
+  mcAllSet = mcSet
+    .split('.')
+    .reject{ |m| m==dihadronSym.to_s }
+    .join('.')
+
+  # step 1 command: systematicBaryonDecay1.exe
   step1cmds << [
     "systematicBaryonDecay1.exe",
-    "-f #{mcFile}",
+    "-d outroot.#{mcAllSet}",
     "-p #{dl.pairType}",
     "-i #{ivType}",
     "-n #{dl.binHash[ivType][:bins].join(' ')}",
     "-o #{treeFile}",
+    "-l #{limiter}",
     ]
 
-  # step 2 command
+  # step 2 command: systematicBaryonDecay2.rb
   step2cmds << [
     "systematicBaryonDecay2.rb",
     treeFile,
@@ -68,7 +66,7 @@ step1cmds.zip(step2cmds) do |step1cmd,step2cmd|
   step2 = step2cmd.join(' ')
   ### single-threaded
   # system step1
-  # puts step2
+  # system step2
   ### multi-threaded
   pool.process do
     system step1

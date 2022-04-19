@@ -30,6 +30,7 @@ TString outFileN;
 Int_t pairType;
 Int_t nBins[3];
 Int_t ivType;
+Long64_t limiter;
 
 // subroutines
 void SetDefaultArgs();
@@ -52,7 +53,7 @@ int main(int argc, char** argv) {
   enum inputType_enum {iFile,iDir};
   Int_t inputType = -1;
   Int_t nd=0;
-  while( (opt=getopt(argc,argv,"f:d:o:p:i:n:")) != -1 ) {
+  while( (opt=getopt(argc,argv,"f:d:o:p:i:n:l:")) != -1 ) {
     switch(opt) {
       case 'f': /* input file */
         if(inputType>=0) return PrintUsage();
@@ -78,6 +79,9 @@ int main(int argc, char** argv) {
         for( ; optind<argc && *argv[optind]!='-'; optind++) {
           if(nd<3) nBins[nd++] = (Int_t) strtof(argv[optind],NULL);
         };
+        break;
+      case 'l': /* limiter */
+        limiter = (Long64_t) strtof(optarg,NULL);
         break;
       default: return PrintUsage();
     };
@@ -183,10 +187,12 @@ int main(int argc, char** argv) {
 
   printf("begin loop through %lld events...\n",ev->ENT);
   for(int i=0; i<ev->ENT; i++) {
-    //if(i>100000) break; // limiter
 
     ev->GetEvent(i);
     if(ev->Valid()) {
+
+      // truncate at limit
+      if(limiter>0 && i>limiter) break;
 
       // MATCHING CUT
       for(int h=0; h<2; h++) {
@@ -232,6 +238,7 @@ void SetDefaultArgs() {
   outFileN = "";
   pairType = EncodePairType(kPip,kPim);
   ivType = Binning::vM + 1;
+  limiter = 0;
   for(int d=0; d<3; d++) nBins[d] = -1;
 };
 
@@ -271,7 +278,8 @@ int PrintUsage() {
 
   printf(" -n\tnumber of bins, listed for each independent variable,\n");
   printf("   \tseparated by spaces\n\n");
-  printf(" -w\tenable PhPerp/Mh weighting (default is off)\n\n");
+
+  printf(" -l\tlimiter, truncate to this many events (default take all)\n\n");
 
   return 0;
 };
