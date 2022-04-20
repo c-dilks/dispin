@@ -373,7 +373,7 @@ int main(int argc, char** argv) {
 
     // fiducial cuts
     for(int p=0; p<nPar; p++) {
-      fidu[p]->ApplyCuts(runnum,(int)Pid[p]);
+      fidu[p]->ApplyCuts(runnum,(int)Pid[p],evnum);
     };
 
 
