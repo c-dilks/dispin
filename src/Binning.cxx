@@ -43,6 +43,13 @@ Binning::Binning() {
   IVtitle[vQ] = "Q^{2}";
   IVtitle[vXF] = "x_{F}";
 
+  IVoutrootBranchName[vM] = "Mh";
+  IVoutrootBranchName[vX] = "x";
+  IVoutrootBranchName[vZ] = "Zpair";
+  IVoutrootBranchName[vPt] = "PhPerp";
+  IVoutrootBranchName[vDY] = "unknown"; // TODO
+  IVoutrootBranchName[vQ] = "Q2";
+  IVoutrootBranchName[vXF] = "xF";
 
   // set binning scheme defaults
   dimensions = 0;
@@ -106,7 +113,7 @@ Int_t Binning::GetBin(Int_t ivIdx_, Float_t iv_) {
 // get bin associated with current event from Event tree, within
 // current binning scheme
 Int_t Binning::FindBin(EventTree * ev) {
-  Float_t ivVal[3] = {-1000,-1000,-1000};
+  for(int d=0; d<3; d++) ivVal[d] = -1000;
   Int_t ivBin[3] = {-1,-1,-1};
   for(int d=0; d<dimensions; d++) {
     switch(ivVar[d]) {
@@ -128,7 +135,9 @@ Int_t Binning::FindBin(EventTree * ev) {
 
 // get bin associated with specified values, using current binning scheme
 Int_t Binning::FindBin(Float_t iv0, Float_t iv1, Float_t iv2) {
-  Float_t ivVal[3] = {iv0,iv1,iv2};
+  ivVal[0] = iv0;
+  ivVal[1] = iv1;
+  ivVal[2] = iv2;
   Int_t ivBin[3] = {-1,-1,-1};
   for(int d=0; d<dimensions; d++) {
     ivBin[d] = this->GetBin(ivVar[d],ivVal[d]);
@@ -570,6 +579,12 @@ TString Binning::GetIVname(Int_t dim) {
 TString Binning::GetIVtitle(Int_t dim) {
   return CheckDim(dim) ? IVtitle[ivVar[dim]] : "unknown";
 };
+TString Binning::GetIVoutrootBranchName(Int_t dim) {
+  return CheckDim(dim) ? IVoutrootBranchName[ivVar[dim]] : "unknown";
+};
+Float_t Binning::GetIVmin(Int_t dim) { return CheckDim(dim) ? minIV[ivVar[dim]] : UNDEF; };
+Float_t Binning::GetIVmax(Int_t dim) { return CheckDim(dim) ? maxIV[ivVar[dim]] : UNDEF; };
+Float_t Binning::GetIVval(Int_t dim) { return CheckDim(dim) ? ivVal[dim] : UNDEF; };
 
 Bool_t Binning::CheckDim(Int_t dim_) { 
   if(dim_>=0 && dim_<dimensions) return true;

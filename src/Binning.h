@@ -59,6 +59,7 @@ class Binning : public TObject
 
     TString IVname[nIV];
     TString IVtitle[nIV];
+    TString IVoutrootBranchName[nIV];
 
 
     // variables used to define Asymmetry binning scheme
@@ -83,6 +84,10 @@ class Binning : public TObject
     TArrayD * GetBinArray(Int_t dim);
     TString GetIVname(Int_t dim);
     TString GetIVtitle(Int_t dim);
+    TString GetIVoutrootBranchName(Int_t dim);
+    Float_t GetIVmin(Int_t dim);
+    Float_t GetIVmax(Int_t dim);
+    Float_t GetIVval(Int_t dim); // return iv value for this dim (MUST CALL FindBin FIRST)
     // additional scheme methods
     // - bin finding
     Int_t FindBin(EventTree * ev);
@@ -108,6 +113,7 @@ class Binning : public TObject
   private:
 
     TString schemeVersion;
+    Float_t ivVal[3];
 
 
   ClassDef(Binning,1);

@@ -44,3 +44,4 @@ bruspin.*
 catTree*.bak
 catTree.archive*
 catTrees
+*.json

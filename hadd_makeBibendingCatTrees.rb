@@ -24,6 +24,7 @@ if ARGV.length!=2
   exit 2
 end
 Dihadron,Pattern = ARGV
+looper = DatasetLooper.new(Dihadron.to_sym)
 
 # search for source files
 sources = Dir.glob("#{DatasetLooper::CatTreeDir}/catTree*.root")
@@ -84,7 +85,7 @@ if useTruncation
   # get inbending and outbending yields
   matchDataset  = ask("\nBalance MC to which dataset: rga, rgb, something else?")
   yieldsData    = getYields(matchDataset)
-  yieldsMC      = getYields('mc')
+  yieldsMC      = getYields(looper.mcPrefix)
   ioRatioData   = yieldsData[:inbending] / yieldsData[:outbending]
   ioRatioMC     = yieldsMC[:inbending]   / yieldsMC[:outbending]
   balanceFactor = ioRatioData            / ioRatioMC
@@ -131,7 +132,7 @@ if useTruncation
 
   # update hadd target and sources
   sources.map!{ |source| source==treeToTruncate ? truncatedTree : source }
-  target.sub!('.mc.',".mc#{matchDataset.chars.last}.")
+  target.sub!(".#{looper.mcPrefix}.",".#{looper.mcPrefix}#{matchDataset.chars.last}.")
   puts '='*30+"\n\n"
   puts "\nupdated hadd sources:"
   puts sources
