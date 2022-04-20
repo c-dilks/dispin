@@ -717,9 +717,9 @@ bool FiducialCuts::DC_fiducial_cut_XY(int j, int region, int part_pid)
     " "     << Y                 <<
     " "     << calc_min          <<
     " "     << calc_max          <<
-    " "     << region            <<
+    " "     << region+1          <<
     " "     << part_DC_sector[j] <<
-    " "     << pid               <<
+    " "     << part_pid          <<
     std::endl;
   /////////////////////////////////
 
