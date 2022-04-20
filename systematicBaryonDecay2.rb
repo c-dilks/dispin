@@ -95,32 +95,35 @@ speciesList = [
 # PID lookup table
 # - map PID (KF code) to a list of `properties`
 pidLut = {
-  -323 => { :name=>'K^{*-}',      :species=>:meson  },
-  -313 => { :name=>'K^{*0}',      :species=>:meson  },
-  -213 => { :name=>'\rho^-',      :species=>:meson  },
-  -1   => { :name=>'dbar',        :species=>:quark  },
-  91   => { :name=>'gen=91',      :species=>:gen    },
-  92   => { :name=>'gen=92',      :species=>:gen    },
-  113  => { :name=>'\rho^0',      :species=>:meson  },
-  213  => { :name=>'\rho^+',      :species=>:meson  },
-  221  => { :name=>'\eta',        :species=>:meson  },
-  223  => { :name=>'\omega',      :species=>:meson  },
-  310  => { :name=>'K_S^0',       :species=>:meson  },
-  313  => { :name=>'K^{*0}',      :species=>:meson  },
-  323  => { :name=>'K^{*+}',      :species=>:meson  },
-  331  => { :name=>'\eta\'',      :species=>:meson  },
-  333  => { :name=>'\phi',        :species=>:meson  },
-  1114 => { :name=>'\Delta^-',    :species=>:baryon },
-  2114 => { :name=>'\Delta^0',    :species=>:baryon },
-  2212 => { :name=>'p',           :species=>:baryon },
-  2214 => { :name=>'\Delta^+',    :species=>:baryon },
-  2224 => { :name=>'\Delta^{++}', :species=>:baryon },
-  3112 => { :name=>'\Sigma^-',    :species=>:baryon },
-  3114 => { :name=>'\Sigma^{*-}', :species=>:baryon },
-  3122 => { :name=>'\Lambda',     :species=>:baryon },
-  3214 => { :name=>'\Sigma^{*0}', :species=>:baryon },
-  3222 => { :name=>'\Sigma^+',    :species=>:baryon },
-  3224 => { :name=>'\Sigma^{*+}', :species=>:baryon },
+  -3122 => { :name=>'\bar{\Lambda}', :species=>:baryon },
+  -323  => { :name=>'K^{*-}',        :species=>:meson  },
+  -313  => { :name=>'K^{*0}',        :species=>:meson  },
+  -213  => { :name=>'\rho^-',        :species=>:meson  },
+  -1    => { :name=>'dbar',          :species=>:quark  },
+  91    => { :name=>'gen=91',        :species=>:gen    },
+  92    => { :name=>'gen=92',        :species=>:gen    },
+  113   => { :name=>'\rho^0',        :species=>:meson  },
+  213   => { :name=>'\rho^+',        :species=>:meson  },
+  221   => { :name=>'\eta',          :species=>:meson  },
+  223   => { :name=>'\omega',        :species=>:meson  },
+  310   => { :name=>'K_S^0',         :species=>:meson  },
+  313   => { :name=>'K^{*0}',        :species=>:meson  },
+  323   => { :name=>'K^{*+}',        :species=>:meson  },
+  331   => { :name=>'\eta\'',        :species=>:meson  },
+  333   => { :name=>'\phi',          :species=>:meson  },
+  1114  => { :name=>'\Delta^-',      :species=>:baryon },
+  2114  => { :name=>'\Delta^0',      :species=>:baryon },
+  2212  => { :name=>'p',             :species=>:baryon },
+  2214  => { :name=>'\Delta^+',      :species=>:baryon },
+  2224  => { :name=>'\Delta^{++}',   :species=>:baryon },
+  3112  => { :name=>'\Sigma^-',      :species=>:baryon },
+  3114  => { :name=>'\Sigma^{*-}',   :species=>:baryon },
+  3122  => { :name=>'\Lambda',       :species=>:baryon },
+  3214  => { :name=>'\Sigma^{*0}',   :species=>:baryon },
+  3222  => { :name=>'\Sigma^+',      :species=>:baryon },
+  3224  => { :name=>'\Sigma^{*+}',   :species=>:baryon },
+  3312  => { :name=>'\Xi^-',         :species=>:baryon },
+  3324  => { :name=>'\Xi^{*0}',      :species=>:baryon },
 }
 
 # get list of parent PIDs from treeHash
@@ -137,11 +140,6 @@ end
 unknownPids = pidLut.select do |pid,props|
   props[:species]==:unknown
 end.keys
-if unknownPids.length>0
-  puts "WARNING: unknown parent PIDs:"
-  ap unknownPids
-end
-
 
 ########################################################
 
@@ -158,6 +156,7 @@ nBins  = treeHash.keys.map do |binNum| toBN(binNum) end.uniq.length # number of 
 
 # loop over trees for each bin, calculating fraction of dihadrons from baryonic decays;
 # return a Hash with all the necessary values for each bin
+# baryonHash { binNum => { :ivMean=>iv_value, :fBaryon=>fBaryon_value, ... } }
 baryonHash = treeHash.map do |binNum,tree|
 
   ### begin resulting Hash
@@ -187,19 +186,23 @@ baryonHash = treeHash.map do |binNum,tree|
   end
 
   ### compute systematic on aLU
-  res[:asymmetrySystematicUncertainty] = res[:fBaryon] / ( 1 - res[:fBaryon] )
+  res[:aluSysUnc]    = res[:fBaryon]    / ( 1 - res[:fBaryon] )
+  res[:aluSysUncErr] = res[:fBaryonErr] / ( 1 - res[:fBaryon] )**2
 
   [binNum,res]
 end.to_h
 
 inFileUp.close # done with uproot
 
+### get list of calculation keys in baryonHash
+calcKeys = baryonHash[baryonHash.keys.first].keys
+
 ######################################################
 
 ### data structure for plot points
-# plotPoints { BL => { :x=>x_array, :y=>y_array, ... } }
+# plotPoints { BL => { :ivMean=>iv_array, :fBaryon=>fBaryon_array, ... } }
 plotPoints = blList.map do |bl|
-  arrs = [:x,:y,:yerr].map do |sym|
+  arrs = calcKeys.map do |sym|
     [ sym, Array.new(nBins,0.0) ]
   end.to_h
   [bl,arrs]
@@ -209,14 +212,15 @@ end.to_h
 baryonHash.each do |binNum,props|
   bl = toBL binNum
   bn = toBN binNum
-  plotPoints[bl][:x][bn]    = props[:ivMean]
-  plotPoints[bl][:y][bn]    = props[:fBaryon]
-  plotPoints[bl][:yerr][bn] = props[:fBaryonErr]
+  calcKeys.each do |key|
+    plotPoints[bl][key][bn] = props[key]
+  end
 end
 
 ### draw plots
-nrows = 1
-ncols = blList.length
+plotSymList = [:fBaryon,:aluSysUnc]
+nrows = blList.length
+ncols = plotSymList.length
 plt.rcParams.update({
   'font.size'           => 12,
   'figure.figsize'      => [4*ncols,3*nrows],
@@ -227,35 +231,52 @@ plt.rcParams.update({
   'font.serif'          => ['Times'],
   'text.latex.preamble' => '\usepackage{amssymb}'
 })
-fig,axs = plt.subplots(nrows, ncols, squeeze: false)
-col = 0
+fig, axs = plt.subplots(nrows, ncols, squeeze: false)
+row = 0
 plotPoints.each do |bl,points|
-  ax = axs[0,col]
-  ax.errorbar(
-    points[:x],
-    points[:y],
-    yerr:       points[:yerr],
-    marker:     'o',
-    color:      'xkcd:cornflower blue',
-    ecolor:     'xkcd:cornflower blue',
-    linestyle:  'None',
-    elinewidth: 2,
-    markersize: 3,
-    capsize:    2,
-    zorder:     1,
-  )
-  ax.set_xlabel "$#{ivName[0]}$"
-  ax.set_ylabel '$f_B$'
-  ax.set_title "$#{ivName[1]}$ Bin #{bl+1}" if blList.length>1
-  ax.grid(
-    true,
-    'major',
-    'both',
-    color:     'xkcd:light grey',
-    linewidth: 0.5,
-    zorder:    0,
-  )
-  col += 1
+  
+  # get axis hash for this `bl`
+  axHash = Hash.new
+  plotSymList.each_with_index do |sym,col|
+    axHash[sym] = axs[row,col]
+  end
+
+  # proc: add a graph to an axis
+  makePlot = Proc.new do |ax,ySym,ySymErr,color|
+    ax.errorbar(
+      points[:ivMean],
+      points[ySym],
+      yerr:       points[ySymErr],
+      marker:     'o',
+      color:      color,
+      ecolor:     color,
+      linestyle:  'None',
+      elinewidth: 2,
+      markersize: 3,
+      capsize:    2,
+      zorder:     10,
+    )
+    ax.grid(
+      true,
+      'major',
+      'both',
+      color:     'xkcd:light grey',
+      linewidth: 0.5,
+      zorder:    0,
+    )
+    ax.set_title  "$#{ivName[1]}$ Bin #{bl+1}" if blList.length>1
+    ax.set_xlabel "$#{ivName[0]}$"
+  end
+
+  makePlot.call axHash[:fBaryon],   :fBaryon,   :fBaryonErr,   'b'
+  makePlot.call axHash[:aluSysUnc], :aluSysUnc, :aluSysUncErr, 'r'
+  
+  axHash[:fBaryon].set_ylim   0.0, 0.08
+  axHash[:aluSysUnc].set_ylim 0.0, 0.08
+  axHash[:fBaryon].set_ylabel   '$f_B$'
+  axHash[:aluSysUnc].set_ylabel '$\Delta_B$'
+
+  row += 1
 end
 fig.tight_layout
 
@@ -267,7 +288,14 @@ puts "produced #{outFilePrefix}.png"
 File.open("#{outFilePrefix}.json",'w') do |j| j.puts baryonHash.to_json end
 puts "produced #{outFilePrefix}.json"
 ## example: parse JSON to Hash
-File.open("#{outFilePrefix}.json") do |j| 
-  parsedHash = JSON.parse(j.read)
-  ap parsedHash
+# File.open("#{outFilePrefix}.json") do |j| 
+#   parsedHash = JSON.parse(j.read)
+#   ap parsedHash
+# end
+
+### print a warning if there were unknown parent PIDs
+if unknownPids.length>0
+  $stderr.puts "WARNING: unknown parent PIDs:"
+  ap unknownPids
 end
+
