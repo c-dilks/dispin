@@ -117,18 +117,45 @@ Int_t Binning::FindBin(EventTree * ev) {
   Int_t ivBin[3] = {-1,-1,-1};
   for(int d=0; d<dimensions; d++) {
     switch(ivVar[d]) {
-      case vM: ivVal[d] = ev->Mh; break;
-      case vX: ivVal[d] = ev->x; break;
-      case vZ: ivVal[d] = ev->Zpair; break;
+      case vM:  ivVal[d] = ev->Mh;     break;
+      case vX:  ivVal[d] = ev->x;      break;
+      case vZ:  ivVal[d] = ev->Zpair;  break;
       case vPt: ivVal[d] = ev->PhPerp; break;
-      case vDY: ivVal[d] = ev->DY; break;
-      case vQ: ivVal[d] = ev->Q2; break;
-      case vXF: ivVal[d] = ev->xF; break;
+      case vDY: ivVal[d] = ev->DY;     break;
+      case vQ:  ivVal[d] = ev->Q2;     break;
+      case vXF: ivVal[d] = ev->xF;     break;
       default: 
                          fprintf(stderr,"ERROR: bad ivVar\n");
                          return -1;
     };
     ivBin[d] = this->GetBin(ivVar[d],ivVal[d]);
+  };
+  return this->HashBinNum(ivBin[0],ivBin[1],ivBin[2]);
+};
+// analogous method for generated kinematics
+Int_t Binning::FindBinGen(EventTree * ev) {
+  for(int d=0; d<3; d++) ivValGen[d] = -1000;
+  Int_t ivBin[3] = {-1,-1,-1};
+  for(int d=0; d<dimensions; d++) {
+    switch(ivVar[d]) {
+      case vM:  ivValGen[d] = ev->gen_Mh;     break;
+      case vX:  ivValGen[d] = ev->gen_x;      break;
+      case vZ:  ivValGen[d] = ev->gen_Zpair;  break;
+      case vPt: ivValGen[d] = ev->gen_PhPerp; break;
+      case vDY: //ivValGen[d] = ev->gen_DY;     break;
+                fprintf(stderr,"ERROR: missing EventTree::gen_DY (TODO)\n");
+                return -1;
+                break;
+      case vQ:  ivValGen[d] = ev->gen_Q2;     break;
+      case vXF: ivValGen[d] = ev->gen_xF;     break;
+      default: 
+                         fprintf(stderr,"ERROR: bad ivVar\n");
+                         return -1;
+    };
+    for(int d=0; d<dimensions; d++) {
+      if(ivValGen[d]==UNDEF) return -1; // silent return for bin not found
+    }
+    ivBin[d] = this->GetBin(ivVar[d],ivValGen[d]);
   };
   return this->HashBinNum(ivBin[0],ivBin[1],ivBin[2]);
 };
