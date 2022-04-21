@@ -711,6 +711,7 @@ bool FiducialCuts::DC_fiducial_cut_XY(int j, int region, int part_pid)
   double calc_max = maxparams[pid][part_DC_sector[j] - 1][region][0] + maxparams[pid][part_DC_sector[j] - 1][region][1] * X;
 
   //// print info for cross check
+  /*
   std::cout << "XCHECK"          <<
     " "     << evnum             <<
     " "     << X                 <<
@@ -720,7 +721,9 @@ bool FiducialCuts::DC_fiducial_cut_XY(int j, int region, int part_pid)
     " "     << region+1          <<
     " "     << part_DC_sector[j] <<
     " "     << part_pid          <<
+    " "     << ((Y > calc_min) && (Y < calc_max)) <<
     std::endl;
+    */
   /////////////////////////////////
 
 
