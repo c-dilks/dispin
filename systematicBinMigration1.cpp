@@ -183,7 +183,7 @@ int main(int argc, char** argv) {
       // find the reconstructed and generated bin
       Int_t binNumRec = BS->FindBin(ev);
       Int_t binNumGen = BS->FindBinGen(ev);
-      if( binNumRec<0 || binNumGen<0 ) continue; // skip unfound bins (result of bad generated kinematics calculations)
+      if( binNumRec<0 || binNumGen<0 ) continue; // skip not-found bins (result of (rare) bad generated kinematics calculations)
 
       // fill output data structures
       TString binStrRec = Form("%d",binNumRec);
