@@ -143,7 +143,6 @@ int main(int argc, char** argv) {
       nBinsTotal,0,nBinsTotal,
       nBinsTotal,0,nBinsTotal
       );
-
   // label bins with 3-digit bin numbers from Binning
   Int_t b=1;
   for(Int_t bn : BS->binVec) {
@@ -152,6 +151,14 @@ int main(int argc, char** argv) {
     genVrec->GetYaxis()->SetBinLabel(b,bStr.Data());
     b++;
   }
+
+  // tree, for iv means
+  TTree *ivTr = new TTree("ivTr","ivTr");
+  Int_t binNumRec,binNumGen;
+  Float_t ivVal[3] = {0.0,0.0,0.0};
+  ivTr->Branch("binNumRec",&binNumRec,"binNumRec/I");
+  ivTr->Branch("binNumGen",&binNumGen,"binNumGen/I");
+  ivTr->Branch("ivVal",ivVal,"ivVal[3]/F");
 
 
   //-----------------------------------------------------
@@ -181,8 +188,8 @@ int main(int argc, char** argv) {
         continue;
 
       // find the reconstructed and generated bin
-      Int_t binNumRec = BS->FindBin(ev);
-      Int_t binNumGen = BS->FindBinGen(ev);
+      binNumRec = BS->FindBin(ev);
+      binNumGen = BS->FindBinGen(ev);
       if( binNumRec<0 || binNumGen<0 ) continue; // skip not-found bins (result of (rare) bad generated kinematics calculations)
 
       // fill output data structures
@@ -194,12 +201,16 @@ int main(int argc, char** argv) {
           1.0
           );
 
+      for(int d=0; d<BS->dimensions; d++) ivVal[d]=BS->GetIVval(d);
+      ivTr->Fill();
+
     };
   }; // eo EVENT LOOP
 
 
   // write
   genVrec->Write();
+  ivTr->Write();
   outFile->Close();
   printf("wrote %s\n",outFileN.Data());
   return 0;
