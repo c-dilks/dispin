@@ -28,7 +28,7 @@ SaveFigure = false
 # arguments
 if ARGV.length < 1
   $stderr.puts "USAGE: #{$0} [migration/ root file] [output file prefix (optional)] [iv0 name] [iv1 name] [iv2 name]"
-  $stderr.puts "       (iv names are also optional)"
+  $stderr.puts "       (iv names are also optional, can include latex)"
   exit 2
 end
 inFileN = ARGV[0]
@@ -72,10 +72,11 @@ genVrecNP,genVrecXbins,genVrecYbins = genVrec.to_numpy
 fMigNP = genVrecNP / genVrecNP.sum(axis: 1, keepdims: true)
 
 # draw genVrec
+nrows,ncols = 2,2
 if SaveFigure
   plt.rcParams.update({
     'font.size'           => 6,
-    'figure.figsize'      => [4,3],
+    'figure.figsize'      => [4*ncols,3*nrows],
     'figure.dpi'          => 200,
     'savefig.bbox'        => 'tight',
     # 'text.usetex'         => true,
@@ -84,7 +85,8 @@ if SaveFigure
     # 'text.latex.preamble' => '\usepackage{amssymb}'
   })
 end
-genVrecFig, genVrecAx = plt.subplots
+plotFig, plotAxs = plt.subplots(nrows, ncols, squeeze: false)
+genVrecAx = plotAxs[0,0]
 hep.hist2dplot(
   np.round(fMigNP, decimals: 3),
   genVrecXbins,
@@ -117,13 +119,6 @@ genVrecAx.set_yticks(
 )
 genVrecAx.set_xlim right: genVrecXbins[-1] # remove white space (caused by the tick mark shift)
 genVrecAx.set_ylim top:   genVrecYbins[-1]
-
-# save figure
-genVrecFig.tight_layout
-if SaveFigure
-  plt.savefig("#{outFilePrefix}.png")
-  puts "produced #{outFilePrefix}.png"
-end
 
 
 #####################################
@@ -158,7 +153,53 @@ fMigAdjH.each do |binNum,adjH|
   end
 end
 
-# AQUI: draw adjGr plots
+#  draw adjGr plots
+colorH  = { 0=>'Green', 1=>'Red', 2=>'Blue' }
+markerH = { 0=>'o',     1=>'s',   2=>'d'    }
+plotH = {
+  :same  => { :ax=>plotAxs[0,1], :var=>"$f_k^k$"     },
+  :above => { :ax=>plotAxs[1,0], :var=>"$f_{k+1}^k$" },
+  :below => { :ax=>plotAxs[1,1], :var=>"$f_{k-1}^k$" },
+}
+adjGrPointsH.each do |key,blH|
+  ax = plotH[key][:ax]
+  blH.each do |bl,points|
+    ax.errorbar(
+      points[:ivMean],
+      points[:fMig],
+      color:      colorH[bl],
+      ecolor:     colorH[bl],
+      marker:     markerH[bl],
+      linestyle:  'None',
+      elinewidth: 2,
+      markersize: 3,
+      capsize:    2,
+      zorder:     10+bl,
+      label:      "#{plotH[key][:var]} in #{ivName[1]} bin #{bl}",
+    )
+    binding.pry
+  end
+  ax.grid(
+    true,
+    'major',
+    'both',
+    color:     'xkcd:light grey',
+    linewidth: 0.5,
+    zorder:    0,
+  )
+  ax.set_title  "#{plotH[key][:var]} vs. mean #{ivName[0]} in bin k"
+  ax.set_xlabel "mean reconstructed #{ivName[0]}"
+end
+
+
+
+######################################################################
+# save figure
+plotFig.tight_layout
+if SaveFigure
+  plt.savefig("#{outFilePrefix}.png")
+  puts "produced #{outFilePrefix}.png"
+end
 
 
 ######################################################################
