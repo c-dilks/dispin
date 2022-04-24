@@ -3,7 +3,6 @@
 
 require 'pry'
 require 'awesome_print'
-require 'json'
 
 ### mpl
 require 'matplotlib/pyplot'
@@ -23,7 +22,7 @@ pyimport 'mplhep', as: :hep
 # setup
 
 # options
-SaveFigure = false
+SaveFigure = true
 
 # arguments
 if ARGV.length < 1
@@ -72,21 +71,22 @@ genVrecNP,genVrecXbins,genVrecYbins = genVrec.to_numpy
 fMigNP = genVrecNP / genVrecNP.sum(axis: 1, keepdims: true)
 
 # draw genVrec
-nrows,ncols = 2,2
 if SaveFigure
   plt.rcParams.update({
-    'font.size'           => 6,
-    'figure.figsize'      => [4*ncols,3*nrows],
-    'figure.dpi'          => 200,
-    'savefig.bbox'        => 'tight',
+    'font.size'    => 10,
+    'savefig.bbox' => 'tight',
+    'figure.dpi'   => 200,
     # 'text.usetex'         => true,
     # 'font.family'         => 'serif',
     # 'font.serif'          => ['Times'],
     # 'text.latex.preamble' => '\usepackage{amssymb}'
   })
 end
-plotFig, plotAxs = plt.subplots(nrows, ncols, squeeze: false)
-genVrecAx = plotAxs[0,0]
+genVrecFig, genVrecAxs = plt.subplots(
+  figsize: [8,6],
+  squeeze: false,
+)
+genVrecAx = genVrecAxs[0,0]
 hep.hist2dplot(
   np.round(fMigNP, decimals: 3),
   genVrecXbins,
@@ -124,6 +124,20 @@ genVrecAx.set_ylim top:   genVrecYbins[-1]
 #####################################
 # plot adjacent IV0 bin migration fractions
 
+adjFig, adjAxs = plt.subplots(
+  2, 2,
+  figsize: [8,6],
+  squeeze: false,
+)
+colorH  = { 0=>'Green', 1=>'Red', 2=>'Blue' }
+markerH = { 0=>'o',     1=>'s',   2=>'d'    }
+plotH = {
+  :same  => { :ax=>adjAxs[0,0], :var=>"$f_k^{~k}$"     },
+  :above => { :ax=>adjAxs[1,0], :var=>"$f_{k+1}^{~k}$" },
+  :below => { :ax=>adjAxs[1,1], :var=>"$f_{k-1}^{~k}$" },
+}
+adjAxs[0,1].set_visible false
+
 ## get adjacent iv0 bins
 fMigAdjH = Hash.new
 nBinsTotal.times.each do |k|
@@ -154,15 +168,10 @@ fMigAdjH.each do |binNum,adjH|
 end
 
 #  draw adjGr plots
-colorH  = { 0=>'Green', 1=>'Red', 2=>'Blue' }
-markerH = { 0=>'o',     1=>'s',   2=>'d'    }
-plotH = {
-  :same  => { :ax=>plotAxs[0,1], :var=>"$f_k^k$"     },
-  :above => { :ax=>plotAxs[1,0], :var=>"$f_{k+1}^k$" },
-  :below => { :ax=>plotAxs[1,1], :var=>"$f_{k-1}^k$" },
-}
 adjGrPointsH.each do |key,blH|
   ax = plotH[key][:ax]
+
+  # loop through BL values
   blH.each do |bl,points|
     ax.errorbar(
       points[:ivMean],
@@ -172,13 +181,13 @@ adjGrPointsH.each do |key,blH|
       marker:     markerH[bl],
       linestyle:  'None',
       elinewidth: 2,
-      markersize: 3,
+      markersize: 5,
       capsize:    2,
       zorder:     10+bl,
-      label:      "#{plotH[key][:var]} in #{ivName[1]} bin #{bl}",
+      label:      "#{plotH[key][:var]} in #{ivName[1]} bin #{bl+1}",
     )
-    binding.pry
   end
+
   ax.grid(
     true,
     'major',
@@ -188,19 +197,46 @@ adjGrPointsH.each do |key,blH|
     zorder:    0,
   )
   ax.set_title  "#{plotH[key][:var]} vs. mean #{ivName[0]} in bin k"
-  ax.set_xlabel "mean reconstructed #{ivName[0]}"
+  ax.set_xlabel "mean reconstructed #{ivName[0]}" unless key==:same
+  ax.set_ylabel "#{plotH[key][:var]}"
+  ax.legend
+
+  # axis sharing
+  ax.sharex(plotH[:same][:ax])
+  ax.sharey(plotH[:above][:ax]) if key==:below
 end
+
+# re-scale vertical axis lims
+plotH.each do |key,plot|
+  bot,top = plot[:ax].get_ylim
+  if key==:same
+    plot[:ax].set_ylim bottom: 1-1.5*(1-bot), top: 1
+  else
+    plot[:ax].set_ylim bottom: 0,             top: 1.5*top
+  end
+end
+
 
 
 
 ######################################################################
 # save figure
-plotFig.tight_layout
+adjFig.tight_layout
+genVrecFig.tight_layout
 if SaveFigure
-  plt.savefig("#{outFilePrefix}.png")
-  puts "produced #{outFilePrefix}.png"
+  adjFig.savefig("#{outFilePrefix}.adj.png")
+  puts "produced #{outFilePrefix}.adj.png"
+  genVrecFig.savefig("#{outFilePrefix}.genVrec.png")
+  puts "produced #{outFilePrefix}.genVrec.png"
 end
 
+######################################################################
+## NPZ output
+np.savez("#{outFilePrefix}.npz", fMig: fMigNP)
+puts "produced #{outFilePrefix}.npz"
+### example access:
+# npzFile = np.load("#{outFilePrefix}.npz")
+# fMigNP = npzFile['fMig']
 
 ######################################################################
 ######################################################################
@@ -223,4 +259,18 @@ ap asymSysUncH
 ######################################################################
 ######################################################################
 
-plt.show unless SaveFigure
+# plt.show unless SaveFigure
+unless SaveFigure
+  FastInteractive = 1
+  if FastInteractive # "fast": press any key to close windows
+    [
+      adjFig,
+      genVrecFig,
+    ].each do |fig|
+      plt.waitforbuttonpress(0) 
+      plt.close(fig)
+    end
+  else
+    plt.show # "slow": must close windows manually
+  end
+end
