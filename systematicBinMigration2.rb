@@ -199,7 +199,7 @@ adjGrPointsH.each do |key,blH|
   ax.set_title  "#{plotH[key][:var]} vs. mean #{ivName[0]} in bin k"
   ax.set_xlabel "mean reconstructed #{ivName[0]}" unless key==:same
   ax.set_ylabel "#{plotH[key][:var]}"
-  ax.legend
+  ax.legend if blList.length>1
 
   # axis sharing
   ax.sharex(plotH[:same][:ax])
