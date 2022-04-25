@@ -210,9 +210,9 @@ end
 plotH.each do |key,plot|
   bot,top = plot[:ax].get_ylim
   if key==:same
-    plot[:ax].set_ylim bottom: 1-1.5*(1-bot), top: 1
+    plot[:ax].set_ylim bottom: 1-1.1*(1-bot), top: 1
   else
-    plot[:ax].set_ylim bottom: 0,             top: 1.5*top
+    plot[:ax].set_ylim bottom: 0,             top: 1.1*top
   end
 end
 

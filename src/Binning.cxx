@@ -129,6 +129,7 @@ Int_t Binning::FindBin(EventTree * ev) {
                          return -1;
     };
     ivBin[d] = this->GetBin(ivVar[d],ivVal[d]);
+    if(ivBin[d]<0) return -1;
   };
   return this->HashBinNum(ivBin[0],ivBin[1],ivBin[2]);
 };
@@ -152,10 +153,9 @@ Int_t Binning::FindBinGen(EventTree * ev) {
                          fprintf(stderr,"ERROR: bad ivVar\n");
                          return -1;
     };
-    for(int d=0; d<dimensions; d++) {
-      if(ivValGen[d]==UNDEF) return -1; // silent return for bin not found
-    }
+    for(int d=0; d<dimensions; d++) if(ivValGen[d]==UNDEF) return -1; // silent return for generated bin not found
     ivBin[d] = this->GetBin(ivVar[d],ivValGen[d]);
+    if(ivBin[d]<0) return -1;
   };
   return this->HashBinNum(ivBin[0],ivBin[1],ivBin[2]);
 };
