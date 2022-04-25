@@ -12,7 +12,7 @@ pool = Thread.pool(`nproc`.to_i-2)
 # truncation limit: large files will take a long time, consider truncating them during reading
 # - if nonzero, will only read the first #{limiter} lines
 # - set to '-1' to read all of the lines
-limiter = 10000 
+limiter = 5000 
 # list of humans: each event in human[0]'s table will be searched for in human[1]'s
 # - output files will be named "...human0_human1..."
 humans = []
@@ -21,7 +21,7 @@ humans << "timothy"
 ########################################################
 
 # build list pairs of files to compare
-subdir="4.19"
+subdir="4.25"
 tableFiles = humans.map{ |human|
   Dir.glob("#{subdir}/#{human}*.txt").sort
 }.inject(:zip)

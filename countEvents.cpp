@@ -71,6 +71,13 @@ int main(int argc, char** argv) {
    Long64_t nCutdiphMassSB = 0;
    Long64_t nCutdiphBasic = 0;
 
+   // extra yield counters for cross checking
+   const Int_t nTests = 4;
+   Long_t nCutTest[nTests];
+   for(int j=0; j<nTests; j++) nCutTest[j]=0;
+   TString cutTestName[nTests];
+   Bool_t cutTest[nTests];
+
    
    // open tree
    ev = new EventTree(infiles,whichPair);
@@ -81,24 +88,18 @@ int main(int argc, char** argv) {
      if(printEvents && nValid>=numToPrint) { printf("--- limiter ---\n"); break; };
      ev->GetEvent(i);
 
-     // in case we are looking at an older SISIS skim file, make sure the SIDIS skim file cut matches
-     if( ! ev->Check_nSidis_skim_cut() ) continue; // <--------------------!!!!!!!!!!! XCHECK
+     //// in case we are looking at an older SISIS skim file, make sure the SIDIS skim file cut matches
+     // if( ! ev->Check_nSidis_skim_cut() ) continue; // <--------------------!!!!!!!!!!! XCHECK (RGA ONLY)
 
      // full cut set
      if(ev->Valid()) {
        nValid++;
-       if(printEvents && nValid<=numToPrint) {
-         // PrintEvent_xcheck();
-       }
+       if(printEvents && nValid<=numToPrint) PrintEvent_xcheck(); // <-------------------------------- !!!!!!!!!!!!!!!!!!!!! XCHECK
      };
 
      // counts for each cut
      if(Tools::PairSame(ev->hadIdx[qA],ev->hadIdx[qB],whichHad[qA],whichHad[qB])) {
        nTotal++;
-
-       // print events
-       // PrintEvent_xcheck();
-       if(ev->cutFiducial) PrintEvent_xcheck(); // <-------------------------------- !!!!!!!!!!!!!!!!!!!!! XCHECK
 
        // main cuts
        if(ev->cutDIS) nCutDIS++;
@@ -118,10 +119,31 @@ int main(int argc, char** argv) {
          if(ev->objDiphoton->cutMassSB) nCutdiphMassSB++;
          if(ev->objDiphoton->cutBasic) nCutdiphBasic++;
        };
+
+       ///////////////////////////////////////////////////////// XCHECK TESTS
+       Bool_t cut1  = ev->eleTheta>5 && ev->eleTheta<35;
+       Bool_t cut2  = ev->eleP > 2;
+       Bool_t cut3  = ev->elePCALen > 0.07;
+       Bool_t cut4  = ev->CheckSampFrac_diagonal();
+       Bool_t cut5  = ev->CheckSampFrac_vs_p();
+       Bool_t cut6  = ev->hadTheta[qA]>5 && ev->hadTheta[qA]<35; // pi+
+       Bool_t cut7  = ev->hadP[qA] > 1.25;                       // pi+
+       Bool_t cut8  = ev->CheckHadChi2pid(qA);                   // pi+
+       Bool_t cut9  = ev->hadTheta[qB]>5 && ev->hadTheta[qB]<35; // pi-
+       Bool_t cut10 = ev->hadP[qB] > 1.25;                       // pi-
+       Bool_t cut11 = ev->CheckHadChi2pid(qB);                   // pi-
+       cutTest[0] = cut1 && cut6 && cut9;  cutTestName[0] = "cut1 && cut6 && cut9";
+       cutTest[1] = cut7 && cut10;         cutTestName[1] = "cut7 && cut10";
+       cutTest[2] = cut8 && cut11;         cutTestName[2] = "cut8 && cut11";
+       cutTest[3] = cut4 && cut5;          cutTestName[3] = "cut4 && cut5";
+       for(int j=0; j<nTests; j++) { if(cutTest[j]) nCutTest[j]++; };
+       ///////////////////////////////////////////////////////// XCHECK TESTS
+
      };
 
    };
 
+   printf("--------------------- RUN %d\n",ev->runnum);
    PrintCount("nAllCuts",nValid,nTotal);
    PrintCount("nNoCuts",nTotal,nTotal);
    PrintCount("nCutDIS",nCutDIS,nTotal);
@@ -142,6 +164,7 @@ int main(int argc, char** argv) {
      PrintCount("  nCutdiphBasic",nCutdiphBasic,nTotal);
    };
 
+   for(int j=0; j<nTests; j++) PrintCount("nCutTest ("+cutTestName[j]+") = ",nCutTest[j],nTotal); // XCHECK
 
    if(printEvents) 
      printf("\n!! events printed to eventTable.txt (no more than 10000 printed) !!\n\n");

@@ -8,7 +8,7 @@
 
 require 'pry'
 
-subdir="4.19"
+subdir="4.25"
 
 # count number of events in each table
 puts "Number of events in each file:"
