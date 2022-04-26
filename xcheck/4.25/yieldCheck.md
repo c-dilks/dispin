@@ -6,35 +6,36 @@ nCutDIS      686802 683905
 nCutDihadron 740830 737308
 nCutHelicity 886176
 nCutFiducial 738015 734608
-nCutPID      54673  88117 <-----
+nCutPID      54673  54195
 nCutVertex   716208 713345
 nCutFR       377431 375957
 
 
 # 11171 RGB Fall 2019 Outbending
 VAR          CHRIS  TIMOTHY
-nAllCuts     32500  30720
+nAllCuts     32500  30720 <-----
 nNoCuts      839714 829788
 nCutDIS      672160 662728
 nCutDihadron 649086 641373
 nCutHelicity 819980
 nCutFiducial 703739 658771 <-----
-nCutPID      78609  77991
+nCutPID      78609  77230
 nCutVertex   663390 654753
 nCutFR       404113 398379
 
 
 # 11364 RGB Spring 2020 Inbending
 VAR          CHRIS  TIMOTHY
-nAllCuts     25055  25746
+nAllCuts     25055  25746 <-----
 nNoCuts      567737 566812
 nCutDIS      433713 432548
 nCutDihadron 467031 465454
 nCutHelicity 562061
 nCutFiducial 460973 459036
-nCutPID      54306  57478 <-----
+nCutPID      54306  53906
 nCutVertex   466300 465079
 nCutFR       248719 248222
+
 
 
 # PID cross check
