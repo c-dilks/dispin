@@ -6,6 +6,8 @@
 .nfs*
 src/*.pcm
 *.root
+*.npy
+*.npz
 *.png
 *.pdf
 !docDiagram.pdf

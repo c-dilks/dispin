@@ -92,6 +92,7 @@ class Binning : public TObject
     // - bin finding
     Int_t FindBin(EventTree * ev);
     Int_t FindBin(Float_t iv0, Float_t iv1=0, Float_t iv2=0);
+    Int_t FindBinGen(EventTree * ev);
     // -misc
     Bool_t CheckDim(Int_t dim_);
     Int_t HashBinNum(Int_t bin0, Int_t bin1=-1, Int_t bin2=-1);
@@ -114,6 +115,7 @@ class Binning : public TObject
 
     TString schemeVersion;
     Float_t ivVal[3];
+    Float_t ivValGen[3];
 
 
   ClassDef(Binning,1);
