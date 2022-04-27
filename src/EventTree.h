@@ -84,7 +84,7 @@ class EventTree : public TObject
     //   BRANCHES
     ///////////////////////////
     // DIS kinematics
-    Float_t W,Q2,Nu,x,y,gamma,epsilon;
+    Float_t W,Q2,Nu,x,y,gamma,epsilon,beamE;
 
     // hadron kinematics
     Int_t pairType;
@@ -272,6 +272,8 @@ class EventTree : public TObject
 
     Bool_t isDiphoton[2];
     Float_t minP[2];
+
+    Bool_t hasBeamE;
 
 
   ClassDef(EventTree,1);

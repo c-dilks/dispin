@@ -223,6 +223,7 @@ int main(int argc, char** argv) {
   outrootTr->Branch("Nu",&(disEv->Nu),"Nu/F");
   outrootTr->Branch("x",&(disEv->x),"x/F");
   outrootTr->Branch("y",&(disEv->y),"y/F");
+  outrootTr->Branch("beamE",&(disEv->BeamEn),"beamE/F");
   // - electron kinematics branches
   outrootTr->Branch("eleE",&(disEv->eleE),"eleE/F");
   outrootTr->Branch("eleP",&(disEv->eleP),"eleP/F");
@@ -395,7 +396,8 @@ int main(int argc, char** argv) {
     };
 
     // calculate DIS kinematics
-    disEv->CalculateKinematics(traj[kEle],runnum);
+    disEv->SetBeamEnFromRun(runnum);
+    disEv->CalculateKinematics(traj[kEle]);
 
 
     // calculate dihadron kinematics and obtain hadron fiducial cuts
@@ -444,7 +446,8 @@ int main(int argc, char** argv) {
         // calculate kinematics
         if(isMatch[kEle]) {
           gen_eleIsMatch = true;
-          disEvMC->CalculateKinematics(trajMC[kEle],runnum);
+          disEvMC->SetBeamEnFromRun(runnum);
+          disEvMC->CalculateKinematics(trajMC[kEle]);
           gen_eleMatchDist = genMatchDist[kEle];
           if(isMatch[kHadA] && isMatch[kHadB]) {
             gen_hadIsMatch[qA] = true;
