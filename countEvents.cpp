@@ -120,23 +120,23 @@ int main(int argc, char** argv) {
          if(ev->objDiphoton->cutBasic) nCutdiphBasic++;
        };
 
-       ///////////////////////////////////////////////////////// XCHECK TESTS
-       Bool_t cut1  = ev->eleTheta>5 && ev->eleTheta<35;
-       Bool_t cut2  = ev->eleP > 2;
-       Bool_t cut3  = ev->elePCALen > 0.07;
-       Bool_t cut4  = ev->CheckSampFrac_diagonal();
-       Bool_t cut5  = ev->CheckSampFrac_vs_p();
-       Bool_t cut6  = ev->hadTheta[qA]>5 && ev->hadTheta[qA]<35; // pi+
-       Bool_t cut7  = ev->hadP[qA] > 1.25;                       // pi+
-       Bool_t cut8  = ev->CheckHadChi2pid(qA);                   // pi+
-       Bool_t cut9  = ev->hadTheta[qB]>5 && ev->hadTheta[qB]<35; // pi-
-       Bool_t cut10 = ev->hadP[qB] > 1.25;                       // pi-
-       Bool_t cut11 = ev->CheckHadChi2pid(qB);                   // pi-
-       cutTest[0] = cut1 && cut6 && cut9;  cutTestName[0] = "cut1 && cut6 && cut9";
-       cutTest[1] = cut7 && cut10;         cutTestName[1] = "cut7 && cut10";
-       cutTest[2] = cut8 && cut11;         cutTestName[2] = "cut8 && cut11";
-       cutTest[3] = cut4 && cut5;          cutTestName[3] = "cut4 && cut5";
-       for(int j=0; j<nTests; j++) { if(cutTest[j]) nCutTest[j]++; };
+       ///////////////////////////////////////////////////////// XCHECK TESTS for PID
+       // Bool_t cut1  = ev->eleTheta>5 && ev->eleTheta<35;
+       // Bool_t cut2  = ev->eleP > 2;
+       // Bool_t cut3  = ev->elePCALen > 0.07;
+       // Bool_t cut4  = ev->CheckSampFrac_diagonal();
+       // Bool_t cut5  = ev->CheckSampFrac_vs_p();
+       // Bool_t cut6  = ev->hadTheta[qA]>5 && ev->hadTheta[qA]<35; // pi+
+       // Bool_t cut7  = ev->hadP[qA] > 1.25;                       // pi+
+       // Bool_t cut8  = ev->CheckHadChi2pid(qA);                   // pi+
+       // Bool_t cut9  = ev->hadTheta[qB]>5 && ev->hadTheta[qB]<35; // pi-
+       // Bool_t cut10 = ev->hadP[qB] > 1.25;                       // pi-
+       // Bool_t cut11 = ev->CheckHadChi2pid(qB);                   // pi-
+       // cutTest[0] = cut1 && cut6 && cut9;  cutTestName[0] = "cut1 && cut6 && cut9";
+       // cutTest[1] = cut7 && cut10;         cutTestName[1] = "cut7 && cut10";
+       // cutTest[2] = cut8 && cut11;         cutTestName[2] = "cut8 && cut11";
+       // cutTest[3] = cut4 && cut5;          cutTestName[3] = "cut4 && cut5";
+       // for(int j=0; j<nTests; j++) { if(cutTest[j]) nCutTest[j]++; };
        ///////////////////////////////////////////////////////// XCHECK TESTS
 
      };
@@ -164,7 +164,7 @@ int main(int argc, char** argv) {
      PrintCount("  nCutdiphBasic",nCutdiphBasic,nTotal);
    };
 
-   for(int j=0; j<nTests; j++) PrintCount("nCutTest ("+cutTestName[j]+") = ",nCutTest[j],nTotal); // XCHECK
+   // for(int j=0; j<nTests; j++) PrintCount("nCutTest ("+cutTestName[j]+") = ",nCutTest[j],nTotal); // XCHECK
 
    if(printEvents) 
      printf("\n!! events printed to eventTable.txt (no more than 10000 printed) !!\n\n");
