@@ -25,7 +25,7 @@ nCutFR       373031 372412
 # 6356 RGB Spring 2019 Inbending
 VAR           CHRIS   TIMOTHY  TIMOTHY_FILE
 nAllCuts      25686   26213    6356/6356_all_cuts.txt
-nNoCuts       894417  704168   6356/6356_assumed_cuts.txt
+nNoCuts       894417  891562   6356/6356_assumed_cuts.txt
 nCutDIS       686802  683905   6356/6356_sidis_cuts.txt
 nCutDihadron  740830  737308   6356/6356_exclusive_cuts.txt
 nCutHelicity  886176
