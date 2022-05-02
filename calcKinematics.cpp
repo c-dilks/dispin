@@ -30,12 +30,14 @@ TTree * ditr;
 TFile * outrootFile;
 TTree * outrootTr;
 TRandom * RNG;
+Int_t evnumTmp;
+Float_t beamEtmp;
 
 
 void SetParticleBranchAddress(TString parStr, TString brName, void * brAddr) {
   ditr->SetBranchAddress(TString(parStr+"_"+brName),brAddr);
 };
-Float_t RadiativeBeamEn(Int_t run);
+Float_t RadiativeBeamEn(Int_t runnum_, Int_t evnum_);
 
 
 int main(int argc, char** argv) {
@@ -56,6 +58,7 @@ int main(int argc, char** argv) {
   if(argc>2) outrootDir = TString(argv[2]);
   if(argc>3) dataStream = TString(argv[3]);
   if(argc>4) injectStream = TString(argv[4]);
+  printf("RUN: %s\n",argv[0]);
 
 
   // instantiate useful objects
@@ -75,6 +78,8 @@ int main(int argc, char** argv) {
     fidu[p] = new FiducialCuts();
   };
   RNG = new TRandomMixMax(42567);
+  evnumTmp = -10000;
+  beamEtmp = 0.0;
 
   // open diskim file
   diskimFile = new TFile(infileN,"READ");
@@ -370,7 +375,7 @@ int main(int argc, char** argv) {
   //-----------------------------------
   for(int i=0; i<ditr->GetEntries(); i++) {
     if(i%10000==0) printf("[+] %.2f%%\n",100*((float)i)/ditr->GetEntries());
-    //if(i>30000) break; // limiter
+    //if(i>100000) break; // limiter
     ditr->GetEntry(i);
 
     // reset branches
@@ -409,7 +414,7 @@ int main(int argc, char** argv) {
 
     // calculate DIS kinematics
     if(!useRadBeam) disEv->SetBeamEnFromRun(runnum);
-    else disEv->SetBeamEn(RadiativeBeamEn(runnum));
+    else disEv->SetBeamEn(RadiativeBeamEn(runnum,evnum));
     disEv->CalculateKinematics(traj[kEle]);
 
 
@@ -504,9 +509,13 @@ int main(int argc, char** argv) {
 
 //////////////////////////////////////////////////////////////////////////////////
 // beam energy, modified for radiative corrections model (from Timothy/Harut)
-Float_t RadiativeBeamEn(Int_t run) {
+Float_t RadiativeBeamEn(Int_t runnum_, Int_t evnum_) {
 
-  Float_t nominalBeamEn = RundepBeamEn(run); // get nominal beam energy from run number
+  // generate beam energy iff it is a new event
+  if(evnum_==evnumTmp) return beamEtmp;
+  else evnumTmp = evnum_;
+
+  Float_t nominalBeamEn = RundepBeamEn(runnum_); // get nominal beam energy from run number
 
   Float_t beam_percentage[] = {
     0.99995, 0.98985, 0.97975, 0.96965, 0.95955, 0.94945, 0.93935, 
@@ -542,10 +551,13 @@ Float_t RadiativeBeamEn(Int_t run) {
 
   Double_t double_random = RNG->Uniform(); // \in (0,1)
   for(int i=0; i<sizeof(beam_likelihood)/sizeof(beam_likelihood[0]); i++) {
-    if(double_random<beam_likelihood[i])
-      return nominalBeamEn * beam_percentage[i];
+    if(double_random<beam_likelihood[i]) {
+      beamEtmp = nominalBeamEn * beam_percentage[i];
+      return beamEtmp;
+    }
   };
 
   fprintf(stderr,"ERROR: failed to set radiative-corrected beam energy; setting to nominal energy instead\n");
-  return nominalBeamEn;
+  beamEtmp = nominalBeamEn;
+  return beamEtmp;
 };
