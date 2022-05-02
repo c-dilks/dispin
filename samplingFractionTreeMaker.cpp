@@ -89,7 +89,13 @@ int main(int argc, char** argv) {
   ev = new EventTree(inputData+(inputType==iDir?"/*.root":""),pairType);
 
   // define output file
-  if(outFileN=="") outFileN="out.root"; // set default
+  if(outFileN=="") { // set default
+    if(inputType==iDir) outFileN="out.root";
+    else {
+      outFileN = inputData;
+      outFileN(TRegexp("^.*/")) = "sfPart.";
+    };
+  };
   printf("\nCREATING TREE FILE = %s\n\n",outFileN.Data());
   outFile = new TFile(outFileN,"RECREATE");
 

@@ -257,7 +257,7 @@ EventTree::EventTree(TString filelist, Int_t whichPair_) {
 
 
 void EventTree::GetEvent(Long64_t i) {
-  if(i%10000==0) printf("[+] %.2f%%\n",100*(float)i/((float)ENT));
+  if(i%10000==0) printf("[+] %.2f%%\n",100*(double)i/((double)ENT));
 
   chain->GetEntry(i);
 
