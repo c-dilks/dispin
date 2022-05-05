@@ -7,6 +7,26 @@ root = PyCall.import_module 'ROOT'
 root.gROOT.SetBatch true
 root.gStyle.SetOptStat false
 
+## epochRange: epochLineLB <= runnum < epochLineUB
+Epochs = [
+  5420,
+  5452,
+  5510,
+  5585,
+  5700,
+  6275,
+  6400,
+  6499,
+  6600,
+  6735,
+  6758,
+  6800,
+  11200,
+  11260,
+  11300,
+  11455,
+]
+
 # open files
 inFiles = [
   'sf.rga.inbending.all.plots.root',
@@ -100,25 +120,7 @@ combH.each do |sector,comb|
 end
 
 ## epoch lines
-## epochRange: epochLineLB <= runnum < epochLineUB
-epochLines = [
-  5420,
-  5452,
-  5510,
-  5585,
-  5700,
-  6275,
-  6400,
-  6499,
-  6600,
-  6735,
-  6758,
-  6800,
-  11200,
-  11260,
-  11300,
-  11455,
-].map do |epoch|
+epochLines = Epochs.map do |epoch|
   epochL = root.TLine.new epoch, sampFracMin, epoch, sampFracMax
   epochL.SetLineWidth 2
   epochL.SetLineColor root.kOrange-7
