@@ -40,8 +40,8 @@ TString RX(TString s, TString v);
 Binning *BS;
 EventTree *ev[2];
 TFile *outFile;
-enum outrad { out, rad };
-enum histEnum {fir,ful,all,nH};
+enum outrad { nom, rad }; // nominal, RC-modified
+enum histEnum {fir,ful,all,nH}; // see histogram types below
 
 
 //////////////////////////////////////
@@ -59,12 +59,12 @@ int main(int argc, char** argv) {
     switch(opt) {
       case 'f': /* input file */
         if(inputType>=0) return PrintUsage();
-        inFiles[out] = optarg;
+        inFiles[nom] = optarg;
         inputType = iFile;
         break;
       case 'd': /* input directory */
         if(inputType>=0) return PrintUsage();
-        inFiles[out] = optarg;
+        inFiles[nom] = optarg;
         inputType = iDir;
         break;
       case 'o': /* output file name */
@@ -98,12 +98,12 @@ int main(int argc, char** argv) {
   };
 
   // determine radroot file/directory path
-  inFiles[rad] = inFiles[out];
+  inFiles[rad] = inFiles[nom];
   inFiles[rad](TRegexp("^outroot")) = "radroot";
 
   // print arguments' values
   Tools::PrintSeparator(40,"=");
-  printf("outrootFiles = %s\n",inFiles[out].Data());
+  printf("outrootFiles = %s\n",inFiles[nom].Data());
   printf("radrootFiles = %s\n",inFiles[rad].Data());
   printf("pairType = 0x%x\n",pairType);
   printf("ivType = %d\n",ivType);
@@ -132,7 +132,7 @@ int main(int argc, char** argv) {
       for(int d=0; d<BS->dimensions; d++) outFileN += "_" + BS->GetIVname(d);
       outFileN += ".root";
     } else if(inputType==iFile) {
-      outFileN = inFiles[out];
+      outFileN = inFiles[nom];
       outFileN(TRegexp("^.*/")) = "radiative/tree.";
     };
   }
@@ -153,7 +153,7 @@ int main(int argc, char** argv) {
     // counts
     for(int h=0; h<nH; h++) countHash[h].insert(pair<Int_t,Long64_t>(bn,0));
 
-    // histogram
+    // iv distributions
     TString ivDistN = Form("iv_%d",bn);
     TString ivDistT = "iv dist";
     for(int d=0; d<BS->dimensions; d++) ivDistT += ";" + BS->GetIVtitle(d);
@@ -182,8 +182,8 @@ int main(int argc, char** argv) {
   // 2D histograms of RC-modified vs. nominal
   /* histogram types:
    * - FIR: RC-modified value From Invalid Region (rejected), nominal value from allowed region
-   * - FUL: nominal value from allowed region
-   * - ALL: all events, no cuts
+   * - FUL: nominal value from allowed region, don't care about RC-modified value
+   * - ALL: allow all events, no cuts
    */
   TString histT[nH], histN[nH];
   histT[fir] = "VAR(nom) allowed, VAR(mod) rejected";
@@ -202,8 +202,8 @@ int main(int argc, char** argv) {
   };
 
   auto FillData = [&](Int_t hh, Int_t bb) {
-    histMmiss[hh]->Fill( ev[out]->Mmiss, ev[rad]->Mmiss );
-    countHash[hh].at(bb)++;
+    histMmiss[hh]->Fill( ev[nom]->Mmiss, ev[rad]->Mmiss );
+    if(bb>0) countHash[hh].at(bb)++;
   };
 
 
@@ -211,20 +211,20 @@ int main(int argc, char** argv) {
   //-----------------------------------------------------
   // EVENT LOOP  
   //-----------------------------------------------------
-  printf("begin loop through %lld events...\n",ev[out]->ENT);
-  for(int i=0; i<ev[out]->ENT; i++) {
+  printf("begin loop through %lld events...\n",ev[nom]->ENT);
+  for(int i=0; i<ev[nom]->ENT; i++) {
 
-    ev[out]->GetEvent(i);
+    ev[nom]->GetEvent(i);
     ev[rad]->GetEvent(i);
-    Int_t binnum = BS->FindBin(ev[out]);
 
     // check nominal values
-    if(ev[out]->Valid()) {
+    if(ev[nom]->Valid()) {
 
       // truncate at limit
       if(limiter>0 && i>limiter) break;
 
       // fill iv dists
+      Int_t binnum = BS->FindBin(ev[nom]); // binning is according to the nominal value
       for(int d=0; d<BS->dimensions; d++) ivVal[d] = BS->GetIVval(d);
       switch(BS->dimensions) {
         case 1: ((TH1D*)ivDistHash.at(binnum))->Fill(ivVal[0]);                   break;
@@ -235,17 +235,17 @@ int main(int argc, char** argv) {
       // friend check: make sure outroot and radroot trees are synced by checking
       // that both are currently reading the same dihadron
       // - we do not use TTree friends, rather EventTrees for better control
-      if( ev[out]->runnum     != ev[rad]->runnum     ||
-          ev[out]->evnum      != ev[rad]->evnum      ||
-          ev[out]->hadRow[qA] != ev[rad]->hadRow[qA] ||
-          ev[out]->hadRow[qB] != ev[rad]->hadRow[qB]
+      if( ev[nom]->runnum     != ev[rad]->runnum     ||
+          ev[nom]->evnum      != ev[rad]->evnum      ||
+          ev[nom]->hadRow[qA] != ev[rad]->hadRow[qA] ||
+          ev[nom]->hadRow[qB] != ev[rad]->hadRow[qB]
         )
       {
         fprintf(stderr,"ERROR: event mis-match\n");
         return 1;
       }
 
-      // FIR cut, where FIR = From Invalid Region, with RC-corrected beamE applied
+      // FIR cut, where RC-modified value is "FIR" = From Invalid Region
       Bool_t firCut;
       firCut = ! ev[rad]->Valid();
       // firCut = ev[rad]->Mmiss < 1.5;
@@ -254,9 +254,9 @@ int main(int argc, char** argv) {
       FillData(ful,binnum);
       if(firCut) FillData(fir,binnum);
 
-    }; // end if(ev[out]->Valid())
+    }; // end if(ev[nom]->Valid())
 
-    FillData(all,binnum); // fill no-cuts data structures
+    FillData(all,-1); // fill no-cuts data structures
 
   }; // end EVENT LOOP
 
