@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 # plot sampling fraction vs. run number, to determine sampling fraction "epochs"
 # - run samplingFractionTreeMaker.exe to produce the input file
+# - run loop_samplingFractionPlot.rb for automation
 
 require 'pry'
 require 'awesome_print'
