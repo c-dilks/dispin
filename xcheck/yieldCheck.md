@@ -10,6 +10,10 @@ nCutPID      17403  17323
 nCutVertex   100834 100529
 nCutFR       58514  58341
 
+# 5403 (RGA inbending)
+VAR          CHRIS  TIMOTHY
+nAllCuts     7031   7045
+
 # 5424 (RGA outbending)
 VAR          CHRIS  TIMOTHY
 nAllCuts     39899  40107
