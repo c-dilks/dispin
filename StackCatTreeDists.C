@@ -21,10 +21,10 @@ void CompareDist(TString varname, TString vartitle, Double_t forceMin=UNDEF, Dou
 void StackCatTreeDists(
   TString infile0N="catTreeData.rga.bibending.all.idx.root", // light red closed circles
   TString infile1N="catTreeData.rgb.bibending.all.idx.root", // dark blue closed squares
-  TString infile2N="catTreeMC.mca.bibending.all.idx.root",   // light red or magenta open circles
+  TString infile2N="catTreeMC.mca.bibending.all.idx.root",   // light red or black open circles
   TString infile3N="catTreeMC.mcb.bibending.all.idx.root",   // dark blue open squares
   TString outdir_="cattreestacks", // output directory
-  TCut extraCut_ = "" // additional cuts
+  TCut extraCut_ = "" // additional cuts, or weight
 ) {
   NSTACK = 0;
   if(infile0N!="") infile[NSTACK++] = new TFile(infile0N,"READ");
@@ -103,7 +103,7 @@ void CompareDist(TString varname, TString vartitle, Double_t forceMin, Double_t 
     kRed-7,
     kBlue+3
   };
-  if(NSTACK==3) color[2] = kMagenta;
+  if(NSTACK==3) color[2] = kBlack;
   Style_t style[NSTACK_MAX] = {
     kFullCircle,
     kFullSquare,
