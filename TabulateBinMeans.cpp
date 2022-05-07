@@ -126,10 +126,13 @@ int main(int argc, char** argv) {
   else ev = new CatTree(inputData);
 
   // define output file
+  TString inputDataBasename = inputData;
+  inputDataBasename(TRegexp("^.*/")) = "";
   TString outfileN = Form("meanvmean.%d.",ivType); 
-  if(!useEventTree) outfileN += inputData;
+  if(!useEventTree) outfileN += inputDataBasename;
   else outfileN += ".root";
   outfileN = "meanvmean/"+outfileN;
+  printf("outfileN = %s\n",outfileN.Data());
   outfile = new TFile(outfileN,"RECREATE");
 
   // define distHash = { varName => { binNum => distribution } }

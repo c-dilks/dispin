@@ -11,6 +11,7 @@ Interactive = false # if true, draw, otherwise just run in background
 ###############
 
 include RootApp if Interactive
+pi = Math::PI
 
 # args
 if ARGV.length<1
@@ -29,7 +30,7 @@ grFormat = {
   2 => { :color=>KRed-7,  :marker=>KOpenCircle, :line=>KDashed }, # RGA MC
   3 => { :color=>KBlue+3, :marker=>KOpenSquare, :line=>KDashed }, # RGB MC
   # additional settings
-  :markerSize => 2,
+  :markerSize => 1.5,
   :lineSize   => 2,
 }
 grFormat[2][:color]=KMagenta+1 if fileList.length==3 # if 3 sets, change color of 3rd (MC)
@@ -51,6 +52,18 @@ def keyLoop(rootFile) # loop through TKeys of a file, with auto-casting
   end
 end
 
+# get first or last filled bin
+def getFirstFilledBin(hist)
+  (1..hist.GetNbinsX).each do |bn|
+    return hist.GetBinCenter(bn) if hist.GetBinContent(bn)>0
+  end
+end
+def getLastFilledBin(hist)
+  (1..hist.GetNbinsX).to_a.reverse.each do |bn|
+    return hist.GetBinCenter(bn) if hist.GetBinContent(bn)>0
+  end
+end
+
 # loop over input files
 fileList.map{ |inFileN| TFile.open(inFileN,"READ") }.each do |inFile|
 
@@ -65,7 +78,12 @@ fileList.map{ |inFileN| TFile.open(inFileN,"READ") }.each do |inFile|
     keyLoop(inFile) do |key|
       if key.ClassName=="TH1D" and key.GetName.match?(/^tot_/)
         varN = key.GetName.sub(/^tot_/,"").sub(/Bin.*$/,"")
-        boundHash[varN] = { :lbound=>key.GetXaxis.GetXmin, :ubound=>key.GetXaxis.GetXmax, }
+        # boundHash[varN] = { :lbound=>key.GetXaxis.GetXmin, :ubound=>key.GetXaxis.GetXmax, } # use full histogram range
+        boundHash[varN] = { :lbound=>getFirstFilledBin(key), :ubound=>getLastFilledBin(key), } # use only the range the data occupy
+        if varN.match?(/^Phi/)
+          boundHash[varN][:lbound] = -pi/2
+          boundHash[varN][:ubound] = 3*pi/2
+        end
       end
     end
     boundHash.each{ |k,v| puts "#{k.ljust(15)} = #{v}" } if Verbose
@@ -74,6 +92,20 @@ fileList.map{ |inFileN| TFile.open(inFileN,"READ") }.each do |inFile|
   # add any TGraphErrors to mgrHash TMultiGraphs
   keyLoop(inFile) do |key|
     if key.ClassName=="TGraphErrors"
+
+      # omit some graphs from being drawn
+      draw = true
+      [
+        /^DY/,
+        /^DepolA/,
+        /^DepolC/,
+        /^DepolW/,
+        /^depol/,
+        /^Helicity/,
+        /^Y/,
+      ].each do |rx| draw=false if key.GetName.match?(rx) end
+      next unless draw
+
       key.SetMarkerColor grFormat[fileNum][:color]
       key.SetLineColor   grFormat[fileNum][:color]
       key.SetMarkerStyle grFormat[fileNum][:marker]
@@ -104,9 +136,10 @@ cgrList = []
 mgrHash.each do |mgrN,mgr|
   canvN = "canv_#{mgrN}"
   yvar = mgrN.split('_').first
-  # mgr.SetMinimum boundHash[yvar][:lbound] # set axis scale
-  # mgr.SetMaximum boundHash[yvar][:ubound]
+  mgr.SetMinimum boundHash[yvar][:lbound] # set axis scale
+  mgr.SetMaximum boundHash[yvar][:ubound]
   canv = TCanvas.create(canvN,canvN,800,500)
+  canv.SetGrid(1,1)
   canv.SetLeftMargin(0.20)
   canv.SetRightMargin(0.03)
   canv.SetTopMargin(0.03)

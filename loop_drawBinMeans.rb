@@ -2,7 +2,16 @@
 
 require 'fileutils'
 require './DatasetLooper.rb'
-looper = DatasetLooper.new
+require 'pry'
+
+# args
+if ARGV.length!=1
+  $stderr.puts "USAGE #{$0} [DIHADRON]"
+  DatasetLooper.printDihadrons
+  exit 2
+end
+dihadronSym = ARGV[0].to_sym
+looper = DatasetLooper.new(dihadronSym)
 
 # clean up old pngs
 FileUtils.rm Dir.glob("meanvmean/*.png"), verbose: true
@@ -25,7 +34,7 @@ looper.allsetListLoopOnlyRGA do |rgaSet|
 
   # loop through ivTypes
   looper.binHash.keys.each do |ivType|
-    rootInFiles = catTrees.map{ |catTree| "meanvmean/meanvmean.#{ivType}.#{catTree}" }
+    rootInFiles = catTrees.map{ |catTree| "meanvmean/meanvmean.#{ivType}.#{catTree.sub(/^.*\//,'')}" }
     system "./drawBinMeans.rb #{rootInFiles.join ' '}"
     Dir.glob("meanvmean/canv*.png") do |png|
       FileUtils.mv png, png.sub(/canv/,"img.#{torus}.#{ivType}"), verbose: true
