@@ -16,7 +16,7 @@ dl = DatasetLooper.new(dihadronSym)
 
 # settings #################
 subDir     = "bruspin.volatile"
-idString   = "apr4"
+idString   = "may6"
 datasets   = dl.allsetListLoopOnlyData#.select{ |dataset| dataset.include?'bibending' }
 mcsets     = dl.allsetListLoopOnlyMC
 ivTypes    = dl.binHash.keys#.select{|i|i==2}
