@@ -16,7 +16,7 @@ looper = DatasetLooper.new(dihadronSym)
 
 # settings #################
 subDir     = "bruspin.volatile"
-idString   = "apr4"
+idString   = "may6"
 datasets   = looper.allsetListLoopOnlyData
 minimizers = [
   "minuit",
@@ -34,6 +34,11 @@ tori = [
 ]
 Verbose = true
 outputFormat = "png"
+UseCustomHighDimTitles = true # if true, use the following custom `highDimTitles` for 2D and 3D binning schemes
+highDimTitles = {
+  0 => '$M_h<0.63$ GeV',
+  1 => '$M_h>0.63$ GeV',
+}
 
 #########################################
 # functions and stuff
@@ -86,14 +91,21 @@ looper.binHash.keys.product(tori,minimizers,schemes[dihadronSym]).each do |ivTyp
 
     # get binlist number
     blList = bruFiles.map do |bruFile|
-      bruFile.split(/_|\./).find{ |t| t.include? "BL" }.delete("BL")
+      bruFile.split(/_|\./).find{ |t| t.include? "BL" }.delete("BL").to_i
     end.uniq
     $stderr.puts "WARNING: blList.length>1" if blList.length>1
     bl = blList.first
 
     # set title options for pwPlot.py
     titleOpts = looper.binHash[ivType].map do |opt,val|
-      title = val.gsub("__BL__","bin #{bl}") if val.is_a? String
+      title = ''
+      if val.is_a? String
+        if UseCustomHighDimTitles
+          title = val.include?('__BL__') ? highDimTitles[bl] : val
+        else
+          title = val.gsub("__BL__","bin #{bl+1}")
+        end
+      end
       pwOpt = pwOpts[opt]
       pwOpt += "'#{title}'" unless pwOpt==nil
     end.compact
@@ -113,6 +125,8 @@ looper.binHash.keys.product(tori,minimizers,schemes[dihadronSym]).each do |ivTyp
 end
 puts sep
 printDebug("pwPlot commands",pwPlotCmds)
+
+# exit # premature exit, for testing
 
 
 #####################################

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.8
 # draw partial wave plots, with shared axes
 
 import matplotlib.pyplot as plt
