@@ -70,7 +70,9 @@ looper.binHash.keys.product(tori,minimizers,schemes[dihadronSym]).each do |ivTyp
   puts "\n#{"="*30} PLOT: #{[torus,ivName,minimizer,scheme].join ' '}" if Verbose
 
   # list of bruDirs, one for each dataset, filtered for the given torus polarity
+  legendLabels = []
   bruDirs = datasets.select{|set|set.include?torus}.map do |dataset|
+    legendLabels << DatasetLooper::datasetTarget(dataset)
     "#{subDir}/" + [idString,dataset,ivName,minimizer].join('.')
   end
   outputDirs << bruDirs[0] # (only need the first one, where output files are produced)
@@ -116,6 +118,7 @@ looper.binHash.keys.product(tori,minimizers,schemes[dihadronSym]).each do |ivTyp
       "./pwPlot.py",
       "-s#{scheme}",
       "-o#{outputFormat}",
+      "-l'#{legendLabels.join(';')}'",
       *titleOpts,
       *bruFiles,
     ].join(' ')
