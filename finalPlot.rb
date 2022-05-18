@@ -53,8 +53,9 @@ end
 
 # mapping certain `binHash` options to `pwPlot.py` options
 pwOpts = {
-  :xTitle  => '-x',
-  :blTitle => '-e',
+  :xTitle       => '-x',
+  :blTitle      => '-e',
+  :xTranslation => '-t',
 }
 
 sep = "\n\n"+"#{'S'*50}\n"*3+"\n\n"
@@ -109,7 +110,13 @@ looper.binHash.keys.product(tori,minimizers,schemes[dihadronSym]).each do |ivTyp
         end
       end
       pwOpt = pwOpts[opt]
-      pwOpt += "'#{title}'" unless pwOpt==nil
+      unless pwOpt==nil
+        if val.is_a? String
+          pwOpt += "'#{title}'"
+        else
+          pwOpt += "#{val}"
+        end
+      end
     end.compact
     printDebug("titleOpts",titleOpts)
 

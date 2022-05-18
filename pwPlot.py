@@ -90,11 +90,40 @@ CALLING {sys.argv[0]}:
 includeMeq0 = False
 transparentBG = False
 includePrelimLabel = True
-asymMax = 0.095 if scheme!=0 else 0.25
-asymMin = -asymMax
 ##########################
 if outputEXT!="png": # some features only work for png
     transparentBG = False
+
+# PLOT RANGES ##############################
+asymMin = None
+if scheme==0: # twist3 m==0 states only
+    asymMax = 0.25
+elif scheme==2: # twist2
+    asymMin = -0.06
+    asymMax = 0.06
+elif scheme==3: # twist3
+    asymMin = -0.06
+    asymMax = 0.06
+elif scheme==4: # DSIDIS
+    asymMax = 0.095
+elif scheme==12: # twist2, no theta-dependence
+    asymMax = 0.095
+elif scheme==13: # twist3, no theta-dependence
+    asymMax = 0.095
+elif scheme==32: # twist2, lmax=3
+    asymMax = 0.095
+elif scheme==33: #twist3, lmax=3
+    asymMax = 0.095
+elif scheme>=2000: # single plot
+    asymMax = 0.095
+else:
+    print("ERROR: bad scheme number",file=sys.stderr)
+    exit(1)
+if asymMin==None:
+    asymMin = -asymMax
+############################################
+
+
 
 # latex
 # NOTE: needed to install `dvipng` and `cm-super`
@@ -308,11 +337,14 @@ for l,lmap in plotmap.items():
             xub = list(asym.GetX())[-1]
 
             # plot formatting
+            fillSty = 'full'
+            mkrSize = 3
             if infileIdx==0:
                 mkrSty = 'o'
                 errCol = 'xkcd:coral'
             elif infileIdx==1:
                 mkrSty = 's'
+                fillSty = 'none'
                 errCol = 'xkcd:darkish blue'
             elif infileIdx==2:
                 mkrSty = '^'
@@ -337,12 +369,13 @@ for l,lmap in plotmap.items():
                 list(asym.GetY()),
                 yerr=list(asym.GetEY()),
                 marker=mkrSty,
+                fillstyle=fillSty,
                 color=mkrCol,
                 ecolor=errCol,
                 linestyle='None',
-                elinewidth=2,
-                markersize=3,
-                capsize=2,
+                elinewidth=1,
+                markersize=mkrSize,
+                capsize=0,
                 zorder=10+infileIdx,
                 label=label,
             )
