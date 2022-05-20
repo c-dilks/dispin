@@ -103,7 +103,7 @@ elif scheme==2: # twist2
     asymMax = 0.06
 elif scheme==3: # twist3
     asymMin = -0.06
-    asymMax = 0.06
+    asymMax = 0.08
 elif scheme==4: # DSIDIS
     asymMax = 0.095
 elif scheme==12: # twist2, no theta-dependence
@@ -114,6 +114,12 @@ elif scheme==32: # twist2, lmax=3
     asymMax = 0.095
 elif scheme==33: #twist3, lmax=3
     asymMax = 0.095
+elif scheme==2110: #twist2, |1,1> single plot
+    asymMin = -0.03
+    asymMax = 0.03
+elif scheme==3110: #twist3, |1,1> single plot
+    asymMin = -0.00
+    asymMax = 0.05
 elif scheme>=2000: # single plot
     asymMax = 0.095
 else:
@@ -490,7 +496,7 @@ plt.xlim(xlb,xub)
 plt.ylim(asymMin,asymMax)
 
 # legend
-if len(legendLabels)>0:
+if len(legendLabels)>0 and scheme<2000:
     location = 'upper right'
     padding = 1 
     if scheme==2 or scheme==3: padding=5
