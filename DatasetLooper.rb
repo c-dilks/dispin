@@ -241,6 +241,17 @@ class DatasetLooper
     return toks.append("data set").join(' ')
   end
 
+  # convert dataset name to target name
+  def self.datasetTarget(dataset)
+    rg = dataset.split('.').find{|tok|tok.match?(/rga|rgb/)}
+    if rg=='rga'
+      return "Proton Target"
+    elsif rg=='rgb'
+      return "Deuteron Target"
+    end
+    return 'UNKNOWN'
+  end
+
   # find dataset in `searchList` that has matching torus polarity; only returns 
   # the first match, so this is best used when there will be only one possible match
   def matchByTorus(dataset,searchList)

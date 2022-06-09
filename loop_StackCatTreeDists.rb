@@ -3,7 +3,15 @@
 require 'thread/pool'
 require './DatasetLooper.rb'
 require 'awesome_print'
-looper = DatasetLooper.new
+
+# args
+if ARGV.length!=1
+  $stderr.puts "USAGE #{$0} [DIHADRON]"
+  DatasetLooper.printDihadrons
+  exit 2
+end
+dihadronSym = ARGV[0].to_sym
+looper = DatasetLooper.new(dihadronSym)
 
 # define thread pool
 poolSize = [`nproc`.to_i-2,1].max # nCPUs-2
