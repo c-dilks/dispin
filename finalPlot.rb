@@ -16,7 +16,7 @@ looper = DatasetLooper.new(dihadronSym)
 
 # settings #################
 subDir     = "bruspin.volatile"
-idString   = "apr4"
+idString   = "may6"
 datasets   = looper.allsetListLoopOnlyData
 minimizers = [
   "minuit",
@@ -34,6 +34,11 @@ tori = [
 ]
 Verbose = true
 outputFormat = "png"
+UseCustomHighDimTitles = true # if true, use the following custom `highDimTitles` for 2D and 3D binning schemes
+highDimTitles = {
+  0 => '$M_h<0.63$ GeV',
+  1 => '$M_h>0.63$ GeV',
+}
 
 #########################################
 # functions and stuff
@@ -48,8 +53,9 @@ end
 
 # mapping certain `binHash` options to `pwPlot.py` options
 pwOpts = {
-  :xTitle  => '-x',
-  :blTitle => '-e',
+  :xTitle       => '-x',
+  :blTitle      => '-e',
+  :xTranslation => '-t',
 }
 
 sep = "\n\n"+"#{'S'*50}\n"*3+"\n\n"
@@ -65,7 +71,9 @@ looper.binHash.keys.product(tori,minimizers,schemes[dihadronSym]).each do |ivTyp
   puts "\n#{"="*30} PLOT: #{[torus,ivName,minimizer,scheme].join ' '}" if Verbose
 
   # list of bruDirs, one for each dataset, filtered for the given torus polarity
+  legendLabels = []
   bruDirs = datasets.select{|set|set.include?torus}.map do |dataset|
+    legendLabels << DatasetLooper::datasetTarget(dataset)
     "#{subDir}/" + [idString,dataset,ivName,minimizer].join('.')
   end
   outputDirs << bruDirs[0] # (only need the first one, where output files are produced)
@@ -86,16 +94,29 @@ looper.binHash.keys.product(tori,minimizers,schemes[dihadronSym]).each do |ivTyp
 
     # get binlist number
     blList = bruFiles.map do |bruFile|
-      bruFile.split(/_|\./).find{ |t| t.include? "BL" }.delete("BL")
+      bruFile.split(/_|\./).find{ |t| t.include? "BL" }.delete("BL").to_i
     end.uniq
     $stderr.puts "WARNING: blList.length>1" if blList.length>1
     bl = blList.first
 
     # set title options for pwPlot.py
     titleOpts = looper.binHash[ivType].map do |opt,val|
-      title = val.gsub("__BL__","bin #{bl}") if val.is_a? String
+      title = ''
+      if val.is_a? String
+        if UseCustomHighDimTitles
+          title = val.include?('__BL__') ? highDimTitles[bl] : val
+        else
+          title = val.gsub("__BL__","bin #{bl+1}")
+        end
+      end
       pwOpt = pwOpts[opt]
-      pwOpt += "'#{title}'" unless pwOpt==nil
+      unless pwOpt==nil
+        if val.is_a? String
+          pwOpt += "'#{title}'"
+        else
+          pwOpt += "#{val}"
+        end
+      end
     end.compact
     printDebug("titleOpts",titleOpts)
 
@@ -104,6 +125,7 @@ looper.binHash.keys.product(tori,minimizers,schemes[dihadronSym]).each do |ivTyp
       "./pwPlot.py",
       "-s#{scheme}",
       "-o#{outputFormat}",
+      "-l'#{legendLabels.join(';')}'",
       *titleOpts,
       *bruFiles,
     ].join(' ')
@@ -113,6 +135,8 @@ looper.binHash.keys.product(tori,minimizers,schemes[dihadronSym]).each do |ivTyp
 end
 puts sep
 printDebug("pwPlot commands",pwPlotCmds)
+
+# exit # premature exit, for testing
 
 
 #####################################

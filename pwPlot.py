@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.8
 # draw partial wave plots, with shared axes
 
 import matplotlib.pyplot as plt
@@ -12,6 +12,7 @@ xTitle = ''
 extraTitle = ''
 outputEXT = 'png'
 translation = 0.0
+legendLabels = []
 if len(sys.argv)-1 < 1:
     helpStr = f'''
     USAGE: {sys.argv[0]} [OPTION]... [FILE]...
@@ -26,6 +27,8 @@ if len(sys.argv)-1 < 1:
                 4: DSIDIS terms
                 12: twist2, no theta-dependence
                 13: twist3, no theta-dependence
+                32: twist2, up to lmax=3
+                33: twist3, up to lmax=3 (m=0 column included)
                 2000+: individual PW
                     digits: twist|L|M|sign(m)
                                       0:+,1:-
@@ -47,6 +50,9 @@ if len(sys.argv)-1 < 1:
             for each nth stacked plot after the first, the offset is +(n-1)*TRANSLATE;
             default = 0 (disable translation)
 
+        -l LEGEND_LABELS
+            string of labels, for a legend; each label should be delimited by a semicolon,
+            and if you use this, the number of labels must match the number of FILES
 
     FILES
         brufit asym.root file(s), which will be stacked together on the output figure
@@ -57,7 +63,7 @@ if len(sys.argv)-1 < 1:
     print(helpStr,file=sys.stderr)
     exit(2)
 
-try: opts,args = getopt.getopt(sys.argv[1:],'s:x:e:o:t:')
+try: opts,args = getopt.getopt(sys.argv[1:],'s:x:e:o:t:l:')
 except getopt.GetoptError:
     print('\n\nERROR: invalid arguments')
     exit(2)
@@ -67,6 +73,7 @@ for opt,arg in opts:
     if(opt=="-e"): extraTitle = arg
     if(opt=="-o"): outputEXT = arg
     if(opt=="-t"): translation = float(arg)
+    if(opt=="-l"): legendLabels = arg.split(';')
 infiles = args
 print(f'''
 CALLING {sys.argv[0]}:
@@ -76,17 +83,53 @@ CALLING {sys.argv[0]}:
     outputEXT = {outputEXT}
     translation = {translation}
     infiles = {infiles}
+    legendLabels = {legendLabels}
 ''')
 
 # OPTIONS ################
 includeMeq0 = False
 transparentBG = False
-includePrelimLabel = False
-asymMax = 0.095 if scheme!=0 else 0.25
-asymMin = -asymMax
+includePrelimLabel = True
 ##########################
 if outputEXT!="png": # some features only work for png
     transparentBG = False
+
+# PLOT RANGES ##############################
+asymMin = None
+if scheme==0: # twist3 m==0 states only
+    asymMax = 0.25
+elif scheme==2: # twist2
+    asymMin = -0.06
+    asymMax = 0.06
+elif scheme==3: # twist3
+    asymMin = -0.06
+    asymMax = 0.08
+elif scheme==4: # DSIDIS
+    asymMax = 0.095
+elif scheme==12: # twist2, no theta-dependence
+    asymMax = 0.095
+elif scheme==13: # twist3, no theta-dependence
+    asymMax = 0.095
+elif scheme==32: # twist2, lmax=3
+    asymMax = 0.095
+elif scheme==33: #twist3, lmax=3
+    asymMax = 0.095
+elif scheme==2110: #twist2, |1,1> single plot
+    asymMin = -0.03
+    asymMax = 0.03
+elif scheme==3110: #twist3, |1,1> single plot
+    asymMin = -0.00
+    asymMax = 0.05
+elif scheme>=2000: # single plot
+    asymMax = 0.095
+else:
+    print("ERROR: bad scheme number",file=sys.stderr)
+    exit(1)
+if asymMin==None:
+    asymMin = -asymMax
+############################################
+
+
 
 # latex
 # NOTE: needed to install `dvipng` and `cm-super`
@@ -105,7 +148,7 @@ if enableOutput:
 
 # determine nrows and ncols, and plotmap
 # plotmap maps L->M->[row,col], where row,col is of subplot
-plotmap = {l:{} for l in range(3)}
+plotmap = {l:{} for l in range(4)}
 enablePW = True
 if scheme==0: # twist3 m==0 states only
     nrows,ncols = 1,3
@@ -160,6 +203,34 @@ elif scheme==13: # twist3, no theta-dependence
     plotmap[1][1]  = [1,1]
     plotmap[2][-2] = [2,0]
     plotmap[2][2]  = [2,1]
+elif scheme==32: # twist2, lmax=3
+    nrows,ncols = 3,3
+    twist=2
+    plotmap[1][1] = [0,0]
+    plotmap[2][1] = [1,0]
+    plotmap[2][2] = [1,1]
+    plotmap[3][1] = [2,0]
+    plotmap[3][2] = [2,1]
+    plotmap[3][3] = [2,2]
+elif scheme==33: #twist3, lmax=3
+    nrows,ncols = 4,7
+    twist=3
+    plotmap[0][0]  = [0,3]
+    plotmap[1][-1] = [1,2]
+    plotmap[1][0]  = [1,3]
+    plotmap[1][1]  = [1,4]
+    plotmap[2][-2] = [2,1]
+    plotmap[2][-1] = [2,2]
+    plotmap[2][0]  = [2,3]
+    plotmap[2][1]  = [2,4]
+    plotmap[2][2]  = [2,5]
+    plotmap[3][-3] = [3,0]
+    plotmap[3][-2] = [3,1]
+    plotmap[3][-1] = [3,2]
+    plotmap[3][0]  = [3,3]
+    plotmap[3][1]  = [3,4]
+    plotmap[3][2]  = [3,5]
+    plotmap[3][3]  = [3,6]
 elif scheme>=2000: # single plot
     twist=int(scheme/1000)
     ell=int(scheme%1000/100)
@@ -172,9 +243,11 @@ else:
     exit(1)
 
 # figure size and aspect ratio
+dpi=300
+if scheme==32 or scheme==33: dpi=150
 plt.rcParams.update({
     "figure.figsize": [4*ncols,3*nrows],
-    "figure.dpi": 300,
+    "figure.dpi": dpi,
     "savefig.bbox": 'tight'
 })
 
@@ -189,7 +262,7 @@ plt.subplots_adjust(wspace=0,hspace=0)
 
 
 # main title
-if scheme==2 or scheme==3 or scheme==12 or scheme==13:
+if scheme==2 or scheme==3 or scheme==12 or scheme==13 or scheme==32 or scheme==33:
     mainTitle = "Twist-"+str(twist)+" $F_{LU}/F_{UU}$ Amplitudes"
 elif scheme==0:
     mainTitle = "Twist-"+str(twist)+" $m=0$ $F_{LU}/F_{UU}$ Amplitudes"
@@ -206,6 +279,8 @@ fig.suptitle(
 
 
 # loop over L and M #####################################
+xlb, xub = 0,0
+firstPlot = True
 for l,lmap in plotmap.items():
     for m,[r,c] in lmap.items():
 
@@ -232,6 +307,12 @@ for l,lmap in plotmap.items():
         elif scheme==13:
             drawX = l==2
             drawY = m<=0
+        elif scheme==32:
+            drawX = l==3
+            drawY = m==1
+        elif scheme==33:
+            drawX = l==3
+            drawY = l==-m
         elif scheme>=2000:
             drawX,drawY = True,True
         if not drawY:
@@ -255,13 +336,21 @@ for l,lmap in plotmap.items():
                 elif m==1: asymN = "gr_AmpT2L0Mp0Lv1P4_"+blStr
             print("asymN =",asymN)
             asym = infile.Get(asymN)
+            if asym==None: continue
+
+            # axis limits
+            xlb = list(asym.GetX())[0]
+            xub = list(asym.GetX())[-1]
 
             # plot formatting
+            fillSty = 'full'
+            mkrSize = 3
             if infileIdx==0:
                 mkrSty = 'o'
                 errCol = 'xkcd:coral'
             elif infileIdx==1:
                 mkrSty = 's'
+                fillSty = 'none'
                 errCol = 'xkcd:darkish blue'
             elif infileIdx==2:
                 mkrSty = '^'
@@ -279,18 +368,22 @@ for l,lmap in plotmap.items():
             mkrCol = errCol
 
             # draw asymmetry graph to subplot
+            label = ''
+            if firstPlot and len(legendLabels)>0: label = legendLabels[infileIdx]
             axs[r,c].errorbar(
                 list(map(lambda x:x+infileIdx*translation, asym.GetX())), # optionally offsets (translates) stacked plots
                 list(asym.GetY()),
                 yerr=list(asym.GetEY()),
                 marker=mkrSty,
+                fillstyle=fillSty,
                 color=mkrCol,
                 ecolor=errCol,
                 linestyle='None',
-                elinewidth=2,
-                markersize=3,
-                capsize=2,
+                elinewidth=1,
+                markersize=mkrSize,
+                capsize=0,
                 zorder=10+infileIdx,
+                label=label,
             )
 
             # close asym.root file
@@ -318,7 +411,7 @@ for l,lmap in plotmap.items():
         # axis labels
         if drawX: axs[r,c].set_xlabel(xTitle)
         if scheme==0: yeig = "\\ell,0"
-        elif scheme==2 or scheme==3 or scheme==12 or scheme==13: yeig = str(l)+",m"
+        elif scheme==2 or scheme==3 or scheme==12 or scheme==13 or scheme==32 or scheme==33: yeig = str(l)+",m"
         elif scheme==4: yeig = "DSIDIS"
         elif scheme>=2000: yeig = str(l)+","+str(m)
         if enablePW:
@@ -364,6 +457,8 @@ for l,lmap in plotmap.items():
                 if m==0: diffP = "LL"
                 elif abs(m)==1: diffP = "LT"
                 elif abs(m)==2: diffP = "TT"
+            elif l==3:
+                diffP = "\\ell>2"
         else:
             if abs(m)==0:
                 diffP = "OO+OL+LL"
@@ -389,17 +484,24 @@ for l,lmap in plotmap.items():
                 transform=axs[r,c].transAxes
             )
 
+        firstPlot = False
+
 # END loop over L and M #####################################
 
 
 # axis limits
-xlb = list(asym.GetX())[0]
-xub = list(asym.GetX())[-1]
 xlb -= 0.15*abs(xub-xlb)
 xub += 0.15*abs(xub-xlb)
 plt.xlim(xlb,xub)
 plt.ylim(asymMin,asymMax)
 
+# legend
+if len(legendLabels)>0 and scheme<2000:
+    location = 'upper right'
+    padding = 1 
+    if scheme==2 or scheme==3: padding=5
+    if scheme==32 or scheme==33: padding=12
+    fig.legend(loc=location, borderaxespad=padding)
 
 # draw plots, either to file or to viewer
 if enableOutput:
