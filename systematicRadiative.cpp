@@ -31,11 +31,6 @@ Int_t nBins[3];
 Int_t ivType;
 Long64_t limiter;
 
-// subroutines
-void SetDefaultArgs();
-int PrintUsage();
-TString RX(TString s, TString v);
-
 // global variables
 Binning *BS;
 EventTree *ev[2];
@@ -43,6 +38,11 @@ TFile *outFile;
 enum outrad { nom, rad }; // nominal, RC-modified
 enum histEnum {fir,ful,all,nH}; // see histogram types below
 
+// subroutines
+void SetDefaultArgs();
+int PrintUsage();
+TString RX(TString s, TString v);
+void WritePlots(TH2D **hist);
 
 //////////////////////////////////////
 
@@ -194,15 +194,42 @@ int main(int argc, char** argv) {
   histN[all] = "all";
 
   TH2D *histMmiss[nH];
+  TH2D *histX[nH];
+  TH2D *histQ2[nH];
+  TH2D *histMh[nH];
+  TH2D *histZ[nH];
+  TH2D *histPhiH[nH];
+  TH2D *histPhiR[nH];
+  TH2D *histTheta[nH];
+  TH2D *histXF[nH];
+  TH2D *histPT[nH];
 
   for(int h=0; h<nH; h++) {
     TString hT = histT[h] + ";VAR(nom);VAR(mod)";
     TString hN = "VAR_correlation_" + histN[h];
-    histMmiss[h] = new TH2D( RX(hN,"Mmiss"), RX(hT,"M_{X}"), 50, 0, 5, 50, 0, 5 );
+    histMmiss[h] = new TH2D( RX(hN,"Mmiss"), RX(hT,"M_{X}"),    50, 0,   5,   50, 0,   5   );
+    histX[h]     = new TH2D( RX(hN,"X"),     RX(hT,"x"),        50, 0,   1,   50, 0,   1   );
+    histQ2[h]    = new TH2D( RX(hN,"Q2"),    RX(hT,"Q^{2}"),    50, 0,   10,  50, 0,   10  );
+    histMh[h]    = new TH2D( RX(hN,"Mh"),    RX(hT,"M_{h}"),    50, 0,   2.5, 50, 0,   2.5 );
+    histZ[h]     = new TH2D( RX(hN,"Z"),     RX(hT,"z"),        50, 0,   1,   50, 0,   1   );
+    histPhiH[h]  = new TH2D( RX(hN,"PhiH"),  RX(hT,"#phi_{h}"), 50, -PI, PI,  50, -PI, PI  );
+    histPhiR[h]  = new TH2D( RX(hN,"PhiR"),  RX(hT,"#phi_{R}"), 50, -PI, PI,  50, -PI, PI  );
+    histTheta[h] = new TH2D( RX(hN,"Theta"), RX(hT,"#theta"),   50, 0,   PI,  50, 0,   PI  );
+    histXF[h]    = new TH2D( RX(hN,"XF"),    RX(hT,"x_{F}"),    50, -1,  1,   50, -1,  1   );
+    histPT[h]    = new TH2D( RX(hN,"PT"),    RX(hT,"p_{T}"),    50, 0,   2.5, 50, 0,   2.5 );
   };
 
   auto FillData = [&](Int_t hh, Int_t bb) {
-    histMmiss[hh]->Fill( ev[nom]->Mmiss, ev[rad]->Mmiss );
+    histMmiss[hh]-> Fill( ev[nom]->Mmiss,  ev[rad]->Mmiss  );
+    histX[hh]->     Fill( ev[nom]->x,      ev[rad]->x      );
+    histQ2[hh]->    Fill( ev[nom]->Q2,     ev[rad]->Q2     );
+    histMh[hh]->    Fill( ev[nom]->Mh,     ev[rad]->Mh     );
+    histZ[hh]->     Fill( ev[nom]->Zpair,  ev[rad]->Zpair  );
+    histPhiH[hh]->  Fill( ev[nom]->PhiH,   ev[rad]->PhiH   );
+    histPhiR[hh]->  Fill( ev[nom]->PhiR,   ev[rad]->PhiR   );
+    histTheta[hh]-> Fill( ev[nom]->theta,  ev[rad]->theta  );
+    histXF[hh]->    Fill( ev[nom]->xF,     ev[rad]->xF     );
+    histPT[hh]->    Fill( ev[nom]->PhPerp, ev[rad]->PhPerp );
     if(bb>0) countHash[hh].at(bb)++;
   };
 
@@ -247,8 +274,8 @@ int main(int argc, char** argv) {
 
       // FIR cut, where RC-modified value is "FIR" = From Invalid Region
       Bool_t firCut;
-      firCut = ! ev[rad]->Valid();
-      // firCut = ev[rad]->Mmiss < 1.5;
+      // firCut = ! ev[rad]->Valid();
+      firCut = ev[rad]->Mmiss < 1.5;
 
       // fill data structures
       FillData(ful,binnum);
@@ -262,9 +289,16 @@ int main(int argc, char** argv) {
 
 
   // write out to output file
-  for(int h=0; h<nH; h++) {
-    histMmiss[h]->Write();
-  };
+  WritePlots(histMmiss);
+  WritePlots(histX);
+  WritePlots(histQ2);
+  WritePlots(histMh);
+  WritePlots(histZ);
+  WritePlots(histPhiH);
+  WritePlots(histPhiR);
+  WritePlots(histTheta);
+  WritePlots(histXF);
+  WritePlots(histPT);
   for(Int_t bn : BS->binVec) ivDistHash.at(bn)->Write();
   outFile->Close();
   printf("wrote %s\n",outFileN.Data());
@@ -334,4 +368,24 @@ TString RX(TString s, TString v) {
   TString r=s;
   r.ReplaceAll("VAR",v);
   return r;
+};
+
+// write 2D histograms, and include 1D projections
+void WritePlots(TH2D **hist) {
+  for(int h=0; h<nH; h++) hist[h]->Write();
+  TH1D *proj[2][nH]; // [nom,rad] [histogram type]
+  TString xT = hist[0]->GetXaxis()->GetTitle();
+  xT(TRegexp("nom")) = "blue=nom,red=mod";
+  for(int h=0; h<nH; h++) {
+    proj[nom][h] = hist[h]->ProjectionX();
+    proj[rad][h] = hist[h]->ProjectionY();
+    proj[nom][h]->SetLineColor(kBlue+3);
+    proj[rad][h]->SetLineColor(kRed-7);
+    proj[nom][h]->GetXaxis()->SetTitle(xT);
+    TString canvN = TString("canv_") + hist[h]->GetName();
+    TCanvas *canv = new TCanvas(canvN,canvN);
+    proj[nom][h]->Draw();
+    proj[rad][h]->Draw("same");
+    canv->Write();
+  };
 };
