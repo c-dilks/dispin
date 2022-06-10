@@ -36,7 +36,7 @@ Binning *BS;
 EventTree *ev[2];
 TFile *outFile;
 enum outrad { nom, rad }; // nominal, RC-modified
-enum histEnum {fir,ful,all,nH}; // see histogram types below
+enum histEnum {exc,mix,fir,ful,all,nH}; // see histogram types below
 
 // subroutines
 void SetDefaultArgs();
@@ -181,14 +181,20 @@ int main(int argc, char** argv) {
 
   // 2D histograms of RC-modified vs. nominal
   /* histogram types:
+   * - EXC: RC-modified from exclusive region
+   * - MIX: RC-modified from mixed Delta/SIDIS region
    * - FIR: RC-modified value From Invalid Region (rejected), nominal value from allowed region
    * - FUL: nominal value from allowed region, don't care about RC-modified value
    * - ALL: allow all events, no cuts
    */
   TString histT[nH], histN[nH];
+  histT[exc] = "VAR(nom) allowed, M_{X}(mod)#in(0.75,1.15) GeV";
+  histT[mix] = "VAR(nom) allowed, M_{X}(mod)#in(1.15,1.5) GeV";
   histT[fir] = "VAR(nom) allowed, VAR(mod) rejected";
   histT[ful] = "VAR(nom) allowed";
   histT[all] = "VAR correlation, no cuts";
+  histN[exc] = "exc";
+  histN[mix] = "mix";
   histN[fir] = "fir";
   histN[ful] = "ful";
   histN[all] = "all";
@@ -279,6 +285,8 @@ int main(int argc, char** argv) {
 
       // fill data structures
       FillData(ful,binnum);
+      if( ev[rad]->Mmiss>0.75 && ev[rad]->Mmiss<1.15 ) FillData(exc,binnum);
+      if( ev[rad]->Mmiss>1.15 && ev[rad]->Mmiss<1.50 ) FillData(mix,binnum);
       if(firCut) FillData(fir,binnum);
 
     }; // end if(ev[nom]->Valid())
@@ -286,6 +294,12 @@ int main(int argc, char** argv) {
     FillData(all,-1); // fill no-cuts data structures
 
   }; // end EVENT LOOP
+
+
+  // plot count fractions
+  const int nF = 3;
+  TGraphErrors *fracGr[nF]; // [exc,mix,fir]
+  // AQUI
 
 
   // write out to output file
