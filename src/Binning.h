@@ -81,6 +81,7 @@ class Binning : public TObject
     // scheme accessors, which return things according to the current binning scheme
     Int_t GetNbins(Int_t dim);
     Int_t GetNbinsTotal();
+    Int_t GetNbinsHighDim(); // number of IV1 and IV2 bins
     TArrayD * GetBinArray(Int_t dim);
     TString GetIVname(Int_t dim);
     TString GetIVtitle(Int_t dim);

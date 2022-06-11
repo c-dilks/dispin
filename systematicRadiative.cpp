@@ -11,6 +11,7 @@
 #include "TString.h"
 #include "TRegexp.h"
 #include "TROOT.h"
+#include "TMultiGraph.h"
 
 // Dispin
 #include "Constants.h"
@@ -236,7 +237,7 @@ int main(int argc, char** argv) {
     histTheta[hh]-> Fill( ev[nom]->theta,  ev[rad]->theta  );
     histXF[hh]->    Fill( ev[nom]->xF,     ev[rad]->xF     );
     histPT[hh]->    Fill( ev[nom]->PhPerp, ev[rad]->PhPerp );
-    if(bb>0) countHash[hh].at(bb)++;
+    if(bb>=0) countHash[hh].at(bb)++;
   };
 
 
@@ -298,11 +299,69 @@ int main(int argc, char** argv) {
 
   // plot count fractions
   const int nF = 3;
-  TGraphErrors *fracGr[nF]; // [exc,mix,fir]
-  // AQUI
+  int nBL_ = BS->GetNbinsHighDim();
+  const int nBL = nBL_;
+  TGraphErrors *fracGr[nF][nBL]; // [exc,mix,fir] [BL number]
+  TMultiGraph *fracMgr[nBL];
+  for(int b=0; b<nBL; b++) {
+    for(int f=0; f<nF; f++) {
+      fracGr[f][b] = new TGraphErrors();
+      fracGr[f][b]->SetName(Form("fracGr_%s_bl%d",histN[f].Data(),b));
+      TString fracGrT = histT[f];
+      if(nBL>1) fracGrT += Form(" :: %s bin %d",BS->GetIVtitle(1).Data(),b+1);
+      fracGr[f][b]->SetTitle(fracGrT);
+      fracGr[f][b]->GetXaxis()->SetTitle(BS->GetIVtitle(0));
+    }
+    fracGr[exc][b]->SetMarkerColor(kBlack); fracGr[exc][b]->SetLineColor(kBlack);
+    fracGr[mix][b]->SetMarkerColor(kRed);   fracGr[mix][b]->SetLineColor(kRed);
+    fracGr[fir][b]->SetMarkerColor(kBlack); fracGr[fir][b]->SetLineColor(kBlack);
+    fracGr[exc][b]->SetMarkerStyle(kFullCircle);
+    fracGr[mix][b]->SetMarkerStyle(kFullCircle);
+    fracGr[fir][b]->SetMarkerStyle(kOpenCircle);
+
+    fracMgr[b] = new TMultiGraph();
+    TString fracMgrT = Form("f_{#gamma} vs %s",BS->GetIVtitle(0).Data());
+    if(nBL>1) fracMgrT += Form(" :: %s bin %d",BS->GetIVtitle(1).Data(),b+1);
+    fracMgr[b]->SetTitle(fracMgrT);
+    fracMgr[b]->SetName(Form("fracMultiGr_bl%d",b));
+    fracMgr[b]->GetXaxis()->SetTitle(BS->GetIVtitle(0));
+    fracMgr[b]->Add(fracGr[exc][b]);
+    fracMgr[b]->Add(fracGr[mix][b]);
+    fracMgr[b]->Add(fracGr[fir][b]);
+  }
+
+  for(int b=0; b<nBL; b++) {
+    for(int f=0; f<nF; f++) {
+      Int_t bni = 0;
+      Int_t i_,b_;
+      for(Int_t bn : BS->binVec) {
+        BS->BinNumToIBL(bn,i_,b_);
+        if(b_!=b) continue;
+        Double_t frac, fracErr;
+        if(countHash[ful].at(bn) > 0) {
+          frac = ((Double_t)countHash[f].at(bn)) / countHash[ful].at(bn);
+          fracErr = TMath::Sqrt( frac*(1-frac) / countHash[ful].at(bn) );
+        } else {
+          frac = 0.0;
+          fracErr = 0.0;
+        };
+        fracGr[f][b]->SetPoint(      bni, ivDistHash.at(bn)->GetMean(), frac    );
+        fracGr[f][b]->SetPointError( bni, 0,                            fracErr );
+        bni++;
+      }
+    }
+  }
 
 
   // write out to output file
+  for(int b=0; b<nBL; b++) {
+    fracMgr[b]->Write();
+  }
+  for(int f=0; f<nF; f++) {
+    for(int b=0; b<nBL; b++) {
+      fracGr[f][b]->Write();
+    }
+  }
   WritePlots(histMmiss);
   WritePlots(histX);
   WritePlots(histQ2);
