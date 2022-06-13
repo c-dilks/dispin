@@ -8,6 +8,7 @@
 
 // ROOT
 #include "TFile.h"
+#include "TTree.h"
 #include "TString.h"
 #include "TRegexp.h"
 #include "TROOT.h"
@@ -37,7 +38,7 @@ Binning *BS;
 EventTree *ev[2];
 TFile *outFile;
 enum outrad { nom, rad }; // nominal, RC-modified
-enum histEnum {exc,mix,fir,ful,all,nH}; // see histogram types below
+enum regEnum {exc,mix,fir,ful,all,nReg}; // see region types below
 
 // subroutines
 void SetDefaultArgs();
@@ -142,17 +143,52 @@ int main(int argc, char** argv) {
 
 
   //-----------------------------------------------------
+  // regions
+  //-----------------------------------------------------
+  /* region types:
+   * - EXC: RC-modified from exclusive region
+   * - MIX: RC-modified from mixed Delta/SIDIS region
+   * - FIR: RC-modified value From Invalid Region (rejected), nominal value from allowed region
+   * - FUL: nominal value from allowed region, don't care about RC-modified value
+   * - ALL: allow all events, no cuts
+   */
+  TString regN[nReg];
+  regN[exc] = "exc";
+  regN[mix] = "mix";
+  regN[fir] = "fir";
+  regN[ful] = "ful";
+  regN[all] = "all";
+  TString regT[nReg];
+  regT[exc] = "VAR(nom) allowed, M_{X}(mod)#in(0.75,1.15) GeV";
+  regT[mix] = "VAR(nom) allowed, M_{X}(mod)#in(1.15,1.5) GeV";
+  regT[fir] = "VAR(nom) allowed, VAR(mod) rejected";
+  regT[ful] = "VAR(nom) allowed";
+  regT[all] = "VAR correlation, no cuts";
+
+
+  //-----------------------------------------------------
   // output data structures
   //-----------------------------------------------------
 
   // build map of 3-digit bin number -> object
-  map<Int_t,Long64_t> countHash[nH];
-  map<Int_t,TH1*> ivDistHash;
+  map<Int_t,Long64_t> countHash[nReg]; // counts, for each region type
+  map<Int_t,TTree*> treeHash; // tree, to hold the necessary info to calculate systematic
+  map<Int_t,TH1*> ivDistHash; // iv distributions
   Float_t ivVal[3] = {-10000.0,-10000.0,-10000.0};
+  Long64_t countBr[nReg];
   for(Int_t bn : BS->binVec) {
 
     // counts
-    for(int h=0; h<nH; h++) countHash[h].insert(pair<Int_t,Long64_t>(bn,0));
+    for(int r=0; r<nReg; r++) countHash[r].insert(pair<Int_t,Long64_t>(bn,0));
+
+    // tree: seems bad to make one tree per bin, but this makes downstream scripting easier...
+    TString treeN = Form("tree_%d",bn);
+    treeHash.insert(pair<Int_t,TTree*>(bn,new TTree(treeN,treeN)));
+    for(int r=0; r<nReg; r++) {
+      TString brN = "count_" + regN[r];
+      TString brSpec = brN + "/L";
+      treeHash.at(bn)->Branch(brN,&(countBr[r]),brSpec);
+    }
 
     // iv distributions
     TString ivDistN = Form("iv_%d",bn);
@@ -181,49 +217,30 @@ int main(int argc, char** argv) {
   };
 
   // 2D histograms of RC-modified vs. nominal
-  /* histogram types:
-   * - EXC: RC-modified from exclusive region
-   * - MIX: RC-modified from mixed Delta/SIDIS region
-   * - FIR: RC-modified value From Invalid Region (rejected), nominal value from allowed region
-   * - FUL: nominal value from allowed region, don't care about RC-modified value
-   * - ALL: allow all events, no cuts
-   */
-  TString histT[nH], histN[nH];
-  histT[exc] = "VAR(nom) allowed, M_{X}(mod)#in(0.75,1.15) GeV";
-  histT[mix] = "VAR(nom) allowed, M_{X}(mod)#in(1.15,1.5) GeV";
-  histT[fir] = "VAR(nom) allowed, VAR(mod) rejected";
-  histT[ful] = "VAR(nom) allowed";
-  histT[all] = "VAR correlation, no cuts";
-  histN[exc] = "exc";
-  histN[mix] = "mix";
-  histN[fir] = "fir";
-  histN[ful] = "ful";
-  histN[all] = "all";
+  TH2D *histMmiss[nReg];
+  TH2D *histX[nReg];
+  TH2D *histQ2[nReg];
+  TH2D *histMh[nReg];
+  TH2D *histZ[nReg];
+  TH2D *histPhiH[nReg];
+  TH2D *histPhiR[nReg];
+  TH2D *histTheta[nReg];
+  TH2D *histXF[nReg];
+  TH2D *histPT[nReg];
 
-  TH2D *histMmiss[nH];
-  TH2D *histX[nH];
-  TH2D *histQ2[nH];
-  TH2D *histMh[nH];
-  TH2D *histZ[nH];
-  TH2D *histPhiH[nH];
-  TH2D *histPhiR[nH];
-  TH2D *histTheta[nH];
-  TH2D *histXF[nH];
-  TH2D *histPT[nH];
-
-  for(int h=0; h<nH; h++) {
-    TString hT = histT[h] + ";VAR(nom);VAR(mod)";
-    TString hN = "VAR_correlation_" + histN[h];
-    histMmiss[h] = new TH2D( RX(hN,"Mmiss"), RX(hT,"M_{X}"),    50, 0,   5,   50, 0,   5   );
-    histX[h]     = new TH2D( RX(hN,"X"),     RX(hT,"x"),        50, 0,   1,   50, 0,   1   );
-    histQ2[h]    = new TH2D( RX(hN,"Q2"),    RX(hT,"Q^{2}"),    50, 0,   10,  50, 0,   10  );
-    histMh[h]    = new TH2D( RX(hN,"Mh"),    RX(hT,"M_{h}"),    50, 0,   2.5, 50, 0,   2.5 );
-    histZ[h]     = new TH2D( RX(hN,"Z"),     RX(hT,"z"),        50, 0,   1,   50, 0,   1   );
-    histPhiH[h]  = new TH2D( RX(hN,"PhiH"),  RX(hT,"#phi_{h}"), 50, -PI, PI,  50, -PI, PI  );
-    histPhiR[h]  = new TH2D( RX(hN,"PhiR"),  RX(hT,"#phi_{R}"), 50, -PI, PI,  50, -PI, PI  );
-    histTheta[h] = new TH2D( RX(hN,"Theta"), RX(hT,"#theta"),   50, 0,   PI,  50, 0,   PI  );
-    histXF[h]    = new TH2D( RX(hN,"XF"),    RX(hT,"x_{F}"),    50, -1,  1,   50, -1,  1   );
-    histPT[h]    = new TH2D( RX(hN,"PT"),    RX(hT,"p_{T}"),    50, 0,   2.5, 50, 0,   2.5 );
+  for(int r=0; r<nReg; r++) {
+    TString hT = regT[r] + ";VAR(nom);VAR(mod)";
+    TString hN = "VAR_correlation_" + regN[r];
+    histMmiss[r] = new TH2D( RX(hN,"Mmiss"), RX(hT,"M_{X}"),    50, 0,   5,   50, 0,   5   );
+    histX[r]     = new TH2D( RX(hN,"X"),     RX(hT,"x"),        50, 0,   1,   50, 0,   1   );
+    histQ2[r]    = new TH2D( RX(hN,"Q2"),    RX(hT,"Q^{2}"),    50, 0,   10,  50, 0,   10  );
+    histMh[r]    = new TH2D( RX(hN,"Mh"),    RX(hT,"M_{h}"),    50, 0,   2.5, 50, 0,   2.5 );
+    histZ[r]     = new TH2D( RX(hN,"Z"),     RX(hT,"z"),        50, 0,   1,   50, 0,   1   );
+    histPhiH[r]  = new TH2D( RX(hN,"PhiH"),  RX(hT,"#phi_{h}"), 50, -PI, PI,  50, -PI, PI  );
+    histPhiR[r]  = new TH2D( RX(hN,"PhiR"),  RX(hT,"#phi_{R}"), 50, -PI, PI,  50, -PI, PI  );
+    histTheta[r] = new TH2D( RX(hN,"Theta"), RX(hT,"#theta"),   50, 0,   PI,  50, 0,   PI  );
+    histXF[r]    = new TH2D( RX(hN,"XF"),    RX(hT,"x_{F}"),    50, -1,  1,   50, -1,  1   );
+    histPT[r]    = new TH2D( RX(hN,"PT"),    RX(hT,"p_{T}"),    50, 0,   2.5, 50, 0,   2.5 );
   };
 
   auto FillData = [&](Int_t hh, Int_t bb) {
@@ -239,7 +256,6 @@ int main(int argc, char** argv) {
     histPT[hh]->    Fill( ev[nom]->PhPerp, ev[rad]->PhPerp );
     if(bb>=0) countHash[hh].at(bb)++;
   };
-
 
 
   //-----------------------------------------------------
@@ -297,17 +313,19 @@ int main(int argc, char** argv) {
   }; // end EVENT LOOP
 
 
-  // plot count fractions
-  const int nF = 3;
+  //-----------------------------------------------------
+  // PLOTTING
+  //-----------------------------------------------------
+  const int nFrac = 3;
   int nBL_ = BS->GetNbinsHighDim();
   const int nBL = nBL_;
-  TGraphErrors *fracGr[nF][nBL]; // [exc,mix,fir] [BL number]
+  TGraphErrors *fracGr[nFrac][nBL]; // [exc,mix,fir] [BL number]
   TMultiGraph *fracMgr[nBL];
   for(int b=0; b<nBL; b++) {
-    for(int f=0; f<nF; f++) {
+    for(int f=0; f<nFrac; f++) {
       fracGr[f][b] = new TGraphErrors();
-      fracGr[f][b]->SetName(Form("fracGr_%s_bl%d",histN[f].Data(),b));
-      TString fracGrT = histT[f];
+      fracGr[f][b]->SetName(Form("fracGr_%s_bl%d",regN[f].Data(),b));
+      TString fracGrT = regT[f];
       if(nBL>1) fracGrT += Form(" :: %s bin %d",BS->GetIVtitle(1).Data(),b+1);
       fracGr[f][b]->SetTitle(fracGrT);
       fracGr[f][b]->GetXaxis()->SetTitle(BS->GetIVtitle(0));
@@ -330,8 +348,9 @@ int main(int argc, char** argv) {
     fracMgr[b]->Add(fracGr[fir][b]);
   }
 
+  // count fractions
   for(int b=0; b<nBL; b++) {
-    for(int f=0; f<nF; f++) {
+    for(int f=0; f<nFrac; f++) {
       Int_t bni = 0;
       Int_t i_,b_;
       for(Int_t bn : BS->binVec) {
@@ -352,12 +371,25 @@ int main(int argc, char** argv) {
     }
   }
 
+  // fill trees
+  for(Int_t bn : BS->binVec) {
+    for(int r=0; r<nReg; r++) countBr[r] = countHash[r].at(bn);
+    treeHash.at(bn)->Fill();
+  }
+
+
+  //-----------------------------------------------------
+  // output
+  //-----------------------------------------------------
 
   // write out to output file
+  for(Int_t bn : BS->binVec) {
+    treeHash.at(bn)->Write();
+  }
   for(int b=0; b<nBL; b++) {
     fracMgr[b]->Write();
   }
-  for(int f=0; f<nF; f++) {
+  for(int f=0; f<nFrac; f++) {
     for(int b=0; b<nBL; b++) {
       fracGr[f][b]->Write();
     }
@@ -438,27 +470,27 @@ int PrintUsage() {
 
 // return copy of s, with "VAR" replaced with v
 TString RX(TString s, TString v) {
-  TString r=s;
-  r.ReplaceAll("VAR",v);
-  return r;
+  TString s_=s;
+  s_.ReplaceAll("VAR",v);
+  return s_;
 };
 
 // write 2D histograms, and include 1D projections
 void WritePlots(TH2D **hist) {
-  for(int h=0; h<nH; h++) hist[h]->Write();
-  TH1D *proj[2][nH]; // [nom,rad] [histogram type]
+  for(int r=0; r<nReg; r++) hist[r]->Write();
+  TH1D *proj[2][nReg]; // [nom,rad] [region type]
   TString xT = hist[0]->GetXaxis()->GetTitle();
   xT(TRegexp("nom")) = "blue=nom,red=mod";
-  for(int h=0; h<nH; h++) {
-    proj[nom][h] = hist[h]->ProjectionX();
-    proj[rad][h] = hist[h]->ProjectionY();
-    proj[nom][h]->SetLineColor(kBlue+3);
-    proj[rad][h]->SetLineColor(kRed-7);
-    proj[nom][h]->GetXaxis()->SetTitle(xT);
-    TString canvN = TString("canv_") + hist[h]->GetName();
+  for(int r=0; r<nReg; r++) {
+    proj[nom][r] = hist[r]->ProjectionX();
+    proj[rad][r] = hist[r]->ProjectionY();
+    proj[nom][r]->SetLineColor(kBlue+3);
+    proj[rad][r]->SetLineColor(kRed-7);
+    proj[nom][r]->GetXaxis()->SetTitle(xT);
+    TString canvN = TString("canv_") + hist[r]->GetName();
     TCanvas *canv = new TCanvas(canvN,canvN);
-    proj[nom][h]->Draw();
-    proj[rad][h]->Draw("same");
+    proj[nom][r]->Draw();
+    proj[rad][r]->Draw("same");
     canv->Write();
   };
 };
