@@ -31,7 +31,7 @@ if ARGV.length < 1
   exit 2
 end
 inFileN = ARGV[0]
-puts "reading baryon tree #{inFileN}..."
+puts "reading migration tree #{inFileN}..."
 outFilePrefix = inFileN.sub(/\.root$/,'')
 outFilePrefix = ARGV[1] if ARGV.length > 1
 ivName = 3.times.map do |i| (ARGV.length > i+2) ? ARGV[i+2] : "iv#{i}" end
