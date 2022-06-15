@@ -4,6 +4,7 @@
 
 if [ $# -lt 2 ];then
   echo "USAGE: $0 [train directory] [outroot dir] [optional:data/mcrec/mcgen] [optional:skim/dst]"
+  echo " - append \"rad\" to the end of datastream to re-run calcKinematics with RC beam model"
   exit
 fi
 traindir=$1

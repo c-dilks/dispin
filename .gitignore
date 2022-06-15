@@ -16,6 +16,8 @@ src/DiSpinDict.*
 outz
 outroot
 outroot.*
+radroot
+radroot.*
 diskim
 *.slurm
 *.condor

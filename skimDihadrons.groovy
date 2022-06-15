@@ -31,10 +31,10 @@ if(args.length>=3) inHipoType = args[2]
 def verbose = 0
 hadPIDlist = [ 211, -211 ] // list of hadron PIDs which will be paired
 //hadPIDlist += [ 2212 ] // proton, antiproton
-hadPIDlist += [ 22 ] // photons (not a hadron, but to be paired for pi0s)
+//hadPIDlist += [ 22 ] // photons (not a hadron, but to be paired for pi0s)
 //hadPIDlist += [ 321, -321 ] // kaons
 //hadPIDlist += [ 2212, -2212 ] // proton, antiproton
-def photonIdx = hadPIDlist.indexOf(22)
+def photonIdx = hadPIDlist.contains(22) ? hadPIDlist.indexOf(22) : -10000
 ////////////////////////
 
 

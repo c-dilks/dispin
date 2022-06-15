@@ -13,6 +13,8 @@
 #include "TRegexp.h"
 #include "TObjArray.h"
 #include "TLorentzVector.h"
+#include "TRandom.h"
+#include "TRandomGen.h"
 
 // dispin
 #include "Constants.h"
@@ -27,11 +29,15 @@ TFile * diskimFile;
 TTree * ditr;
 TFile * outrootFile;
 TTree * outrootTr;
+TRandom * RNG;
+Int_t evnumTmp;
+Float_t beamEtmp;
 
 
 void SetParticleBranchAddress(TString parStr, TString brName, void * brAddr) {
   ditr->SetBranchAddress(TString(parStr+"_"+brName),brAddr);
 };
+Float_t RadiativeBeamEn(Int_t runnum_, Int_t evnum_);
 
 
 int main(int argc, char** argv) {
@@ -42,14 +48,17 @@ int main(int argc, char** argv) {
   TString dataStream = "data";
   TString injectStream = "injgen";
   if(argc<=1) {
-    printf("USAGE: %s [diskim file] [outrootDir(default=outroot)]\n",argv[0]);
-    printf(" additional arguments for MC: [data/mcrec/mcgen] [injgen/injrec]\n");
+    printf("USAGE: %s [diskim file] [outrootDir(default=outroot)] [dataStream(default=data)]\n",argv[0]);
+    printf(" - data streams: data, mcrec, mcgen\n");
+    printf("   - add \"rad\" to the data stream string to use radiative-corrected beam energy model\n");
+    printf(" - additional argument for MC: [injgen/injrec]\n");
     exit(0);
   };
   if(argc>1) infileN = TString(argv[1]);
   if(argc>2) outrootDir = TString(argv[2]);
   if(argc>3) dataStream = TString(argv[3]);
   if(argc>4) injectStream = TString(argv[4]);
+  printf("RUN: %s\n",argv[0]);
 
 
   // instantiate useful objects
@@ -68,13 +77,21 @@ int main(int argc, char** argv) {
     trajMC[p] = new Trajectory();
     fidu[p] = new FiducialCuts();
   };
+  RNG = new TRandomMixMax(42567);
+  evnumTmp = -10000;
+  beamEtmp = 0.0;
 
   // open diskim file
   diskimFile = new TFile(infileN,"READ");
   ditr = (TTree*) diskimFile->Get("ditr");
 
   // check MC arguments
-  Bool_t useMC;
+  Bool_t useMC, useRadBeam;
+  if(dataStream.Contains(TRegexp("rad$"))) {
+    useRadBeam = true;
+    fprintf(stderr,"\nWARNING: using radiative-corrected beam energy model !!!\n\n");
+    dataStream(TRegexp("rad$")) = "";
+  } else useRadBeam = false;
   if(dataStream=="data") useMC=false;
   else if(dataStream=="mcrec") {
     useMC=true;
@@ -223,6 +240,7 @@ int main(int argc, char** argv) {
   outrootTr->Branch("Nu",&(disEv->Nu),"Nu/F");
   outrootTr->Branch("x",&(disEv->x),"x/F");
   outrootTr->Branch("y",&(disEv->y),"y/F");
+  outrootTr->Branch("beamE",&(disEv->BeamEn),"beamE/F");
   // - electron kinematics branches
   outrootTr->Branch("eleE",&(disEv->eleE),"eleE/F");
   outrootTr->Branch("eleP",&(disEv->eleP),"eleP/F");
@@ -357,7 +375,7 @@ int main(int argc, char** argv) {
   //-----------------------------------
   for(int i=0; i<ditr->GetEntries(); i++) {
     if(i%10000==0) printf("[+] %.2f%%\n",100*((float)i)/ditr->GetEntries());
-    //if(i>30000) break; // limiter
+    //if(i>100000) break; // limiter
     ditr->GetEntry(i);
 
     // reset branches
@@ -395,7 +413,9 @@ int main(int argc, char** argv) {
     };
 
     // calculate DIS kinematics
-    disEv->CalculateKinematics(traj[kEle],runnum);
+    if(!useRadBeam) disEv->SetBeamEnFromRun(runnum);
+    else disEv->SetBeamEn(RadiativeBeamEn(runnum,evnum));
+    disEv->CalculateKinematics(traj[kEle]);
 
 
     // calculate dihadron kinematics and obtain hadron fiducial cuts
@@ -444,7 +464,9 @@ int main(int argc, char** argv) {
         // calculate kinematics
         if(isMatch[kEle]) {
           gen_eleIsMatch = true;
-          disEvMC->CalculateKinematics(trajMC[kEle],runnum);
+          if(!useRadBeam) disEvMC->SetBeamEnFromRun(runnum);
+          else disEvMC->SetBeamEn(disEv->BeamEn); // if useRadBeam, copy BeamEn from disEv
+          disEvMC->CalculateKinematics(trajMC[kEle]);
           gen_eleMatchDist = genMatchDist[kEle];
           if(isMatch[kHadA] && isMatch[kHadB]) {
             gen_hadIsMatch[qA] = true;
@@ -482,4 +504,60 @@ int main(int argc, char** argv) {
   outrootTr->Write();
   printf("tree written\n");
   outrootFile->Close();
+};
+
+
+//////////////////////////////////////////////////////////////////////////////////
+// beam energy, modified for radiative corrections model (from Timothy/Harut)
+Float_t RadiativeBeamEn(Int_t runnum_, Int_t evnum_) {
+
+  // generate beam energy iff it is a new event
+  if(evnum_==evnumTmp) return beamEtmp;
+  else evnumTmp = evnum_;
+
+  Float_t nominalBeamEn = RundepBeamEn(runnum_); // get nominal beam energy from run number
+
+  Float_t beam_percentage[] = {
+    0.99995, 0.98985, 0.97975, 0.96965, 0.95955, 0.94945, 0.93935, 
+    0.92925, 0.91915, 0.90905, 0.89895, 0.88885, 0.87875, 0.86865, 
+    0.85855, 0.84845, 0.83835, 0.82825, 0.81815, 0.80805, 0.79795, 
+    0.78785, 0.77775, 0.76765, 0.75755, 0.74745, 0.73735, 0.72725, 
+    0.71715, 0.70705, 0.69695, 0.68685, 0.67675, 0.66665, 0.65655, 
+    0.64645, 0.63635, 0.62625, 0.61615, 0.60605, 0.59595, 0.58585, 
+    0.57575, 0.56565, 0.55555, 0.54545, 0.53535, 0.52525, 0.51515, 
+    0.50505, 0.49495, 0.48485, 0.47475, 0.46465, 0.45455, 0.44445, 
+    0.43435, 0.42425, 0.41415, 0.40405, 0.39395, 0.38385, 0.37375, 
+    0.36365, 0.35355, 0.34345, 0.33335, 0.32325, 0.31315, 0.30305, 
+    0.29295, 0.28285, 0.27275, 0.26265, 0.25255, 0.24245, 0.23235, 
+    0.22225, 0.21215, 0.20205, 0.19195, 0.18185, 0.17175, 0.16165, 
+    0.15155, 0.14145, 0.13135, 0.12125, 0.11115, 0.10105, 0.09095, 
+    0.08085, 0.07075, 0.06065, 0.05055, 0.04045, 0.03035, 0.02025, 
+    0.01015, 0.0000499999};
+
+  Float_t beam_likelihood[] = {
+    0.791947, 0.808145, 0.825926, 0.838389, 0.847606, 0.855139, 
+    0.861519, 0.867214, 0.872296, 0.876636, 0.88062, 0.884296, 0.887679, 
+    0.890929, 0.893896, 0.896875, 0.899571, 0.902198, 0.904849, 0.907113, 
+    0.909285, 0.911526, 0.913519, 0.915516, 0.917553, 0.919402, 0.921154, 
+    0.923104, 0.924949, 0.926656, 0.928376, 0.929996, 0.931685, 0.933225, 
+    0.934817, 0.936259, 0.937816, 0.939315, 0.940875, 0.942379, 0.943863, 
+    0.945302, 0.946724, 0.948114, 0.949478, 0.950765, 0.952125, 0.953384, 
+    0.954781, 0.956184, 0.957518, 0.958847, 0.960215, 0.961672, 0.963001, 
+    0.964353, 0.96572, 0.967056, 0.968406, 0.969727, 0.971283, 0.972702, 
+    0.974054, 0.975527, 0.976977, 0.97845, 0.980008, 0.981609, 0.983213, 
+    0.984729, 0.986328, 0.987938, 0.989692, 0.991332, 0.992895, 0.994582, 
+    0.996264, 0.997781, 0.999169, 0.999838, 1., 1., 1., 1., 1., 1., 1., 
+    1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.};
+
+  Double_t double_random = RNG->Uniform(); // \in (0,1)
+  for(int i=0; i<sizeof(beam_likelihood)/sizeof(beam_likelihood[0]); i++) {
+    if(double_random<beam_likelihood[i]) {
+      beamEtmp = nominalBeamEn * beam_percentage[i];
+      return beamEtmp;
+    }
+  };
+
+  fprintf(stderr,"ERROR: failed to set radiative-corrected beam energy; setting to nominal energy instead\n");
+  beamEtmp = nominalBeamEn;
+  return beamEtmp;
 };

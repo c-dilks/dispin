@@ -75,6 +75,7 @@ int main(int argc, char** argv) {
   outTr->Branch("Nu",&(disEv->Nu),"Nu/F");
   outTr->Branch("x",&(disEv->x),"x/F");
   outTr->Branch("y",&(disEv->y),"y/F");
+  outTr->Branch("beamE",&(disEv->BeamEn),"beamE/F");
   // - electron kinematics branches
   outTr->Branch("eleE",&(disEv->eleE),"eleE/F");
   outTr->Branch("eleP",&(disEv->eleP),"eleP/F");
@@ -215,10 +216,8 @@ int main(int argc, char** argv) {
 
     // get DIS event, and calculate kinematics
     ev->GetTrajectories(ens->GetEnum());
-    disEv->CalculateKinematics(
-      ev->GetElectronTraj(),
-      ev->runnum
-    );
+    disEv->SetBeamEn(ev->beamE); // must use stored beamE, in case we changed it upstream somewhere
+    disEv->CalculateKinematics(ev->GetElectronTraj());
 
 
     // loop over dihadrons ----------------------

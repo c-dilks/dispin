@@ -597,6 +597,20 @@ Int_t Binning::GetNbinsTotal() {
   };
   return -1;
 };
+Int_t Binning::GetNbinsHighDim() {
+  switch(dimensions) {
+    case 1:
+      return 1;
+      break;
+    case 2:
+      return GetNbins(1);
+      break;
+    case 3:
+      return GetNbins(1) * GetNbins(2);
+      break;
+  };
+  return -1;
+};
 TArrayD * Binning::GetBinArray(Int_t dim) {
   return CheckDim(dim) ? binArray[dim] : nullptr;
 };

@@ -27,11 +27,13 @@ DIS::DIS() {
   );
 };
 
-void DIS::SetBeamEnFromRun(Int_t runnum) {
-  BeamEn = RundepBeamEn(runnum);
+void DIS::SetBeamEn(Float_t BeamEn_) {
+  BeamEn = BeamEn_;
   vecBeam.SetPz(Tools::EMtoP(BeamEn,PartMass(kE)));
   vecBeam.SetE(BeamEn);
-  return;
+};
+void DIS::SetBeamEnFromRun(Int_t runnum) {
+  this->SetBeamEn(RundepBeamEn(runnum)); // see Constants.h
 };
 
 
@@ -51,7 +53,13 @@ void DIS::SetElectron(Trajectory * tr) {
 
 
 // compute DIS kinematics
-void DIS::CalculateKinematics() {
+// - IMPORTANT: it is wise to set the beam energy (e.g., `SetBeamEn` or
+//   `SetBeamEnFromRun`), otherwise it will assume whatever is currently stored
+//   in `this->BeamEn`
+void DIS::CalculateKinematics(Trajectory * tr) {
+
+  this->ResetVars();
+  this->SetElectron(tr);
 
   // compute W
   vecW = vecBeam + vecTarget - vecElectron;
@@ -89,13 +97,6 @@ void DIS::CalculateKinematics() {
   };
 
   return;
-};
-
-void DIS::CalculateKinematics(Trajectory * tr, Int_t runnum) {
-  this->ResetVars();
-  this->SetBeamEnFromRun(runnum);
-  this->SetElectron(tr);
-  this->CalculateKinematics();
 };
 
 
