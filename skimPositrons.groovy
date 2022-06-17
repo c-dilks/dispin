@@ -38,10 +38,9 @@ if(args.length>=3) inHipoType = args[2]
 def verbose = 0
 hadPIDlist = [ 211, -211 ] // list of hadron PIDs which will be paired
 //hadPIDlist += [ 2212 ] // proton, antiproton
-hadPIDlist += [ 22 ] // photons (not a hadron, but to be paired for pi0s)
+//hadPIDlist += [ 22 ] // photons (not a hadron, but to be paired for pi0s)
 //hadPIDlist += [ 321, -321 ] // kaons
 //hadPIDlist += [ 2212, -2212 ] // proton, antiproton
-def photonIdx = hadPIDlist.indexOf(22)
 ////////////////////////
 
 
@@ -536,6 +535,7 @@ inHipoList.each { inHipoFile ->
         println "ANALYZING RUN $runnum"
         once = false
       }
+      if(verbose) println "evnum = $evnum"
 
 
       // CUT: data monitoring QA cut (not applied to MC)
@@ -611,9 +611,6 @@ inHipoList.each { inHipoFile ->
 
           // take only permutations of PIDs, with repetition allowed
           if( hadIdxB < hadIdxA ) return
-
-          // photons can only pair with other photons (e.g., for pi0s)
-          if( (hadIdxA==photonIdx) != (hadIdxB==photonIdx) ) return
 
           // proceed only if there are one or more hadrons for each PID
           if( hadTreeA.size()==0 || hadTreeB.size==0) return
