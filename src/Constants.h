@@ -459,7 +459,7 @@ static Float_t RundepBeamEn(Int_t run) {
   else if(run>=11093 && run<=11283) return 10.4096; // rgb fall 19
   else if(run>=11284 && run<=11300) return 4.17179; // rgb fall BAND_FT 19
   else if(run>=11323 && run<=11571) return 10.3894; // rgb winter 20 (RCDB may still be incorrect)
-  else if(run==11)                  return 10.6041; // MC for RGA inbending
+  else if(run==11)                  return 22.0; // MC for RGA inbending
   else {
     fprintf(stderr,"ERROR: RundepBeamEn unknown for run %d\n",run);
     return 0.0;
