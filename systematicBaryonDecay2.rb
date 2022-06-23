@@ -48,13 +48,18 @@ pyimport 'uproot',  as: :up
 ########################################################
 
 if ARGV.length < 1
-  $stderr.puts "USAGE: #{$0} [baryonTrees/ root file] [output file prefix (optional)]"
+  $stderr.puts """
+USAGE: #{$0} [baryonTrees/ root file] [output file prefix (optional)] [specific parentPID (optional)
+  - specify a specific parentPID, if you want to see fractions from that specific parent, otherwise
+    they will be calculated for all baryons
+  """
   exit 2
 end
 inFileN = ARGV[0]
 puts "reading baryon tree #{inFileN}..."
 outFilePrefix = inFileN.sub(/\.root$/,'')
 outFilePrefix = ARGV[1] if ARGV.length > 1
+specificParentPID = ARGV.length>2 ? ARGV[2].to_i : 0
 
 # open baryonTree file, with PyRoot and Uproot
 inFilePy = root.TFile.new inFileN, 'READ'
@@ -173,7 +178,11 @@ baryonHash = treeHash.map do |binNum,tree|
   ### count number of dihadrons where one or both parents are baryons
   # - Hash method .[] does not accept vectorized input; cannot use np.vectorize; instead, use native Array.count
   res[:nBaryon] = parentPidArr.to_numpy.to_a.count do |hadParentPids|
-    hadParentPids.any?{ |pid| pidLut[pid][:species] == :baryon }
+    if specificParentPID==0
+      hadParentPids.any?{ |pid| pidLut[pid][:species] == :baryon }
+    else
+      hadParentPids.any?{ |pid| pid==specificParentPID }
+    end
   end.to_f
 
   ### compute f_baryon and error
