@@ -64,8 +64,8 @@ app "#SBATCH --time=12:00:00"
 app "#SBATCH --array=1-$(cat $joblist | wc -l)"
 app "#SBATCH --ntasks=1"
 
-app "#SBATCH --output=/farm_out/%u/%x-%j-%N.out"
-app "#SBATCH --error=/farm_out/%u/%x-%j-%N.err"
+app "#SBATCH --output=/farm_out/%u/%x-%A_%a.out"
+app "#SBATCH --error=/farm_out/%u/%x-%A_%a.err"
 
 app "srun \$(head -n\$SLURM_ARRAY_TASK_ID $joblist | tail -n1)"
 
