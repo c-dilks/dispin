@@ -529,7 +529,7 @@ inHipoList.each { inHipoFile ->
       // hack for setting correct beam energy for CLAS24:
       // - set MC run number to 12, rather than 11
       // - forces RundepBeamEn to return 22 GeV, rather than 10.6
-      if(inHipoName.contains("22gev") {
+      if(inHipoName.contains("22gev")) {
         runnum = 12
         if(once) System.err << "HACK: RUNNUM CHANGED TO 12, since this is 22 GeV data\n"
       }
