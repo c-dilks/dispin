@@ -137,6 +137,7 @@ class EventTree : public TObject
 
     // event-level branches
     Int_t evnum,runnum;
+    Float_t BeamEn;
     Int_t helicity;
     static const Int_t NumInjectionsMax = 256;
     Int_t NhelicityMC;

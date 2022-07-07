@@ -309,6 +309,7 @@ void EventTree::GetEvent(Long64_t i) {
   // compute rapidity for hadrons and dihadron
   // - get boost vectors
   this->GetDISObj();
+  BeamEn = this->objDIS->BeamEn;
   boostBreit = this->objDIS->BreitBoost; // boost to breit frame
   boostCom = this->objDIS->ComBoost; // boost to q-p com frame
   // - get q momentum, and boost (boost is redundant, being along q)
@@ -525,7 +526,7 @@ void EventTree::GetTrajectories(Long64_t i, Bool_t prog) {
 // translate "helicity" to a local index for the spin
 Int_t EventTree::SpinState() {
   
-  if(runnum!=11) { // data run
+  if(runnum!=11 && runnum!=12) { // data run
     if(RundepHelicityFlip(runnum)) { // helicity flipped
       switch(helicity) {
         case  1: return sM;
@@ -698,7 +699,7 @@ Bool_t EventTree::CheckSampFrac() {
       // sfSigma[1][0] = 0.1752;  sfSigma[1][1] = 0.1975;  sfSigma[1][2] = 0.1458;  sfSigma[1][3] = 0.1787;  sfSigma[1][4] = 0.0414;  sfSigma[1][5] = 0.2873;
       // sfSigma[2][0] = -0.0405; sfSigma[2][1] = -0.2537; sfSigma[2][2] = 0.2474;  sfSigma[2][3] = 0.4116;  sfSigma[2][4] = 1.2172;  sfSigma[2][5] = -0.4651;
     }
-    else if(runnum==11) { // MC
+    else if(runnum==11 || runnum==12) { // MC
       for(int s=0; s<6; s++) {
         sfMu[0][s] = 0.248605;
         sfMu[1][s] = -0.844221;

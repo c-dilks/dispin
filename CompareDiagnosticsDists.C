@@ -337,6 +337,8 @@ void CompareDiagnosticsDists(
   CompareDist("WDist","$W$","W");
   CompareDist("YDist","$y$","y");
   LatexClearPage();
+  CompareDist("beamEnDist","$E_{beam}$","E_{beam}");
+  LatexClearPage();
 
   // dihadron
   CompareDist("MhDist","$M_h$","M_{h}");

@@ -531,6 +531,7 @@ int main(int argc, char** argv) {
    // event-level distributions
    TH1D * helicityDist = new TH1D("helicityDist","helicity",5,-2,3);
    TH1D * dihadronCntDist = new TH1D("dihadronCntDist","number of dihadrons per event",10,0,10);
+   TH1D * beamEnDist = new TH1D("beamEnDist","beam energy",100,0,25);
    Int_t evnumTmp = -10000;
    Int_t dihadronCnt = 0;
   
@@ -745,6 +746,7 @@ int main(int argc, char** argv) {
        
 
        helicityDist->Fill(ev->helicity);
+       beamEnDist->Fill(ev->BeamEn);
 
        diphMdist->Fill(ev->objDiphoton->M);
 
@@ -886,6 +888,7 @@ int main(int argc, char** argv) {
    PhiHRvsAlpha->Write();
    for(int h=0; h<2; h++) betaVsP[h]->Write();
    helicityDist->Write();
+   beamEnDist->Write();
    dihadronCntDist->Write();
 
    diphMdist->Write();
