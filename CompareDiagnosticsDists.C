@@ -260,11 +260,13 @@ void LatexClearPage() {
 ///////////////////////////////////////////////////
   
 void CompareDiagnosticsDists(
-  TString infile0N="plots.inbending.root",
-  TString infile1N="plots.rga_spring19.root",
+  TString infile0N="plots.22gev.root", // light red
+  // TString infile1N="plots.12gev.rgaData.root", // dark blue
+  // TString infile1N="plots.12gev.rgaMC.root", // dark blue
+  TString infile1N="plots.12gev.rgcMC.root", // dark blue
   TString outDir_="diagcomp",
-  TString infileTitle0="",
-  TString infileTitle1=""
+  TString infileTitle0="22 GeV",
+  TString infileTitle1="12 GeV"
 ) {
   infileN[0] = infile0N;
   infileN[1] = infile1N;
@@ -355,6 +357,10 @@ void CompareDiagnosticsDists(
   // fragmentation region
   CompareDistHadron("hadXFDist","x_F","x_{F}");
   LatexClearPage();
+  CompareDistHadron("hadYHDist","Y_h","Y_{h}");
+  LatexClearPage();
+  CompareDist("YHDist","Y_{hh}","Y_{hh}");
+  LatexClearPage();
 
   // PID
   CompareDist("eleThetaDist","$\\theta_{\\mbox{lab}}\\left(e^-\\right)$","#theta_{lab}(e^{-})");
@@ -389,6 +395,31 @@ void CompareDiagnosticsDists(
   isLastLabel = true;
   CompareDist("eleVzDist","$v_z\\left(e^-\\right)$","v_{z}(e^{-})");
   LatexClearPage();
+
+  // depolarization
+  enum KF_enum {kfA, kfB, kfC, kfV, kfW, kfWA, kfVA, kfCA, kfBA, Nkf};
+  TString kfName[Nkf];
+  TString kfTitle[Nkf];
+  kfName[kfA] = "kfA"; kfTitle[kfA] = "A(y)";
+  kfName[kfB] = "kfB"; kfTitle[kfB] = "B(y)";
+  kfName[kfC] = "kfC"; kfTitle[kfC] = "C(y)";
+  kfName[kfV] = "kfV"; kfTitle[kfV] = "V(y)";
+  kfName[kfW] = "kfW"; kfTitle[kfW] = "W(y)";
+  kfName[kfWA] = "kfWA"; kfTitle[kfWA] = "W(y)/A(y)";
+  kfName[kfVA] = "kfVA"; kfTitle[kfVA] = "V(y)/A(y)";
+  kfName[kfCA] = "kfCA"; kfTitle[kfCA] = "C(y)/A(y)";
+  kfName[kfBA] = "kfBA"; kfTitle[kfBA] = "B(y)/A(y)";
+  for(int k=0; k<Nkf; k++) {
+    CompareDist2D(kfName[k]+TString("vsMh"),"","");
+    CompareDist2D(kfName[k]+TString("vsPhPerp"),"","");
+    CompareDist2D(kfName[k]+TString("vsX"),"","");
+    CompareDist2D(kfName[k]+TString("vsQ2"),"","");
+    CompareDist2D(kfName[k]+TString("vsMmiss"),"","");
+    CompareDist2D(kfName[k]+TString("vsZpair"),"","");
+    CompareDist2D(kfName[k]+TString("vsPhiR"),"","");
+    CompareDist2D(kfName[k]+TString("vsPhiH"),"","");
+    CompareDist2D(kfName[k]+TString("vsPhiHR"),"","");
+  };
 
 
   /*
