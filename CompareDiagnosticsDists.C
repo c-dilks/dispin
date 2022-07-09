@@ -74,6 +74,8 @@ void CompareDist(TString distName, TString varTex, TString distTitle="") {
 
   // specific adjustments for specific histogram
   for(f=0;f<2;f++) {
+    if(TString(dist[f]->GetName()).Contains("Q2Dist")) { canv->GetPad(1)->SetLogx(1); canv->GetPad(1)->SetLogy(1); };
+    if(TString(dist[f]->GetName()).Contains("XDist")) { canv->GetPad(1)->SetLogx(1); canv->GetPad(1)->SetLogy(1); };
     if(TString(dist[f]->GetName()).Contains("eleVzDist")) canv->GetPad(1)->SetLogy(1);
     if(TString(dist[f]->GetName()).Contains("hadEleVzDiff")) canv->GetPad(1)->SetLogy(1);
     if(TString(dist[f]->GetName()).Contains("elePCALenDist")) canv->GetPad(1)->SetLogy(1);
@@ -166,10 +168,21 @@ void CompareDist2D(TString distName, TString varTexX, TString varTexY) {
   rat->Divide(dist[1]); // dist[0] / dist[1]
   rat->GetZaxis()->SetRangeUser(0.1,2.1);
 
-  // draw canvas
+  // define canvas
   canv = new TCanvas(
     TString(distName+"_canv"),TString(distName+"_canv"),2000,1600);
   canv->Divide(2,2);
+
+  // specific adjustments for specific histogram
+  if(TString(dist[0]->GetName()).Contains("Q2vsX")) { 
+    for(int pad; pad<=3; pad++) {
+      canv->GetPad(pad)->SetLogx(1);
+      canv->GetPad(pad)->SetLogy(1);
+      if(pad<3) canv->GetPad(pad)->SetLogz(1);
+    }
+  }
+
+  // draw
   for(int pad=1; pad<=4; pad++) {
     canv->GetPad(pad)->SetBottomMargin(0.15);
     canv->GetPad(pad)->SetLeftMargin(0.15);
@@ -260,14 +273,19 @@ void LatexClearPage() {
 ///////////////////////////////////////////////////
   
 void CompareDiagnosticsDists(
-  TString infile0N="plots.22gev.root", // light red
-  // TString infile1N="plots.12gev.rgaData.root", // dark blue
-  // TString infile1N="plots.12gev.rgaMC.root", // dark blue
-  TString infile1N="plots.12gev.rgcMC.root", // dark blue
-  TString outDir_="diagcomp",
-  TString infileTitle0="22 GeV",
-  TString infileTitle1="12 GeV"
-) {
+    /* light red */
+    TString infile0N="plots.22gev.root",
+    // TString infile0N="plots.12gev.rgaData.root",
+    /* dark blue */
+    TString infile1N="plots.12gev.rgcMC.root",
+    // TString infile1N="plots.12gev.rgaData.root",
+    // TString infile1N="plots.12gev.rgaMC.root",
+    /**/
+    TString outDir_="diagcomp",
+    TString infileTitle0="22 GeV",
+    TString infileTitle1="12 GeV"
+    )
+{
   infileN[0] = infile0N;
   infileN[1] = infile1N;
   infileT[0] = infileTitle0;
@@ -333,6 +351,7 @@ void CompareDiagnosticsDists(
   // DIS
   CompareDist("Q2Dist","$Q^2$","Q^{2}");
   CompareDist("XDist","$x$","x");
+  CompareDist2D("Q2vsX","$x$","$Q^2$");
   LatexClearPage();
   CompareDist("WDist","$W$","W");
   CompareDist("YDist","$y$","y");
@@ -399,6 +418,7 @@ void CompareDiagnosticsDists(
   LatexClearPage();
 
   // depolarization
+  /*
   enum KF_enum {kfA, kfB, kfC, kfV, kfW, kfWA, kfVA, kfCA, kfBA, Nkf};
   TString kfName[Nkf];
   TString kfTitle[Nkf];
@@ -422,6 +442,7 @@ void CompareDiagnosticsDists(
     CompareDist2D(kfName[k]+TString("vsPhiH"),"","");
     CompareDist2D(kfName[k]+TString("vsPhiHR"),"","");
   };
+  */
 
 
   /*
@@ -434,7 +455,6 @@ void CompareDiagnosticsDists(
       );
   */
   /*
-  CompareDist2D("Q2vsX");
   CompareDist2D("eleVxyDist");
   CompareDist2D("eleEvsPhi");
   CompareDist2D("vzDiffEleHad");

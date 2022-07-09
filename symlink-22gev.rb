@@ -2,8 +2,11 @@
 
 require 'fileutils'
 
-outDir = "outroot.rgc.proton.all"
-inDirs = Dir.glob "outroot.rgc.proton.*HelProd"
+# dataset='rgc'
+dataset='22gev'
+
+outDir = "outroot.#{dataset}.proton.all"
+inDirs = Dir.glob "outroot.#{dataset}.proton.*HelProd"
 
 FileUtils.mkdir_p outDir
 inDirs.each do |inDir|

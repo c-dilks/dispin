@@ -80,6 +80,23 @@ class Tools {
       };
     };
 
+    // make equal-width log-scale bins
+    static void BinLog(TAxis *ax) {
+      Float_t lb = ax->GetXmin();
+      Float_t ub = ax->GetXmax();
+      if(lb<=0||ub<=0||lb>=ub) {
+        fprintf(stderr,"ERROR: bad axis range for BinSet::BinLog\n");
+        return;
+      };
+      lb = TMath::Log10(lb);
+      ub = TMath::Log10(ub);
+      Int_t nb = ax->GetNbins();
+      Float_t wd = (ub-lb)/nb;
+      Float_t *newBins = new Float_t[nb+1];
+      for(int b=0; b<=nb; b++) newBins[b] = TMath::Power(10,lb+b*wd);
+      ax->Set(nb,newBins);
+      delete[] newBins;
+    }; 
 
     // shift angle to the range [-PI,+PI)
     static Float_t AdjAngle(Float_t ang) {

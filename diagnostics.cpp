@@ -74,12 +74,14 @@ int main(int argc, char** argv) {
 
    // DIS kinematics
    TH1D * WDist = new TH1D("WDist","W distribution;W",NBINS,1,8);
-   TH1D * XDist = new TH1D("XDist","x distribution;x",NBINS,0,1);
-   TH1D * Q2Dist = new TH1D("Q2Dist","Q^{2} distribution;Q^{2}",NBINS,0,20);
-   TH2D * Q2vsW = new TH2D("Q2vsW","Q^{2} vs. W;W;Q^{2}",
-                                   NBINS,0,8,NBINS,0,12);
-   TH2D * Q2vsX = new TH2D("Q2vsX","Q^{2} vs. x;x;Q^{2}",NBINS,0,1,NBINS,0,20);
+   TH1D * XDist = new TH1D("XDist","x distribution;x",NBINS,0.03,1);
+   TH1D * Q2Dist = new TH1D("Q2Dist","Q^{2} distribution;Q^{2}",NBINS,0.4,30);
+   TH2D * Q2vsW = new TH2D("Q2vsW","Q^{2} vs. W;W;Q^{2}",NBINS,0,8,NBINS,0,12);
+   TH2D * Q2vsX = new TH2D("Q2vsX","Q^{2} vs. x;x;Q^{2}",NBINS,0.03,1,NBINS,0.4,30);
    TH1D * YDist = new TH1D("YDist","y distribution;y",NBINS,0,1);
+   Tools::BinLog(Q2Dist->GetXaxis());
+   Tools::BinLog(XDist->GetXaxis());
+   Tools::BinLog(Q2vsX->GetXaxis()); Tools::BinLog(Q2vsX->GetYaxis());
    
    // electron kinematics
    TH1D * eleEDist = new TH1D("eleEDist","e^{-} E distribution",NBINS,0,20);
@@ -434,7 +436,7 @@ int main(int argc, char** argv) {
 
 
    // ECAL energy, sampling fraction (for electrons)
-   TH1D * elePCALenDist = new TH1D("elePCALenDist","electron PCAL energy",NBINS,0,1.8);
+   TH1D * elePCALenDist = new TH1D("elePCALenDist","electron PCAL energy",NBINS,0,5.0);
    TH1D * eleECINenDist = new TH1D("eleECINenDist","electron EC_{in} energy",NBINS,0,1.5);
    TH1D * eleECOUTenDist = new TH1D("eleECOUTenDist","electron EC_{out} energy",NBINS,0,0.6);
    TH2D * eleECALvsPCALedep = new TH2D("eleECALvsPCALedep","E_{ECIN}+E_{ECOUT} vs. E_{PCAL};E_{PCAL};E_{ECIN}+E_{ECOUT}",
