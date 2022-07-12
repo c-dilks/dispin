@@ -12,9 +12,9 @@ pool = Thread.pool(poolSize)
 # datasets: short name => outroot dir name
 datasetHash = {
   '22gev'         => '22gev.proton.all',
-  '12gev.rgaData' => 'rga.inbending.sp19.subset',
-  '12gev.rgaMC'   => 'rga.mc',
   '12gev.rgcMC'   => 'rgc.proton.all',
+  # '12gev.rgaData' => 'rga.inbending.sp19.subset',
+  # '12gev.rgaMC'   => 'rga.mc',
 }
 
 # run diagnostics.exe for each dataset

@@ -504,7 +504,7 @@ int main(int argc, char** argv) {
        NBINS,0,1,NBINS,kfRange[k][0],kfRange[k][1]);
      kfVsQ2[k] = new TH2D(TString(kfName[k]+"vsQ2"),
        TString(kfTitle[k]+" vs. Q^{2}"),
-       NBINS,0,12,NBINS,kfRange[k][0],kfRange[k][1]);
+       NBINS,0.8,30,NBINS,kfRange[k][0],kfRange[k][1]);
      kfVsMmiss[k] = new TH2D(TString(kfName[k]+"vsMmiss"),
        TString(kfTitle[k]+" vs. M_{X}"),
        NBINS,0,3.5,NBINS,kfRange[k][0],kfRange[k][1]);
