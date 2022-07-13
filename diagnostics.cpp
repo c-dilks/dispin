@@ -112,9 +112,15 @@ int main(int argc, char** argv) {
    TH2D * hadZCorr = new TH2D("hadZCorr",corrTitle("z"),NBINS,0,1,NBINS,0,1);
    TH2D * hadXFCorr = new TH2D("hadXFCorr",corrTitle("x_{F}"), NBINS,-1,1,NBINS,-1,1);
    TH2D * hadYHCorr = new TH2D("hadYHCorr",corrTitle("Y_{h}"), NBINS,-4,4,NBINS,-4,4);
+   TH2D * hadQTCorr = new TH2D("hadQTCorr",corrTitle("q_{T}"), NBINS,0.01,5,NBINS,0.01,5);
+   TH2D * hadQTqCorr = new TH2D("hadQTqCorr",corrTitle("q_{T}/Q"), NBINS,0.01,5,NBINS,0.01,5);
    TH2D * hadPhiHCorr = new TH2D("hadPhiHCorr",corrTitle("#phi_{h}"), NBINS,-4,4,NBINS,-4,4);
    TH2D * hadVzCorr = new TH2D("hadVzCorr",corrTitle("V_{z}"), NBINS,-30,30,NBINS,-30,30);
    TH2D * hadEleVzDiffCorr = new TH2D("hadEleVzDiffCorr",corrTitle("V_{z}(had)-V_{z}(e^{-})"), NBINS,-100,100,NBINS,-100,100);
+   Tools::BinLog(hadQTCorr->GetXaxis());
+   Tools::BinLog(hadQTCorr->GetYaxis());
+   Tools::BinLog(hadQTqCorr->GetXaxis());
+   Tools::BinLog(hadQTqCorr->GetYaxis());
    
    // dihadron's hadron kinematics
    TH1D * hadEDist[2];
@@ -127,6 +133,8 @@ int main(int argc, char** argv) {
    TH1D * hadZDist[2];
    TH1D * hadXFDist[2];
    TH1D * hadYHDist[2];
+   TH1D * hadQTDist[2];
+   TH1D * hadQTqDist[2];
    TH1D * hadPhiHDist[2];
    TH1D * hadVzDist[2];
    TH1D * hadEleVzDiffDist[2];
@@ -157,6 +165,10 @@ int main(int argc, char** argv) {
        NBINS,-1,1);
      hadYHDist[h] = new TH1D(TString(hadName[h]+"hadYHDist"),distTitle("Y_{h}"),
        NBINS,-4,4);
+     hadQTDist[h] = new TH1D(TString(hadName[h]+"hadQTDist"),distTitle("q_{T}"),
+       NBINS,0.01,7);
+     hadQTqDist[h] = new TH1D(TString(hadName[h]+"hadQTqDist"),distTitle("q_{T}/Q"),
+       NBINS,0.01,5);
      hadPhiHDist[h] = new TH1D(TString(hadName[h]+"hadPhiHDist"),distTitle("#phi_{h}"),
        NBINS,-PI,PI);
      hadVzDist[h] = new TH1D(TString(hadName[h]+"hadVzDist"),
@@ -169,6 +181,8 @@ int main(int argc, char** argv) {
        NBINS,-6,6);
      hadChi2pidVsP[h] = new TH2D(TString(hadName[h]+"hadChi2pidVsP"),hadTitle[h]+" #chi^{2}_{pid} vs. p;p;#chi^{2}_{pid}",
        NBINS,0,8, NBINS,-6,6);
+     Tools::BinLog(hadQTDist[h]->GetXaxis());
+     Tools::BinLog(hadQTqDist[h]->GetXaxis());
 
      hadVxyDist[h] = new TH2D(TString("hadVxyDist_"+hadName[h]),
        TString(hadTitle[h]+" V_{y} vs. V_{x}"),
@@ -194,8 +208,12 @@ int main(int argc, char** argv) {
 
    TH1D * MhDist = new TH1D("MhDist","M_{h} distribution;M_{h}",2*NBINS,0,3);
    TH1D * PhDist = new TH1D("PhDist","|P_{h}| distribution;|P_{h}|",NBINS,0,10);
-   TH1D * PhPerpDist = new TH1D("PhPerpDist","|P_{h}^{perp}| distribution;|P_{h}^{perp}|",
-     NBINS,0,2);
+   TH1D * PhPerpDist = new TH1D("PhPerpDist","|P_{h}^{perp}| distribution;|P_{h}^{perp}|", NBINS,0.01,3);
+   TH1D * qTDist = new TH1D("qTDist","q_{T} distribution;q_{T}", NBINS,0.01,7);
+   TH1D * qTqDist = new TH1D("qTqDist","q_{T}/Q distribution;q_{T}/Q", NBINS,0.01,5);
+   Tools::BinLog(PhPerpDist->GetXaxis());
+   Tools::BinLog(qTDist->GetXaxis());
+   Tools::BinLog(qTqDist->GetXaxis());
    TH1D * ZpairDist = new TH1D("ZpairDist","z_{pair} distribution;z_{pair}",NBINS,0,1);
    TH1D * zetaDist = new TH1D("zetaDist","#zeta distribution;#zeta",NBINS,-1,1);
    TH1D * xFDist = new TH1D("xFDist","x_{F} distribution;x_{F}",NBINS,-2,2);
@@ -596,6 +614,8 @@ int main(int argc, char** argv) {
        hadZCorr->Fill(ev->Z[qB],ev->Z[qA]);
        hadXFCorr->Fill(ev->hadXF[qB],ev->hadXF[qA]);
        hadYHCorr->Fill(ev->hadYH[qB],ev->hadYH[qA]);
+       hadQTCorr->Fill(ev->hadQT[qB],ev->hadQT[qA]);
+       hadQTqCorr->Fill(ev->hadQTq[qB],ev->hadQTq[qA]);
        hadPhiHCorr->Fill(ev->hadPhiH[qB],ev->hadPhiH[qA]);
        hadVzCorr->Fill(ev->hadVertex[qB][eZ],ev->hadVertex[qA][eZ]);
        hadEleVzDiffCorr->Fill(ev->hadVertex[qB][eZ]-ev->eleVertex[eZ],
@@ -612,6 +632,8 @@ int main(int argc, char** argv) {
          hadZDist[h]->Fill(ev->Z[h]);
          hadXFDist[h]->Fill(ev->hadXF[h]);
          hadYHDist[h]->Fill(ev->hadYH[h]);
+         hadQTDist[h]->Fill(ev->hadQT[h]);
+         hadQTqDist[h]->Fill(ev->hadQTq[h]);
          hadPhiHDist[h]->Fill(ev->hadPhiH[h]);
          hadVzDist[h]->Fill(ev->hadVertex[h][eZ]);
          hadEleVzDiffDist[h]->Fill(ev->hadVertex[h][eZ] - ev->eleVertex[eZ]);
@@ -631,6 +653,8 @@ int main(int argc, char** argv) {
        MhDist->Fill(ev->Mh);
        PhDist->Fill(ev->Ph);
        PhPerpDist->Fill(ev->PhPerp);
+       qTDist->Fill(ev->qT);
+       qTqDist->Fill(ev->qTq);
        ZpairDist->Fill(ev->Zpair);
        zetaDist->Fill(ev->zeta);
        xFDist->Fill(ev->xF);
@@ -788,6 +812,8 @@ int main(int argc, char** argv) {
    TCanvas * hadZCanv = new TCanvas("hadZCanv","hadZCanv",1000,800);
    TCanvas * hadXFCanv = new TCanvas("hadXFCanv","hadXFCanv",1000,800);
    TCanvas * hadYHCanv = new TCanvas("hadYHCanv","hadYHCanv",1000,800);
+   TCanvas * hadQTCanv = new TCanvas("hadQTCanv","hadQTCanv",1000,800);
+   TCanvas * hadQTqCanv = new TCanvas("hadQTqCanv","hadQTqCanv",1000,800);
    TCanvas * hadPhiHCanv = new TCanvas("hadPhiHCanv","hadPhiHCanv",1000,800);
    TCanvas * hadVzCanv = new TCanvas("hadVzCanv","hadVzCanv",1000,800);
    TCanvas * hadEleVzDiffCanv = new TCanvas("hadEleVzDiffCanv","hadEleVzDiffCanv",1000,800);
@@ -805,6 +831,8 @@ int main(int argc, char** argv) {
    HadronCompareCanv(hadZCanv, hadZDist, hadZCorr);
    HadronCompareCanv(hadXFCanv, hadXFDist, hadXFCorr);
    HadronCompareCanv(hadYHCanv, hadYHDist, hadYHCorr);
+   HadronCompareCanv(hadQTCanv, hadQTDist, hadQTCorr);
+   HadronCompareCanv(hadQTqCanv, hadQTqDist, hadQTqCorr);
    HadronCompareCanv(hadPhiHCanv, hadPhiHDist, hadPhiHCorr);
    HadronCompareCanv(hadVzCanv, hadVzDist, hadVzCorr);
    HadronCompareCanv(hadEleVzDiffCanv, hadEleVzDiffDist, hadEleVzDiffCorr);
@@ -822,6 +850,8 @@ int main(int argc, char** argv) {
    hadZCanv->Write();
    hadXFCanv->Write();
    hadYHCanv->Write();
+   hadQTCanv->Write();
+   hadQTqCanv->Write();
    hadPhiHCanv->Write();
    hadEtaVsPhiCanv->Write();
    hadEVsPhiCanv->Write();
@@ -842,6 +872,8 @@ int main(int argc, char** argv) {
    MhDist->Write();
    PhDist->Write();
    PhPerpDist->Write();
+   qTDist->Write();
+   qTqDist->Write();
    ZpairDist->Write();
    zetaDist->Write();
    xFDist->Write();
@@ -849,6 +881,8 @@ int main(int argc, char** argv) {
    MmissDistZoom->Write();
    YHDist->Write();
    for(int h=0; h<2; h++) hadYHDist[h]->Write();
+   for(int h=0; h<2; h++) hadQTDist[h]->Write();
+   for(int h=0; h<2; h++) hadQTqDist[h]->Write();
    for(int h=0; h<2; h++) hadXFDist[h]->Write();
 
    MmissVsMh->Write();

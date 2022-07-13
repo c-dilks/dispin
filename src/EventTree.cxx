@@ -344,8 +344,11 @@ void EventTree::GetEvent(Long64_t i) {
   // TODO: move this to calcKinematics.cpp; (will need to reproduce outroot files)
   for(int h=0; h<2; h++) {
     hadPperp[h] = objDihadron->hadPperp[h];
-    hadQt[h] = hadPperp[h] / Z[h];
+    hadQT[h]  = Z[h]>0 ? hadPperp[h] / Z[h]            : 0.0;
+    hadQTq[h] = Q2>0   ? hadQT[h]    / TMath::Sqrt(Q2) : 0.0;
   }
+  qT  = Zpair>0 ? PhPerp / Zpair           : 0.0;
+  qTq = Q2>0    ? qT     / TMath::Sqrt(Q2) : 0.0;
 
 
   // take absolute value of Mmiss (rarely, it can be negative; see Dihadron.cxx)
@@ -372,8 +375,8 @@ void EventTree::GetEvent(Long64_t i) {
     cutTFR[h] = hadYH[h] < -yhb;
   };
   /*for(int h=0; h<2; h++) { // Prokudin cuts:
-    cutCFR[h] = hadQt[h]<2 && Z[h]>0.2;
-    cutTFR[h] = hadQt[h]>1 &&
+    cutCFR[h] = hadQT[h]<2 && Z[h]>0.2;
+    cutTFR[h] = hadQT[h]>1 &&
       ( (x<0.45 && Z[h]<0.1) || (x>=0.45 && Z[h]<0.3) );
   };*/
   cutFR = hadXF[qA]>0 && hadXF[qB]>0; // PRL CFR

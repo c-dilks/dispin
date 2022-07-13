@@ -101,7 +101,8 @@ class EventTree : public TObject
     Float_t hadYH[2];
     Float_t hadYCM[2];
     Float_t hadPperp[2];
-    Float_t hadQt[2];
+    Float_t hadQT[2];
+    Float_t hadQTq[2];
     Float_t hadVertex[2][3];
     Int_t hadStatus[2];
     Float_t hadChi2pid[2];
@@ -131,7 +132,7 @@ class EventTree : public TObject
     Float_t theta;
     Float_t DY,DYsgn;
 
-    Float_t Ph,PhPerp;
+    Float_t Ph,PhPerp,qT,qTq;
     Float_t PhEta,PhPhi;
     Float_t R,RPerp,RT;
 

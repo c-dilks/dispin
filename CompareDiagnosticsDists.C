@@ -74,8 +74,15 @@ void CompareDist(TString distName, TString varTex, TString distTitle="") {
 
   // specific adjustments for specific histogram
   for(f=0;f<2;f++) {
-    if(TString(dist[f]->GetName()).Contains("Q2Dist")) { canv->GetPad(1)->SetLogx(1); canv->GetPad(1)->SetLogy(1); };
-    if(TString(dist[f]->GetName()).Contains("XDist")) { canv->GetPad(1)->SetLogx(1); canv->GetPad(1)->SetLogy(1); };
+    if(TString(dist[f]->GetName()).Contains("Q2Dist")) { canv->GetPad(1)->SetLogx(1); canv->GetPad(1)->SetLogy(1); canv->GetPad(2)->SetLogx(1); };
+    if(TString(dist[f]->GetName()).Contains("XDist")) { canv->GetPad(1)->SetLogx(1); canv->GetPad(1)->SetLogy(1); canv->GetPad(2)->SetLogx(1); };
+    if(TString(dist[f]->GetName()).Contains("PhPerpDist")) { canv->GetPad(1)->SetLogx(1); canv->GetPad(1)->SetLogy(1); canv->GetPad(2)->SetLogx(1); };
+    if(TString(dist[f]->GetName()).Contains("qTDist")) { canv->GetPad(1)->SetLogx(1); canv->GetPad(1)->SetLogy(1); canv->GetPad(2)->SetLogx(1); };
+    if(TString(dist[f]->GetName()).Contains("qTqDist")) { canv->GetPad(1)->SetLogx(1); canv->GetPad(1)->SetLogy(1); canv->GetPad(2)->SetLogx(1); };
+    if(TString(dist[f]->GetName()).Contains("hadQTDist")) { canv->GetPad(1)->SetLogx(1); canv->GetPad(1)->SetLogy(1); canv->GetPad(2)->SetLogx(1); };
+    if(TString(dist[f]->GetName()).Contains("hadQTqDist")) { canv->GetPad(1)->SetLogx(1); canv->GetPad(1)->SetLogy(1); canv->GetPad(2)->SetLogx(1); };
+    if(TString(dist[f]->GetName()).Contains("hadXFDist")) { canv->GetPad(1)->SetLogy(1); };
+    if(TString(dist[f]->GetName()).Contains("hadYHDist")) { canv->GetPad(1)->SetLogy(1); };
     if(TString(dist[f]->GetName()).Contains("eleVzDist")) canv->GetPad(1)->SetLogy(1);
     if(TString(dist[f]->GetName()).Contains("hadEleVzDiff")) canv->GetPad(1)->SetLogy(1);
     if(TString(dist[f]->GetName()).Contains("elePCALenDist")) canv->GetPad(1)->SetLogy(1);
@@ -365,6 +372,13 @@ void CompareDiagnosticsDists(
   LatexClearPage();
   CompareDist("PhPerpDist","$\\phperp$","p_{T}");
   CompareDist("MmissDist","$M_X$","M_{X}");
+  LatexClearPage();
+  CompareDist("qTDist","$q_T$","q_{T}");
+  CompareDist("qTqDist","$q_T/Q$","q_{T}/Q");
+  LatexClearPage();
+  CompareDistHadron("hadQTDist","q_T","q_{T}");
+  LatexClearPage();
+  CompareDistHadron("hadQTqDist","q_T/Q","q_{T}/Q");
   LatexClearPage();
   CompareDist("xFDist","dihadron $x_F$","dihadron x_{F}");
   CompareDist("thetaDist","$\\theta$","#theta");
