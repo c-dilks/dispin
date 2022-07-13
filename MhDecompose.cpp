@@ -2,6 +2,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <set>
 
 // ROOT
 #include "TFile.h"
@@ -23,6 +24,13 @@
 
 using namespace std;
 
+/* siblingMode: configure how each of the component (colored) histograms are filled
+ * - 0: hadrons must be siblings (have same parent); one histogram entry per dihadron; cousins will be in combinatorial BG
+ * - 1: hadrons must be cousins (different parent); one histogram entry per hadron; siblings will be in combinatorial BG
+ * - 2: hadrons can be siblings or cousins; one histogram entry per hadron (so siblings will have 2 duplicate entries)
+ */
+const Int_t siblingMode = 0;
+
 TString infiles;
 TString dataPlotsFile;
 Int_t whichPair;
@@ -38,6 +46,7 @@ const Int_t kpCombUnk = 1000003;
 Double_t electronCntData, electronCntMC;
 map<TString,TH1D*> dataDists;
 vector<Int_t> kfList;
+set<TString> logScalePlots;
 
 
 // Parent class
@@ -66,16 +75,16 @@ class Parent {
       for(auto const & kv : dataDists) {
         TString distN = kv.first;
         TH1D * dataDist = kv.second;
-        dists.insert(pair<TString,TH1D*>(
-          distN,
-          new TH1D(
+        auto dist = new TH1D(
             distN+kn,
             dataDist->GetTitle(),
             dataDist->GetNbinsX(),
             dataDist->GetXaxis()->GetXmin(),
             dataDist->GetXaxis()->GetXmax()
-          )
-        ));
+            );
+        if(logScalePlots.find(dataDist->GetName()) != logScalePlots.end())
+          Tools::BinLog(dist->GetXaxis());
+        dists.insert({distN,dist});
       };
 
       // format
@@ -97,7 +106,7 @@ map<Int_t,Parent> parMap;
 // distributions to the # of electrons
 TCanvas * BuildCanvas(TString distName) {
   TString canvName = distName + "Canv";
-  TCanvas * canv = new TCanvas(canvName,canvName,1200,600);
+  TCanvas * canv = new TCanvas(canvName,canvName,1800,900);
   TLegend * leg = new TLegend(0.1,0.1,0.9,0.9);
   Double_t max=0;
   Double_t maxTmp;
@@ -138,13 +147,18 @@ TCanvas * BuildCanvas(TString distName) {
 int main(int argc, char** argv) {
 
   // ARGUMENTS
-  infiles = "outroot.mcrec.injgen/*.root";
-  dataPlotsFile = "plots.mctest.root"; // plots.root for data (from diagnostics)
-  whichPair = EncodePairType(kPip,kPim);
-  if(argc>1) infiles = TString(argv[1]);
-  if(argc>2) dataPlotsFile = TString(argv[2]);
-  if(argc>3) whichPair = (Int_t)strtof(argv[3],NULL);
-
+  if(argc>3) {
+    infiles = TString(argv[1]);
+    dataPlotsFile = TString(argv[2]);
+    whichPair = (Int_t)strtof(argv[3],NULL);
+  } else {
+    cerr << "USAGE: " << argv[0]
+      << " " << "[outroot file(s)]"
+      << " " << "[plots.root file (from diagnostics)]"
+      << " " << "[whichPair]"
+      << endl;
+    return 1;
+  }
 
   // get hadron pair from whichPair; note that in the print out, the 
   // order of hadron 0 and 1 is set by Constants::dihHadIdx
@@ -159,6 +173,10 @@ int main(int argc, char** argv) {
 
   EventTree * ev = new EventTree(infiles,whichPair);
 
+  // list of plots with equal-width-in-log-scale // FIXME: should be auto-detected
+  logScalePlots.insert("Q2Dist");
+  logScalePlots.insert("XDist");
+  logScalePlots.insert("PhPerpDist");
 
   // read dists from plots.root, produced from data
   TFile * plotsFile = new TFile(dataPlotsFile,"READ");
@@ -192,7 +210,9 @@ int main(int argc, char** argv) {
   };
 
   // define output file
-  TFile * outfile = new TFile("mhdecomp.root","RECREATE");
+  TString outfileN = dataPlotsFile;
+  outfileN(TRegexp("^plots")) = "mhdecomp";
+  TFile * outfile = new TFile(outfileN,"RECREATE");
 
 
   // define Parent objects, and store them in a map
@@ -219,7 +239,7 @@ int main(int argc, char** argv) {
 
 
   // event loop -------------------------
-  Int_t parPid;
+  vector<Int_t> parPids;
   Int_t evnumTmp = -10000;
   for(int i=0; i<ev->ENT; i++) {
     //if(i>100000) break; // limiter
@@ -238,48 +258,65 @@ int main(int argc, char** argv) {
 
       // decide which histograms to fill
       for(int i=0; i<=1; i++) {
-        // determine parPid, which will decide the histogram
+        // determine parent PID(s), which will decide the histogram
+        parPids.clear();
+        Int_t parPid[2];
+        for(int h=0; h<2; h++) {
+          parPid[h] = parMap.find(ev->gen_hadParentPid[h]) != parMap.end() ?
+            ev->gen_hadParentPid[h] : kpUnknown;
+        }
         switch(i) {
           case 0:
-            if(ev->gen_hadParentIdx[qA] == ev->gen_hadParentIdx[qB]) {
-              // hadrons are siblings (have same parent)
-              parPid = parMap.find(ev->gen_hadParentPid[qA]) != parMap.end() ?
-                                   ev->gen_hadParentPid[qA] : kpUnknown;
-            } else {
-              // hadrons are cousins (have different parents): combinatorial bg
-              if(ev->gen_hadParentPid[qA]==-1 || ev->gen_hadParentPid[qB]==-1)
-                parPid = kpCombUnk; // at least one parent is undefined
-              else
-                parPid = kpComb; // both parents are defined
+            if(ev->gen_hadParentIdx[qA] == ev->gen_hadParentIdx[qB]) { // hadrons are siblings (have same parent)
+              if(siblingMode==0) {
+                parPids.push_back(parPid[qA]);
+              } else if(siblingMode==1) {
+                parPids.push_back(kpComb);
+                parPids.push_back(kpComb);
+              }
+              else if(siblingMode==2) {
+                parPids.push_back(parPid[qA]);
+                parPids.push_back(parPid[qB]);
+              };
+            } else { // hadrons are cousins (have different parents)
+              if(siblingMode==0) {
+                if(ev->gen_hadParentPid[qA]==-1 || ev->gen_hadParentPid[qB]==-1) parPids.push_back(kpCombUnk); // at least one parent is undefined
+                else parPids.push_back(kpComb); // both parents are defined
+              }
+              else if(siblingMode==1 || siblingMode==2) {
+                parPids.push_back(parPid[qA]);
+                parPids.push_back(parPid[qB]);
+              };
             };
             break;
           case 1:
             // all hadrons inclusively
-            parPid = kpAll;
+            parPids.push_back(kpAll);
             break;
         }
 
-        if(parPid==kpUnknown) {
-          fprintf(stderr,"WARNING: could not find common parent in event %d\n",ev->evnum);
-          continue;
-        };
-
         // fill histograms
-        auto par = parMap.at(parPid);
-        par.dists.at("Mh")->Fill(ev->Mh);
-        par.dists.at("Q2")->Fill(ev->Q2);
-        par.dists.at("x")->Fill(ev->x);
-        par.dists.at("z")->Fill(ev->Zpair);
-        par.dists.at("PhPerp")->Fill(ev->PhPerp);
-        par.dists.at("xF")->Fill(ev->xF);
-        par.dists.at("YH")->Fill(ev->YH);
-        for(int h=0; h<2; h++) {
-          plotK=Form("YH%d",h); par.dists.at(plotK)->Fill(ev->hadYH[h]);
-        };
-        par.dists.at("PhiH")->Fill(ev->PhiH);
-        par.dists.at("PhiR")->Fill(ev->PhiR);
-        par.dists.at("theta")->Fill(ev->theta);
-        par.dists.at("diphM")->Fill(ev->objDiphoton->M);
+        for(auto pid : parPids) {
+          if(pid==kpUnknown) {
+            if(siblingMode==0) fprintf(stderr,"WARNING: could not find common parent in event %d\n",ev->evnum);
+            continue;
+          };
+          auto par = parMap.at(pid);
+          par.dists.at("Mh")->Fill(ev->Mh);
+          par.dists.at("Q2")->Fill(ev->Q2);
+          par.dists.at("x")->Fill(ev->x);
+          par.dists.at("z")->Fill(ev->Zpair);
+          par.dists.at("PhPerp")->Fill(ev->PhPerp);
+          par.dists.at("xF")->Fill(ev->xF);
+          par.dists.at("YH")->Fill(ev->YH);
+          for(int h=0; h<2; h++) {
+            plotK=Form("YH%d",h); par.dists.at(plotK)->Fill(ev->hadYH[h]);
+          };
+          par.dists.at("PhiH")->Fill(ev->PhiH);
+          par.dists.at("PhiR")->Fill(ev->PhiR);
+          par.dists.at("theta")->Fill(ev->theta);
+          par.dists.at("diphM")->Fill(ev->objDiphoton->M);
+        }
       };
 
     };
@@ -298,6 +335,15 @@ int main(int argc, char** argv) {
     );
   };
 
+  // print pngs
+  for(auto c : canvVec) {
+    if(TString(c->GetName())=="MhCanv") {
+      TString pngName = outfileN;
+      pngName(TRegexp("root$")) = TString(c->GetName()) + ".png";
+      c->Print(pngName);
+    }
+  }
+
 
   // write
   for(TCanvas * c : canvVec) c->Write();
@@ -311,6 +357,7 @@ int main(int argc, char** argv) {
 
   // close
   outfile->Close();
+  cout << endl << " -> produced " << outfileN << endl;
   return 0;
 };
 
