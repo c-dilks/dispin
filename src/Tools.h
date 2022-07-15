@@ -116,6 +116,12 @@ class Tools {
       while(ang<=-PI/2.0) ang+=2*PI;
       return ang;
     };
+    // shift angle to the range [-180deg,+180deg)
+    static Float_t AdjAngleDeg(Float_t ang) {
+      while(ang>180.0)   ang-=360.0;
+      while(ang<=-180.0) ang+=360.0;
+      return ang;
+    };
 
     // convert Eta to Theta (with theta in degrees)
     static Float_t EtaToTheta(Float_t eta) {
