@@ -242,10 +242,11 @@ Bool_t Binning::SetScheme(Int_t pairType, Int_t ivType, Int_t nb0, Int_t nb1, In
   Int_t nb[3];
   if( nb0==-1 && nb1==-1 && nb2==-1) {
     if(schemeVersion=="PM" || schemeVersion=="PI0") { // pi+pi-, pi+pi0, pi-pi0, for RGA vs. RGB
-      if(ivVar[0]==vX) nb0=6;
-      if(ivVar[0]==vM) nb0=6;
-      if(ivVar[0]==vZ  && ivVar[1]==vM)  { nb0=3; nb1=2; };
-      if(ivVar[0]==vPt && ivVar[1]==vM)  { nb0=3; nb1=2; };
+      nb0=6;
+      // if(ivVar[0]==vX) nb0=6;
+      // if(ivVar[0]==vM) nb0=6;
+      // if(ivVar[0]==vZ  && ivVar[1]==vM)  { nb0=3; nb1=2; };
+      // if(ivVar[0]==vPt && ivVar[1]==vM)  { nb0=3; nb1=2; };
     };
     if(schemeVersion=="DIS") { // DIS2021: RGA fa18+sp19 inbending data
       if(ivVar[0]==vX) nb0=12;
@@ -286,11 +287,11 @@ Bool_t Binning::SetScheme(Int_t pairType, Int_t ivType, Int_t nb0, Int_t nb1, In
           break;
         case 6:
           if(schemeVersion=="PM") { // based on RGA bibending pi+pi-
-            AddBinBound(vM,0.473);
-            AddBinBound(vM,0.627);
-            AddBinBound(vM,0.751);
-            AddBinBound(vM,0.856);
-            AddBinBound(vM,1.011);
+            AddBinBound(vM,0.472);
+            AddBinBound(vM,0.616);
+            AddBinBound(vM,0.739);
+            AddBinBound(vM,0.840);
+            AddBinBound(vM,1.017);
           } else if(schemeVersion=="PI0") { // based on RGA bibending pi+pi0
             AddBinBound(vM,0.404);
             AddBinBound(vM,0.518);
@@ -337,11 +338,11 @@ Bool_t Binning::SetScheme(Int_t pairType, Int_t ivType, Int_t nb0, Int_t nb1, In
           break;
         case 6:
           if(schemeVersion=="PM") { // based on RGA bibending pi+pi-
-            AddBinBound(vX,0.109);
-            AddBinBound(vX,0.139);
-            AddBinBound(vX,0.173);
-            AddBinBound(vX,0.216);
-            AddBinBound(vX,0.283);
+            AddBinBound(vX,0.140);
+            AddBinBound(vX,0.175);
+            AddBinBound(vX,0.210);
+            AddBinBound(vX,0.256);
+            AddBinBound(vX,0.329);
           } else if(schemeVersion=="PI0") { // based on RGA bibending pi+pi0
             AddBinBound(vX,0.124);
             AddBinBound(vX,0.158);
@@ -395,11 +396,11 @@ Bool_t Binning::SetScheme(Int_t pairType, Int_t ivType, Int_t nb0, Int_t nb1, In
           AddBinBound(vZ,0.633);
           break;
         case 6:
-          AddBinBound(vZ,0.445); // PRL 2D binning
-          AddBinBound(vZ,0.500);
+          AddBinBound(vZ,0.330);
+          AddBinBound(vZ,0.415);
+          AddBinBound(vZ,0.486);
           AddBinBound(vZ,0.555);
-          AddBinBound(vZ,0.605);
-          AddBinBound(vZ,0.675);
+          AddBinBound(vZ,0.635);
           break;
         default:
           fprintf(stderr,"ERROR: unknown nb for %s\n",GetIVname(d).Data());
@@ -427,11 +428,11 @@ Bool_t Binning::SetScheme(Int_t pairType, Int_t ivType, Int_t nb0, Int_t nb1, In
           AddBinBound(vPt,0.662);
           break;
         case 6:
-          AddBinBound(vPt,0.245); // PRL 2D binning
-          AddBinBound(vPt,0.365);
-          AddBinBound(vPt,0.480);
-          AddBinBound(vPt,0.585);
-          AddBinBound(vPt,0.725);
+          AddBinBound(vPt,0.276);
+          AddBinBound(vPt,0.402);
+          AddBinBound(vPt,0.513);
+          AddBinBound(vPt,0.630);
+          AddBinBound(vPt,0.781);
           break;
         default:
           fprintf(stderr,"ERROR: unknown nb for %s\n",GetIVname(d).Data());
