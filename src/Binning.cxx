@@ -43,6 +43,13 @@ Binning::Binning() {
   IVtitle[vQ] = "Q^{2}";
   IVtitle[vXF] = "x_{F}";
 
+  IVoutrootBranchName[vM] = "Mh";
+  IVoutrootBranchName[vX] = "x";
+  IVoutrootBranchName[vZ] = "Zpair";
+  IVoutrootBranchName[vPt] = "PhPerp";
+  IVoutrootBranchName[vDY] = "unknown"; // TODO
+  IVoutrootBranchName[vQ] = "Q2";
+  IVoutrootBranchName[vXF] = "xF";
 
   // set binning scheme defaults
   dimensions = 0;
@@ -106,29 +113,58 @@ Int_t Binning::GetBin(Int_t ivIdx_, Float_t iv_) {
 // get bin associated with current event from Event tree, within
 // current binning scheme
 Int_t Binning::FindBin(EventTree * ev) {
-  Float_t ivVal[3] = {-1000,-1000,-1000};
+  for(int d=0; d<3; d++) ivVal[d] = -1000;
   Int_t ivBin[3] = {-1,-1,-1};
   for(int d=0; d<dimensions; d++) {
     switch(ivVar[d]) {
-      case vM: ivVal[d] = ev->Mh; break;
-      case vX: ivVal[d] = ev->x; break;
-      case vZ: ivVal[d] = ev->Zpair; break;
+      case vM:  ivVal[d] = ev->Mh;     break;
+      case vX:  ivVal[d] = ev->x;      break;
+      case vZ:  ivVal[d] = ev->Zpair;  break;
       case vPt: ivVal[d] = ev->PhPerp; break;
-      case vDY: ivVal[d] = ev->DY; break;
-      case vQ: ivVal[d] = ev->Q2; break;
-      case vXF: ivVal[d] = ev->xF; break;
+      case vDY: ivVal[d] = ev->DY;     break;
+      case vQ:  ivVal[d] = ev->Q2;     break;
+      case vXF: ivVal[d] = ev->xF;     break;
       default: 
                          fprintf(stderr,"ERROR: bad ivVar\n");
                          return -1;
     };
     ivBin[d] = this->GetBin(ivVar[d],ivVal[d]);
+    if(ivBin[d]<0) return -1;
+  };
+  return this->HashBinNum(ivBin[0],ivBin[1],ivBin[2]);
+};
+// analogous method for generated kinematics
+Int_t Binning::FindBinGen(EventTree * ev) {
+  for(int d=0; d<3; d++) ivValGen[d] = -1000;
+  Int_t ivBin[3] = {-1,-1,-1};
+  for(int d=0; d<dimensions; d++) {
+    switch(ivVar[d]) {
+      case vM:  ivValGen[d] = ev->gen_Mh;     break;
+      case vX:  ivValGen[d] = ev->gen_x;      break;
+      case vZ:  ivValGen[d] = ev->gen_Zpair;  break;
+      case vPt: ivValGen[d] = ev->gen_PhPerp; break;
+      case vDY: //ivValGen[d] = ev->gen_DY;     break;
+                fprintf(stderr,"ERROR: missing EventTree::gen_DY (TODO)\n");
+                return -1;
+                break;
+      case vQ:  ivValGen[d] = ev->gen_Q2;     break;
+      case vXF: ivValGen[d] = ev->gen_xF;     break;
+      default: 
+                         fprintf(stderr,"ERROR: bad ivVar\n");
+                         return -1;
+    };
+    for(int d=0; d<dimensions; d++) if(ivValGen[d]==UNDEF) return -1; // silent return for generated bin not found
+    ivBin[d] = this->GetBin(ivVar[d],ivValGen[d]);
+    if(ivBin[d]<0) return -1;
   };
   return this->HashBinNum(ivBin[0],ivBin[1],ivBin[2]);
 };
 
 // get bin associated with specified values, using current binning scheme
 Int_t Binning::FindBin(Float_t iv0, Float_t iv1, Float_t iv2) {
-  Float_t ivVal[3] = {iv0,iv1,iv2};
+  ivVal[0] = iv0;
+  ivVal[1] = iv1;
+  ivVal[2] = iv2;
   Int_t ivBin[3] = {-1,-1,-1};
   for(int d=0; d<dimensions; d++) {
     ivBin[d] = this->GetBin(ivVar[d],ivVal[d]);
@@ -561,6 +597,20 @@ Int_t Binning::GetNbinsTotal() {
   };
   return -1;
 };
+Int_t Binning::GetNbinsHighDim() {
+  switch(dimensions) {
+    case 1:
+      return 1;
+      break;
+    case 2:
+      return GetNbins(1);
+      break;
+    case 3:
+      return GetNbins(1) * GetNbins(2);
+      break;
+  };
+  return -1;
+};
 TArrayD * Binning::GetBinArray(Int_t dim) {
   return CheckDim(dim) ? binArray[dim] : nullptr;
 };
@@ -570,6 +620,12 @@ TString Binning::GetIVname(Int_t dim) {
 TString Binning::GetIVtitle(Int_t dim) {
   return CheckDim(dim) ? IVtitle[ivVar[dim]] : "unknown";
 };
+TString Binning::GetIVoutrootBranchName(Int_t dim) {
+  return CheckDim(dim) ? IVoutrootBranchName[ivVar[dim]] : "unknown";
+};
+Float_t Binning::GetIVmin(Int_t dim) { return CheckDim(dim) ? minIV[ivVar[dim]] : UNDEF; };
+Float_t Binning::GetIVmax(Int_t dim) { return CheckDim(dim) ? maxIV[ivVar[dim]] : UNDEF; };
+Float_t Binning::GetIVval(Int_t dim) { return CheckDim(dim) ? ivVal[dim] : UNDEF; };
 
 Bool_t Binning::CheckDim(Int_t dim_) { 
   if(dim_>=0 && dim_<dimensions) return true;
