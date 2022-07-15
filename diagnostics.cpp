@@ -206,7 +206,7 @@ int main(int argc, char** argv) {
                                  ") distribution;#Delta#phi";
    TH1D * deltaPhiDist = new TH1D("deltaPhiDist",plotTitle,NBINS,-PI,PI);
 
-   TH1D * MhDist = new TH1D("MhDist","M_{h} distribution;M_{h}",2*NBINS,0,3);
+   TH1D * MhDist = new TH1D("MhDist","M_{h} distribution;M_{h}",NBINS,0,2);
    TH1D * PhDist = new TH1D("PhDist","|P_{h}| distribution;|P_{h}|",NBINS,0,10);
    TH1D * PhPerpDist = new TH1D("PhPerpDist","|P_{h}^{perp}| distribution;|P_{h}^{perp}|", NBINS,0.01,3);
    TH1D * qTDist = new TH1D("qTDist","q_{T} distribution;q_{T}", NBINS,0.01,7);

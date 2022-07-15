@@ -16,6 +16,7 @@
 #include "TH2.h"
 #include "TCanvas.h"
 #include "TLegend.h"
+#include "TStyle.h"
 
 // Dispin
 #include "Constants.h"
@@ -24,12 +25,16 @@
 
 using namespace std;
 
+// SETTINGS //////////////////////////
 /* siblingMode: configure how each of the component (colored) histograms are filled
  * - 0: hadrons must be siblings (have same parent); one histogram entry per dihadron; cousins will be in combinatorial BG
  * - 1: hadrons must be cousins (different parent); one histogram entry per hadron; siblings will be in combinatorial BG
  * - 2: hadrons can be siblings or cousins; one histogram entry per hadron (so siblings will have 2 duplicate entries)
  */
 const Int_t siblingMode = 0;
+//
+const Bool_t drawComponentSumDist = false; // draw `kpAll` distribution, the component sum (should be equivalent to full data distribution)
+//////////////////////////////////////
 
 TString infiles;
 TString dataPlotsFile;
@@ -91,7 +96,10 @@ class Parent {
       for(auto const & kv : dists) {
         kv.second->SetLineColor(col);
         kv.second->SetLineStyle(sty);
-        kv.second->SetLineWidth(KF==kpAll?3:2);
+        kv.second->SetLineWidth(KF==kpAll?4:2);
+        if(KF==113 || KF==223) kv.second->SetFillColor(col);
+        if(KF==113) kv.second->SetFillStyle(3004);
+        if(KF==223) kv.second->SetFillStyle(3005);
       };
 
       // add to list of kf codes
@@ -107,16 +115,16 @@ map<Int_t,Parent> parMap;
 TCanvas * BuildCanvas(TString distName) {
   TString canvName = distName + "Canv";
   TCanvas * canv = new TCanvas(canvName,canvName,1800,900);
-  TLegend * leg = new TLegend(0.1,0.1,0.9,0.9);
-  Double_t max=0;
-  Double_t maxTmp;
+  TLegend * leg = new TLegend(0.0,0.0,1.0,1.0);
   canv->Divide(2,1);
+  TPad *pad1 = new TPad("pad1", "pad1", 0.0,  0.0, 0.75, 1.0);
+  TPad *pad2 = new TPad("pad2", "pad2", 0.75, 0.0, 1.0,  1.0);
+  pad1->Draw();
+  pad2->Draw();
 
-  // normalize and draw data distribution
-  canv->cd(1);
+  // normalize data distribution
+  pad1->cd();
   dataDists.at(distName)->Scale(1/electronCntData);
-  dataDists.at(distName)->Draw("PE");
-  max=dataDists.at(distName)->GetMaximum();
   leg->AddEntry(dataDists.at(distName),"data","PE");
 
   // normalize and draw the MC distributions
@@ -124,16 +132,21 @@ TCanvas * BuildCanvas(TString distName) {
   //   sorted in the same order we defined when calling `parMap.insert()`
   for(Int_t kfVal : kfList) {
     auto par = parMap.at(kfVal);
-    par.dists.at(distName)->Scale(1/electronCntMC);
-    par.dists.at(distName)->Draw("HIST SAME");
-    maxTmp = par.dists.at(distName)->GetMaximum();
-    max = maxTmp>max ? maxTmp:max;
-    leg->AddEntry(par.dists.at(distName),par.title,"LE");
+    auto dist = par.dists.at(distName);
+    dist->Scale(1/electronCntMC);
+    if(siblingMode==1 || siblingMode==2) dist->Scale(0.5); // scale 0.5x, since component dists have 1 entry per hadron
+    if(!drawComponentSumDist && kfVal==kpAll) continue;
+    dist->Draw("HIST SAME");
+    TString legStyle = (kfVal==113 || kfVal==223) ? "LF" : "L";
+    leg->AddEntry(dist,par.title,legStyle);
   };
-  dataDists.at(distName)->GetYaxis()->SetRangeUser(0,1.1*max);
+
+  // draw data distribution and scale vertical axis
+  dataDists.at(distName)->Draw("PE SAME");
+  Tools::UnzoomVertical(pad1);
 
   // draw legend
-  canv->cd(2);
+  pad2->cd();
   leg->Draw();
 
   return canv;
@@ -159,6 +172,9 @@ int main(int argc, char** argv) {
       << endl;
     return 1;
   }
+
+  gStyle->SetLegendTextSize(0.06);
+  gStyle->SetOptStat(0);
 
   // get hadron pair from whichPair; note that in the print out, the 
   // order of hadron 0 and 1 is set by Constants::dihHadIdx
@@ -205,44 +221,51 @@ int main(int argc, char** argv) {
   for(auto const & kv : dataDists) {
     kv.second->SetMarkerStyle(kFullCircle);
     kv.second->SetMarkerColor(kBlack);
+    kv.second->SetLineColor(kBlack);
     kv.second->SetMarkerSize(1);
     kv.second->SetLineWidth(2);
   };
 
   // define output file
   TString outfileN = dataPlotsFile;
-  outfileN(TRegexp("^plots")) = "mhdecomp";
+  outfileN(TRegexp("^plots")) = Form("mhdecomp.siblingMode%d",siblingMode);
   TFile * outfile = new TFile(outfileN,"RECREATE");
 
 
   // define Parent objects, and store them in a map
   //    parMap : KFcode -> Parent object
-  parMap.insert(pair<Int_t,Parent>(kpAll,Parent(kpAll,"all",kBlack,kSolid)));
+  parMap.insert(pair<Int_t,Parent>(kpAll,Parent(kpAll,"all",kRed,kSolid)));
   parMap.insert(pair<Int_t,Parent>(113,Parent(113,"#rho^{0}",kBlue,kSolid)));
   parMap.insert(pair<Int_t,Parent>(223,Parent(223,"#omega",kMagenta,kSolid)));
   parMap.insert(pair<Int_t,Parent>(310,Parent(310,"K_{S}^{0}",kGreen+1,kSolid)));
   parMap.insert(pair<Int_t,Parent>(221,Parent(221,"#eta",kCyan,kSolid)));
   parMap.insert(pair<Int_t,Parent>(331,Parent(331,"#eta'",kCyan,kDashed)));
   parMap.insert(pair<Int_t,Parent>(333,Parent(333,"#phi",kMagenta,kDashed)));
-  parMap.insert(pair<Int_t,Parent>(92,Parent(92,"string fragment",kBlack,kDashed)));
-  parMap.insert(pair<Int_t,Parent>(91,Parent(91,"cluster fragment",kGray,kDashed)));
-  parMap.insert(pair<Int_t,Parent>(-1,Parent(-1,"undefined single parent",kGreen+1,kDashed)));
+  parMap.insert(pair<Int_t,Parent>(92,Parent(92,"string",kBlack,kDashed)));
+  parMap.insert(pair<Int_t,Parent>(91,Parent(91,"cluster",kGray,kDashed)));
+  parMap.insert(pair<Int_t,Parent>(-1,Parent(-1,"undef. parent",kGreen+1,kDashed)));
   
-  // combinatorial BG contributions, where the parents are different:
-  // - both parents are defined:
-  parMap.insert(pair<Int_t,Parent>(kpComb,Parent(kpComb,"combinatorial BG (defined)",kRed,kDashed)));
-  // - one or both parents are undefined:
-  parMap.insert(pair<Int_t,Parent>(kpCombUnk,Parent(kpCombUnk,"combinatorial BG (undefined)",kBlue,kDashed)));
-
-
-
+  // combinatorial BG contributions:
+  switch(siblingMode) {
+    case 0:
+      parMap.insert(pair<Int_t,Parent>(kpComb,Parent(kpComb,"cousins",kRed,kDashed))); // both parents are defined:
+      parMap.insert(pair<Int_t,Parent>(kpCombUnk,Parent(kpCombUnk,"cousins [undef. parent(s)]",kBlue,kDashed))); // one or both parents are undefined:
+      break;
+    case 1:
+      parMap.insert(pair<Int_t,Parent>(kpComb,Parent(kpComb,"siblings",kRed,kDashed))); // both parents are defined:
+      parMap.insert(pair<Int_t,Parent>(kpCombUnk,Parent(kpCombUnk,"siblings [undef. parent]",kBlue,kDashed))); // one or both parents are undefined:
+      break;
+    case 2:
+      // no combinatorial BG
+      break;
+  };
 
 
   // event loop -------------------------
   vector<Int_t> parPids;
   Int_t evnumTmp = -10000;
   for(int i=0; i<ev->ENT; i++) {
-    //if(i>100000) break; // limiter
+    // if(i>100000) break; // limiter
     ev->GetEvent(i);
 
     // event selection
@@ -271,8 +294,13 @@ int main(int argc, char** argv) {
               if(siblingMode==0) {
                 parPids.push_back(parPid[qA]);
               } else if(siblingMode==1) {
-                parPids.push_back(kpComb);
-                parPids.push_back(kpComb);
+                if(ev->gen_hadParentPid[qA]==-1) {
+                  parPids.push_back(kpCombUnk);
+                  parPids.push_back(kpCombUnk);
+                } else {
+                  parPids.push_back(kpComb);
+                  parPids.push_back(kpComb);
+                }
               }
               else if(siblingMode==2) {
                 parPids.push_back(parPid[qA]);
@@ -291,7 +319,13 @@ int main(int argc, char** argv) {
             break;
           case 1:
             // all hadrons inclusively
-            parPids.push_back(kpAll);
+            if(siblingMode==0) {
+              parPids.push_back(kpAll);
+            }
+            else if(siblingMode==1 || siblingMode==2) {
+              parPids.push_back(kpAll);
+              parPids.push_back(kpAll);
+            };
             break;
         }
 
