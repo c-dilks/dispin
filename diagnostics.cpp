@@ -539,6 +539,9 @@ int main(int argc, char** argv) {
        TString(kfTitle[k]+" vs. #phi_{h}-#phi_{R}"),
        NBINS,-PI,PI,NBINS,kfRange[k][0],kfRange[k][1]);
    };
+   auto kfEpsilonvsQ2 = new TH2D("kfEpsilonvsQ2",
+       "#epsilon vs. Q^{2}",
+       NBINS,0.8,30,NBINS,0,1.5);
 
    
    // diphoton distributions
@@ -769,6 +772,7 @@ int main(int argc, char** argv) {
          kfVsPhiH[k]->Fill(ev->PhiH,kfVal[k]);
          kfVsPhiHR[k]->Fill(ev->PhiHR,kfVal[k]);
        };
+       kfEpsilonvsQ2->Fill(ev->Q2,ev->epsilon);
        
 
        helicityDist->Fill(ev->helicity);
@@ -994,6 +998,7 @@ int main(int argc, char** argv) {
      kfVsPhiH[k]->Write();
      kfVsPhiHR[k]->Write();
    };
+   kfEpsilonvsQ2->Write();
    outfile->cd("/");
 
    outfile->Close();

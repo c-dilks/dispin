@@ -181,8 +181,8 @@ void CompareDist2D(TString distName, TString varTexX, TString varTexY) {
   canv->Divide(2,2);
 
   // specific adjustments for specific histogram
-  if(TString(dist[0]->GetName()).Contains("Q2vsX")) { 
-    for(int pad; pad<=3; pad++) {
+  if(distName=="Q2vsX") { 
+    for(int pad=1; pad<=4; pad++) {
       canv->GetPad(pad)->SetLogx(1);
       canv->GetPad(pad)->SetLogy(1);
       if(pad<3) canv->GetPad(pad)->SetLogz(1);
@@ -199,7 +199,7 @@ void CompareDist2D(TString distName, TString varTexX, TString varTexY) {
   TProfile *distProf[2];
   for(int f=0;f<2;f++) {
     canv->cd(f+1);
-    dist[f]->Draw("COLZ");
+    dist[f]->Draw("COL");
     distProf[f] = MakeProfile(dist[f],1,f);
     distProf[f]->Draw("SAME");
   };
@@ -298,7 +298,7 @@ void CompareDiagnosticsDists(
   infileT[0] = infileTitle0;
   infileT[1] = infileTitle1;
   gStyle->SetOptStat(0);
-  gStyle->SetPalette(kGreenPink);
+  // gStyle->SetPalette(kGreenPink);
 
   for(f=0;f<2;f++) infile[f] = new TFile(infileN[f],"READ");
 
@@ -456,6 +456,7 @@ void CompareDiagnosticsDists(
     CompareDist2D(kfName[k]+TString("vsPhiH"),"","");
     CompareDist2D(kfName[k]+TString("vsPhiHR"),"","");
   };
+  CompareDist2D("kfEpsilonvsQ2","","");
   */
 
 

@@ -24,13 +24,15 @@ end
 
 ## list of plots
 depolList = [
-  'VA',
+  'A',
+  'BA',
   'CA',
+  'VA',
   'WA',
+  'Epsilon',
 ]
 kinList = [
   'Q2',
-  'X',
 ]
 plotList = depolList
   .product(kinList)
@@ -56,9 +58,20 @@ plotHash.each do |plotN,plots|
   plots.each do |datasetN,plot|
     dataset = datasets[datasetN]
     prof = plot.ProfileX [plotN,datasetN].join '_'
+    title = prof.GetTitle.gsub(/\(y\)/,'')
+    prof.SetTitle title
     prof.SetLineColor dataset[:color]
     prof.SetLineWidth 3
-    prof.GetYaxis.SetRangeUser 0, 2
+    prof.GetXaxis.SetLabelSize 0.05
+    prof.GetYaxis.SetLabelSize 0.05
+    prof.GetXaxis.SetTitle "Q^{2} [GeV]"
+    if plotN.match?(/WA|CA/)
+      prof.GetYaxis.SetRangeUser 0, 1.2
+    elsif plotN.match?(/Epsilon/)
+      prof.GetYaxis.SetRangeUser 0, 1.5
+    else
+      prof.GetYaxis.SetRangeUser 0, 2.5
+    end
     prof.Draw 'same'
   end
   canv.Print "#{canvN}.png"
