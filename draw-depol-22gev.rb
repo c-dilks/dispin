@@ -33,6 +33,8 @@ depolList = [
 ]
 kinList = [
   'Q2',
+  'X',
+  'Y',
 ]
 plotList = depolList
   .product(kinList)
@@ -51,6 +53,7 @@ ap plotHash
 
 ## draw plots
 plotHash.each do |plotN,plots|
+  next if plotN=="kfEpsilonvsX" or plotN=="kfEpsilonvsY"
   canvN = "#{plotN}_canv"
   canv = r.TCanvas.new canvN, canvN, 800, 600
   canv.SetLogx
@@ -64,7 +67,9 @@ plotHash.each do |plotN,plots|
     prof.SetLineWidth 3
     prof.GetXaxis.SetLabelSize 0.05
     prof.GetYaxis.SetLabelSize 0.05
-    prof.GetXaxis.SetTitle "Q^{2} [GeV]"
+    prof.GetXaxis.SetTitle "Q^{2} [GeV]" if plotN.match?(/Q2$/)
+    prof.GetXaxis.SetTitle "x"           if plotN.match?(/X$/)
+    prof.GetXaxis.SetTitle "y"           if plotN.match?(/Y$/)
     if plotN.match?(/WA|CA/)
       prof.GetYaxis.SetRangeUser 0, 1.2
     elsif plotN.match?(/Epsilon/)

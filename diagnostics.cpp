@@ -505,6 +505,7 @@ int main(int argc, char** argv) {
    TH2D * kfVsPhPerp[Nkf];
    TH2D * kfVsX[Nkf];
    TH2D * kfVsQ2[Nkf];
+   TH2D * kfVsY[Nkf];
    TH2D * kfVsMmiss[Nkf];
    TH2D * kfVsZpair[Nkf];
    TH2D * kfVsPhiR[Nkf];
@@ -523,6 +524,9 @@ int main(int argc, char** argv) {
      kfVsQ2[k] = new TH2D(TString(kfName[k]+"vsQ2"),
        TString(kfTitle[k]+" vs. Q^{2}"),
        NBINS,0.8,30,NBINS,kfRange[k][0],kfRange[k][1]);
+     kfVsY[k] = new TH2D(TString(kfName[k]+"vsY"),
+       TString(kfTitle[k]+" vs. y"),
+       NBINS,0,1,NBINS,kfRange[k][0],kfRange[k][1]);
      kfVsMmiss[k] = new TH2D(TString(kfName[k]+"vsMmiss"),
        TString(kfTitle[k]+" vs. M_{X}"),
        NBINS,0,3.5,NBINS,kfRange[k][0],kfRange[k][1]);
@@ -766,6 +770,7 @@ int main(int argc, char** argv) {
          kfVsPhPerp[k]->Fill(ev->PhPerp,kfVal[k]);
          kfVsX[k]->Fill(ev->x,kfVal[k]);
          kfVsQ2[k]->Fill(ev->Q2,kfVal[k]);
+         kfVsY[k]->Fill(ev->y,kfVal[k]);
          kfVsMmiss[k]->Fill(ev->Mmiss,kfVal[k]);
          kfVsZpair[k]->Fill(ev->Zpair,kfVal[k]);
          kfVsPhiR[k]->Fill(ev->PhiR,kfVal[k]);
@@ -992,6 +997,7 @@ int main(int argc, char** argv) {
      kfVsPhPerp[k]->Write();
      kfVsX[k]->Write();
      kfVsQ2[k]->Write();
+     kfVsY[k]->Write();
      kfVsMmiss[k]->Write();
      kfVsZpair[k]->Write();
      kfVsPhiR[k]->Write();
