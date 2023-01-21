@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
    TH1D * XDist = new TH1D("XDist","x distribution;x",NBINS,0.03,1);
    TH1D * Q2Dist = new TH1D("Q2Dist","Q^{2} distribution;Q^{2}",NBINS,0.4,30);
    TH2D * Q2vsW = new TH2D("Q2vsW","Q^{2} vs. W;W;Q^{2}",NBINS,0,8,NBINS,0,12);
-   TH2D * Q2vsX = new TH2D("Q2vsX","Q^{2} vs. x;x;Q^{2}",NBINS,0.03,1,NBINS,0.4,30);
+   TH2D * Q2vsX = new TH2D("Q2vsX","Q^{2} vs. x;x;Q^{2} [GeV^{2}]",NBINS,0.06,1,NBINS,1,30);
    TH1D * YDist = new TH1D("YDist","y distribution;y",NBINS,0,1);
    Tools::BinLog(Q2Dist->GetXaxis());
    Tools::BinLog(XDist->GetXaxis());
@@ -479,7 +479,7 @@ int main(int argc, char** argv) {
    kfName[kfBA] = "kfBA"; kfTitle[kfBA] = "B(y)/A(y)";
    Float_t kfVal[Nkf];
    Float_t kfRange[Nkf][2];
-   ///*
+   /*
    kfRange[kfA][0]=0.4; kfRange[kfA][1]=0.7; 
    kfRange[kfB][0]=0; kfRange[kfB][1]=0.7; 
    kfRange[kfC][0]=0.2; kfRange[kfC][1]=0.6;
@@ -489,18 +489,18 @@ int main(int argc, char** argv) {
    kfRange[kfVA][0]=0.8; kfRange[kfVA][1]=2;
    kfRange[kfCA][0]=0.2; kfRange[kfCA][1]=1; 
    kfRange[kfBA][0]=0.2; kfRange[kfBA][1]=1; 
-   //*/
-   /*
-   kfRange[kfA][0]=-1; kfRange[kfA][1]=2.5; 
-   kfRange[kfB][0]=-1; kfRange[kfB][1]=2.5; 
-   kfRange[kfC][0]=-1; kfRange[kfC][1]=2.5;
-   kfRange[kfV][0]=-1; kfRange[kfV][1]=2.5; 
-   kfRange[kfW][0]=-1; kfRange[kfW][1]=2.5;
-   kfRange[kfWA][0]=-1; kfRange[kfWA][1]=2.5;
-   kfRange[kfVA][0]=-1; kfRange[kfVA][1]=2.5;
-   kfRange[kfCA][0]=-1; kfRange[kfCA][1]=2.5; 
-   kfRange[kfBA][0]=-1; kfRange[kfBA][1]=2.5; 
    */
+   // /*
+   kfRange[kfA][0]=0; kfRange[kfA][1]=2.5; 
+   kfRange[kfB][0]=0; kfRange[kfB][1]=2.5; 
+   kfRange[kfC][0]=0; kfRange[kfC][1]=2.5;
+   kfRange[kfV][0]=0; kfRange[kfV][1]=2.5; 
+   kfRange[kfW][0]=0; kfRange[kfW][1]=2.5;
+   kfRange[kfWA][0]=0; kfRange[kfWA][1]=2.5;
+   kfRange[kfVA][0]=0; kfRange[kfVA][1]=2.5;
+   kfRange[kfCA][0]=0; kfRange[kfCA][1]=2.5; 
+   kfRange[kfBA][0]=0; kfRange[kfBA][1]=2.5; 
+   // */
    TH2D * kfVsMh[Nkf];
    TH2D * kfVsPhPerp[Nkf];
    TH2D * kfVsX[Nkf];
@@ -511,6 +511,7 @@ int main(int argc, char** argv) {
    TH2D * kfVsPhiR[Nkf];
    TH2D * kfVsPhiH[Nkf];
    TH2D * kfVsPhiHR[Nkf];
+   TH3D * kfVsQ2vsX[Nkf];
    for(int k=0; k<Nkf; k++) {
      kfVsMh[k] = new TH2D(TString(kfName[k]+"vsMh"),
        TString(kfTitle[k]+" vs. M_{h}"),
@@ -542,6 +543,13 @@ int main(int argc, char** argv) {
      kfVsPhiHR[k] = new TH2D(TString(kfName[k]+"vsPhiHR"),
        TString(kfTitle[k]+" vs. #phi_{h}-#phi_{R}"),
        NBINS,-PI,PI,NBINS,kfRange[k][0],kfRange[k][1]);
+     kfVsQ2vsX[k] = new TH3D(TString(kfName[k]+"vsQ2vsX"),
+       TString(kfTitle[k]+" vs. Q^{2} vs. x;x;Q^{2} [GeV^{2}]"),
+       NBINS,0.06,1, // must match `Q2vsX`
+       NBINS,1,30, // must match `Q2vsX`
+       NBINS,kfRange[k][0],kfRange[k][1]
+       );
+     Tools::BinLog(kfVsQ2vsX[k]->GetXaxis()); Tools::BinLog(kfVsQ2vsX[k]->GetYaxis());
    };
    auto kfEpsilonvsQ2 = new TH2D("kfEpsilonvsQ2",
        "#epsilon vs. Q^{2}",
@@ -776,6 +784,7 @@ int main(int argc, char** argv) {
          kfVsPhiR[k]->Fill(ev->PhiR,kfVal[k]);
          kfVsPhiH[k]->Fill(ev->PhiH,kfVal[k]);
          kfVsPhiHR[k]->Fill(ev->PhiHR,kfVal[k]);
+         kfVsQ2vsX[k]->Fill(ev->x,ev->Q2,kfVal[k]);
        };
        kfEpsilonvsQ2->Fill(ev->Q2,ev->epsilon);
        
@@ -1003,6 +1012,7 @@ int main(int argc, char** argv) {
      kfVsPhiR[k]->Write();
      kfVsPhiH[k]->Write();
      kfVsPhiHR[k]->Write();
+     kfVsQ2vsX[k]->Write();
    };
    kfEpsilonvsQ2->Write();
    outfile->cd("/");
