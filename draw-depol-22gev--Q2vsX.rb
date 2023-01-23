@@ -15,7 +15,7 @@ r.gStyle.SetOptStat 0
 Palette = 55
 
 if ARGV.length<1
-  puts "USAGE: #{$0} [out/___.canvas.root file]"
+  puts "USAGE: #{$0} [plots.root file from diagnotics.exe]"
   exit 2
 end
 rootFileName = ARGV[0]
