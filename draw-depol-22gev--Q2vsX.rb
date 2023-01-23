@@ -63,7 +63,6 @@ nTotal = q2vsX.Integral
 #   expected statistical uncertainty. In other words, what is plotted is
 #   proportional to the expected stat. unc.
 uncPlotMax = 0
-uncPlotMin = 9.0 #fixed
 uncPlotList = depolProfileList.map do |depolProfile|
   depolPlot = depolProfile.ProjectionXY # convert TProfile2D -> TH2
   uncPlot   = depolPlot.Clone "unc_#{depolProfile.GetName}"
@@ -99,7 +98,7 @@ end
 
   plotList.each_with_index do |plot,i|
 
-    # get maximum
+    # get minimum and maximum (may be overridden below!)
     contents = (1..plot.GetNbinsX).map do |bx|
       (1..plot.GetNbinsY).map do |by|
         plot.GetBinContent bx, by
@@ -156,9 +155,11 @@ end
     case plotName
     when 'depol'
       plot.SetTitle "        #{plot.GetTitle}"
+      plot.SetMinimum 0
+      plot.SetMaximum( varName.match?(/depolV/) ? 2 : 1 )
     when 'unc'
       plot.SetTitle "    1 / [ N^{1/2} #{plot.GetTitle} ]"
-      plot.SetMinimum uncPlotMin
+      plot.SetMinimum 1.0
       plot.SetMaximum uncPlotMax
     end
     plot.GetZaxis.SetTitle ''
