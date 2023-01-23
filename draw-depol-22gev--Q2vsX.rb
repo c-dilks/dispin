@@ -128,6 +128,7 @@ end
       s
         .gsub( /(epsilon)/,   'var\1(x,Q^{2},y)'  )
         .gsub( /(A|B|C|V|W)/, '\1(#varepsilon,y)' )
+        .gsub( /\(y\)/,       ''                  )
         .gsub( /\//,          ' / '               )
     end
 
