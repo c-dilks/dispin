@@ -45,3 +45,4 @@ catTree*.bak
 catTree.archive*
 catTrees
 catTreeWeights
+baryonTrees*/*

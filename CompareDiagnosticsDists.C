@@ -74,6 +74,15 @@ void CompareDist(TString distName, TString varTex, TString distTitle="") {
 
   // specific adjustments for specific histogram
   for(f=0;f<2;f++) {
+    if(TString(dist[f]->GetName()).Contains("Q2Dist")) { canv->GetPad(1)->SetLogx(1); canv->GetPad(1)->SetLogy(1); canv->GetPad(2)->SetLogx(1); };
+    if(TString(dist[f]->GetName()).Contains("XDist")) { canv->GetPad(1)->SetLogx(1); canv->GetPad(1)->SetLogy(1); canv->GetPad(2)->SetLogx(1); };
+    if(TString(dist[f]->GetName()).Contains("PhPerpDist")) { canv->GetPad(1)->SetLogx(1); canv->GetPad(1)->SetLogy(1); canv->GetPad(2)->SetLogx(1); };
+    if(TString(dist[f]->GetName()).Contains("qTDist")) { canv->GetPad(1)->SetLogx(1); canv->GetPad(1)->SetLogy(1); canv->GetPad(2)->SetLogx(1); };
+    if(TString(dist[f]->GetName()).Contains("qTqDist")) { canv->GetPad(1)->SetLogx(1); canv->GetPad(1)->SetLogy(1); canv->GetPad(2)->SetLogx(1); };
+    if(TString(dist[f]->GetName()).Contains("hadQTDist")) { canv->GetPad(1)->SetLogx(1); canv->GetPad(1)->SetLogy(1); canv->GetPad(2)->SetLogx(1); };
+    if(TString(dist[f]->GetName()).Contains("hadQTqDist")) { canv->GetPad(1)->SetLogx(1); canv->GetPad(1)->SetLogy(1); canv->GetPad(2)->SetLogx(1); };
+    if(TString(dist[f]->GetName()).Contains("hadXFDist")) { canv->GetPad(1)->SetLogy(1); };
+    if(TString(dist[f]->GetName()).Contains("hadYHDist")) { canv->GetPad(1)->SetLogy(1); };
     if(TString(dist[f]->GetName()).Contains("eleVzDist")) canv->GetPad(1)->SetLogy(1);
     if(TString(dist[f]->GetName()).Contains("hadEleVzDiff")) canv->GetPad(1)->SetLogy(1);
     if(TString(dist[f]->GetName()).Contains("elePCALenDist")) canv->GetPad(1)->SetLogy(1);
@@ -166,10 +175,21 @@ void CompareDist2D(TString distName, TString varTexX, TString varTexY) {
   rat->Divide(dist[1]); // dist[0] / dist[1]
   rat->GetZaxis()->SetRangeUser(0.1,2.1);
 
-  // draw canvas
+  // define canvas
   canv = new TCanvas(
     TString(distName+"_canv"),TString(distName+"_canv"),2000,1600);
   canv->Divide(2,2);
+
+  // specific adjustments for specific histogram
+  if(distName=="Q2vsX") { 
+    for(int pad=1; pad<=4; pad++) {
+      canv->GetPad(pad)->SetLogx(1);
+      canv->GetPad(pad)->SetLogy(1);
+      if(pad<3) canv->GetPad(pad)->SetLogz(1);
+    }
+  }
+
+  // draw
   for(int pad=1; pad<=4; pad++) {
     canv->GetPad(pad)->SetBottomMargin(0.15);
     canv->GetPad(pad)->SetLeftMargin(0.15);
@@ -179,7 +199,7 @@ void CompareDist2D(TString distName, TString varTexX, TString varTexY) {
   TProfile *distProf[2];
   for(int f=0;f<2;f++) {
     canv->cd(f+1);
-    dist[f]->Draw("COLZ");
+    dist[f]->Draw("COL");
     distProf[f] = MakeProfile(dist[f],1,f);
     distProf[f]->Draw("SAME");
   };
@@ -260,18 +280,25 @@ void LatexClearPage() {
 ///////////////////////////////////////////////////
   
 void CompareDiagnosticsDists(
-  TString infile0N="plots.inbending.root",
-  TString infile1N="plots.rga_spring19.root",
-  TString outDir_="diagcomp",
-  TString infileTitle0="",
-  TString infileTitle1=""
-) {
+    /* light red */
+    TString infile0N="plots.22gev.root",
+    // TString infile0N="plots.12gev.rgaData.root",
+    /* dark blue */
+    TString infile1N="plots.12gev.rgcMC.root",
+    // TString infile1N="plots.12gev.rgaData.root",
+    // TString infile1N="plots.12gev.rgaMC.root",
+    /**/
+    TString outDir_="diagcomp",
+    TString infileTitle0="22 GeV",
+    TString infileTitle1="12 GeV"
+    )
+{
   infileN[0] = infile0N;
   infileN[1] = infile1N;
   infileT[0] = infileTitle0;
   infileT[1] = infileTitle1;
   gStyle->SetOptStat(0);
-  gStyle->SetPalette(kGreenPink);
+  // gStyle->SetPalette(kGreenPink);
 
   for(f=0;f<2;f++) infile[f] = new TFile(infileN[f],"READ");
 
@@ -331,9 +358,12 @@ void CompareDiagnosticsDists(
   // DIS
   CompareDist("Q2Dist","$Q^2$","Q^{2}");
   CompareDist("XDist","$x$","x");
+  CompareDist2D("Q2vsX","$x$","$Q^2$");
   LatexClearPage();
   CompareDist("WDist","$W$","W");
   CompareDist("YDist","$y$","y");
+  LatexClearPage();
+  CompareDist("beamEnDist","$E_{beam}$","E_{beam}");
   LatexClearPage();
 
   // dihadron
@@ -342,6 +372,13 @@ void CompareDiagnosticsDists(
   LatexClearPage();
   CompareDist("PhPerpDist","$\\phperp$","p_{T}");
   CompareDist("MmissDist","$M_X$","M_{X}");
+  LatexClearPage();
+  CompareDist("qTDist","$q_T$","q_{T}");
+  CompareDist("qTqDist","$q_T/Q$","q_{T}/Q");
+  LatexClearPage();
+  CompareDistHadron("hadQTDist","q_T","q_{T}");
+  LatexClearPage();
+  CompareDistHadron("hadQTqDist","q_T/Q","q_{T}/Q");
   LatexClearPage();
   CompareDist("xFDist","dihadron $x_F$","dihadron x_{F}");
   CompareDist("thetaDist","$\\theta$","#theta");
@@ -354,6 +391,10 @@ void CompareDiagnosticsDists(
 
   // fragmentation region
   CompareDistHadron("hadXFDist","x_F","x_{F}");
+  LatexClearPage();
+  CompareDistHadron("hadYHDist","Y_h","Y_{h}");
+  LatexClearPage();
+  CompareDist("YHDist","Y_{hh}","Y_{hh}");
   LatexClearPage();
 
   // PID
@@ -390,6 +431,34 @@ void CompareDiagnosticsDists(
   CompareDist("eleVzDist","$v_z\\left(e^-\\right)$","v_{z}(e^{-})");
   LatexClearPage();
 
+  // depolarization
+  /*
+  enum KF_enum {kfA, kfB, kfC, kfV, kfW, kfWA, kfVA, kfCA, kfBA, Nkf};
+  TString kfName[Nkf];
+  TString kfTitle[Nkf];
+  kfName[kfA] = "kfA"; kfTitle[kfA] = "A(y)";
+  kfName[kfB] = "kfB"; kfTitle[kfB] = "B(y)";
+  kfName[kfC] = "kfC"; kfTitle[kfC] = "C(y)";
+  kfName[kfV] = "kfV"; kfTitle[kfV] = "V(y)";
+  kfName[kfW] = "kfW"; kfTitle[kfW] = "W(y)";
+  kfName[kfWA] = "kfWA"; kfTitle[kfWA] = "W(y)/A(y)";
+  kfName[kfVA] = "kfVA"; kfTitle[kfVA] = "V(y)/A(y)";
+  kfName[kfCA] = "kfCA"; kfTitle[kfCA] = "C(y)/A(y)";
+  kfName[kfBA] = "kfBA"; kfTitle[kfBA] = "B(y)/A(y)";
+  for(int k=0; k<Nkf; k++) {
+    CompareDist2D(kfName[k]+TString("vsMh"),"","");
+    CompareDist2D(kfName[k]+TString("vsPhPerp"),"","");
+    CompareDist2D(kfName[k]+TString("vsX"),"","");
+    CompareDist2D(kfName[k]+TString("vsQ2"),"","");
+    CompareDist2D(kfName[k]+TString("vsMmiss"),"","");
+    CompareDist2D(kfName[k]+TString("vsZpair"),"","");
+    CompareDist2D(kfName[k]+TString("vsPhiR"),"","");
+    CompareDist2D(kfName[k]+TString("vsPhiH"),"","");
+    CompareDist2D(kfName[k]+TString("vsPhiHR"),"","");
+  };
+  CompareDist2D("kfEpsilonvsQ2","","");
+  */
+
 
   /*
   CompareDist2Dproj(
@@ -401,7 +470,6 @@ void CompareDiagnosticsDists(
       );
   */
   /*
-  CompareDist2D("Q2vsX");
   CompareDist2D("eleVxyDist");
   CompareDist2D("eleEvsPhi");
   CompareDist2D("vzDiffEleHad");

@@ -69,7 +69,7 @@ function app { echo "$1" >> $slurm; }
 
 app "#!/bin/bash"
 
-app "#SBATCH --job-name=dispin_diskim"
+app "#SBATCH --job-name=dispin_diskim_24gev"
 app "#SBATCH --account=clas12"
 app "#SBATCH --partition=production"
 

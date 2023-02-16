@@ -73,27 +73,29 @@ int main(int argc, char** argv) {
 
 
    // DIS kinematics
-   TH1D * WDist = new TH1D("WDist","W distribution;W",NBINS,1,5);
-   TH1D * XDist = new TH1D("XDist","x distribution;x",NBINS,0,1);
-   TH1D * Q2Dist = new TH1D("Q2Dist","Q^{2} distribution;Q^{2}",NBINS,0,12);
-   TH2D * Q2vsW = new TH2D("Q2vsW","Q^{2} vs. W;W;Q^{2}",
-                                   NBINS,0,6,NBINS,0,12);
-   TH2D * Q2vsX = new TH2D("Q2vsX","Q^{2} vs. x;x;Q^{2}",NBINS,0,1,NBINS,0,12);
+   TH1D * WDist = new TH1D("WDist","W distribution;W",NBINS,1,8);
+   TH1D * XDist = new TH1D("XDist","x distribution;x",NBINS,0.03,1);
+   TH1D * Q2Dist = new TH1D("Q2Dist","Q^{2} distribution;Q^{2}",NBINS,0.4,30);
+   TH2D * Q2vsW = new TH2D("Q2vsW","Q^{2} vs. W;W;Q^{2}",NBINS,0,8,NBINS,0,12);
+   TH2D * Q2vsX = new TH2D("Q2vsX","Q^{2} vs. x;x;Q^{2} [GeV^{2}]",NBINS,0.06,1,NBINS,1,30);
    TH1D * YDist = new TH1D("YDist","y distribution;y",NBINS,0,1);
+   Tools::BinLog(Q2Dist->GetXaxis());
+   Tools::BinLog(XDist->GetXaxis());
+   Tools::BinLog(Q2vsX->GetXaxis()); Tools::BinLog(Q2vsX->GetYaxis());
    
    // electron kinematics
-   TH1D * eleEDist = new TH1D("eleEDist","e^{-} E distribution",NBINS,0,11);
-   TH1D * elePDist = new TH1D("elePDist","e^{-} p distribution",NBINS,0,11);
+   TH1D * eleEDist = new TH1D("eleEDist","e^{-} E distribution",NBINS,0,20);
+   TH1D * elePDist = new TH1D("elePDist","e^{-} p distribution",NBINS,0,20);
    TH1D * elePtDist = new TH1D("elePtDist","e^{-} p_{T} distribution",NBINS,0,4);
    TH1D * eleEtaDist = new TH1D("eleEtaDist","e^{-} #eta distribution",NBINS,-3,6);
    TH1D * eleThetaDist = new TH1D("eleThetaDist","e^{-} #theta distribution",NBINS,0,40);
-   TH1D * elePhiDist = new TH1D("elePhiDist","e^{-} #phi distribution",NBINS,-PIe,PIe);
+   TH1D * elePhiDist = new TH1D("elePhiDist","e^{-} #phi distribution",NBINS,-PI,PI);
    TH2D * eleEtaVsPhi = new TH2D("eleEtavsPhi","e^{-} #eta vs #phi;#phi;#eta",
-     NBINS,-PIe,PIe,NBINS,-3,6);
+     NBINS,-PI,PI,NBINS,-3,6);
    TH2D * eleEVsPhi = new TH2D("eleEvsPhi","e^{-} E vs #phi;#phi;E",
-     NBINS,-PIe,PIe,NBINS,0,12);
+     NBINS,-PI,PI,NBINS,0,12);
    TH2D * elePtVsPhi = new TH2D("elePtvsPhi","e^{-} p_{T} vs #phi;#phi;#p_{T}",
-     NBINS,-PIe,PIe,NBINS,0,4);
+     NBINS,-PI,PI,NBINS,0,4);
    TH1D * eleVzDist = new TH1D("eleVzDist","e^{-} V_{z} distribution",
      3*NBINS,-40,40);
    TH2D * eleVxyDist = new TH2D("eleVxyDist","e^{-} V_{y} vs. V_{x}",
@@ -106,13 +108,19 @@ int main(int argc, char** argv) {
    TH2D * hadPperpCorr = new TH2D("hadPperpCorr",corrTitle("p_{perp}"),NBINS,0,2,NBINS,0,2);
    TH2D * hadEtaCorr = new TH2D("hadEtaCorr",corrTitle("#eta"),NBINS,0,5,NBINS,0,5);
    TH2D * hadThetaCorr = new TH2D("hadThetaCorr",corrTitle("#theta"),NBINS,0,40,NBINS,0,40);
-   TH2D * hadPhiCorr = new TH2D("hadPhiCorr",corrTitle("#phi"), NBINS,-PIe,PIe,NBINS,-PIe,PIe);
+   TH2D * hadPhiCorr = new TH2D("hadPhiCorr",corrTitle("#phi"), NBINS,-PI,PI,NBINS,-PI,PI);
    TH2D * hadZCorr = new TH2D("hadZCorr",corrTitle("z"),NBINS,0,1,NBINS,0,1);
    TH2D * hadXFCorr = new TH2D("hadXFCorr",corrTitle("x_{F}"), NBINS,-1,1,NBINS,-1,1);
    TH2D * hadYHCorr = new TH2D("hadYHCorr",corrTitle("Y_{h}"), NBINS,-4,4,NBINS,-4,4);
+   TH2D * hadQTCorr = new TH2D("hadQTCorr",corrTitle("q_{T}"), NBINS,0.01,5,NBINS,0.01,5);
+   TH2D * hadQTqCorr = new TH2D("hadQTqCorr",corrTitle("q_{T}/Q"), NBINS,0.01,5,NBINS,0.01,5);
    TH2D * hadPhiHCorr = new TH2D("hadPhiHCorr",corrTitle("#phi_{h}"), NBINS,-4,4,NBINS,-4,4);
    TH2D * hadVzCorr = new TH2D("hadVzCorr",corrTitle("V_{z}"), NBINS,-30,30,NBINS,-30,30);
    TH2D * hadEleVzDiffCorr = new TH2D("hadEleVzDiffCorr",corrTitle("V_{z}(had)-V_{z}(e^{-})"), NBINS,-100,100,NBINS,-100,100);
+   Tools::BinLog(hadQTCorr->GetXaxis());
+   Tools::BinLog(hadQTCorr->GetYaxis());
+   Tools::BinLog(hadQTqCorr->GetXaxis());
+   Tools::BinLog(hadQTqCorr->GetYaxis());
    
    // dihadron's hadron kinematics
    TH1D * hadEDist[2];
@@ -125,6 +133,8 @@ int main(int argc, char** argv) {
    TH1D * hadZDist[2];
    TH1D * hadXFDist[2];
    TH1D * hadYHDist[2];
+   TH1D * hadQTDist[2];
+   TH1D * hadQTqDist[2];
    TH1D * hadPhiHDist[2];
    TH1D * hadVzDist[2];
    TH1D * hadEleVzDiffDist[2];
@@ -148,15 +158,19 @@ int main(int argc, char** argv) {
      hadThetaDist[h] = new TH1D(TString(hadName[h]+"hadThetaDist"),distTitle("#theta"),
        NBINS,0,40);
      hadPhiDist[h] = new TH1D(TString(hadName[h]+"hadPhiDist"),distTitle("#phi"),
-       NBINS,-PIe,PIe);
+       NBINS,-PI,PI);
      hadZDist[h] = new TH1D(TString(hadName[h]+"hadZDist"),distTitle("z"),
        NBINS,0,1);
      hadXFDist[h] = new TH1D(TString(hadName[h]+"hadXFDist"),distTitle("x_{F}"),
        NBINS,-1,1);
      hadYHDist[h] = new TH1D(TString(hadName[h]+"hadYHDist"),distTitle("Y_{h}"),
        NBINS,-4,4);
+     hadQTDist[h] = new TH1D(TString(hadName[h]+"hadQTDist"),distTitle("q_{T}"),
+       NBINS,0.01,7);
+     hadQTqDist[h] = new TH1D(TString(hadName[h]+"hadQTqDist"),distTitle("q_{T}/Q"),
+       NBINS,0.01,5);
      hadPhiHDist[h] = new TH1D(TString(hadName[h]+"hadPhiHDist"),distTitle("#phi_{h}"),
-       NBINS,-PIe,PIe);
+       NBINS,-PI,PI);
      hadVzDist[h] = new TH1D(TString(hadName[h]+"hadVzDist"),
        distTitle("V_{z}"),
        NBINS,-30,30);
@@ -167,6 +181,8 @@ int main(int argc, char** argv) {
        NBINS,-6,6);
      hadChi2pidVsP[h] = new TH2D(TString(hadName[h]+"hadChi2pidVsP"),hadTitle[h]+" #chi^{2}_{pid} vs. p;p;#chi^{2}_{pid}",
        NBINS,0,8, NBINS,-6,6);
+     Tools::BinLog(hadQTDist[h]->GetXaxis());
+     Tools::BinLog(hadQTqDist[h]->GetXaxis());
 
      hadVxyDist[h] = new TH2D(TString("hadVxyDist_"+hadName[h]),
        TString(hadTitle[h]+" V_{y} vs. V_{x}"),
@@ -174,13 +190,13 @@ int main(int argc, char** argv) {
 
      hadEtaVsPhi[h] = new TH2D(
        TString(hadName[h]+"hadEtaVsPhi"),dist2Title(hadTitle[h],"#phi","#eta"),
-       NBINS,-PIe,PIe,NBINS,0,5);
+       NBINS,-PI,PI,NBINS,0,5);
      hadEVsPhi[h] = new TH2D(
        TString(hadName[h]+"hadEVsPhi"),dist2Title(hadTitle[h],"#phi","E"),
-       NBINS,-PIe,PIe,NBINS,0,10);
+       NBINS,-PI,PI,NBINS,0,10);
      hadPtVsPhi[h] = new TH2D(
        TString(hadName[h]+"hadPtVsPhi"),dist2Title(hadTitle[h],"#phi","p_{T}"),
-       NBINS,-PIe,PIe,NBINS,0,4);
+       NBINS,-PI,PI,NBINS,0,4);
    };
 
 
@@ -188,16 +204,20 @@ int main(int argc, char** argv) {
    TString plotTitle = "#Delta#phi = #phi(" + hadTitle[qA] + ")" +
                                  " - #phi(" + hadTitle[qB] + 
                                  ") distribution;#Delta#phi";
-   TH1D * deltaPhiDist = new TH1D("deltaPhiDist",plotTitle,NBINS,-PIe,PIe);
+   TH1D * deltaPhiDist = new TH1D("deltaPhiDist",plotTitle,NBINS,-PI,PI);
 
-   TH1D * MhDist = new TH1D("MhDist","M_{h} distribution;M_{h}",2*NBINS,0,3);
+   TH1D * MhDist = new TH1D("MhDist","M_{h} distribution;M_{h}",NBINS,0,2);
    TH1D * PhDist = new TH1D("PhDist","|P_{h}| distribution;|P_{h}|",NBINS,0,10);
-   TH1D * PhPerpDist = new TH1D("PhPerpDist","|P_{h}^{perp}| distribution;|P_{h}^{perp}|",
-     NBINS,0,2);
+   TH1D * PhPerpDist = new TH1D("PhPerpDist","|P_{h}^{perp}| distribution;|P_{h}^{perp}|", NBINS,0.01,3);
+   TH1D * qTDist = new TH1D("qTDist","q_{T} distribution;q_{T}", NBINS,0.01,7);
+   TH1D * qTqDist = new TH1D("qTqDist","q_{T}/Q distribution;q_{T}/Q", NBINS,0.01,5);
+   Tools::BinLog(PhPerpDist->GetXaxis());
+   Tools::BinLog(qTDist->GetXaxis());
+   Tools::BinLog(qTqDist->GetXaxis());
    TH1D * ZpairDist = new TH1D("ZpairDist","z_{pair} distribution;z_{pair}",NBINS,0,1);
    TH1D * zetaDist = new TH1D("zetaDist","#zeta distribution;#zeta",NBINS,-1,1);
    TH1D * xFDist = new TH1D("xFDist","x_{F} distribution;x_{F}",NBINS,-2,2);
-   TH1D * MmissDist = new TH1D("MmissDist","M_{X} distribution;M_{X}",2*NBINS,-1,4);
+   TH1D * MmissDist = new TH1D("MmissDist","M_{X} distribution;M_{X}",2*NBINS,0,5.5);
 
    TH1D * MmissDistZoom = new TH1D("MmissDistZoom","M_{X} distribution;M_{X}",
      3*NBINS,0.5,3);
@@ -206,28 +226,28 @@ int main(int argc, char** argv) {
 
    TH2D * MmissVsMh = new TH2D("MmissVsMh","M_{X} vs. M_{h};M_{h};M_{X}",
      NBINS,0,2.5,
-     NBINS,0.5,3);
+     NBINS,0.5,8);
    
    TH1D * PhiHDist = new TH1D("PhiHDist","#phi_{h} distribution;#phi_{h}",
-     NBINS,-PIe,PIe);
+     NBINS,-PI,PI);
    TH1D * PhiRDist = new TH1D("PhiRDist","#phi_{R} distribution;#phi_{R}",
-     NBINS,-PIe,PIe);
+     NBINS,-PI,PI);
    TH2D * PhiHvsPhiR = new TH2D("PhiHvsPhiR","#phi_{h} vs. #phi_{R};#phi_{R};#phi_{h}",
-     NBINS,-PIe,PIe,NBINS,-PIe,PIe);
+     NBINS,-PI,PI,NBINS,-PI,PI);
    TH1D * PhiHRDist = new TH1D("PhiHRDist",
      "#phi_{h}-#phi_{R} distribution;#phi_{h}-#phi_{R}",
-     NBINS,-PIe,PIe);
+     NBINS,-PI,PI);
 
    TH2D * PhiDVsPhiR = new TH2D("PhiDVsPhiR","#Delta#phi vs. #phi_{R};#phi_{R};#Delta#phi",
-     NBINS,-PIe,PIe,NBINS,-PIe,PIe);
+     NBINS,-PI,PI,NBINS,-PI,PI);
    TH2D * SinPhiDVsPhiR = new TH2D("SinPhiDVsPhiR","sin(#Delta#phi) vs. sin(#phi_{R});sin(#phi_{R});sin(#Delta#phi)",
      NBINS,-1.1,1.1,NBINS,-1.1,1.1);
    TH2D * PhiDVsPhiHR = new TH2D("PhiDVsPhiHR","#Delta#phi vs. #phi_{h}-#phi_{R};#phi_{h}-#phi_{R};#Delta#phi",
-     NBINS,-PIe,PIe,NBINS,-PIe,PIe);
+     NBINS,-PI,PI,NBINS,-PI,PI);
    TH2D * SinPhiDVsPhiHR = new TH2D("SinPhiDVsPhiHR","sin(#Delta#phi) vs. sin(#phi_{h}-#phi_{R});sin(#phi_{h}-#phi_{R});sin(#Delta#phi)",
      NBINS,-1.1,1.1,NBINS,-1.1,1.1);
    TH2D * PhiDVsPhiHR2 = new TH2D("PhiDVsPhiHR2","#Delta#phi vs. 2#phi_{h}-2#phi_{R};2#phi_{h}-2#phi_{R};#Delta#phi",
-     NBINS,-PIe,PIe,NBINS,-PIe,PIe);
+     NBINS,-PI,PI,NBINS,-PI,PI);
    TH2D * SinPhiDVsPhiHR2 = new TH2D("SinPhiDVsPhiHR2","sin(#Delta#phi) vs. sin(2#phi_{h}-2#phi_{R});sin(2#phi_{h}-2#phi_{R});sin(#Delta#phi)",
      NBINS,-1.1,1.1,NBINS,-1.1,1.1);
 
@@ -254,24 +274,24 @@ int main(int argc, char** argv) {
 
    TH2D * thetaVsPhiH = new TH2D("thetaVsPhiH",
      "#theta vs #phi_{h};#phi_{h};#theta",
-     NBINS,-PIe,PIe,NBINS,0,PIe);
+     NBINS,-PI,PI,NBINS,0,PI);
    TH2D * thetaVsPhiR = new TH2D("thetaVsPhiR",
      "#theta vs #phi_{R};#phi_{R};#theta",
-     NBINS,-PIe,PIe,NBINS,0,PIe);
+     NBINS,-PI,PI,NBINS,0,PI);
    TH2D * thetaVsPhiHR = new TH2D("thetaVsPhiHR",
      "#theta vs #phi_{h}-#phi_{R};#phi_{h}-#phi_{R};#theta",
-     NBINS,-PIe,PIe,NBINS,0,PIe);
+     NBINS,-PI,PI,NBINS,0,PI);
 
    TH2D * thetaVsMh = new TH2D("thetaVsMh","#theta vs. M_{h};M_{h};#theta",
-     NBINS,0,3,NBINS,0,PIe);
+     NBINS,0,3,NBINS,0,PI);
    TH2D * thetaVsZpair = new TH2D("thetaVsZpair","#theta vs. z;z;#theta",
-     NBINS,0,1,NBINS,0,PIe);
+     NBINS,0,1,NBINS,0,PI);
    TH2D * thetaVsZeta = new TH2D("thetaVsZeta","#theta vs. #zeta;#zeta;#theta",
-     NBINS,-1,1,NBINS,0,PIe);
+     NBINS,-1,1,NBINS,0,PI);
    TH2D * thetaVsX = new TH2D("thetaVsX","#theta vs. x;x;#theta",
-     NBINS,0,1,NBINS,0,PIe);
+     NBINS,0,1,NBINS,0,PI);
    TH2D * thetaVsPh = new TH2D("thetaVsPh","#theta vs. p;p;#theta",
-     NBINS,0,10,NBINS,0,PIe);
+     NBINS,0,10,NBINS,0,PI);
 
    TH2D * thetaVsZ[2];
    TH2D * thetaVsHadP[2];
@@ -289,10 +309,10 @@ int main(int argc, char** argv) {
    for(int h=0; h<2; h++) {
      thetaVsZ[h] = new TH2D(TString("thetaVsZ_"+hadName[h]),
        TString("#theta vs. "+hadTitle[h]+" z;z;#theta"),
-       NBINS,0,1,NBINS,0,PIe);
+       NBINS,0,1,NBINS,0,PI);
      thetaVsHadP[h] = new TH2D(TString("thetaVsHadP_"+hadName[h]),
        TString("#theta vs. "+hadTitle[h]+" p;p;#theta"),
-       NBINS,0,10,NBINS,0,PIe);
+       NBINS,0,10,NBINS,0,PI);
      YHvsYCM[h] = new TH2D(TString("YHvsYCM_"+hadName[h]),
        TString(hadTitle[h]+" Y_{h} vs. Y_{CM};Y_{CM};Y_{h}"),
        NBINS,-3,3,NBINS,-3,3);
@@ -325,7 +345,7 @@ int main(int argc, char** argv) {
        NBINS,-4,4,NBINS,0,2);
      dihPhiHvsHadPhiH[h] = new TH2D(TString("dihPhiH_vs_"+hadName[h]+"PhiH"),
        TString(dihTitle+" #phi_{h} vs. "+hadTitle[h]+" #phi_{h};"+hadTitle[h]+" #phi_{h};"+dihTitle+" #phi_{h}"),
-       NBINS,-PIe,PIe,NBINS,-PIe,PIe);
+       NBINS,-PI,PI,NBINS,-PI,PI);
    };
 
 
@@ -402,25 +422,25 @@ int main(int argc, char** argv) {
 
    // PhiH and PhiR vs. other variables
    TH2D * PhiHvsMh = new TH2D("PhiHvsMh","#phi_{h} vs. M_{h};M_{h};#phi_{h}",
-     NBINS,0,3,NBINS,-PIe,PIe);
+     NBINS,0,3,NBINS,-PI,PI);
    TH2D * PhiHvsZ = new TH2D("PhiHvsZ","#phi_{h} vs. z;z;#phi_{h}",
-     NBINS,0,1,NBINS,-PIe,PIe);
+     NBINS,0,1,NBINS,-PI,PI);
    TH2D * PhiHvsX = new TH2D("PhiHvsX","#phi_{h} vs. x;x;#phi_{h}",
-     NBINS,0,1,NBINS,-PIe,PIe);
+     NBINS,0,1,NBINS,-PI,PI);
 
    TH2D * PhiRvsMh = new TH2D("PhiRvsMh","#phi_{R} vs. M_{h};M_{h};#phi_{R}",
-     NBINS,0,3,NBINS,-PIe,PIe);
+     NBINS,0,3,NBINS,-PI,PI);
    TH2D * PhiRvsZ = new TH2D("PhiRvsZ","#phi_{R} vs. z;z;#phi_{R}",
-     NBINS,0,1,NBINS,-PIe,PIe);
+     NBINS,0,1,NBINS,-PI,PI);
    TH2D * PhiRvsX = new TH2D("PhiRvsX","#phi_{R} vs. x;x;#phi_{R}",
-     NBINS,0,1,NBINS,-PIe,PIe);
+     NBINS,0,1,NBINS,-PI,PI);
 
    TH2D * PhiRvsAlpha = new TH2D("PhiRvsAlpha",
      "#phi_{R} vs. #alpha;#alpha;#phi_{R}",
-     NBINS,0,1.3,NBINS,-PIe,PIe);
+     NBINS,0,1.3,NBINS,-PI,PI);
    TH2D * PhiHRvsAlpha = new TH2D("PhiHRvsAlpha",
      "#phi_{h}-#phi_{R} vs. #alpha;#alpha;#phi_{h}-#phi_{R}",
-     NBINS,0,1.3,NBINS,-PIe,PIe);
+     NBINS,0,1.3,NBINS,-PI,PI);
    TH1D * vzDiffHadHad = new TH1D("vzDiffHadHad",
      TString("V_{z}("+hadTitle[qA]+")-V_{z}("+hadTitle[qB]+") distribution"),
      NBINS,-30,30);
@@ -434,7 +454,7 @@ int main(int argc, char** argv) {
 
 
    // ECAL energy, sampling fraction (for electrons)
-   TH1D * elePCALenDist = new TH1D("elePCALenDist","electron PCAL energy",NBINS,0,1.8);
+   TH1D * elePCALenDist = new TH1D("elePCALenDist","electron PCAL energy",NBINS,0,5.0);
    TH1D * eleECINenDist = new TH1D("eleECINenDist","electron EC_{in} energy",NBINS,0,1.5);
    TH1D * eleECOUTenDist = new TH1D("eleECOUTenDist","electron EC_{out} energy",NBINS,0,0.6);
    TH2D * eleECALvsPCALedep = new TH2D("eleECALvsPCALedep","E_{ECIN}+E_{ECOUT} vs. E_{PCAL};E_{PCAL};E_{ECIN}+E_{ECOUT}",
@@ -459,7 +479,7 @@ int main(int argc, char** argv) {
    kfName[kfBA] = "kfBA"; kfTitle[kfBA] = "B(y)/A(y)";
    Float_t kfVal[Nkf];
    Float_t kfRange[Nkf][2];
-   ///*
+   /*
    kfRange[kfA][0]=0.4; kfRange[kfA][1]=0.7; 
    kfRange[kfB][0]=0; kfRange[kfB][1]=0.7; 
    kfRange[kfC][0]=0.2; kfRange[kfC][1]=0.6;
@@ -469,27 +489,29 @@ int main(int argc, char** argv) {
    kfRange[kfVA][0]=0.8; kfRange[kfVA][1]=2;
    kfRange[kfCA][0]=0.2; kfRange[kfCA][1]=1; 
    kfRange[kfBA][0]=0.2; kfRange[kfBA][1]=1; 
-   //*/
-   /*
-   kfRange[kfA][0]=-1; kfRange[kfA][1]=2.5; 
-   kfRange[kfB][0]=-1; kfRange[kfB][1]=2.5; 
-   kfRange[kfC][0]=-1; kfRange[kfC][1]=2.5;
-   kfRange[kfV][0]=-1; kfRange[kfV][1]=2.5; 
-   kfRange[kfW][0]=-1; kfRange[kfW][1]=2.5;
-   kfRange[kfWA][0]=-1; kfRange[kfWA][1]=2.5;
-   kfRange[kfVA][0]=-1; kfRange[kfVA][1]=2.5;
-   kfRange[kfCA][0]=-1; kfRange[kfCA][1]=2.5; 
-   kfRange[kfBA][0]=-1; kfRange[kfBA][1]=2.5; 
    */
+   // /*
+   kfRange[kfA][0]=0; kfRange[kfA][1]=2.5; 
+   kfRange[kfB][0]=0; kfRange[kfB][1]=2.5; 
+   kfRange[kfC][0]=0; kfRange[kfC][1]=2.5;
+   kfRange[kfV][0]=0; kfRange[kfV][1]=2.5; 
+   kfRange[kfW][0]=0; kfRange[kfW][1]=2.5;
+   kfRange[kfWA][0]=0; kfRange[kfWA][1]=2.5;
+   kfRange[kfVA][0]=0; kfRange[kfVA][1]=2.5;
+   kfRange[kfCA][0]=0; kfRange[kfCA][1]=2.5; 
+   kfRange[kfBA][0]=0; kfRange[kfBA][1]=2.5; 
+   // */
    TH2D * kfVsMh[Nkf];
    TH2D * kfVsPhPerp[Nkf];
    TH2D * kfVsX[Nkf];
    TH2D * kfVsQ2[Nkf];
+   TH2D * kfVsY[Nkf];
    TH2D * kfVsMmiss[Nkf];
    TH2D * kfVsZpair[Nkf];
    TH2D * kfVsPhiR[Nkf];
    TH2D * kfVsPhiH[Nkf];
    TH2D * kfVsPhiHR[Nkf];
+   TH3D * kfVsQ2vsX[Nkf];
    for(int k=0; k<Nkf; k++) {
      kfVsMh[k] = new TH2D(TString(kfName[k]+"vsMh"),
        TString(kfTitle[k]+" vs. M_{h}"),
@@ -502,7 +524,10 @@ int main(int argc, char** argv) {
        NBINS,0,1,NBINS,kfRange[k][0],kfRange[k][1]);
      kfVsQ2[k] = new TH2D(TString(kfName[k]+"vsQ2"),
        TString(kfTitle[k]+" vs. Q^{2}"),
-       NBINS,0,12,NBINS,kfRange[k][0],kfRange[k][1]);
+       NBINS,0.8,30,NBINS,kfRange[k][0],kfRange[k][1]);
+     kfVsY[k] = new TH2D(TString(kfName[k]+"vsY"),
+       TString(kfTitle[k]+" vs. y"),
+       NBINS,0,1,NBINS,kfRange[k][0],kfRange[k][1]);
      kfVsMmiss[k] = new TH2D(TString(kfName[k]+"vsMmiss"),
        TString(kfTitle[k]+" vs. M_{X}"),
        NBINS,0,3.5,NBINS,kfRange[k][0],kfRange[k][1]);
@@ -511,14 +536,24 @@ int main(int argc, char** argv) {
        NBINS,0,1,NBINS,kfRange[k][0],kfRange[k][1]);
      kfVsPhiH[k] = new TH2D(TString(kfName[k]+"vsPhiH"),
        TString(kfTitle[k]+" vs. #phi_{h}"),
-       NBINS,-PIe,PIe,NBINS,kfRange[k][0],kfRange[k][1]);
+       NBINS,-PI,PI,NBINS,kfRange[k][0],kfRange[k][1]);
      kfVsPhiR[k] = new TH2D(TString(kfName[k]+"vsPhiR"),
        TString(kfTitle[k]+" vs. #phi_{R}"),
-       NBINS,-PIe,PIe,NBINS,kfRange[k][0],kfRange[k][1]);
+       NBINS,-PI,PI,NBINS,kfRange[k][0],kfRange[k][1]);
      kfVsPhiHR[k] = new TH2D(TString(kfName[k]+"vsPhiHR"),
        TString(kfTitle[k]+" vs. #phi_{h}-#phi_{R}"),
-       NBINS,-PIe,PIe,NBINS,kfRange[k][0],kfRange[k][1]);
+       NBINS,-PI,PI,NBINS,kfRange[k][0],kfRange[k][1]);
+     kfVsQ2vsX[k] = new TH3D(TString(kfName[k]+"vsQ2vsX"),
+       TString(kfTitle[k]+" vs. Q^{2} vs. x;x;Q^{2} [GeV^{2}]"),
+       NBINS,0.06,1, // must match `Q2vsX`
+       NBINS,1,30, // must match `Q2vsX`
+       NBINS,kfRange[k][0],kfRange[k][1]
+       );
+     Tools::BinLog(kfVsQ2vsX[k]->GetXaxis()); Tools::BinLog(kfVsQ2vsX[k]->GetYaxis());
    };
+   auto kfEpsilonvsQ2 = new TH2D("kfEpsilonvsQ2",
+       "#epsilon vs. Q^{2}",
+       NBINS,0.8,30,NBINS,0,1.5);
 
    
    // diphoton distributions
@@ -531,6 +566,7 @@ int main(int argc, char** argv) {
    // event-level distributions
    TH1D * helicityDist = new TH1D("helicityDist","helicity",5,-2,3);
    TH1D * dihadronCntDist = new TH1D("dihadronCntDist","number of dihadrons per event",10,0,10);
+   TH1D * beamEnDist = new TH1D("beamEnDist","beam energy",100,0,25);
    Int_t evnumTmp = -10000;
    Int_t dihadronCnt = 0;
   
@@ -593,6 +629,8 @@ int main(int argc, char** argv) {
        hadZCorr->Fill(ev->Z[qB],ev->Z[qA]);
        hadXFCorr->Fill(ev->hadXF[qB],ev->hadXF[qA]);
        hadYHCorr->Fill(ev->hadYH[qB],ev->hadYH[qA]);
+       hadQTCorr->Fill(ev->hadQT[qB],ev->hadQT[qA]);
+       hadQTqCorr->Fill(ev->hadQTq[qB],ev->hadQTq[qA]);
        hadPhiHCorr->Fill(ev->hadPhiH[qB],ev->hadPhiH[qA]);
        hadVzCorr->Fill(ev->hadVertex[qB][eZ],ev->hadVertex[qA][eZ]);
        hadEleVzDiffCorr->Fill(ev->hadVertex[qB][eZ]-ev->eleVertex[eZ],
@@ -609,6 +647,8 @@ int main(int argc, char** argv) {
          hadZDist[h]->Fill(ev->Z[h]);
          hadXFDist[h]->Fill(ev->hadXF[h]);
          hadYHDist[h]->Fill(ev->hadYH[h]);
+         hadQTDist[h]->Fill(ev->hadQT[h]);
+         hadQTqDist[h]->Fill(ev->hadQTq[h]);
          hadPhiHDist[h]->Fill(ev->hadPhiH[h]);
          hadVzDist[h]->Fill(ev->hadVertex[h][eZ]);
          hadEleVzDiffDist[h]->Fill(ev->hadVertex[h][eZ] - ev->eleVertex[eZ]);
@@ -628,6 +668,8 @@ int main(int argc, char** argv) {
        MhDist->Fill(ev->Mh);
        PhDist->Fill(ev->Ph);
        PhPerpDist->Fill(ev->PhPerp);
+       qTDist->Fill(ev->qT);
+       qTqDist->Fill(ev->qTq);
        ZpairDist->Fill(ev->Zpair);
        zetaDist->Fill(ev->zeta);
        xFDist->Fill(ev->xF);
@@ -736,15 +778,19 @@ int main(int argc, char** argv) {
          kfVsPhPerp[k]->Fill(ev->PhPerp,kfVal[k]);
          kfVsX[k]->Fill(ev->x,kfVal[k]);
          kfVsQ2[k]->Fill(ev->Q2,kfVal[k]);
+         kfVsY[k]->Fill(ev->y,kfVal[k]);
          kfVsMmiss[k]->Fill(ev->Mmiss,kfVal[k]);
          kfVsZpair[k]->Fill(ev->Zpair,kfVal[k]);
          kfVsPhiR[k]->Fill(ev->PhiR,kfVal[k]);
          kfVsPhiH[k]->Fill(ev->PhiH,kfVal[k]);
          kfVsPhiHR[k]->Fill(ev->PhiHR,kfVal[k]);
+         kfVsQ2vsX[k]->Fill(ev->x,ev->Q2,kfVal[k]);
        };
+       kfEpsilonvsQ2->Fill(ev->Q2,ev->epsilon);
        
 
        helicityDist->Fill(ev->helicity);
+       beamEnDist->Fill(ev->BeamEn);
 
        diphMdist->Fill(ev->objDiphoton->M);
 
@@ -784,6 +830,8 @@ int main(int argc, char** argv) {
    TCanvas * hadZCanv = new TCanvas("hadZCanv","hadZCanv",1000,800);
    TCanvas * hadXFCanv = new TCanvas("hadXFCanv","hadXFCanv",1000,800);
    TCanvas * hadYHCanv = new TCanvas("hadYHCanv","hadYHCanv",1000,800);
+   TCanvas * hadQTCanv = new TCanvas("hadQTCanv","hadQTCanv",1000,800);
+   TCanvas * hadQTqCanv = new TCanvas("hadQTqCanv","hadQTqCanv",1000,800);
    TCanvas * hadPhiHCanv = new TCanvas("hadPhiHCanv","hadPhiHCanv",1000,800);
    TCanvas * hadVzCanv = new TCanvas("hadVzCanv","hadVzCanv",1000,800);
    TCanvas * hadEleVzDiffCanv = new TCanvas("hadEleVzDiffCanv","hadEleVzDiffCanv",1000,800);
@@ -801,6 +849,8 @@ int main(int argc, char** argv) {
    HadronCompareCanv(hadZCanv, hadZDist, hadZCorr);
    HadronCompareCanv(hadXFCanv, hadXFDist, hadXFCorr);
    HadronCompareCanv(hadYHCanv, hadYHDist, hadYHCorr);
+   HadronCompareCanv(hadQTCanv, hadQTDist, hadQTCorr);
+   HadronCompareCanv(hadQTqCanv, hadQTqDist, hadQTqCorr);
    HadronCompareCanv(hadPhiHCanv, hadPhiHDist, hadPhiHCorr);
    HadronCompareCanv(hadVzCanv, hadVzDist, hadVzCorr);
    HadronCompareCanv(hadEleVzDiffCanv, hadEleVzDiffDist, hadEleVzDiffCorr);
@@ -818,6 +868,8 @@ int main(int argc, char** argv) {
    hadZCanv->Write();
    hadXFCanv->Write();
    hadYHCanv->Write();
+   hadQTCanv->Write();
+   hadQTqCanv->Write();
    hadPhiHCanv->Write();
    hadEtaVsPhiCanv->Write();
    hadEVsPhiCanv->Write();
@@ -838,6 +890,8 @@ int main(int argc, char** argv) {
    MhDist->Write();
    PhDist->Write();
    PhPerpDist->Write();
+   qTDist->Write();
+   qTqDist->Write();
    ZpairDist->Write();
    zetaDist->Write();
    xFDist->Write();
@@ -845,6 +899,8 @@ int main(int argc, char** argv) {
    MmissDistZoom->Write();
    YHDist->Write();
    for(int h=0; h<2; h++) hadYHDist[h]->Write();
+   for(int h=0; h<2; h++) hadQTDist[h]->Write();
+   for(int h=0; h<2; h++) hadQTqDist[h]->Write();
    for(int h=0; h<2; h++) hadXFDist[h]->Write();
 
    MmissVsMh->Write();
@@ -886,6 +942,7 @@ int main(int argc, char** argv) {
    PhiHRvsAlpha->Write();
    for(int h=0; h<2; h++) betaVsP[h]->Write();
    helicityDist->Write();
+   beamEnDist->Write();
    dihadronCntDist->Write();
 
    diphMdist->Write();
@@ -949,12 +1006,15 @@ int main(int argc, char** argv) {
      kfVsPhPerp[k]->Write();
      kfVsX[k]->Write();
      kfVsQ2[k]->Write();
+     kfVsY[k]->Write();
      kfVsMmiss[k]->Write();
      kfVsZpair[k]->Write();
      kfVsPhiR[k]->Write();
      kfVsPhiH[k]->Write();
      kfVsPhiHR[k]->Write();
+     kfVsQ2vsX[k]->Write();
    };
+   kfEpsilonvsQ2->Write();
    outfile->cd("/");
 
    outfile->Close();

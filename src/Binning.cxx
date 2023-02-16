@@ -43,6 +43,13 @@ Binning::Binning() {
   IVtitle[vQ] = "Q^{2}";
   IVtitle[vXF] = "x_{F}";
 
+  IVoutrootBranchName[vM] = "Mh";
+  IVoutrootBranchName[vX] = "x";
+  IVoutrootBranchName[vZ] = "Zpair";
+  IVoutrootBranchName[vPt] = "PhPerp";
+  IVoutrootBranchName[vDY] = "unknown"; // TODO
+  IVoutrootBranchName[vQ] = "Q2";
+  IVoutrootBranchName[vXF] = "xF";
 
   // set binning scheme defaults
   dimensions = 0;
@@ -106,29 +113,58 @@ Int_t Binning::GetBin(Int_t ivIdx_, Float_t iv_) {
 // get bin associated with current event from Event tree, within
 // current binning scheme
 Int_t Binning::FindBin(EventTree * ev) {
-  Float_t ivVal[3] = {-1000,-1000,-1000};
+  for(int d=0; d<3; d++) ivVal[d] = -1000;
   Int_t ivBin[3] = {-1,-1,-1};
   for(int d=0; d<dimensions; d++) {
     switch(ivVar[d]) {
-      case vM: ivVal[d] = ev->Mh; break;
-      case vX: ivVal[d] = ev->x; break;
-      case vZ: ivVal[d] = ev->Zpair; break;
+      case vM:  ivVal[d] = ev->Mh;     break;
+      case vX:  ivVal[d] = ev->x;      break;
+      case vZ:  ivVal[d] = ev->Zpair;  break;
       case vPt: ivVal[d] = ev->PhPerp; break;
-      case vDY: ivVal[d] = ev->DY; break;
-      case vQ: ivVal[d] = ev->Q2; break;
-      case vXF: ivVal[d] = ev->xF; break;
+      case vDY: ivVal[d] = ev->DY;     break;
+      case vQ:  ivVal[d] = ev->Q2;     break;
+      case vXF: ivVal[d] = ev->xF;     break;
       default: 
                          fprintf(stderr,"ERROR: bad ivVar\n");
                          return -1;
     };
     ivBin[d] = this->GetBin(ivVar[d],ivVal[d]);
+    if(ivBin[d]<0) return -1;
+  };
+  return this->HashBinNum(ivBin[0],ivBin[1],ivBin[2]);
+};
+// analogous method for generated kinematics
+Int_t Binning::FindBinGen(EventTree * ev) {
+  for(int d=0; d<3; d++) ivValGen[d] = -1000;
+  Int_t ivBin[3] = {-1,-1,-1};
+  for(int d=0; d<dimensions; d++) {
+    switch(ivVar[d]) {
+      case vM:  ivValGen[d] = ev->gen_Mh;     break;
+      case vX:  ivValGen[d] = ev->gen_x;      break;
+      case vZ:  ivValGen[d] = ev->gen_Zpair;  break;
+      case vPt: ivValGen[d] = ev->gen_PhPerp; break;
+      case vDY: //ivValGen[d] = ev->gen_DY;     break;
+                fprintf(stderr,"ERROR: missing EventTree::gen_DY (TODO)\n");
+                return -1;
+                break;
+      case vQ:  ivValGen[d] = ev->gen_Q2;     break;
+      case vXF: ivValGen[d] = ev->gen_xF;     break;
+      default: 
+                         fprintf(stderr,"ERROR: bad ivVar\n");
+                         return -1;
+    };
+    for(int d=0; d<dimensions; d++) if(ivValGen[d]==UNDEF) return -1; // silent return for generated bin not found
+    ivBin[d] = this->GetBin(ivVar[d],ivValGen[d]);
+    if(ivBin[d]<0) return -1;
   };
   return this->HashBinNum(ivBin[0],ivBin[1],ivBin[2]);
 };
 
 // get bin associated with specified values, using current binning scheme
 Int_t Binning::FindBin(Float_t iv0, Float_t iv1, Float_t iv2) {
-  Float_t ivVal[3] = {iv0,iv1,iv2};
+  ivVal[0] = iv0;
+  ivVal[1] = iv1;
+  ivVal[2] = iv2;
   Int_t ivBin[3] = {-1,-1,-1};
   for(int d=0; d<dimensions; d++) {
     ivBin[d] = this->GetBin(ivVar[d],ivVal[d]);
@@ -242,10 +278,11 @@ Bool_t Binning::SetScheme(Int_t pairType, Int_t ivType, Int_t nb0, Int_t nb1, In
   Int_t nb[3];
   if( nb0==-1 && nb1==-1 && nb2==-1) {
     if(schemeVersion=="PM" || schemeVersion=="PI0") { // pi+pi-, pi+pi0, pi-pi0, for RGA vs. RGB
-      if(ivVar[0]==vX) nb0=6;
-      if(ivVar[0]==vM) nb0=6;
-      if(ivVar[0]==vZ  && ivVar[1]==vM)  { nb0=3; nb1=2; };
-      if(ivVar[0]==vPt && ivVar[1]==vM)  { nb0=3; nb1=2; };
+      nb0=6;
+      // if(ivVar[0]==vX) nb0=6;
+      // if(ivVar[0]==vM) nb0=6;
+      // if(ivVar[0]==vZ  && ivVar[1]==vM)  { nb0=3; nb1=2; };
+      // if(ivVar[0]==vPt && ivVar[1]==vM)  { nb0=3; nb1=2; };
     };
     if(schemeVersion=="DIS") { // DIS2021: RGA fa18+sp19 inbending data
       if(ivVar[0]==vX) nb0=12;
@@ -286,11 +323,11 @@ Bool_t Binning::SetScheme(Int_t pairType, Int_t ivType, Int_t nb0, Int_t nb1, In
           break;
         case 6:
           if(schemeVersion=="PM") { // based on RGA bibending pi+pi-
-            AddBinBound(vM,0.473);
-            AddBinBound(vM,0.627);
-            AddBinBound(vM,0.751);
-            AddBinBound(vM,0.856);
-            AddBinBound(vM,1.011);
+            AddBinBound(vM,0.472);
+            AddBinBound(vM,0.616);
+            AddBinBound(vM,0.739);
+            AddBinBound(vM,0.840);
+            AddBinBound(vM,1.017);
           } else if(schemeVersion=="PI0") { // based on RGA bibending pi+pi0
             AddBinBound(vM,0.404);
             AddBinBound(vM,0.518);
@@ -337,11 +374,11 @@ Bool_t Binning::SetScheme(Int_t pairType, Int_t ivType, Int_t nb0, Int_t nb1, In
           break;
         case 6:
           if(schemeVersion=="PM") { // based on RGA bibending pi+pi-
-            AddBinBound(vX,0.109);
-            AddBinBound(vX,0.139);
-            AddBinBound(vX,0.173);
-            AddBinBound(vX,0.216);
-            AddBinBound(vX,0.283);
+            AddBinBound(vX,0.140);
+            AddBinBound(vX,0.175);
+            AddBinBound(vX,0.210);
+            AddBinBound(vX,0.256);
+            AddBinBound(vX,0.329);
           } else if(schemeVersion=="PI0") { // based on RGA bibending pi+pi0
             AddBinBound(vX,0.124);
             AddBinBound(vX,0.158);
@@ -395,11 +432,11 @@ Bool_t Binning::SetScheme(Int_t pairType, Int_t ivType, Int_t nb0, Int_t nb1, In
           AddBinBound(vZ,0.633);
           break;
         case 6:
-          AddBinBound(vZ,0.445); // PRL 2D binning
-          AddBinBound(vZ,0.500);
+          AddBinBound(vZ,0.330);
+          AddBinBound(vZ,0.415);
+          AddBinBound(vZ,0.486);
           AddBinBound(vZ,0.555);
-          AddBinBound(vZ,0.605);
-          AddBinBound(vZ,0.675);
+          AddBinBound(vZ,0.635);
           break;
         default:
           fprintf(stderr,"ERROR: unknown nb for %s\n",GetIVname(d).Data());
@@ -427,11 +464,11 @@ Bool_t Binning::SetScheme(Int_t pairType, Int_t ivType, Int_t nb0, Int_t nb1, In
           AddBinBound(vPt,0.662);
           break;
         case 6:
-          AddBinBound(vPt,0.245); // PRL 2D binning
-          AddBinBound(vPt,0.365);
-          AddBinBound(vPt,0.480);
-          AddBinBound(vPt,0.585);
-          AddBinBound(vPt,0.725);
+          AddBinBound(vPt,0.276);
+          AddBinBound(vPt,0.402);
+          AddBinBound(vPt,0.513);
+          AddBinBound(vPt,0.630);
+          AddBinBound(vPt,0.781);
           break;
         default:
           fprintf(stderr,"ERROR: unknown nb for %s\n",GetIVname(d).Data());
@@ -561,6 +598,20 @@ Int_t Binning::GetNbinsTotal() {
   };
   return -1;
 };
+Int_t Binning::GetNbinsHighDim() {
+  switch(dimensions) {
+    case 1:
+      return 1;
+      break;
+    case 2:
+      return GetNbins(1);
+      break;
+    case 3:
+      return GetNbins(1) * GetNbins(2);
+      break;
+  };
+  return -1;
+};
 TArrayD * Binning::GetBinArray(Int_t dim) {
   return CheckDim(dim) ? binArray[dim] : nullptr;
 };
@@ -570,6 +621,12 @@ TString Binning::GetIVname(Int_t dim) {
 TString Binning::GetIVtitle(Int_t dim) {
   return CheckDim(dim) ? IVtitle[ivVar[dim]] : "unknown";
 };
+TString Binning::GetIVoutrootBranchName(Int_t dim) {
+  return CheckDim(dim) ? IVoutrootBranchName[ivVar[dim]] : "unknown";
+};
+Float_t Binning::GetIVmin(Int_t dim) { return CheckDim(dim) ? minIV[ivVar[dim]] : UNDEF; };
+Float_t Binning::GetIVmax(Int_t dim) { return CheckDim(dim) ? maxIV[ivVar[dim]] : UNDEF; };
+Float_t Binning::GetIVval(Int_t dim) { return CheckDim(dim) ? ivVal[dim] : UNDEF; };
 
 Bool_t Binning::CheckDim(Int_t dim_) { 
   if(dim_>=0 && dim_<dimensions) return true;

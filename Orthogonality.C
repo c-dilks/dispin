@@ -3,6 +3,7 @@ R__LOAD_LIBRARY(DiSpin)
 //#include "Constants.h"
 //#include "Modulation.h"
 
+Bool_t usePhiD;
 void Draw3d(TH3D * dd, Int_t whichProj);
 
 // weightSetting: 
@@ -16,7 +17,7 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
   
   // OPTIONS
   ///////////////////
-  Bool_t usePhiD = 0; // if true, replace theta with phiD; must match BuildOrtho.cpp
+  usePhiD = 0; // if true, replace theta with phiD; must match BuildOrtho.cpp
   Bool_t enableLegendre = 0; // must be false if usePhiD==true
   Int_t polarizationSetting = Modulation::kLU;
   Int_t LMAX = 2;
@@ -251,7 +252,10 @@ void Orthogonality(Int_t binNum=0, Int_t weightSetting=0,
   dataCanv->cd(1); Draw3d(dataDist,1);
   dataCanv->cd(2); Draw3d(dataDist,2);
 
-  TCanvas * matCanv = new TCanvas("matCanv","matCanv",1000,1000);
+  TCanvas * matCanv = new TCanvas("matCanv","matCanv",1000,800);
+  matCanv->SetLeftMargin(0.3);
+  matCanv->SetBottomMargin(0.2);
+  matCanv->SetRightMargin(0.2);
   orthMatrix->SetMinimum(-1);
   orthMatrix->SetMaximum(1);
   orthMatrix->GetXaxis()->SetLabelSize(0.03);

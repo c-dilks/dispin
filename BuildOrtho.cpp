@@ -102,15 +102,17 @@ int main(int argc, char** argv) {
   const Int_t NBINS = 50;
   std::map<Int_t,TH2D*> d2;
   std::map<Int_t,TH3D*> d3;
-  TString d2n,d3n;
+  TString d2n,d3n,d2t,d3t;
   for(Int_t b : BS->binVec) {
     d2n = Form("d2_bin%d",b);
     d3n = Form("d3_bin%d",b);
+    d2t = Form("(#phi_{R},#phi_{h}) distribution, bin %d;#phi_{R};#phi_{h}",b);
+    d3t = d3n;
     d2.insert(std::pair<Int_t,TH2D*>(b,
-      new TH2D(d2n,d2n,NBINS,-PI,PI,NBINS,-PI,PI)
+      new TH2D(d2n,d2t,NBINS,-PI,PI,NBINS,-PI,PI)
     ));
     d3.insert(std::pair<Int_t,TH3D*>(b,
-      new TH3D(d3n,d3n,NBINS,-PI,PI,NBINS,-PI,PI,NBINS,usePhiD?-PI:0,PI)
+      new TH3D(d3n,d3t,NBINS,-PI,PI,NBINS,-PI,PI,NBINS,usePhiD?-PI:0,PI)
     ));
   };
 
@@ -119,6 +121,7 @@ int main(int argc, char** argv) {
   Float_t pH,pR;
   Int_t bn;
   for(int i=0; i<ev->ENT; i++) {
+    //if(i>10000) break; // limiter
     ev->GetEvent(i);
     if(ev->Valid()) {
       pH = Tools::AdjAngle(ev->PhiH); // shift to [-pi,+pi]
@@ -133,6 +136,7 @@ int main(int argc, char** argv) {
   // write
   for(Int_t b : BS->binVec) d2.at(b)->Write();
   for(Int_t b : BS->binVec) d3.at(b)->Write();
+  outfile->Close();
 };
 
 //////////////////////////////////////

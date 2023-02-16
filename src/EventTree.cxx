@@ -309,6 +309,7 @@ void EventTree::GetEvent(Long64_t i) {
   // compute rapidity for hadrons and dihadron
   // - get boost vectors
   this->GetDISObj();
+  BeamEn = this->objDIS->BeamEn;
   boostBreit = this->objDIS->BreitBoost; // boost to breit frame
   boostCom = this->objDIS->ComBoost; // boost to q-p com frame
   // - get q momentum, and boost (boost is redundant, being along q)
@@ -343,8 +344,11 @@ void EventTree::GetEvent(Long64_t i) {
   // TODO: move this to calcKinematics.cpp; (will need to reproduce outroot files)
   for(int h=0; h<2; h++) {
     hadPperp[h] = objDihadron->hadPperp[h];
-    hadQt[h] = hadPperp[h] / Z[h];
+    hadQT[h]  = Z[h]>0 ? hadPperp[h] / Z[h]            : 0.0;
+    hadQTq[h] = Q2>0   ? hadQT[h]    / TMath::Sqrt(Q2) : 0.0;
   }
+  qT  = Zpair>0 ? PhPerp / Zpair           : 0.0;
+  qTq = Q2>0    ? qT     / TMath::Sqrt(Q2) : 0.0;
 
 
   // take absolute value of Mmiss (rarely, it can be negative; see Dihadron.cxx)
@@ -371,8 +375,8 @@ void EventTree::GetEvent(Long64_t i) {
     cutTFR[h] = hadYH[h] < -yhb;
   };
   /*for(int h=0; h<2; h++) { // Prokudin cuts:
-    cutCFR[h] = hadQt[h]<2 && Z[h]>0.2;
-    cutTFR[h] = hadQt[h]>1 &&
+    cutCFR[h] = hadQT[h]<2 && Z[h]>0.2;
+    cutTFR[h] = hadQT[h]>1 &&
       ( (x<0.45 && Z[h]<0.1) || (x>=0.45 && Z[h]<0.3) );
   };*/
   cutFR = hadXF[qA]>0 && hadXF[qB]>0; // PRL CFR
@@ -525,7 +529,7 @@ void EventTree::GetTrajectories(Long64_t i, Bool_t prog) {
 // translate "helicity" to a local index for the spin
 Int_t EventTree::SpinState() {
   
-  if(runnum!=11) { // data run
+  if(runnum!=11 && runnum!=12) { // data run
     if(RundepHelicityFlip(runnum)) { // helicity flipped
       switch(helicity) {
         case  1: return sM;
@@ -698,7 +702,7 @@ Bool_t EventTree::CheckSampFrac() {
       // sfSigma[1][0] = 0.1752;  sfSigma[1][1] = 0.1975;  sfSigma[1][2] = 0.1458;  sfSigma[1][3] = 0.1787;  sfSigma[1][4] = 0.0414;  sfSigma[1][5] = 0.2873;
       // sfSigma[2][0] = -0.0405; sfSigma[2][1] = -0.2537; sfSigma[2][2] = 0.2474;  sfSigma[2][3] = 0.4116;  sfSigma[2][4] = 1.2172;  sfSigma[2][5] = -0.4651;
     }
-    else if(runnum==11) { // MC
+    else if(runnum==11 || runnum==12) { // MC
       for(int s=0; s<6; s++) {
         sfMu[0][s] = 0.248605;
         sfMu[1][s] = -0.844221;
