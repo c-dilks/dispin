@@ -28,7 +28,7 @@ class FiducialCuts : public TObject {
 
     // method which applies the cuts
     // - sets booleans listed below
-    void ApplyCuts(int runnum_, int pid_);
+    void ApplyCuts(int runnum_, int pid_, TString fileName_="");
     // - booleans (so far just one)
     Bool_t fiduCut;
 
