@@ -2,9 +2,8 @@
 # build j2root (clean)
 echo """
 
-IMPORTANT: currently running with versions
-- jdk/1.8.0_31
-- python/2.7.18 - only needed to run scons (build configuration)
+IMPORTANT: you may need to convince your system to use Python 2
+- if on ifarm: module switch python/2...
 
 """
 set -e
@@ -13,6 +12,7 @@ mkdir -p build
 mkdir -p target
 rm -r build
 rm -r target
-scons
 mvn package
+scons build/native
+scons
 popd
