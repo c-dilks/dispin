@@ -490,7 +490,7 @@ inHipoList.each { inHipoFile ->
 
   // begin event loop
   while(reader.hasEvent()) {
-    //if(evCount>100000) break // limiter
+    if(evCount>5) break // limiter
     evCount++
     if(evCount % 100000 == 0) println "read $evCount events"
     if(verbose) { 30.times{print '='}; println " begin event" }
@@ -606,7 +606,7 @@ inHipoList.each { inHipoFile ->
           if( hadIdxB < hadIdxA ) return
 
           // proceed only if there are one or more hadrons for each PID
-          if( hadTreeA.size()==0 || hadTreeB.size==0) return
+          if( hadTreeA.size()==0 || hadTreeB.size()==0) return
 
           // loop over pairs of hadrons with the specified PIDs
           hadTreeA.each { hadA ->
@@ -704,7 +704,9 @@ inHipoList.each { inHipoFile ->
 
 
 // write out to diskim file
+println "HERE"
 NT.write()
+println "NOT HERE"
 diskimFile.close()
 
 println "number of events with at least one pi+pi- pair: $cntEventHasPipPim"
