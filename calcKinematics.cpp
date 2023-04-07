@@ -92,13 +92,10 @@ int main(int argc, char** argv) {
 
   // define branch vars
   // - event branch vars
-  Float_t evnumLo_float;
-  Float_t evnumHi_float;
-  Float_t helicity_float;
-  Float_t runnum_float;
+  Int_t runnum, evnum, helicity;
   // - particle branch vars; array index corresponds to parEnum
-  Float_t Row[nPar]; Float_t genRow[nPar];
-  Float_t Pid[nPar]; Float_t genPid[nPar];
+  Int_t   Row[nPar]; Int_t   genRow[nPar];
+  Int_t   Pid[nPar]; Int_t   genPid[nPar];
   Float_t Px[nPar];  Float_t genPx[nPar];
   Float_t Py[nPar];  Float_t genPy[nPar];
   Float_t Pz[nPar];  Float_t genPz[nPar];
@@ -107,12 +104,13 @@ int main(int argc, char** argv) {
   Float_t Vy[nPar];  Float_t genVy[nPar];
   Float_t Vz[nPar];  Float_t genVz[nPar];
                      Float_t genMatchDist[nPar];
-                     Float_t genParentIdx[nPar];
-                     Float_t genParentPid[nPar];
+                     Int_t   genParentIdx[nPar];
+                     Int_t   genParentPid[nPar];
   Float_t chi2pid[nPar];
-  Float_t status[nPar];
+  Int_t   status[nPar];
   Float_t beta[nPar];
   TString parName[nPar];
+  Int_t   eleSector;
   parName[kEle] = "ele";
   parName[kHadA] = "hadA";
   parName[kHadB] = "hadB";
@@ -120,10 +118,9 @@ int main(int argc, char** argv) {
   for(int p=0; p<nPar; p++) parMCname[p]="gen_"+parName[p];
   // set branch addresses
   // - event branches
-  ditr->SetBranchAddress("runnum",&runnum_float);
-  ditr->SetBranchAddress("evnumLo",&evnumLo_float);
-  ditr->SetBranchAddress("evnumHi",&evnumHi_float);
-  ditr->SetBranchAddress("helicity",&helicity_float);
+  ditr->SetBranchAddress("runnum",&runnum);
+  ditr->SetBranchAddress("evnum",&evnum);
+  ditr->SetBranchAddress("helicity",&helicity);
   // - particle branches
   for(int p=0; p<nPar; p++) {
     // - particle info
@@ -236,7 +233,6 @@ int main(int argc, char** argv) {
   outrootTr->Branch("elePCALen",&(fidu[kEle]->part_Cal_PCAL_energy[0]),"elePCALen/F");
   outrootTr->Branch("eleECINen",&(fidu[kEle]->part_Cal_ECIN_energy[0]),"eleECINen/F");
   outrootTr->Branch("eleECOUTen",&(fidu[kEle]->part_Cal_ECOUT_energy[0]),"eleECOUTen/F");
-  Int_t eleSector;
   outrootTr->Branch("eleSector",&eleSector,"eleSector/I");
   // - hadron branches
   outrootTr->Branch("pairType",&(dih->pairType),"pairType/I");
@@ -277,8 +273,6 @@ int main(int argc, char** argv) {
   outrootTr->Branch("PhiRp_r",&(dih->PhiRp_r),"PhiRp_r/F"); // via R_T (frame-dependent)
   outrootTr->Branch("PhiRp_g",&(dih->PhiRp_g),"PhiRp_g/F"); // via eq. 9 in 1408.5721
   // - event-level branches
-  Int_t runnum,evnum,evnumLo,evnumHi;
-  Int_t helicity;
   outrootTr->Branch("runnum",&runnum,"runnum/I");
   outrootTr->Branch("evnum",&evnum,"evnum/I");
   outrootTr->Branch("helicity",&helicity,"helicity/I");
@@ -364,27 +358,20 @@ int main(int argc, char** argv) {
     disEv->ResetVars();
     dih->ResetVars();
 
-    // event level
-    runnum = (Int_t) runnum_float;
-    helicity = (Int_t) helicity_float;
-    evnumLo = (Int_t) evnumLo_float;
-    evnumHi = (Int_t) evnumHi_float;
-    evnum = evnumLo + (evnumHi<<16);
-
     // fiducial cuts
     for(int p=0; p<nPar; p++) {
-      fidu[p]->ApplyCuts(runnum,(int)Pid[p],outrootDir);
+      fidu[p]->ApplyCuts(runnum,Pid[p],outrootDir);
     };
 
 
     // set Trajectory values (not DC trajectories, but Trajectory class)
     for(int p=0; p<nPar; p++) {
-      traj[p]->Row = (Int_t) Row[p];
-      traj[p]->Idx = PIDtoIdx((Int_t)Pid[p]);
+      traj[p]->Row = Row[p];
+      traj[p]->Idx = PIDtoIdx(Pid[p]);
       traj[p]->Momentum.SetPxPyPzE(Px[p],Py[p],Pz[p],E[p]);
       traj[p]->Vertex.SetXYZ(Vx[p],Vy[p],Vz[p]);
       traj[p]->chi2pid = chi2pid[p];
-      traj[p]->Status = (Int_t) status[p];
+      traj[p]->Status = status[p];
       traj[p]->Beta = beta[p];
     };
 
@@ -435,8 +422,8 @@ int main(int argc, char** argv) {
         };
         // get momenta and verteces
         for(int p=0; p<nPar; p++) {
-          trajMC[p]->Row = (Int_t) genRow[p];
-          trajMC[p]->Idx = PIDtoIdx((Int_t)genPid[p]);
+          trajMC[p]->Row = genRow[p];
+          trajMC[p]->Idx = PIDtoIdx(genPid[p]);
           trajMC[p]->Momentum.SetPxPyPzE(genPx[p],genPy[p],genPz[p],genE[p]);
           trajMC[p]->Vertex.SetXYZ(genVx[p],genVy[p],genVz[p]);
           isMatch[p] = trajMC[p]->Row>=0; // true if valid match
@@ -453,18 +440,18 @@ int main(int argc, char** argv) {
               dihMC->CalculateKinematics(trajMC[kHadA],trajMC[kHadB],disEvMC);
               gen_hadMatchDist[qA] = genMatchDist[kHadA];
               gen_hadMatchDist[qB] = genMatchDist[kHadB];
-              gen_hadParentIdx[qA] = (Int_t) genParentIdx[kHadA];
-              gen_hadParentIdx[qB] = (Int_t) genParentIdx[kHadB];
-              gen_hadParentPid[qA] = (Int_t) genParentPid[kHadA];
-              gen_hadParentPid[qB] = (Int_t) genParentPid[kHadB];
+              gen_hadParentIdx[qA] = genParentIdx[kHadA];
+              gen_hadParentIdx[qB] = genParentIdx[kHadB];
+              gen_hadParentPid[qA] = genParentPid[kHadA];
+              gen_hadParentPid[qB] = genParentPid[kHadB];
             } else {
               dihMC->CalculateKinematics(trajMC[kHadB],trajMC[kHadA],disEvMC);
               gen_hadMatchDist[qA] = genMatchDist[kHadB];
               gen_hadMatchDist[qB] = genMatchDist[kHadA];
-              gen_hadParentIdx[qA] = (Int_t) genParentIdx[kHadB];
-              gen_hadParentIdx[qB] = (Int_t) genParentIdx[kHadA];
-              gen_hadParentPid[qA] = (Int_t) genParentPid[kHadB];
-              gen_hadParentPid[qB] = (Int_t) genParentPid[kHadA];
+              gen_hadParentIdx[qA] = genParentIdx[kHadB];
+              gen_hadParentIdx[qB] = genParentIdx[kHadA];
+              gen_hadParentPid[qA] = genParentPid[kHadB];
+              gen_hadParentPid[qB] = genParentPid[kHadA];
             };
           };
         };
@@ -480,6 +467,6 @@ int main(int argc, char** argv) {
   // write output and close
   outrootFile->cd();
   outrootTr->Write();
-  printf("tree written\n");
+  printf("tree written to %s\n",outrootFileN.Data());
   outrootFile->Close();
 };

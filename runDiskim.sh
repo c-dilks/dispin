@@ -28,7 +28,6 @@ fi
 diskimfile="diskim/$(echo $skimfile|sed 's/^.*\///g').root"
 run-groovy skimDihadrons.groovy $skimfile $datastream $hipotype
 sleep 1
-echo "PREMATURE EXIT"; exit
 if [ "$datastream" = "data" ]; then
   calcKinematics.exe $diskimfile $outrootdir
 elif [ "$datastream" = "mcrec" ]; then
