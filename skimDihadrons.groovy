@@ -1,4 +1,4 @@
-// reads HIPO skim files and outputs an NTuple containing dihadron momenta, and
+// reads HIPO skim files and outputs a TTree containing dihadron momenta, and
 // the scattered electron momentum, along with everything else needed for dihadron
 // spin asymmetry analysis
 //
@@ -12,7 +12,7 @@ import org.jlab.clas.physics.Particle
 import org.jlab.detector.base.DetectorLayer
 import org.jlab.detector.base.DetectorType
 import org.jlab.jroot.ROOTFile
-import org.jlab.jroot.TNtuple
+import org.jlab.jroot.JTree
 import groovy.json.JsonOutput
 import java.lang.Math.*
 import clasqa.QADB
@@ -175,7 +175,7 @@ def calorimeterLeafList = [
 def calorimeterList = ['pcal','ecin','ecout'] 
 //def calorimeterList = ['pcal'] // pcal only
 
-// closure to define ntuple leaves for detectors
+// closure to define tree leaves for detectors
 def buildDetectorLeaves = { par ->
   return [
     /* calorimeters */
@@ -194,7 +194,7 @@ def buildDetectorLeaves = { par ->
 }
 
 
-// closure for filling detector ntuple leaves
+// closure for filling detector tree leaves
 def fillDetectorLeaves = { br ->
   def leaves = []
   def brDet = br['detector']
@@ -364,7 +364,7 @@ def growMCtree = { pidList, pid ->
 
 
 
-// closure to define ntuple leaves for particles
+// closure to define tree leaves for particles
 def buildParticleLeaves = { par ->
   return [
     'Row',
@@ -387,7 +387,7 @@ def buildMCleaves = { par ->
   ].collect{par+'_'+it}
 }
 
-// closure to fill particle ntuple leaves
+// closure to fill particle tree leaves
 def fillParticleLeaves = { br ->
   def pid = br.particle.pid()
   return [
@@ -427,7 +427,7 @@ def fillMCleaves = { br ->
 
 
 //-----------------------------
-// define the full ntuple
+// define the full tree
 //-----------------------------
 def NTleafNames = [
   *buildParticleLeaves('ele'), *buildDetectorLeaves('ele'),
@@ -445,7 +445,7 @@ if(useMC) {
   ].join(':')
 }
 //println NTleafNames
-def NT = diskimFile.makeNtuple("ditr","ditr",NTleafNames)
+def NT = diskimFile.makeTree("ditr","ditr",NTleafNames)
 def NTleaves
 
 
@@ -490,7 +490,7 @@ inHipoList.each { inHipoFile ->
 
   // begin event loop
   while(reader.hasEvent()) {
-    //if(evCount>100000) break // limiter
+    if(evCount>5) break // limiter
     evCount++
     if(evCount % 100000 == 0) println "read $evCount events"
     if(verbose) { 30.times{print '='}; println " begin event" }
@@ -519,6 +519,10 @@ inHipoList.each { inHipoFile ->
       //   digits; since ntuples only store floats, we split evnum into
       //   two 16-bit halves; reconstruct full evnum with 
       //   `evnumLo+(evnumHi<<16)`
+      //
+      // FIXME: workaround not needed for TTree
+      // 
+      //
       helicity = eventBank.getByte('helicity',0)
       runnum = configBank.getInt('run',0)
       evnum = configBank.getInt('event',0)
@@ -606,7 +610,7 @@ inHipoList.each { inHipoFile ->
           if( hadIdxB < hadIdxA ) return
 
           // proceed only if there are one or more hadrons for each PID
-          if( hadTreeA.size()==0 || hadTreeB.size==0) return
+          if( hadTreeA.size()==0 || hadTreeB.size()==0) return
 
           // loop over pairs of hadrons with the specified PIDs
           hadTreeA.each { hadA ->
@@ -641,7 +645,7 @@ inHipoList.each { inHipoFile ->
                         // find gen particle with minimum dist from rec
                         if(dist<minDist) {
                           match = gen // `match` is the matched mcgen particle
-                          match.matchDist = dist // for ntuple
+                          match.matchDist = dist // for output tree
                           minDist = dist
                         }
                       }
@@ -656,7 +660,7 @@ inHipoList.each { inHipoFile ->
               }
 
 
-              // fill ntuple (be sure order matches defined order)
+              // fill tree (be sure order matches defined order)
               NTleaves = [
                 *fillParticleLeaves(eleDIS), *fillDetectorLeaves(eleDIS),
                 *fillParticleLeaves(hadA), *fillDetectorLeaves(hadA),
@@ -669,8 +673,26 @@ inHipoList.each { inHipoFile ->
                 *fillMCleaves(mcHadA),
                 *fillMCleaves(mcHadB)
               ]
-              NT.fill(*NTleaves)
+              println "DEBUG!"
+              //NTleaves.collect{ [it,it.getClass()] }.each{ println it }
+              //println "END DEBUG!"
+              //NT.fill(*NTleaves) // bug
+              //NT.fill(*(NTleaves.collect{(double)it})) // bug fix??
               //println NTleaves//.size()
+              //println NTleafNames.split(':')
+              //[ NTleafNames.split(':'), NTleaves, NTleaves.collect{it.getClass()} ].transpose().each{println it}
+              NTmonotype = NTleaves.collect{(double)it}
+              println "  a"
+              //[ NTleafNames.split(':'), NTmonotype, NTmonotype.collect{it.getClass()} ].transpose().each{println it}
+              NT.fill(*NTmonotype) // bug
+              println "  b"
+
+              //
+              //
+              // next thing to try: limit the number of events and see if we get a full ROOT file output
+              //
+              //
+
 
               // print dihadron hadrons
               if(verbose) { 
@@ -696,16 +718,23 @@ inHipoList.each { inHipoFile ->
       if(eventHasPipPim) cntEventHasPipPim++
 
     } // end if event has specific banks
+    println "end of event!"
 
   } // end event loop
+  println "END EVENT LOOP"
   reader.close()
+  println "here1"
   reader = null
+  println "here2"
 } // end HIPO file loop
+println "here3"
 
 
 // write out to diskim file
 NT.write()
+println "here4"
 diskimFile.close()
+println "here5"
 
 println "number of events with at least one pi+pi- pair: $cntEventHasPipPim"
 println "number of pi+p- pairs: $cntPairPipPim"
