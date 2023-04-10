@@ -435,7 +435,6 @@ def ditrLeafNames = [
   *buildParticleLeaves('hadA'), *buildDetectorLeaves('hadA'),
   *buildParticleLeaves('hadB'), *buildDetectorLeaves('hadB'),
 ]
-/* TEMPORARY UNTIL J2ROOT IS PATCHED ------------------------------------------------------
 if(useMC) {
   ditrLeafNames += [
     *buildMCleaves('gen_ele'),
@@ -443,7 +442,6 @@ if(useMC) {
     *buildMCleaves('gen_hadB')
   ]
 }
-*/
 
 // set default datatype to `float` (not necessary, since j2root will do this, but safe)
 ditrLeafNames = ditrLeafNames.collect{ it.contains('/') ? it : it+'/F' }
@@ -662,14 +660,12 @@ inHipoList.each { inHipoFile ->
                 *fillParticleLeaves(hadA), *fillDetectorLeaves(hadA),
                 *fillParticleLeaves(hadB), *fillDetectorLeaves(hadB),
               ]
-/* TEMPORARY UNTIL J2ROOT IS PATCHED ------------------------------------------------------
               if(useMC)
                 ditrLeafVals += [
                   *fillMCleaves(mcEle),
                   *fillMCleaves(mcHadA),
                   *fillMCleaves(mcHadB)
                 ]
-*/
 
               // typecast to expected TTree datatypes
               ditrLeafVals_casted = [ditrLeafNames, ditrLeafVals].transpose().collect{ leafName, leafVal ->
@@ -683,7 +679,7 @@ inHipoList.each { inHipoFile ->
               // [ ditrLeafNames, ditrLeafVals_casted, ditrLeafVals_casted.collect{it.getClass()} ].transpose().each{println it}
 
               // fill tree
-              ditr.fill(*ditrLeafVals_casted)
+              ditr.fill(ditrLeafVals_casted)
 
               // print dihadron hadrons
               if(verbose) { 
