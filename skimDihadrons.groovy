@@ -493,7 +493,7 @@ inHipoList.each { inHipoFile ->
 
   // begin event loop
   while(reader.hasEvent()) {
-    if(evCount>500) break // limiter
+    //if(evCount>500) break // limiter
     evCount++
     if(evCount % 100000 == 0) println "read $evCount events"
     if(verbose) { 30.times{print '='}; println " begin event" }
