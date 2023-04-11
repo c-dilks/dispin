@@ -20,10 +20,10 @@ FiducialCuts::FiducialCuts() {
 
 
 // apply the cuts; public booleans listed in header file will be set
-void FiducialCuts::ApplyCuts(int runnum_, int pid_) {
+void FiducialCuts::ApplyCuts(int runnum_, int pid_, TString fileName_) {
 
   // use runnumber to determine torus setting (Constants.h)
-  Int_t torus = RundepTorus(runnum_);
+  Int_t torus = RundepTorus(runnum_,fileName_);
   switch(torus) {
     case kInbending:
       inbending=true;
