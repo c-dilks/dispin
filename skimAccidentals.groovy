@@ -11,6 +11,8 @@ import groovy.json.JsonOutput
 import java.lang.Math.*
 import clasqa.QADB
 
+System.err << "FIXME: update this script to use j2root TTree output\n"
+return
 
 ////////////////////////
 // ARGUMENTS

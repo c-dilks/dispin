@@ -69,8 +69,8 @@ class FiducialCuts : public TObject {
     // - preserving the array structure, rather than just defining floats, minimizes 
     //   changes to Stefan's code
     
-    Float_t part_Cal_PCAL_found[1];
-    Float_t part_Cal_PCAL_sector[1];
+    Int_t   part_Cal_PCAL_found[1];
+    Int_t   part_Cal_PCAL_sector[1];
     Float_t part_Cal_PCAL_energy[1];
     Float_t part_Cal_PCAL_time[1];
     Float_t part_Cal_PCAL_path[1];
@@ -81,8 +81,8 @@ class FiducialCuts : public TObject {
     Float_t part_Cal_PCAL_lv[1];
     Float_t part_Cal_PCAL_lw[1];
 
-    Float_t part_Cal_ECIN_found[1];
-    Float_t part_Cal_ECIN_sector[1];
+    Int_t   part_Cal_ECIN_found[1];
+    Int_t   part_Cal_ECIN_sector[1];
     Float_t part_Cal_ECIN_energy[1];
     Float_t part_Cal_ECIN_time[1];
     Float_t part_Cal_ECIN_path[1];
@@ -93,8 +93,8 @@ class FiducialCuts : public TObject {
     Float_t part_Cal_ECIN_lv[1];
     Float_t part_Cal_ECIN_lw[1];
 
-    Float_t part_Cal_ECOUT_found[1];
-    Float_t part_Cal_ECOUT_sector[1];
+    Int_t   part_Cal_ECOUT_found[1];
+    Int_t   part_Cal_ECOUT_sector[1];
     Float_t part_Cal_ECOUT_energy[1];
     Float_t part_Cal_ECOUT_time[1];
     Float_t part_Cal_ECOUT_path[1];
@@ -105,12 +105,12 @@ class FiducialCuts : public TObject {
     Float_t part_Cal_ECOUT_lv[1];
     Float_t part_Cal_ECOUT_lw[1];
 
-    Float_t part_DC_Track_found[1];
+    Int_t   part_DC_Track_found[1];
     Float_t part_DC_Track_chi2[1];
     Float_t part_DC_Track_NDF[1];
-    Float_t part_DC_Track_status[1];
+    Int_t   part_DC_Track_status[1];
 
-    Float_t part_DC_Traj_found[1];
+    Int_t   part_DC_Traj_found[1];
     Float_t part_DC_c1x[1];
     Float_t part_DC_c1y[1];
     Float_t part_DC_c1z[1];

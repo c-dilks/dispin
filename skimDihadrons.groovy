@@ -1,4 +1,4 @@
-// reads HIPO skim files and outputs an NTuple containing dihadron momenta, and
+// reads HIPO skim files and outputs a TTree containing dihadron momenta, and
 // the scattered electron momentum, along with everything else needed for dihadron
 // spin asymmetry analysis
 //
@@ -12,7 +12,6 @@ import org.jlab.clas.physics.Particle
 import org.jlab.detector.base.DetectorLayer
 import org.jlab.detector.base.DetectorType
 import org.jlab.jroot.ROOTFile
-import org.jlab.jroot.TNtuple
 import groovy.json.JsonOutput
 import java.lang.Math.*
 import clasqa.QADB
@@ -31,7 +30,7 @@ if(args.length>=3) inHipoType = args[2]
 def verbose = 0
 hadPIDlist = [ 211, -211 ] // list of hadron PIDs which will be paired
 //hadPIDlist += [ 2212 ] // proton, antiproton
-hadPIDlist += [ 22 ] // photons (not a hadron, but to be paired for pi0s)
+//hadPIDlist += [ 22 ] // photons (not a hadron, but to be paired for pi0s)
 //hadPIDlist += [ 321, -321 ] // kaons
 //hadPIDlist += [ 2212, -2212 ] // proton, antiproton
 ////////////////////////
@@ -67,7 +66,6 @@ def mcgenTreeList
 def eleDIS
 def runnum
 def evnum
-def evnumLo, evnumHi
 def helicity
 def reader
 def evCount
@@ -101,7 +99,7 @@ if(useMC) println "READING MONTE CARLO FILE"
 // closure to read calorimeter bank entries for specified row
 def getCalorimeterLeaves = { c ->
   def calBr = [:]
-  calBr['sector'] = (float) calBank.getByte('sector',c)
+  calBr['sector'] = calBank.getByte('sector',c)
   calBr['energy'] = calBank.getFloat('energy',c)
   calBr['time'] = calBank.getFloat('time',c)
   calBr['path'] = calBank.getFloat('path',c)
@@ -136,7 +134,7 @@ def getDetectorBranch = { pidx ->
         if(!detBr.containsKey('dcTrk')) detBr['dcTrk'] = [:]
         detBr['dcTrk']['chi2'] = trkBank.getFloat('chi2',r)
         detBr['dcTrk']['ndf'] = (float) trkBank.getShort('NDF',r)
-        detBr['dcTrk']['status'] = (float) trkBank.getShort('status',r)
+        detBr['dcTrk']['status'] = trkBank.getShort('status',r)
       }
     }
   }
@@ -166,7 +164,7 @@ def getDetectorBranch = { pidx ->
 
 // list of variables associated to calorimeters
 def calorimeterLeafList = [
-  'sector', 'energy', 'time', 'path',
+  'sector/I', 'energy', 'time', 'path',
   'x', 'y', 'z',
   'lu', 'lv', 'lw'
 ]
@@ -175,18 +173,18 @@ def calorimeterLeafList = [
 def calorimeterList = ['pcal','ecin','ecout'] 
 //def calorimeterList = ['pcal'] // pcal only
 
-// closure to define ntuple leaves for detectors
+// closure to define tree leaves for detectors
 def buildDetectorLeaves = { par ->
   return [
     /* calorimeters */
     calorimeterList.collect{ detName ->
-      ["${detName}_found"] +
+      ["${detName}_found/I"] +
       calorimeterLeafList.collect{ varName -> "${detName}_${varName}" }
     },
     /* tracking */
-    ['found','chi2','ndf','status'].collect{ varName -> "dcTrk_${varName}" },
+    ['found/I','chi2','ndf','status/I'].collect{ varName -> "dcTrk_${varName}" },
     /* trajectories */
-    'dcTraj_found',
+    'dcTraj_found/I',
     (1..3).collect{ reg ->
       ['x','y','z'].collect{ coord -> "dcTraj_c${reg}${coord}" }
     }
@@ -194,7 +192,7 @@ def buildDetectorLeaves = { par ->
 }
 
 
-// closure for filling detector ntuple leaves
+// closure for filling detector tree leaves
 def fillDetectorLeaves = { br ->
   def leaves = []
   def brDet = br['detector']
@@ -202,9 +200,9 @@ def fillDetectorLeaves = { br ->
   /* calorimeters */
   calorimeterList.each{ det ->
     found = brDet.containsKey(det)
-    leaves << (found ? 1.0 : 0.0)
+    leaves << (found ? 1 : 0)
     // if !found, all vars set to `undef`, except for energy, set to 0
-    if(found) leaves << calorimeterLeafList.collect{ leaf -> brDet[det][leaf] }
+    if(found) leaves << calorimeterLeafList.collect{ leaf -> brDet[det][leaf.split('/').first()] }
     else leaves << calorimeterLeafList.collect{ leaf -> 
       leaf=='energy' ? 0 : undef
     }
@@ -212,7 +210,7 @@ def fillDetectorLeaves = { br ->
   }
   /* tracking */
   found = brDet.containsKey('dcTrk')
-  leaves << (found ? 1.0 : 0.0)
+  leaves << (found ? 1 : 0)
   leaves << ['chi2','ndf','status'].collect{
     found ? brDet['dcTrk'][it] : undef
   }
@@ -223,7 +221,7 @@ def fillDetectorLeaves = { br ->
             brDet['dcTraj'].containsKey('c2') &&
             brDet['dcTraj'].containsKey('c3');
   }
-  leaves << (found ? 1.0 : 0.0)
+  leaves << (found ? 1 : 0)
   (1..3).each{ reg ->
     leaves << ['x','y','z'].collect{ 
       found ? brDet['dcTraj']["c$reg"][it] : undef
@@ -255,14 +253,14 @@ def growParticleTree = { pidList, pid ->
   //   etc.
   def particleTree = rowList.collect { row ->
     [
-      'row': (float) row,
+      'row':row,
       'particle':new Particle(
         pid,
         *['px','py','pz'].collect{particleBank.getFloat(it,row)}
       ),
       *:['vx','vy','vz'].collectEntries{[it,particleBank.getFloat(it,row)]},
       'chi2pid':particleBank.getFloat('chi2pid',row),
-      'status': (float) particleBank.getShort('status',row),
+      'status':particleBank.getShort('status',row),
       'beta':particleBank.getFloat('beta',row),
       'detector':getDetectorBranch(row)
     ]
@@ -298,7 +296,7 @@ def growMCtree = { pidList, pid ->
   // -- these are the generated particles from MC::Particle
   def particleTree = rowList.collect { row ->
     [
-      'row': (float) row,
+      'row':row,
       'particle':new Particle(
         pid,
         *['px','py','pz'].collect{mcParticleBank.getFloat(it,row)}
@@ -364,30 +362,30 @@ def growMCtree = { pidList, pid ->
 
 
 
-// closure to define ntuple leaves for particles
+// closure to define tree leaves for particles
 def buildParticleLeaves = { par ->
   return [
-    'Row',
-    'Pid',
+    'Row/I',
+    'Pid/I',
     'Px','Py','Pz',
     'E',
     'Vx','Vy','Vz',
-    'chi2pid','status','beta'
+    'chi2pid','status/I','beta'
   ].collect{par+'_'+it}
 }
 def buildMCleaves = { par ->
   return [
-    'Row',
-    'Pid',
+    'Row/I',
+    'Pid/I',
     'Px','Py','Pz',
     'E',
     'Vx','Vy','Vz',
     'matchDist',
-    'parentIdx','parentPid'
+    'parentIdx/I','parentPid/I'
   ].collect{par+'_'+it}
 }
 
-// closure to fill particle ntuple leaves
+// closure to fill particle tree leaves
 def fillParticleLeaves = { br ->
   def pid = br.particle.pid()
   return [
@@ -426,28 +424,33 @@ def fillMCleaves = { br ->
 }
 
 
-//-----------------------------
-// define the full ntuple
-//-----------------------------
-def NTleafNames = [
+//----------------------------------------------
+// define the full tree: `ditr` (diskim tree)
+//----------------------------------------------
+
+// tree leaf names
+def ditrLeafNames = [
+  'runnum/I', 'evnum/I', 'helicity/I',
   *buildParticleLeaves('ele'), *buildDetectorLeaves('ele'),
   *buildParticleLeaves('hadA'), *buildDetectorLeaves('hadA'),
   *buildParticleLeaves('hadB'), *buildDetectorLeaves('hadB'),
-  'runnum','evnumLo','evnumHi',
-  'helicity'
-].join(':')
+]
 if(useMC) {
-  NTleafNames = [
-    NTleafNames,
+  ditrLeafNames += [
     *buildMCleaves('gen_ele'),
     *buildMCleaves('gen_hadA'),
     *buildMCleaves('gen_hadB')
-  ].join(':')
+  ]
 }
-//println NTleafNames
-def NT = diskimFile.makeNtuple("ditr","ditr",NTleafNames)
-def NTleaves
 
+// set default datatype to `float` (not necessary, since j2root will do this, but safe)
+ditrLeafNames = ditrLeafNames.collect{ it.contains('/') ? it : it+'/F' }
+println "ditr will have ${ditrLeafNames.size()} branches:"
+println pPrint(ditrLeafNames)
+
+// define the tree
+def ditr = diskimFile.makeTree("ditr","ditr",ditrLeafNames.join(':'))
+def ditrLeafVals
 
 
 //----------------------
@@ -490,7 +493,7 @@ inHipoList.each { inHipoFile ->
 
   // begin event loop
   while(reader.hasEvent()) {
-    //if(evCount>100000) break // limiter
+    //if(evCount>500) break // limiter
     evCount++
     if(evCount % 100000 == 0) println "read $evCount events"
     if(verbose) { 30.times{print '='}; println " begin event" }
@@ -515,15 +518,9 @@ inHipoList.each { inHipoFile ->
 
 
       // get event-level information
-      // - evnum may surpass float precision limit, if it has more than 7
-      //   digits; since ntuples only store floats, we split evnum into
-      //   two 16-bit halves; reconstruct full evnum with 
-      //   `evnumLo+(evnumHi<<16)`
       helicity = eventBank.getByte('helicity',0)
       runnum = configBank.getInt('run',0)
       evnum = configBank.getInt('event',0)
-      evnumLo = evnum & 0xFFFF
-      evnumHi = (evnum>>16) & 0xFFFF
       if(once) {
         println "ANALYZING RUN $runnum"
         once = false
@@ -606,7 +603,7 @@ inHipoList.each { inHipoFile ->
           if( hadIdxB < hadIdxA ) return
 
           // proceed only if there are one or more hadrons for each PID
-          if( hadTreeA.size()==0 || hadTreeB.size==0) return
+          if( hadTreeA.size()==0 || hadTreeB.size()==0) return
 
           // loop over pairs of hadrons with the specified PIDs
           hadTreeA.each { hadA ->
@@ -641,7 +638,7 @@ inHipoList.each { inHipoFile ->
                         // find gen particle with minimum dist from rec
                         if(dist<minDist) {
                           match = gen // `match` is the matched mcgen particle
-                          match.matchDist = dist // for ntuple
+                          match.matchDist = dist // for output tree
                           minDist = dist
                         }
                       }
@@ -656,21 +653,33 @@ inHipoList.each { inHipoFile ->
               }
 
 
-              // fill ntuple (be sure order matches defined order)
-              NTleaves = [
+              // fill tree (be sure order matches defined order from `ditrLeafNames`)
+              ditrLeafVals = [
+                runnum, evnum, helicity,
                 *fillParticleLeaves(eleDIS), *fillDetectorLeaves(eleDIS),
                 *fillParticleLeaves(hadA), *fillDetectorLeaves(hadA),
                 *fillParticleLeaves(hadB), *fillDetectorLeaves(hadB),
-                runnum,evnumLo,evnumHi,
-                helicity
               ]
-              if(useMC) NTleaves += [
-                *fillMCleaves(mcEle),
-                *fillMCleaves(mcHadA),
-                *fillMCleaves(mcHadB)
-              ]
-              NT.fill(*NTleaves)
-              //println NTleaves//.size()
+              if(useMC)
+                ditrLeafVals += [
+                  *fillMCleaves(mcEle),
+                  *fillMCleaves(mcHadA),
+                  *fillMCleaves(mcHadB)
+                ]
+
+              // typecast to expected TTree datatypes
+              ditrLeafVals_casted = [ditrLeafNames, ditrLeafVals].transpose().collect{ leafName, leafVal ->
+                if      (leafName.contains('/I')) (int)    leafVal
+                else if (leafName.contains('/F')) (float)  leafVal
+                else {
+                  System.err << "WARNING: j2root does not support datatype for branch $leafName\n"
+                  (float) leafVal
+                }
+              }
+              // [ ditrLeafNames, ditrLeafVals_casted, ditrLeafVals_casted.collect{it.getClass()} ].transpose().each{println it}
+
+              // fill tree
+              ditr.fill(ditrLeafVals_casted)
 
               // print dihadron hadrons
               if(verbose) { 
@@ -698,14 +707,15 @@ inHipoList.each { inHipoFile ->
     } // end if event has specific banks
 
   } // end event loop
+  println "END EVENT LOOP"
   reader.close()
   reader = null
 } // end HIPO file loop
 
 
 // write out to diskim file
-NT.write()
+ditr.write()
 diskimFile.close()
 
 println "number of events with at least one pi+pi- pair: $cntEventHasPipPim"
-println "number of pi+p- pairs: $cntPairPipPim"
+println "number of pi+pi- pairs: $cntPairPipPim"
