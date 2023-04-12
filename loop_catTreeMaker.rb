@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# run singleBinTreeMaker.sh for all the datasets
+# run catTreeMaker.sh for all the datasets
 
 require './DatasetLooper.rb'
 require 'awesome_print'
@@ -34,5 +34,5 @@ allsetList[:generic].zip(allsetList[:specific]) do |genericSet,specificSet|
   ap [genericSet,specificSet]
   datasetType = genericSet.split('.').include?('mc') ? 'mc' : 'data'
   catTreeFile = "#{DatasetLooper.catTreeBaseName(specificSet)}.root"
-  system "singleBinTreeMaker.sh outroot.#{genericSet} #{datasetType} -p #{pairType} -o #{catTreeFile}"
+  system "catTreeMaker.sh outroot.#{genericSet} #{datasetType} -p #{pairType} -o #{catTreeFile}"
 end
