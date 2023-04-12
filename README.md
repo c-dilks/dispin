@@ -94,7 +94,7 @@ dihadron spin asymmetry analysis
     - `TabulateBinMeans.C`
 
 ## brufit sequence
-- `singleBinTreeMaker.sh [outroot dir]`: do this for data and MC; for MC, `mv spinroot/catTree.root ./catTreeMC.root`
+- `catTreeMaker.sh [outroot dir]`: do this for data and MC; for MC, `mv spinroot/catTree.root ./catTreeMC.root`
 - `brufit -b -q asymBruFit.C`
   - if using proof, monitor with:
     - `tail -F ~/.proof/j-dispin/last-lite-session/*.log` (your path may be different)
