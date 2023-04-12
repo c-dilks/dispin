@@ -46,7 +46,8 @@ tags
 files.list
 bruspin.*
 catTree*.bak
-catTree.archive*
+catTrees.archive*
+catTrees.pi0
 catTrees
 catTreeWeights
 *.json
