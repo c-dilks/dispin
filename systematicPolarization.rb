@@ -31,6 +31,7 @@ DatasetList.each do |dataset|
 
   # check existence
   catTreeFileN = DatasetLooper.catTreeBaseName(dataset)+".idx.root"
+  puts "READ #{catTreeFileN}"
   if not File.exist? catTreeFileN
     $stderr.puts "ERROR: #{catTreeFileN} not found"
     next
