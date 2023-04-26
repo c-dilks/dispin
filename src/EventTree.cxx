@@ -5,11 +5,12 @@ ClassImp(EventTree)
 using namespace std;
 
 
-EventTree::EventTree(TString filelist, Int_t whichPair_) {
+EventTree::EventTree(TString filelist_, Int_t whichPair_) {
   printf("EventTree instantiated\n");
 
   debug = true;
 
+  filelist = filelist_;
   DecodePairType(whichPair_,whichHad[qA],whichHad[qB]);
   printf("\n>>> DIHADRON SELECTION: %s\n\n",PairName(whichHad[qA],whichHad[qB]).Data());
 
@@ -594,7 +595,7 @@ Float_t EventTree::Rellum() {
 Bool_t EventTree::CheckVertex() {
 
   // electron Vz cuts // tighter than RGA common cuts, to remove foil from Spring2019+ data
-  switch(RundepTorus(runnum)) {
+  switch(RundepTorus(runnum,filelist)) {
     case kInbending:  vzBoolEle = -8.0  < eleVertex[eZ] && eleVertex[eZ] < 3.0; break;
     case kOutbending: vzBoolEle = -10.0 < eleVertex[eZ] && eleVertex[eZ] < 2.5; break;
   };

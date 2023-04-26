@@ -113,13 +113,11 @@ void Ensemble::AppendLists(Long64_t j) {
   // if dihadron, add to dihadronList
   // also add hadrons to hadronList, maintaining uniqueness
   else {
-    dihadronList.push_back(j);
+    // add dihadron to dihadronList, excluding hadron-photon pairs
+    if(hadIdx[qA]!=kPhoton && hadIdx[qB]!=kPhoton) dihadronList.push_back(j);
+    // add hadrons to hadronList
     for(int h=0; h<2; h++) {
-      // hadrons should not be paired with single photons
-      if(hadIdx[h]==kPhoton) {
-        fprintf(stderr,"WARNING: photon paired with hadron, skipping\n");
-        return;
-      };
+      if(hadIdx[h]==kPhoton) continue;
       // if this hadron has not been added to rowList, add it to
       // the hadronList and its row to rowList
       if(find(rowList.begin(),rowList.end(),hadRow[h])==rowList.end()) {

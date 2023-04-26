@@ -36,7 +36,7 @@ class EventTree : public TObject
 {
   public:
     EventTree() {};
-    EventTree(TString filelist, Int_t whichPair_=0x34);
+    EventTree(TString filelist_, Int_t whichPair_=0x34);
     ~EventTree();
 
     virtual void GetEvent(Long64_t i);
@@ -253,6 +253,7 @@ class EventTree : public TObject
 
   private:
     TChain * chain;
+    TString filelist;
     Int_t whichHad[2];
 
     Dihadron * objDihadron;

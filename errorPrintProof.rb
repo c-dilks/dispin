@@ -13,7 +13,7 @@ logDirList = sandboxList.map do |sandbox|
 end.flatten
 logfiles = logDirList.map{|d|Dir.glob(d+"/*.log").reject{|f|File.symlink?(f)}}.flatten.sort
 logfiles.each do |logfile|
-  cmd = "grep -i error #{logfile}"
+  cmd = "grep -iE 'error|did NOT' #{logfile}"
   cmd += "|grep -v MATRIX"
   cmd += "|grep -v VALUE"
   cmd += "|grep -v \"Floating Parameter\""

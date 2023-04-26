@@ -1,11 +1,18 @@
 #!/usr/bin/env ruby
 # get yields in each catTree
 
-require 'RubyROOT'
-include Root
+require 'awesome_print'
+require 'pycall/import'
+r = PyCall.import_module 'ROOT'
 
-Dir.glob("catTrees/catTree*.idx.trimmed.root").each do |treeFileN|
-  TFile.open(treeFileN,"READ") do |treeFile|
-    puts "#{treeFileN} #{treeFile.Get('tree').auto_cast.GetEntries}"
-  end
+yieldHash = Hash.new
+Dir.glob("catTrees/catTree*.idx.root").each do |treeFileName|
+  treeFile = r.TFile.new treeFileName
+  tree = treeFile.Get "tree"
+  datasetName = treeFileName.split('.').select{ |tok| tok.match?(/bending|mc|rg/) }.join ' '
+  ap [treeFileName,datasetName]
+  yieldHash[datasetName] = tree.GetEntries
+  treeFile.Close
 end
+puts "\n\nYIELDS:"
+ap yieldHash

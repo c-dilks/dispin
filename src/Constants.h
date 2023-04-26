@@ -434,7 +434,8 @@ enum torus_enum {
   kInbending = -1,
   kOutbending = 1
 };
-static Int_t RundepTorus(Int_t run) {
+// get torus, given runnum; if MC the runnum is always 11, so use fileName instead
+static Int_t RundepTorus(Int_t run, TString fileName="") {
   if     (run>= 5032 && run<= 5419) return kInbending;  // rga_inbending_fa18
   else if(run>= 5422 && run<= 5666) return kOutbending; // rga_outbending_fa18
   else if(run>= 6616 && run<= 6783) return kInbending;  // rga_inbending_sp19
@@ -442,7 +443,14 @@ static Int_t RundepTorus(Int_t run) {
   else if(run>=11093 && run<=11283) return kOutbending; // rgb_outbending_fa19
   else if(run>=11284 && run<=11300) return kInbending;  // rgb_BAND_inbending_fa19
   else if(run>=11323 && run<=11571) return kInbending;  // rgb_inbending_wi20
-  else if(run==11) return kInbending; // MC for RGA inbending
+  else if(run==11) {
+    if(fileName.Contains("inbending")) return kInbending;
+    else if(fileName.Contains("outbending")) return kOutbending;
+    else {
+      fprintf(stderr,"ERROR: RundepTorus file name or path does not contain 'inbending' or 'outbending' (necessary if runnum==11)\n");
+      return kInbending;
+    }
+  }
   else {
     fprintf(stderr,"ERROR: RundepTorus unknown for run %d\n",run);
     return kInbending;
