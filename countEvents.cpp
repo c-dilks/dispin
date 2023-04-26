@@ -32,7 +32,15 @@ int main(int argc, char** argv) {
    infiles = "outroot/*.root";
    whichPair = EncodePairType(kPip,kPim);
    tableFile = "eventTable.txt";
-   if(argc>1) infiles = TString(argv[1]);
+   if(argc<=1) {
+     std::cout << "USAGE: " << argv[0]
+       << " [outroot files (globbing allowed)]"
+       << " [pairType (default=" << whichPair << "]"
+       << " [table file, for cross check (default=" << tableFile << "]"
+       << std::endl;
+     return 2;
+   }
+   infiles = TString(argv[1]);
    if(argc>2) whichPair = (Int_t)strtof(argv[2],NULL);
    if(argc>3) tableFile = TString(argv[3]);
    DecodePairType(whichPair,whichHad[qA],whichHad[qB]);
@@ -167,7 +175,7 @@ int main(int argc, char** argv) {
    // for(int j=0; j<nTests; j++) PrintCount("nCutTest ("+cutTestName[j]+") = ",nCutTest[j],nTotal); // XCHECK
 
    if(printEvents) 
-     printf("\n!! events printed to eventTable.txt (no more than 10000 printed) !!\n\n");
+     printf("\n!! events printed to %s (no more than 10000 printed) !!\n\n",tableFile.Data());
 };
 
 

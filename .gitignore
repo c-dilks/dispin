@@ -45,6 +45,6 @@ catTree*.bak
 catTree.archive*
 catTrees
 catTreeWeights
-xcheck/2.*/*.txt
-xcheck/4.*/*.txt
-xcheck/4.12/assumed_cuts_only
+xcheck/22.*/*.txt
+xcheck/23.*/*.txt
+xcheck/22.4.12/assumed_cuts_only
