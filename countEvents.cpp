@@ -91,13 +91,28 @@ int main(int argc, char** argv) {
    ev = new EventTree(infiles,whichPair);
    first = true;
 
+   // skim file versions used in cross checks:
+   // RGA:
+   // - skim4: legacy version, had looser cuts than the newer nSIDIS format; some of my outroot files
+   //   may still be from this version
+   // - nSidis: newest version
+   // RGB:
+   // - sidisdvcs
+   bool isLegacySkimFile = false;
+   if(infiles.Contains("rga.inbending")) {
+     std::cerr << std::endl << "WARNING: these skim files are LEGACY skim4 files," << std::endl
+       << "so `ev->Check_nSidis_skim_cut()` will be applied to match to the newer nSidis skim file cuts" << std::endl << std::endl;
+     isLegacySkimFile = true;
+   }
+
    // event loop
    for(Long64_t i=0; i<ev->ENT; i++) {
      if(printEvents && nValid>=numToPrint) { printf("--- limiter ---\n"); break; };
      ev->GetEvent(i);
 
-     //// in case we are looking at an older SISIS skim file, make sure the SIDIS skim file cut matches
-     // if( ! ev->Check_nSidis_skim_cut() ) continue; // <--------------------!!!!!!!!!!! XCHECK (RGA ONLY)
+     // in case we are looking at an older SISIS skim file, make sure the SIDIS skim file cut matches
+     if(isLegacySkimFile)
+       if( ! ev->Check_nSidis_skim_cut() ) continue;
 
      // full cut set
      if(ev->Valid()) {
