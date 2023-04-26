@@ -2,6 +2,7 @@
 # run all steps to calculate the systematic uncertainty from baryon decay
 
 require './DatasetLooper.rb'
+require 'fileutils'
 require 'awesome_print'
 require 'thread/pool'
 require 'pry'
@@ -19,8 +20,11 @@ dl = DatasetLooper.new(dihadronSym)
 mcSets  = dl.allsetListLoopOnlyMC.reject{|f|f.include?'bibending'} # do not include bibending
 ivTypes = dl.binHash.keys#.select{|i|i==2}
 limiter = 0 # this many events, per dataset (set to zero to take all)
+ResultDir = 'baryonTrees'
 ############################
 
+# output directory
+FileUtils.mkdir_p ResultDir
 
 # build commands
 step1cmds = []
@@ -29,7 +33,7 @@ mcSets.product(ivTypes).each do |mcSet,ivType|
 
   # set treeFile name
   ivName   = dl.binHash[ivType][:name]
-  treeFile = "baryonTrees/#{mcSet}.#{ivName}.root"
+  treeFile = "#{ResultDir}/#{mcSet}.#{ivName}.root"
 
   # remove dihadorn pair name from `mcSet`
   mcAllSet = mcSet
