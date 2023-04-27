@@ -65,33 +65,33 @@ These are the tables of yields we have cross checked
 ## 5036 (RGA inbending)
 | VAR          | CHRIS  | TIMOTHY | GREGORY |
 | ---          | ---    | ---     | ---     |
-| nNoCuts      | 121354 | 121044  |         |
-| nAllCuts     | 8283   | 8295    |         |
-| nCutDIS      | 117659 | 117351  |         |
-| nCutDihadron | 97598  | ?       |         |
-| nCutHelicity | 120433 | ?       |         |
-| nCutFiducial | 104361 | 103840  |         |
-| nCutPID      | 17403  | 17323   |         |
-| nCutVertex   | 100834 | 100529  |         |
-| nCutFR       | 58514  | 58341   |         |
+| nNoCuts      | 121354 | 121044  |  121331 |
+| nAllCuts     | 8283   | 8295    |  8283   |
+| nCutDIS      | 117659 | 117351  |  117639 |
+| nCutDihadron | 97598  | ?       |  97596  |
+| nCutHelicity | 120433 | ?       |  120410 |
+| nCutFiducial | 104361 | 103840  |  104340 |
+| nCutPID      | 17403  | 17323   |  17403  |
+| nCutVertex   | 100834 | 100529  |  100818 |
+| nCutFR       | 58514  | 58341   |  58501  |
 
 ## 5403 (RGA inbending)
 | VAR      | CHRIS | TIMOTHY | GREGORY |
 | ---      | ---   | ---     | ---     |
-| nAllCuts | 7031  | 7045    |         |
+| nAllCuts | 7031  | 7045    | 7031    |
 
 ## 5424 (RGA outbending)
 | VAR          | CHRIS  | TIMOTHY | GREGORY |
 | ---          | ---    | ---     | ---     |
-| nAllCuts     | 39899  | 40107   |         |
-| nNoCuts      | 699793 | 699742  |         |
-| nCutDIS      | 686811 | 686439  |         |
-| nCutDihadron | 541674 | 541704  |         |
-| nCutHelicity | 693886 | ?       |         |
-| nCutFiducial | 555088 | 555283  |         |
-| nCutPID      | 94251  | 93921   |         |
-| nCutVertex   | 580271 | 579867  |         |
-| nCutFR       | 373031 | 372412  |         |
+| nAllCuts     | 39899  | 40107   | 39898   |
+| nNoCuts      | 699793 | 699742  | 700064  |
+| nCutDIS      | 686811 | 686439  | 686832  |
+| nCutDihadron | 541674 | 541704  | 541807  |
+| nCutHelicity | 693886 | ?       | 694157  |
+| nCutFiducial | 555088 | 555283  | 555297  |
+| nCutPID      | 94251  | 93921   | 94256   |
+| nCutVertex   | 580271 | 579867  | 580459  |
+| nCutFR       | 373031 | 372412  | 373148  |
 
 ## 6356 RGB Spring 2019 Inbending
 | VAR          | CHRIS  | TIMOTHY | TIMOTHY-FILE                   |
