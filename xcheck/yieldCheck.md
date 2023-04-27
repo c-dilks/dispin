@@ -107,40 +107,41 @@ These are the tables of yields we have cross checked
 |  nCutFR        |  338516  |  318039   |  6.0490%              |
 
 ## 6356 RGB Spring 2019 Inbending
-|  VAR           |  CHRIS   |  TIMOTHY  |  TIMOTHY-FILE                    |  DIFF(CHRIS,TIMOTHY)  |
-|  ---           |  ---     |  ---      |  ---                             |  ---                  |
-|  nAllCuts      |  25686   |  26213    |  `6356/6356_all_cuts.txt`        |  2.0517%              |
-|  nNoCuts       |  894417  |  891562   |  `6356/6356_assumed_cuts.txt`    |  0.3192%              |
-|  nCutDIS       |  686802  |  683905   |  `6356/6356_sidis_cuts.txt`      |  0.4218%              |
-|  nCutDihadron  |  740830  |  737308   |  `6356/6356_exclusive_cuts.txt`  |  0.4754%              |
-|  nCutHelicity  |  886176  |  ?        |  ?                               |  ?                    |
-|  nCutFiducial  |  738015  |  734608   |  `6356/6356_fiducial_cuts.txt`   |  0.4616%              |
-|  nCutPID       |  54673   |  54195    |  `6356/6356_pid_cuts.txt`        |  0.8743%              |
-|  nCutVertex    |  716208  |  713345   |  `6356/6356_vertex_cuts.txt`     |  0.3997%              |
-|  nCutFR        |  377431  |  375957   |  `6356/6356_CFR_cuts.txt`        |  0.3905%              |
+|  VAR           |  CHRIS   |  TIMOTHY  |  GREGORY  |  TIMOTHY-FILE                    |  DIFF(CHRIS,TIMOTHY)  |  DIFF(CHRIS,GREGORY)  |
+|  ---           |  ---     |  ---      |  ---      |  ---                             |  ---                  |  ---                  |
+|  nAllCuts      |  25686   |  26213    |  25686    |  `6356/6356_all_cuts.txt`        |  2.0517%              |  0.0000%              |
+|  nNoCuts       |  894417  |  891562   |  894417   |  `6356/6356_assumed_cuts.txt`    |  0.3192%              |  0.0000%              |
+|  nCutDIS       |  686802  |  683905   |  686801   |  `6356/6356_sidis_cuts.txt`      |  0.4218%              |  0.0001%              |
+|  nCutDihadron  |  740830  |  737308   |  740826   |  `6356/6356_exclusive_cuts.txt`  |  0.4754%              |  0.0005%              |
+|  nCutHelicity  |  886176  |  ?        |  886176   |  ?                               |  ?                    |  0.0000%              |
+|  nCutFiducial  |  738015  |  734608   |  738015   |  `6356/6356_fiducial_cuts.txt`   |  0.4616%              |  0.0000%              |
+|  nCutPID       |  54673   |  54195    |  72120    |  `6356/6356_pid_cuts.txt`        |  0.8743%              |  31.9115%             |
+|  nCutVertex    |  716208  |  713345   |  716208   |  `6356/6356_vertex_cuts.txt`     |  0.3997%              |  0.0000%              |
+|  nCutFR        |  377431  |  375957   |  377428   |  `6356/6356_CFR_cuts.txt`        |  0.3905%              |  0.0008%              |
 
 ## 11171 RGB Fall 2019 Outbending
-|  VAR           |  CHRIS   |  TIMOTHY  |  TIMOTHY-FILE                      |  DIFF(CHRIS,TIMOTHY)  |
-|  ---           |  ---     |  ---      |  ---                               |  ---                  |
-|  nAllCuts      |  30255   |  34278    |  `11171/11171_all_cuts.txt`        |  13.2970%             |
-|  nNoCuts       |  839714  |  829788   |  `11171/11171_assumed_cuts.txt`    |  1.1821%              |
-|  nCutDIS       |  672160  |  662728   |  `11171/11171_sidis_cuts.txt`      |  1.4032%              |
-|  nCutDihadron  |  649086  |  641373   |  `11171/11171_exclusive_cuts.txt`  |  1.1883%              |
-|  nCutHelicity  |  819980  |  ?        |  ?                                 |  ?                    |
-|  nCutFiducial  |  666613  |  658771   |  `11171/11171_fiducial_cuts.txt`   |  1.1764%              |
-|  nCutPID       |  78609   |  77230    |  `11171/11171_pid_cuts.txt`        |  1.7543%              |
-|  nCutVertex    |  663390  |  654753   |  `11171/11171_vertex_cuts.txt`     |  1.3019%              |
-|  nCutFR        |  404113  |  398379   |  `11171/11171_CFR_cuts.txt`        |  1.4189%              |
+|  VAR           |  CHRIS   |  TIMOTHY  |  GREGORY  |  TIMOTHY-FILE                      |  DIFF(CHRIS,TIMOTHY)  |  DIFF(CHRIS,GREGORY)  |
+|  ---           |  ---     |  ---      |  ---      |  ---                               |  ---                  |  ---                  |
+|  nAllCuts      |  30255   |  34278    |  30254    |  `11171/11171_all_cuts.txt`        |  13.2970%             |  0.0033%              |
+|  nNoCuts       |  839714  |  829788   |  839714   |  `11171/11171_assumed_cuts.txt`    |  1.1821%              |  0.0000%              |
+|  nCutDIS       |  672160  |  662728   |  672154   |  `11171/11171_sidis_cuts.txt`      |  1.4032%              |  0.0009%              |
+|  nCutDihadron  |  649086  |  641373   |  649074   |  `11171/11171_exclusive_cuts.txt`  |  1.1883%              |  0.0018%              |
+|  nCutHelicity  |  819980  |  ?        |  819980   |  ?                                 |  ?                    |  0.0000%              |
+|  nCutFiducial  |  666613  |  658771   |  666613   |  `11171/11171_fiducial_cuts.txt`   |  1.1764%              |  0.0000%              |
+|  nCutPID       |  78609   |  77230    |  93936    |  `11171/11171_pid_cuts.txt`        |  1.7543%              |  19.4978%             |
+|  nCutVertex    |  663390  |  654753   |  663390   |  `11171/11171_vertex_cuts.txt`     |  1.3019%              |  0.0000%              |
+|  nCutFR        |  404113  |  398379   |  404109   |  `11171/11171_CFR_cuts.txt`        |  1.4189%              |  0.0010%              |
+
 
 ## 11364 RGB Spring 2020 Inbending
-|  VAR           |  CHRIS   |  TIMOTHY  |  TIMOTHY-FILE                      |  DIFF(CHRIS,TIMOTHY)  |
-|  ---           |  ---     |  ---      |  ---                               |  ---                  |
-|  nAllCuts      |  25055   |  25602    |  `11364/11364_all_cuts.txt`        |  2.1832%              |
-|  nNoCuts       |  567737  |  566812   |  `11364/11364_assumed_cuts.txt`    |  0.1629%              |
-|  nCutDIS       |  433713  |  432548   |  `11364/11364_sidis_cuts.txt`      |  0.2686%              |
-|  nCutDihadron  |  467031  |  465454   |  `11364/11364_exclusive_cuts.txt`  |  0.3377%              |
-|  nCutHelicity  |  562061  |  ?        |  ?                                 |  ?                    |
-|  nCutFiducial  |  460973  |  459036   |  `11364/11364_fiducial_cuts.txt`   |  0.4202%              |
-|  nCutPID       |  54306   |  53906    |  `11364/11364_pid_cuts.txt`        |  0.7366%              |
-|  nCutVertex    |  466300  |  465079   |  `11364/11364_vertex_cuts.txt`     |  0.2618%              |
-|  nCutFR        |  248719  |  248222   |  `11364/11364_CFR_cuts.txt`        |  0.1998%              |
+|  VAR           |  CHRIS   |  TIMOTHY  |  GREGORY  |  TIMOTHY-FILE                      |  DIFF(CHRIS,TIMOTHY)  |  DIFF(CHRIS,GREGORY)  |
+|  ---           |  ---     |  ---      |  ---      |  ---                               |  ---                  |  ---                  |
+|  nAllCuts      |  25055   |  25602    |  25055    |  `11364/11364_all_cuts.txt`        |  2.1832%              |  0.0000%              |
+|  nNoCuts       |  567737  |  566812   |  567737   |  `11364/11364_assumed_cuts.txt`    |  0.1629%              |  0.0000%              |
+|  nCutDIS       |  433713  |  432548   |  433711   |  `11364/11364_sidis_cuts.txt`      |  0.2686%              |  0.0005%              |
+|  nCutDihadron  |  467031  |  465454   |  467029   |  `11364/11364_exclusive_cuts.txt`  |  0.3377%              |  0.0004%              |
+|  nCutHelicity  |  562061  |  ?        |  562061   |  ?                                 |  ?                    |  0.0000%              |
+|  nCutFiducial  |  460973  |  459036   |  460973   |  `11364/11364_fiducial_cuts.txt`   |  0.4202%              |  0.0000%              |
+|  nCutPID       |  54306   |  53906    |  72906    |  `11364/11364_pid_cuts.txt`        |  0.7366%              |  34.2504%             |
+|  nCutVertex    |  466300  |  465079   |  466300   |  `11364/11364_vertex_cuts.txt`     |  0.2618%              |  0.0000%              |
+|  nCutFR        |  248719  |  248222   |  248712   |  `11364/11364_CFR_cuts.txt`        |  0.1998%              |  0.0028%              |
