@@ -93,6 +93,19 @@ These are the tables of yields we have cross checked
 | nCutVertex   | 580271 | 579867  | 580459  |
 | nCutFR       | 373031 | 372412  | 373148  |
 
+## 6741 (RGA inbending)
+| VAR          | CHRIS  | GREGORY |
+| ---          | ---    | ---     |
+| nAllCuts     | 39404  | 41781   |
+| nNoCuts      | 690382 | 689858  |
+| nCutDIS      | 683549 | 669208  |
+| nCutDihadron | 538448 | 582240  |
+| nCutHelicity | 684599 | 684096  |
+| nCutFiducial | 561445 | 561021  |
+| nCutPID      | 80758  | 80693   |
+| nCutVertex   | 561880 | 561450  |
+| nCutFR       | 338516 | 318039  |
+
 ## 6356 RGB Spring 2019 Inbending
 | VAR          | CHRIS  | TIMOTHY | TIMOTHY-FILE                   |
 | ---          | ---    | ---     | ---                            |
