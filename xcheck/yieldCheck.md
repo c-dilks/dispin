@@ -107,6 +107,10 @@ These are the tables of yields we have cross checked
 |  nCutFR        |  338516  |  318039   |  6.0490%              |
 
 ## 6356 RGB Spring 2019 Inbending
+
+**NOTE**: `nCutPID` differs between CHRIS and GREGORY, since (1) our sampling fraction vs. p cuts differ, and (2), we
+need to update them anyway; our final `nAllCuts` difference is reasonable, so this update is likely negligible.
+
 |  VAR           |  CHRIS   |  TIMOTHY  |  GREGORY  |  TIMOTHY-FILE                    |  DIFF(CHRIS,TIMOTHY)  |  DIFF(CHRIS,GREGORY)  |
 |  ---           |  ---     |  ---      |  ---      |  ---                             |  ---                  |  ---                  |
 |  nAllCuts      |  25686   |  26213    |  25686    |  `6356/6356_all_cuts.txt`        |  2.0517%              |  0.0000%              |
@@ -120,6 +124,10 @@ These are the tables of yields we have cross checked
 |  nCutFR        |  377431  |  375957   |  377428   |  `6356/6356_CFR_cuts.txt`        |  0.3905%              |  0.0008%              |
 
 ## 11171 RGB Fall 2019 Outbending
+
+**NOTE**: `nCutPID` differs between CHRIS and GREGORY, since (1) our sampling fraction vs. p cuts differ, and (2), we
+need to update them anyway; our final `nAllCuts` difference is reasonable, so this update is likely negligible.
+
 |  VAR           |  CHRIS   |  TIMOTHY  |  GREGORY  |  TIMOTHY-FILE                      |  DIFF(CHRIS,TIMOTHY)  |  DIFF(CHRIS,GREGORY)  |
 |  ---           |  ---     |  ---      |  ---      |  ---                               |  ---                  |  ---                  |
 |  nAllCuts      |  30255   |  34278    |  30254    |  `11171/11171_all_cuts.txt`        |  13.2970%             |  0.0033%              |
@@ -134,6 +142,10 @@ These are the tables of yields we have cross checked
 
 
 ## 11364 RGB Spring 2020 Inbending
+
+**NOTE**: `nCutPID` differs between CHRIS and GREGORY, since (1) our sampling fraction vs. p cuts differ, and (2), we
+need to update them anyway; our final `nAllCuts` difference is reasonable, so this update is likely negligible.
+
 |  VAR           |  CHRIS   |  TIMOTHY  |  GREGORY  |  TIMOTHY-FILE                      |  DIFF(CHRIS,TIMOTHY)  |  DIFF(CHRIS,GREGORY)  |
 |  ---           |  ---     |  ---      |  ---      |  ---                               |  ---                  |  ---                  |
 |  nAllCuts      |  25055   |  25602    |  25055    |  `11364/11364_all_cuts.txt`        |  2.1832%              |  0.0000%              |
