@@ -20,7 +20,7 @@ FiducialCuts::FiducialCuts() {
 
 
 // apply the cuts; public booleans listed in header file will be set
-void FiducialCuts::ApplyCuts(int runnum_, int pid_, TString fileName_) {
+void FiducialCuts::ApplyCuts(int runnum_, int pid_, TString fileName_, int evnum_) {
 
   // use runnumber to determine torus setting (Constants.h)
   Int_t torus = RundepTorus(runnum_,fileName_);
@@ -36,6 +36,7 @@ void FiducialCuts::ApplyCuts(int runnum_, int pid_, TString fileName_) {
     default:
       return;
   };
+  evnum = evnum_;
 
   // determine sector (requires part_DC_Traj_found to be true)
   part_DC_sector[0] = this->determineSectorDC(0);
@@ -708,6 +709,23 @@ bool FiducialCuts::DC_fiducial_cut_XY(int j, int region, int part_pid)
 
   double calc_min = minparams[pid][part_DC_sector[j] - 1][region][0] + minparams[pid][part_DC_sector[j] - 1][region][1] * X;
   double calc_max = maxparams[pid][part_DC_sector[j] - 1][region][0] + maxparams[pid][part_DC_sector[j] - 1][region][1] * X;
+
+  //// print info for cross check
+  /*
+  std::cout << "XCHECK"          <<
+    " "     << evnum             <<
+    " "     << X                 <<
+    " "     << Y                 <<
+    " "     << calc_min          <<
+    " "     << calc_max          <<
+    " "     << region+1          <<
+    " "     << part_DC_sector[j] <<
+    " "     << part_pid          <<
+    " "     << ((Y > calc_min) && (Y < calc_max)) <<
+    std::endl;
+    */
+  /////////////////////////////////
+
 
   return ((Y > calc_min) && (Y < calc_max));
 

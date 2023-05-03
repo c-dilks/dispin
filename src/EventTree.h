@@ -49,9 +49,12 @@ class EventTree : public TObject
     Float_t PolarizationError();
     Float_t Rellum();
     Bool_t CheckVertex();
-    Bool_t CheckSampFrac();
+    Bool_t CheckSampFrac_diagonal();
+    Bool_t CheckSampFrac_vs_p();
     Bool_t CheckHadChi2pid(Int_t had);
     Bool_t CheckMissingMass();
+
+    Bool_t Check_nSidis_skim_cut();
 
     void PrintEventVerbose();
     void PrintEvent();
@@ -264,7 +267,7 @@ class EventTree : public TObject
     TLorentzVector qMomBreit,qMomCom;
     TVector3 boostBreit,boostCom;
 
-    Bool_t sfcutDiag, sfcutSigma;
+    Bool_t sfcutSigma;
     Float_t dfA;
 
     Bool_t helicityMCinjected;

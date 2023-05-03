@@ -456,7 +456,9 @@ void EventTree::GetEvent(Long64_t i) {
     eleTheta>5 && eleTheta<35 &&
     eleP > 2 && /* legacy; redudant with y<0.8 cut */
     elePCALen > 0.07 &&
-    CheckSampFrac(); /* sampling fraction cuts (diagonal cut and (mu,std) cut) */
+    CheckSampFrac_diagonal() && /* sampling fraction cuts (diagonal cut) */
+    CheckSampFrac_vs_p() /* sampling fraction cuts ( (mu,std) cut) */
+    ;
   // -- pions
   for(int h=0; h<2; h++) {
     minP[h] = isDiphoton[h] ? 0.0 : 1.25;
@@ -627,12 +629,14 @@ Bool_t EventTree::CheckMissingMass() {
 
 
 
-// sampling fraction (SF) cut, for electrons
-Bool_t EventTree::CheckSampFrac() {
-
+// sampling fraction (SF) cuts, for electrons
+Bool_t EventTree::CheckSampFrac_diagonal() {
   // calorimeter diagonal cut, on PCAL and ECIN SF correlation
-  if(eleP<4.5) sfcutDiag=true; // only applies above HTCC threshold
-  else sfcutDiag = eleECINen/eleP > 0.2 - elePCALen/eleP; 
+  if(eleP<4.5) return true; // only applies above HTCC threshold
+  else return eleECINen/eleP > 0.2 - elePCALen/eleP; 
+}
+// sampling fraction vs. momentum cuts
+Bool_t EventTree::CheckSampFrac_vs_p() {
 
   // compute SF
   eleSampFrac = (elePCALen + eleECINen + eleECOUTen) / eleP;
@@ -725,8 +729,8 @@ Bool_t EventTree::CheckSampFrac() {
     sfcutSigma = false;
   };
 
-  // return full SF cut result
-  return sfcutDiag && sfcutSigma;
+  // return SF cut result
+  return sfcutSigma;
 };
 
 
@@ -773,6 +777,23 @@ Bool_t EventTree::CheckHadChi2pid(Int_t had) {
 
   fprintf(stderr,"ERROR: unknown upper bound for hadron chi2pid cut\n");
   return false;
+};
+
+
+// the newer 'nSidis' skim files have a tighter cut than the older 'skim4' skim files;
+// this method is the tighter cut
+// - it is not needed, since our full cut set is much tighter
+// - this method exists for cross checking purposes
+// - the cut: e- in FD, Q2 > 1 GeV2, W > 2 GeV, p > 2 GeV, -25 < Z < 20 in FD
+Bool_t EventTree::Check_nSidis_skim_cut() {
+  // note: e- in FD: cut upstream
+  return
+    Q2   > 1.0 &&
+    W    > 2.0 &&
+    eleP > 2.0 &&
+    eleVertex[eZ] > -25.0 &&
+    eleVertex[eZ] < 20
+    ;
 };
 
 

@@ -360,7 +360,7 @@ int main(int argc, char** argv) {
 
     // fiducial cuts
     for(int p=0; p<nPar; p++) {
-      fidu[p]->ApplyCuts(runnum,Pid[p],outrootDir);
+      fidu[p]->ApplyCuts(runnum,Pid[p],outrootDir,evnum);
     };
 
 

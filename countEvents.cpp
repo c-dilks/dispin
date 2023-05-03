@@ -16,10 +16,12 @@
 TString infiles;
 Int_t whichPair;
 Int_t whichHad[2];
+TString tableFile;
 EventTree * ev;
 void PrintCount(TString cntName,Long64_t numer,Long64_t denom);
 void PrintEvent();
 void PrintEvent2();
+void PrintEvent_xcheck();
 Bool_t first;
 Bool_t hasDiphoton;
 
@@ -29,12 +31,23 @@ int main(int argc, char** argv) {
    // ARGUMENTS
    infiles = "outroot/*.root";
    whichPair = EncodePairType(kPip,kPim);
-   if(argc>1) infiles = TString(argv[1]);
+   tableFile = "eventTable.txt";
+   if(argc<=1) {
+     std::cout << "USAGE: " << argv[0]
+       << " [outroot files (globbing allowed)]"
+       << " [pairType (default=" << whichPair << "]"
+       << " [table file, for cross check (default=" << tableFile << "]"
+       << std::endl;
+     return 2;
+   }
+   infiles = TString(argv[1]);
    if(argc>2) whichPair = (Int_t)strtof(argv[2],NULL);
+   if(argc>3) tableFile = TString(argv[3]);
    DecodePairType(whichPair,whichHad[qA],whichHad[qB]);
 
    // OPTIONS
-   Bool_t printEvents = false;
+   Bool_t printEvents = true;
+   Long64_t numToPrint = 1e9;
    /////////////////////
 
 
@@ -47,6 +60,7 @@ int main(int argc, char** argv) {
    Long_t nCutFiducial=0;
    Long_t nCutPID=0;
    Long_t nCutVertex=0;
+   Long_t nCutFR=0;
 
    // yields including diphoton cuts
    hasDiphoton = false; // true if whichPair has diphoton
@@ -65,27 +79,51 @@ int main(int argc, char** argv) {
    Long64_t nCutdiphMassSB = 0;
    Long64_t nCutdiphBasic = 0;
 
+   // extra yield counters for cross checking
+   const Int_t nTests = 4;
+   Long_t nCutTest[nTests];
+   for(int j=0; j<nTests; j++) nCutTest[j]=0;
+   TString cutTestName[nTests];
+   Bool_t cutTest[nTests];
+
    
    // open tree
    ev = new EventTree(infiles,whichPair);
    first = true;
 
+   // skim file versions used in cross checks:
+   // RGA:
+   // - skim4: legacy version, had looser cuts than the newer nSIDIS format; some of my outroot files
+   //   may still be from this version
+   // - nSidis: newest version
+   // RGB:
+   // - sidisdvcs
+   bool isLegacySkimFile = false;
+   if(infiles.Contains("rga.inbending")) {
+     std::cerr << std::endl << "WARNING: these skim files are LEGACY skim4 files," << std::endl
+       << "so `ev->Check_nSidis_skim_cut()` will be applied to match to the newer nSidis skim file cuts" << std::endl << std::endl;
+     isLegacySkimFile = true;
+   }
+
    // event loop
-   for(int i=0; i<ev->ENT; i++) {
+   for(Long64_t i=0; i<ev->ENT; i++) {
+     if(printEvents && nValid>=numToPrint) { printf("--- limiter ---\n"); break; };
      ev->GetEvent(i);
+
+     // in case we are looking at an older SISIS skim file, make sure the SIDIS skim file cut matches
+     if(isLegacySkimFile)
+       if( ! ev->Check_nSidis_skim_cut() ) continue;
 
      // full cut set
      if(ev->Valid()) {
        nValid++;
-       if(printEvents && nValid<=10000) {
-         //PrintEvent();
-         PrintEvent2();
-       };
+       if(printEvents && nValid<=numToPrint) PrintEvent_xcheck(); // <-------------------------------- !!!!!!!!!!!!!!!!!!!!! XCHECK
      };
 
      // counts for each cut
      if(Tools::PairSame(ev->hadIdx[qA],ev->hadIdx[qB],whichHad[qA],whichHad[qB])) {
        nTotal++;
+
        // main cuts
        if(ev->cutDIS) nCutDIS++;
        if(ev->cutDihadron) nCutDihadron++;
@@ -93,6 +131,7 @@ int main(int argc, char** argv) {
        if(ev->cutFiducial) nCutFiducial++;
        if(ev->cutPID) nCutPID++;
        if(ev->cutVertex) nCutVertex++;
+       if(ev->cutFR) nCutFR++;
        // diphoton cuts
        if(hasDiphoton) {
          if(ev->objDiphoton->cutPhotBeta) nCutdiphPhotBeta++;
@@ -103,20 +142,40 @@ int main(int argc, char** argv) {
          if(ev->objDiphoton->cutMassSB) nCutdiphMassSB++;
          if(ev->objDiphoton->cutBasic) nCutdiphBasic++;
        };
+
+       ///////////////////////////////////////////////////////// XCHECK TESTS for PID
+       // Bool_t cut1  = ev->eleTheta>5 && ev->eleTheta<35;
+       // Bool_t cut2  = ev->eleP > 2;
+       // Bool_t cut3  = ev->elePCALen > 0.07;
+       // Bool_t cut4  = ev->CheckSampFrac_diagonal();
+       // Bool_t cut5  = ev->CheckSampFrac_vs_p();
+       // Bool_t cut6  = ev->hadTheta[qA]>5 && ev->hadTheta[qA]<35; // pi+
+       // Bool_t cut7  = ev->hadP[qA] > 1.25;                       // pi+
+       // Bool_t cut8  = ev->CheckHadChi2pid(qA);                   // pi+
+       // Bool_t cut9  = ev->hadTheta[qB]>5 && ev->hadTheta[qB]<35; // pi-
+       // Bool_t cut10 = ev->hadP[qB] > 1.25;                       // pi-
+       // Bool_t cut11 = ev->CheckHadChi2pid(qB);                   // pi-
+       // cutTest[0] = cut1 && cut6 && cut9;  cutTestName[0] = "cut1 && cut6 && cut9";
+       // cutTest[1] = cut7 && cut10;         cutTestName[1] = "cut7 && cut10";
+       // cutTest[2] = cut8 && cut11;         cutTestName[2] = "cut8 && cut11";
+       // cutTest[3] = cut4 && cut5;          cutTestName[3] = "cut4 && cut5";
+       // for(int j=0; j<nTests; j++) { if(cutTest[j]) nCutTest[j]++; };
+       ///////////////////////////////////////////////////////// XCHECK TESTS
+
      };
 
    };
 
-   printf("total number of %s pairs = %ld\n",
-     PairName(whichHad[qA],whichHad[qB]).Data(),
-     nTotal);
-   PrintCount("total number which satisfies all cuts",nValid,nTotal);
+   printf("--------------------- RUN %d\n",ev->runnum);
+   PrintCount("nAllCuts",nValid,nTotal);
+   PrintCount("nNoCuts",nTotal,nTotal);
    PrintCount("nCutDIS",nCutDIS,nTotal);
    PrintCount("nCutDihadron",nCutDihadron,nTotal);
    PrintCount("nCutHelicity",nCutHelicity,nTotal);
    PrintCount("nCutFiducial",nCutFiducial,nTotal);
    PrintCount("nCutPID",nCutPID,nTotal);
    PrintCount("nCutVertex",nCutVertex,nTotal);
+   PrintCount("nCutFR",nCutFR,nTotal);
    if(hasDiphoton) {
      printf("diphoton cuts:\n");
      PrintCount("  nCutdiphPhotBeta",nCutdiphPhotBeta,nTotal);
@@ -128,17 +187,25 @@ int main(int argc, char** argv) {
      PrintCount("  nCutdiphBasic",nCutdiphBasic,nTotal);
    };
 
+   // for(int j=0; j<nTests; j++) PrintCount("nCutTest ("+cutTestName[j]+") = ",nCutTest[j],nTotal); // XCHECK
 
    if(printEvents) 
-     printf("\n!! events printed to eventTable.txt (no more than 10000 printed) !!\n\n");
+     printf("\n!! events printed to %s (no more than 10000 printed) !!\n\n",tableFile.Data());
 };
 
 
 // print counts
 void PrintCount(TString cntName,Long64_t numer,Long64_t denom) {
-  printf("%s = %lld  (%.3f%%)\n",
+  //// print with percentage
+  // printf("%s = %lld  (%.3f%%)\n",
+  //     cntName.Data(),
+  //     numer,
+  //     100*(Double_t)numer/denom
+  //     );
+  //// print without percentage
+  printf("%s   %lld\n",
       cntName.Data(),
-      numer,100*(Double_t)numer/denom
+      numer
       );
 };
 
@@ -217,5 +284,34 @@ void PrintEvent2() {
     printf(" %.5f",ev->hadXF[h]);
   };
   printf("\n");
+  gSystem->RedirectOutput(0);
+};
+
+
+void PrintEvent_xcheck() {
+  if(first) {
+    gSystem->RedirectOutput(tableFile,"w");
+    first = false;
+  } else gSystem->RedirectOutput(tableFile,"a");
+  std::cout <<
+    ev->runnum                       << " " <<
+    ev->evnum                        << " " <<
+    ev->helicity                     << " " <<
+    ev->Q2                           << " " <<
+    ev->W                            << " " <<
+    ev->x                            << " " <<
+    ev->y                            << " " <<
+    ev->Zpair                        << " " <<
+    ev->PhPerp                       << " " <<
+    ev->hadXF[qA]                    << " " <<
+    ev->hadXF[qB]                    << " " <<
+    ev->Mmiss                        << " " <<
+    ev->PhiH                         << " " <<
+    ev->PhiR                         << " " <<
+    ev->theta                        << " " <<
+    ev->GetDepolarizationFactor('A') << " " <<
+    ev->GetDepolarizationFactor('C') << " " <<
+    ev->GetDepolarizationFactor('W') <<
+    std::endl;
   gSystem->RedirectOutput(0);
 };

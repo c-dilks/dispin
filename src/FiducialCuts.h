@@ -27,8 +27,8 @@ class FiducialCuts : public TObject {
     ~FiducialCuts(){};
 
     // method which applies the cuts
-    // - sets booleans listed below
-    void ApplyCuts(int runnum_, int pid_, TString fileName_="");
+    // - sets booleans listed below (evnum only used for cross check printout)
+    void ApplyCuts(int runnum_, int pid_, TString fileName_="", int evnum_=0);
     // - booleans (so far just one)
     Bool_t fiduCut;
 
@@ -134,6 +134,8 @@ class FiducialCuts : public TObject {
     bool tight,medium,loose;
 
     int errCnt;
+
+    int evnum;
 
   
   ClassDef(FiducialCuts,1);
