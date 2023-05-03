@@ -1,5 +1,8 @@
 #!/usr/bin/env ruby
 # convert `yieldCheck.md` to latex table lines
+#
+# FIXME: yieldCheck.md has been renamed to README.md, and reformatted...
+#
 
 File.readlines('yieldCheck.md').each do |line|
   puts line if line.match?(/^#/)
