@@ -36,10 +36,10 @@ to this analysis
         followed by `sudo update-java-alternatives --set /path/to/java-1.8.0`
       - fix symlink `usr/lib/jvm/default-java` to point to 1.8.0
 
-### clasqaDB
+### QADB
 - if you clone this repository with the option `--recurse-submodules`, it will
-  clone a copy of [`clasqaDB`](https://github.com/JeffersonLab/clasqaDB) to the
-  directory `deps/clasqaDB`
+  clone a copy of [`clas12-qadb`](https://github.com/JeffersonLab/clas12-qadb) to the
+  directory `deps/clas12-qadb`
 - this repository contains the file quality assurance (QA) database, and
   uses the groovy accessors to query information in an event loop
 

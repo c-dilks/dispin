@@ -12,7 +12,7 @@ pushd j2root
 source setup.sh
 popd
 
-pushd clasqaDB
+pushd clas12-qadb
 source env.sh
 popd
 
