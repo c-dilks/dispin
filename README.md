@@ -68,6 +68,12 @@ to this analysis
   - RubyROOT needs to be built separately
   - be sure that its built `CMAKE_INSTALL_PREFIX/lib/ruby` is in `$RUBYLIB`
 
+## Building
+Once all the dependencies are built, run:
+```bash
+make
+```
+
 ## Usage
 - first call `source env.sh`
 - create or link `diskim` and `outroot` directories
