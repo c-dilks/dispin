@@ -99,7 +99,7 @@ flowchart TB
   classDef op fill:#00aa00,color:black
 
   Skims[(skim files)]:::bigdata
-  RunDiskim[<strong>slurm.diskim.sh</strong><br/>&Tab;* runDiskim.sh<br/>&Tab;&Tab;* skimDihadrons.groovy<br/>&Tab;&Tab;* calcKinematics.cpp]:::alg
+  RunDiskim[<strong>slurm.diskim.sh</strong><br/>** runDiskim.sh<br/>**** skimDihadrons.groovy<br/>**** calcKinematics.cpp]:::alg
   Outroots[(outroot files<br/>Data / MC<br/>Inbending / Outbending)]:::bigdata
   Skims --> RunDiskim --> Outroots
 
