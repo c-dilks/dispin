@@ -1,0 +1,8 @@
+source 'https://rubygems.org'
+gem 'awesome_print'
+gem 'colorize'
+gem 'fileutils'
+gem 'pp'
+gem 'pry'
+gem 'pycall'
+gem 'thread'
