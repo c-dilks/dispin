@@ -18,7 +18,7 @@ FLAGS += -O0
 
 
 # ROOT
-#DEPS = $(shell root-config --cflags) # contains deprecated flags
+FLAGS += $(shell root-config --cflags)
 DEPS = -I$(shell root-config --incdir)
 LIBS = $(shell root-config --glibs)
 LIBS += -lMinuit -lRooFitCore -lRooFit -lRooStats -lProof -lMathMore
