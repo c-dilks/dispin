@@ -60,7 +60,7 @@ void Dihadron::CalculateKinematics(
 
   // get 3-momenta from 4-momenta
   pQ = disVecQ.Vect();
-  pL = disVecElectron.Vect();
+  pL = disVecBeam.Vect();
   pPh = vecPh.Vect();
   pR = vecR.Vect();
   for(h=0; h<2; h++) pHad[h] = vecHad[h].Vect();
