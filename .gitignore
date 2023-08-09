@@ -3,6 +3,7 @@
 *.exe
 *.o
 *.so
+*.sif
 .nfs*
 src/*.pcm
 *.root

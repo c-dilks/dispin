@@ -1,0 +1,16 @@
+Bootstrap: docker
+From: rootproject/root:{{ VERSION }}-{{ OS }}
+Stage: build
+
+%labels
+    Author dilks
+
+%arguments
+    VERSION=6.26.10
+    OS=arch
+
+%post
+    ls
+
+%startscript
+    [ -f env.sh ] && source env.sh
