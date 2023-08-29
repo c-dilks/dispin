@@ -1,27 +1,54 @@
 #!/bin/bash
 # builds diskim files, and subsequently, outroot files
 
+set -e
+set -u
 
-if [ $# -lt 2 ];then
-  echo "USAGE: $0 [train directory] [outroot dir] [optional:data/mcrec/mcgen] [optional:skim/dst]"
-  exit
+if [ $# -lt 1 ];then
+  echo "USAGE: $0 [dataset source name]"
+  set +e
+  getDatasetSourceInfo.rb
+  set -e
+  echo ""
+  echo "Alternatively,"
+  echo "   $0 [train directory] [outroot dir] [optional:data/mcrec/mcgen] [optional:skim/dst]"
+  exit 2
 fi
-traindir=$1
-outrootdir=$2
-datastream="data"
-hipotype="skim"
-if [ $# -ge 3 ]; then datastream="$3"; fi
-if [ $# -ge 4 ]; then hipotype="$4"; fi
+
+# use `getDatasetSourceInfo.rb` to get info
+if [ $# -eq 1 ]; then
+  datasetSource=$1
+  traindir=$(getDatasetSourceInfo.rb $datasetSource 'source')
+  outrootdir=outroot.$(getDatasetSourceInfo.rb $datasetSource 'dataset')
+  datastream=$(getDatasetSourceInfo.rb $datasetSource 'stream')
+  hipotype="skim"
+# otherwise, use user-specified info
+else
+  traindir=$1
+  outrootdir=$2
+  datastream="data"
+  hipotype="skim"
+  if [ $# -ge 3 ]; then datastream="$3"; fi
+  if [ $# -ge 4 ]; then hipotype="$4"; fi
+fi
 
 # check setup
-if [ -z "$DISPIN_HOME" ]; then
-  echo "ERROR: you must source env.sh first"; exit
+if [ -z "${DISPIN_HOME-}" ]; then
+  echo "ERROR: you must source env.sh first"; exit 1
 fi
 if [ ! -d "diskim" ]; then
-  echo "ERROR: you must create or link a diskim directory"; exit;
+  echo "ERROR: you must create or link a diskim directory"; exit 1
 fi
 if [ ! -d $outrootdir ]; then
-  echo "ERROR: you must create or link an outroot directory"; exit;
+  echo "ERROR: you must create or link an outroot directory"
+  if [[ "`hostname`" =~ "ifarm" ]]; then
+    volDir=/volatile/clas12/users/$LOGNAME/$outrootdir
+    echo """Suggestion: you are on ifarm, use /volatile by running:
+
+mkdir -p $volDir && ln -sv $volDir ./
+    """
+  fi
+  exit 1
 fi
 echo "check if $outrootdir directory is empty..."
 if [ -z "$(ls $outrootdir/*.root)" ]; then
@@ -56,7 +83,7 @@ elif [ "$hipotype" == "dst" ]; then
   done
 else
   echo "ERROR: unknown hipotype"
-  exit
+  exit 1
 fi
 
 
@@ -93,7 +120,7 @@ printf '%70s\n' | tr ' ' -
 echo "JOB DESCRIPTOR: $slurm"
 cat $slurm
 printf '%70s\n' | tr ' ' -
-#exit # exit before job submission (for testing)
+exit # exit before job submission (for testing)
 echo "submitting to slurm..."
 sbatch $slurm
 squeue -u `whoami`
