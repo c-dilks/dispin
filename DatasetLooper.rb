@@ -28,7 +28,9 @@ class DatasetLooper
   # constructor
   def initialize(dihadronTok=:none)
 
-    # list of datasets
+    # list of datasets, for analysis
+    # - these dataset names will be referenced in various places, namely the outroot directory names
+    # - only the ones included here will be processed for analysis (so you can turn some on/off)
     @datasetList = [
       "mc.inbending.bg45",
       "mc.outbending.bg40",
@@ -40,6 +42,35 @@ class DatasetLooper
       "rgb.inbending.sp20",
       "rgb.outbending.fa19",
     ]
+
+    # hash table for dataset sources
+    # key := dataset SOURCE name, which may differ from the dataset in @datasetList, since more than one
+    #        source may be used for a single data set
+    # :dataset := the data set name, used in @datasetList; there may be more dataset than in @datasetList,
+    #             but only the datasets in @datasetList will be processed in analysis code
+    # :rating  := a status or comment to remind what the dataset is used for, quality, etc.;
+    #             "GOOD"  => good for physics analysis
+    #             "maybe" => may be okay for analysis, with some effort (see Ruby comment)
+    #             "old"   => deprecated for analysis, e.g., a Pass1 replaced by Pass2
+    # :source  := the path to the source trains
+    # :stream  := either "data", "mcrec", or "mcgen" (see `slurm.diskim.h`)
+    @datasetSourceHash = {
+      # RGA ----------------------------------------------------------------
+      "data.rga.inbending.fa18.lowDC.pass1" => { :dataset => "data.rga.inbending.fa18",  :rating => "maybe", :source => "/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1b/train/nSidis",           :stream => "data",  }, # low DC voltage, similar to Spring 2018
+      "data.rga.inbending.fa18.pass1"       => { :dataset => "data.rga.inbending.fa18",  :rating => "GOOD",  :source => "/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1/dst/train/nSidis",        :stream => "data",  },
+      "data.rga.outbending.fa18.pass1"      => { :dataset => "data.rga.outbending.fa18", :rating => "GOOD",  :source => "/cache/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/nSidis",        :stream => "data",  },
+      "data.rga.inbending.sp19.pass1"       => { :dataset => "data.rga.inbending.sp19",  :rating => "old",   :source => "/cache/clas12/rg-a/production/recon/spring2019/torus-1/pass1/v1/dst/train/nSidis",      :stream => "data",  },
+      "data.rga.inbending.sp19.pass2"       => { :dataset => "data.rga.inbending.sp19",  :rating => "GOOD",  :source => "/cache/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/train/nSidis",         :stream => "data",  },
+      # RGB ----------------------------------------------------------------
+      "data.rgb.outbending.fa19.pass1"      => { :dataset => "data.rgb.outbending.fa19", :rating => "GOOD",  :source => "/cache/clas12/rg-b/production/recon/fall2019/torus+1/pass1/v1/dst/train/sidisdvcs",     :stream => "data",  },
+      "data.rgb.inbending.sp19.pass1"       => { :dataset => "data.rgb.inbending.sp19",  :rating => "old",   :source => "/cache/clas12/rg-b/production/recon/spring2019/torus-1/pass1/v0/dst/train/sidisdvcs",   :stream => "data",  },
+      "data.rgb.inbending.sp19.pass2"       => { :dataset => "data.rgb.inbending.sp19",  :rating => "GOOD",  :source => "/cache/clas12/rg-b/production/recon/spring2019/torus-1/pass2/v0/dst/train/sidisdvcs",   :stream => "data",  },
+      "data.rgb.inbending.sp20.pass1"       => { :dataset => "data.rgb.inbending.sp20",  :rating => "GOOD",  :source => "/cache/clas12/rg-b/production/recon/spring2020/torus-1/pass1/v1/dst/train/sidisdvcs",   :stream => "data",  },
+      # MC -----------------------------------------------------------------
+      "data.mc.inbending.bg45"              => { :dataset => "data.mc.inbending.bg45",   :rating => "GOOD",  :source => "/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus-1/v1/bkg45nA_10604MeV", :stream => "mcrec", },
+      "data.mc.outbending.bg40"             => { :dataset => "data.mc.outbending.bg40",  :rating => "GOOD",  :source => "/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus+1/v1/bkg40nA_10604MeV", :stream => "mcrec", },
+      "data.mc.outbending.bg50"             => { :dataset => "data.mc.outbending.bg50",  :rating => "GOOD",  :source => "/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus+1/v1/bkg50nA_10604MeV", :stream => "mcrec", },
+    }
 
     # add dihadron token to each dataset (if specified)
     # - useful for creating an instance for a specific dihadron pairType
