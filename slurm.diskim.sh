@@ -63,7 +63,7 @@ fi
 if [ "$hipotype" == "skim" ]; then
   checkIfCached.sh $traindir
   if [ -s tmp/difflist ]; then
-    echo "stopping. (comment out to override this check)"
+    echo "Stopping $0 execution. (comment out to override this check)"
     exit 1
   fi
 fi
