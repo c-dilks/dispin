@@ -120,7 +120,7 @@ printf '%70s\n' | tr ' ' -
 echo "JOB DESCRIPTOR: $slurm"
 cat $slurm
 printf '%70s\n' | tr ' ' -
-exit # exit before job submission (for testing)
+#exit # exit before job submission (for testing)
 echo "submitting to slurm..."
 sbatch $slurm
 squeue -u `whoami`
