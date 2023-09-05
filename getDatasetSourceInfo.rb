@@ -2,7 +2,9 @@
 # get info about a dataset source
 
 require './DatasetLooper.rb'
+require 'awesome_print'
 
+# print usage
 if ARGV.length == 0
   $stderr.puts "Specify one of the following dataset sources as an argument:"
   DatasetLooper::DatasetSourceHash.each do |key,val|
@@ -10,25 +12,26 @@ if ARGV.length == 0
   end
   exit 2
 end
-if ARGV.length == 1
-  $stderr.puts "Also specify a field name, one of:"
-  DatasetLooper::DatasetSourceHash.values.first.keys.each do |key|
-    $stderr.puts "  #{key}"
-  end
-  exit 2
-end
-dataSourceName = ARGV[0]
-field          = ARGV[1].to_sym
 
-if DatasetLooper::DatasetSourceHash.include? dataSourceName
-  info = DatasetLooper::DatasetSourceHash[dataSourceName]
-  if info.include? field
-    puts info[field]
-  else
-    $stderr.puts "ERROR: field '#{field}' not found for dataset source '#{dataSourceName}'"
-    exit 1
-  end
-else
+# get info for specified dataset
+dataSourceName = ARGV[0]
+unless DatasetLooper::DatasetSourceHash.include? dataSourceName
   $stderr.puts "ERROR: dataset source '#{dataSourceName}' not defined"
   exit 1
 end
+info = DatasetLooper::DatasetSourceHash[dataSourceName]
+
+# if no field specified, print all info
+if ARGV.length == 1
+  $stderr.puts "No field specified, printing all fields for dataset source '#{dataSourceName}':"
+  ap info
+  exit 2
+end
+
+# otherwise print specified field info only
+field = ARGV[1].to_sym
+unless info.include? field
+  $stderr.puts "ERROR: field '#{field}' not found for dataset source '#{dataSourceName}'"
+  exit 1
+end
+puts info[field]
