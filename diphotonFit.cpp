@@ -61,7 +61,7 @@ class FitBin {
     Double_t pi0LB,pi0UB,pi0purity,pi0purityErr;
     RooFitResult *modelFit;
     RooPlot *plotFrame;
-    RooRealVar mass;
+    RooRealVar *mass;
 
     // constructor -------------------------------------
     FitBin(Int_t binn) {
@@ -83,10 +83,10 @@ class FitBin {
       cout << "[+++++] call fit on bin " << binnum << endl;
 
       // diphoton mass variable
-      mass = RooRealVar(("Mgg"+binStr).Data(),"M_{#gamma#gamma}",0,3,"GeV");
+      mass = new RooRealVar(("Mgg"+binStr).Data(),"M_{#gamma#gamma}",0,3,"GeV");
       massdistN = "roo_" + TString(Mdist->GetName());
       RooDataHist massdist(massdistN.Data(),massdistN.Data(),
-          mass,RooFit::Import(*Mdist));
+          *mass,RooFit::Import(*Mdist));
 
       // pi0 signal
       // WARNING: do not use underscores in param names
@@ -94,7 +94,7 @@ class FitBin {
       RooRealVar pi0N(("pi0N"+binStr).Data(),"#pi^{0} N", nmax/2.0, 0, nmax);
       RooRealVar pi0mu(("pi0mu"+binStr).Data(),"#pi^{0} #mu", PartMass(kPio), 0, 2);
       RooRealVar pi0sigma(("pi0sigma"+binStr).Data(),"#pi^{0} #sigma", 0.02, 0.001, 0.1);
-      RooGaussian pi0Model(("pi0Model"+binStr).Data(),"pi0Model",mass,pi0mu,pi0sigma);
+      RooGaussian pi0Model(("pi0Model"+binStr).Data(),"pi0Model",*mass,pi0mu,pi0sigma);
 
       // background
       RooArgSet bgArgs("bgArgs");
@@ -104,7 +104,7 @@ class FitBin {
       //RooRealVar bgP3(("bgP3"+binStr).Data(),"BG b_{3}", -1, 1); bgArgs.add(bgP3);
       //RooRealVar bgP4(("bgP4"+binStr).Data(),"BG b_{4}", -1, 1); bgArgs.add(bgP4);
       //RooRealVar bgP5(("bgP5"+binStr).Data(),"BG b_{5}", -1, 1); bgArgs.add(bgP5);
-      RooChebychev bgModel(("bgModel"+binStr).Data(),"bgModel",mass,bgArgs);
+      RooChebychev bgModel(("bgModel"+binStr).Data(),"bgModel",*mass,bgArgs);
 
       // signal+bg
       modelN = "model"+binStr;
@@ -120,7 +120,7 @@ class FitBin {
       while(Mdist->GetBinContent(bb)>0 && bb<=Mdist->GetNbinsX()) bb++;
       Double_t MggMax = Mdist->GetBinCenter(bb);
       // - set fit range
-      mass.setRange(("fitRange"+binStr).Data(),
+      mass->setRange(("fitRange"+binStr).Data(),
           0.08,
           TMath::Min( 0.2, 0.95*MggMax) /* stay low, don't overfit */
           );
@@ -141,17 +141,17 @@ class FitBin {
       // OVERRIDE signal range (fix pi0 cuts for all bins)
       pi0LB = 0.107071; // from single-bin fit to rga_inbending_ALL
       pi0UB = 0.155837;
-      mass.setRange("pi0range",pi0LB,pi0UB);
+      mass->setRange("pi0range",pi0LB,pi0UB);
 
       
       // calculate pi0 purity
       // - integrate PDFs
       RooAbsReal *pi0ModelIntObj = pi0Model.createIntegral(
-          mass,RooFit::NormSet(mass),RooFit::Range("pi0range"));
+          *mass,RooFit::NormSet(*mass),RooFit::Range("pi0range"));
       RooAbsReal *bgModelIntObj = bgModel.createIntegral(
-          mass, RooFit::NormSet(mass),RooFit::Range("pi0range"));
+          *mass, RooFit::NormSet(*mass),RooFit::Range("pi0range"));
       RooAbsReal *fullModelIntObj = fullModel.createIntegral(
-          mass,RooFit::NormSet(mass),RooFit::Range("pi0range"));
+          *mass,RooFit::NormSet(*mass),RooFit::Range("pi0range"));
       Double_t pi0ModelInt  = pi0ModelIntObj->getVal();
       Double_t bgModelInt   = bgModelIntObj->getVal();
       Double_t fullModelInt = fullModelIntObj->getVal();
@@ -189,7 +189,7 @@ class FitBin {
 
       // plot
       TString massdistT = "M_{#gamma#gamma} distribution"+boundStr;
-      plotFrame = mass.frame(
+      plotFrame = mass->frame(
           RooFit::Title(massdistT)
           );
       massdist.plotOn(plotFrame,
@@ -468,8 +468,8 @@ int main(int argc, char** argv) {
   pad=1;
   for(Int_t bn : BS->binVec) {
     fb = FitBinList.at(bn);
-    residFrame = fb->mass.frame(RooFit::Title("residuals"+fb->boundStr));
-    pullFrame = fb->mass.frame(RooFit::Title("pulls"+fb->boundStr));
+    residFrame = fb->mass->frame(RooFit::Title("residuals"+fb->boundStr));
+    pullFrame = fb->mass->frame(RooFit::Title("pulls"+fb->boundStr));
     residFrame->addPlotable(
         fb->plotFrame->residHist("massdistPlot"+fb->binStr,"modelPlot"+fb->binStr)
         );
