@@ -51,6 +51,12 @@ to this analysis
     `module load [a newer version of cmake]` and build with
     `-DCMAKE_C_COMPILER=/path/to/newer/gcc`
 
+### StringSpinner
+- build with `buildStringSpinner.sh`
+  - needs Pythia 8.3 (on Arch: `pythia8` and `python-pythia8`)
+  - needs `gfortran` (on Arch: `gcc-fortran`)
+
+
 ### Ruby
 - Ruby version 3+ is recommended; you may need to build this locally if it's
   not available on ifarm
