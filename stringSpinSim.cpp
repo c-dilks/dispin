@@ -62,6 +62,8 @@ int main(int argc, char** argv) {
   cout << "  stringSelection1 = " << stringSelection[1] << endl;
   cout << "  seed             = " << seed     << endl;
 
+  bool useStringSelection = stringSelection[0]!=0 && stringSelection[1]!=0;
+
   Pythia pythia;
   Event& event = pythia.event;
   auto fhooks = std::make_shared<SimpleStringSpinner>();
@@ -70,9 +72,9 @@ int main(int argc, char** argv) {
   // HARD-CODED SETTINGS ////////////////////////////////////////////
   //// incoming particles
   ParticleData& pdt = pythia.particleData;
-  double eProton   = pdt.m0(2212); // proton beam energy (target mass)
-  double pElectron = 10.6; // electron beam momentum
-  double eElectron = Tools::PMtoE(pElectron, pdt.m0(11)); // electron beam energy
+  double eNucleon  = pdt.m0(2212); // proton beam energy (target mass)
+  double pLepton   = 10.6; // electron beam momentum
+  double eLepton   = Tools::PMtoE(pLepton, pdt.m0(11)); // electron beam energy
   //// phase space
   double Q2min     = 1.0; // minimum Q2
   ///////////////////////////////////////////////////////////////////
@@ -85,8 +87,8 @@ int main(int argc, char** argv) {
   pythia.readString("Beams:frameType = 2");
   pythia.readString("Beams:idA = 11");      // BeamA = electron
   pythia.readString("Beams:idB = 2212");    // BeamB = proton
-  pythia.settings.parm("Beams:eA", eElectron);
-  pythia.settings.parm("Beams:eB", eProton);
+  pythia.settings.parm("Beams:eA", eLepton);
+  pythia.settings.parm("Beams:eB", eNucleon);
 
   // Interaction mechanism.
   pythia.readString("WeakBosonExchange:ff2ff(t:gmZ) = on");
@@ -151,27 +153,27 @@ int main(int argc, char** argv) {
   int modeSpin;
   bool beamPolarized   = false;
   bool targetPolarized = false;
-  Vec4 Sproton, Squark;
+  Vec4 SNucleon, SQuark;
   switch(mode) {
     case 0: // UT, spin up
       targetPolarized = true;
       modeSpin = 1;
-      Sproton.p(0.0, (double)modeSpin, 0.0, 0.0);
+      SNucleon.p(0.0, (double)modeSpin, 0.0, 0.0);
       break;
     case 1: // UT, spin down
       targetPolarized = true;
       modeSpin = -1;
-      Sproton.p(0.0, (double)modeSpin, 0.0, 0.0);
+      SNucleon.p(0.0, (double)modeSpin, 0.0, 0.0);
       break;
     case 2: // LU, spin +
       beamPolarized = true;
       modeSpin = 1;
-      Squark.p(0.0, 0.0, -1.0*(double)modeSpin, 0.0); // minus sign, since quark momentum is reversed after hard scattering
+      SQuark.p(0.0, 0.0, -1.0*(double)modeSpin, 0.0); // minus sign, since quark momentum is reversed after hard scattering
       break;
     case 3: // LU, spin -
       beamPolarized = true;
       modeSpin = -1;
-      Squark.p(0.0, 0.0, -1.0*(double)modeSpin, 0.0); // minus sign, since quark momentum is reversed after hard scattering
+      SQuark.p(0.0, 0.0, -1.0*(double)modeSpin, 0.0); // minus sign, since quark momentum is reversed after hard scattering
       break;
   }
 
@@ -195,16 +197,7 @@ int main(int argc, char** argv) {
 
   // Initialize.
   pythia.init();
-  /*
-  BruTree *BT = new BruTree(outFileN);
-  bool useStringSelection = stringSelection[0]!=0 && stringSelection[1]!=0;
 
-  // Variables for test calculation of the pi+ Collins asymmetry.
-  double Acoll[2] = {0.0};
-  int Npi(0);
-  double DNN(0.0);
-  double STav(0.0);
-  
   // Begin event loop.
   for (int iEvent = 0; iEvent < nEvent; ++iEvent) {
 
@@ -217,68 +210,41 @@ int main(int argc, char** argv) {
     }
     // cout << "string: " << event[7].id() << " === " << event[8].id() << endl;
 
+    // Construct a DISKinematics class.
     DISKinematics dis(event[1].p(), event[5].p(), event[2].p());
 
-    // Get the photon and proton momenta in the GNS frame.
-    Vec4 pPhoton = dis.GNS*dis.q;
-    Vec4 pProton = dis.GNS*dis.hadin;
-		
-    // Target polarization vector, degree of transverse polarization and azimuthal angle in GNS.
-    Vec4 SprotonGNS = dis.GNS*Sproton;
-    double ST = 0.0;
-    double phiS = 0.0;
-    if(targetPolarized) {
-      ST   = SprotonGNS.pT();
-      phiS = SprotonGNS.phi();
-      if(phiS<0.0) phiS += 2.0 * M_PI;
-    }
-		
+    // Momenta of the exchanged photon and target nucleon in the GNS.
+    Vec4 pPhoton  = dis.GNS * dis.q;
+    Vec4 pNucleon = dis.GNS * dis.hadin;
+
+    // Rotate the target polarization vector to the GNS, and calculate the transverse polarization
+    // and azimuthal angle.
+    Vec4 SNucleonGNS = dis.GNS * SNucleon;
+    double ST   = targetPolarized ? SNucleonGNS.pT()  : 0.0;
+    double phiS = targetPolarized ? SNucleonGNS.phi() : 0.0;
+    if(phiS<0.0) phiS += 2.0 * M_PI;
+
     // List some events.
-    if(iEvent<20) event.list();
-		
+    if (iEvent < 3) event.list();
+
     // Loop inside the event output.
     for (int i = 0; i < event.size(); ++i){
-        
-      // Hadron momentum in GNS, id and status.
-      Vec4 phad = dis.GNS*event[i].p();
-      int idHad = event[i].id();
-      int statusHad = event[i].status();
-      // Hadrons fractional energy, azimuthal angle and transverse momentum squared in GNS.	
-      double zh = ( phad * pProton ) / (pProton * pPhoton);
-      double phihad = atan2(phad.py(),phad.px());
-      if (phihad<0) phihad += 2.*M_PI;
-      double pT2 = phad.pT2();
 
-      // Fill test Collins asymmetry for pi+.
-      if(targetPolarized) {
-        if(idHad==211&&zh>0.2&&sqrt(pT2)>0.1&&statusHad==83) {
-          Acoll[0] += 2.0*sin(phihad+phiS-M_PI);
-          Acoll[1] += pow(2.0*sin(phihad+phiS-M_PI),2);
-          Npi += 1;
-          DNN += 2.0*(1.0-dis.y)/(1.0+pow(1.0-dis.y,2));
-          STav += ST;
-        }
-      }
-             
+      // Hadron momentum in the GNS, id and status.
+      Vec4 pHad     = dis.GNS * event[i].p();
+      int idHad     = event[i].id();
+      int statusHad = event[i].status();
+
+      // Hadrons fractional energy, azimuthal angle and transverse momentum squared in the GNS.
+      double zh     = ( pHad * pNucleon ) / (pNucleon * pPhoton);
+      double phiHad = pHad.phi();
+      double pT2    = pHad.pT2();
+      if(phiHad<0) phiHad += 2.0 * M_PI;
+
     } // End loop on particle within the same event.
 
-    // fill tree
-    BT->SetSpin(modeSpin);
-    BT->SetPhiS(phiS);
-    BT->Fill(event,dis);
   } // End loop on events.
 
-  // Calculate test Collins asymmetry for pi+.
-  if(targetPolarized) {
-    for(int i=0;i<2;i++) Acoll[i] /= Npi;
-    DNN /= Npi;
-    STav /= Npi;
-    cout << "The average Collins asymmetry for pi+ is: \n";
-    cout << Acoll[0]/(DNN*STav) << "+/-" << sqrt((Acoll[1]-pow(Acoll[0],2))/Npi)/(DNN*STav) << endl;
-  }
-
-  BT->Write();
-  */
   return 0;
 
 } // end main
@@ -302,4 +268,3 @@ TString GetModeStr(Int_t mode) {
   }
   return ret;
 }
-
