@@ -148,35 +148,49 @@ int main(int argc, char** argv) {
   pythia.readString("StringSpinner:thetaLT = 0");
 
   // Choose to assign polarisations.
-  Int_t modeSpin;
-  Bool_t beamPolarized   = false;
-  Bool_t targetPolarized = false;
+  int modeSpin;
+  bool beamPolarized   = false;
+  bool targetPolarized = false;
   Vec4 Sproton, Squark;
   switch(mode) {
     case 0: // UT, spin up
       targetPolarized = true;
       modeSpin = 1;
       Sproton.p(0.0, (double)modeSpin, 0.0, 0.0);
-      pythia.readString("StringSpinner:targetPolarisation = 0.0,1.0,0.0");
       break;
     case 1: // UT, spin down
       targetPolarized = true;
       modeSpin = -1;
       Sproton.p(0.0, (double)modeSpin, 0.0, 0.0);
-      pythia.readString("StringSpinner:targetPolarisation = 0.0,-1.0,0.0");
       break;
     case 2: // LU, spin +
       beamPolarized = true;
       modeSpin = 1;
       Squark.p(0.0, 0.0, -1.0*(double)modeSpin, 0.0); // minus sign, since quark momentum is reversed after hard scattering
-      pythia.readString("StringSpinner:uPolarisation = 0.0,-1.0,0.0"); // minus sign, since quark momentum is reversed after hard scattering
       break;
     case 3: // LU, spin -
       beamPolarized = true;
       modeSpin = -1;
       Squark.p(0.0, 0.0, -1.0*(double)modeSpin, 0.0); // minus sign, since quark momentum is reversed after hard scattering
-      pythia.readString("StringSpinner:uPolarisation = 0.0,1.0,0.0"); // minus sign, since quark momentum is reversed after hard scattering
       break;
+  }
+
+  std::string polStr;
+  if(targetPolarized) {
+    switch(modeSpin) {
+      case 1:  polStr = "0.0,1.0,0.0";  break;
+      case -1: polStr = "0.0,-1.0,0.0"; break;
+    }
+    pythia.readString("StringSpinner:targetPolarisation = " + polStr);
+  }
+  if(beamPolarized) {
+    switch(modeSpin) {
+      case 1:  polStr = "0.0,0.0,-1.0"; break; // minus sign, since quark momentum is reversed after hard scattering
+      case -1: polStr = "0.0,0.0,1.0";  break; // minus sign, since quark momentum is reversed after hard scattering
+    }
+    std::vector<std::string> quarks = {"u", "d", "s", "ubar", "dbar", "sbar"};
+    for(auto quark : quarks)
+      pythia.readString("StringSpinner:" + quark + "Polarisation = " + polStr);
   }
 
   // Initialize.
