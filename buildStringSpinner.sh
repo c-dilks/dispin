@@ -2,25 +2,33 @@
 # build StringSpinner (clean)
 set -e
 
-if [ $# -ne 2 ]; then
-  echo """USAGE: $0 [PYTHIA_INSTALLATION] [NUM_CPUS]
-  - [PYTHIA_INSTALLATION] should be the path to the Pythia 8 installation,
-    - e.g., /usr if you used your distro's package manager
-    - run \`locate libpythia\` to help find it
+if [ $# -ne 1 ]; then
+  echo """USAGE: $0 [NUM_CPUS]
   """
   exit 2
 fi
-pythiaInstallation=$1
-ncpu=$2
+ncpu=$1
+[ -z "$PYTHIADIR" ] && echo "ERROR: source env.sh" >&2 && exit 1
 pushd deps/StringSpinner
 
 # clean
-echo "CLEANING..." # TODO
+echo "CLEANING..."
 make clean
 
+# hack: use a modified Makefile for dispin compatibility
+if [ ! -f Makefile.ignore ]; then
+  mv -v Makefile{,.ignore}
+  ln -sv ../Makefile.StringSpinner Makefile
+fi
+ls -l Makefile
+
 # build
-./configure $pythiaInstallation
+./configure ${PYTHIADIR}
 make dis
+
+# hack: revert to the original Makefile
+mv -v Makefile{.ignore,}
+ls -l Makefile
 
 # finish
 popd
