@@ -252,13 +252,15 @@ int main(int argc, char** argv) {
   tr->Branch("y",  &y,  "y/F");
 
   // decode pairType
-  Int_t whichHad[2];
-  DecodePairType(pairType, whichHad[qA], whichHad[qB]);
-  auto elePID = PartPID(kE);
-  Int_t whichPIDs[2];
-  for(int h=0; h<2; h++) whichPIDs[h] = PartPID(whichHad[h]);
+  Int_t h0, h1;
+  DecodePairType(pairType, h0, h1);
+  Int_t whichHad[2], whichPIDs[2];
+  for(int h=0; h<2; h++) {
+    whichHad[h]  = dihHadIdx(h0, h1, h);
+    whichPIDs[h] = PartPID(whichHad[h]);
+  }
   cout << "Selecting dihadrons with PIDs (" << whichPIDs[qA] << ", " << whichPIDs[qB] << ")" << endl;
-  return 0;
+  auto elePID = PartPID(kE);
 
   ////////////////////////////////////////////////////////////////////
   // EVENT LOOP
@@ -289,36 +291,59 @@ int main(int argc, char** argv) {
     y  = (Float_t) dis.y;
 
     // find hadrons and electron
-    std::vector<Int_t> hadIdxList[2];
-    Int_t eleIdx = -1;
+    std::vector<Int_t> hadRowList[2];
+    Row[kEle] = -1;
     double eleE = 0;
     for(int row = 0; row < EV.size(); ++row) {
       auto par = EV[row];
       if(!par.isFinal()) continue;
       if(par.id() == elePID) {
         if(par.e() > eleE) {
-          eleE   = par.e();
-          eleIdx = row;
+          eleE      = par.e();
+          Row[kEle] = row;
         }
       } else {
         for(int h = 0; h < 2; h++) {
           if(par.id() == whichPIDs[h]) {
-            hadIdxList[h].push_back(row);
+            hadRowList[h].push_back(row);
           }
         }
       }
     }
-    if(eleIdx == -1 || hadIdxList[qA].empty() || hadIdxList[qB].empty())
+    if(Row[kEle] == -1 || hadRowList[qA].empty() || hadRowList[qB].empty())
       continue;
 
-  } // End loop on events.
+    // hadron pairing and tree filling
+    for(auto iA : hadRowList[qA]) {
+      for(auto iB : hadRowList[qB]) {
+        Row[kHadA] = iA;
+        Row[kHadB] = iB;
+        for(int i=0; i<nPar; i++) {
+          auto par = EV[Row[i]];
+          Pid[i]     = (Int_t)   par.id();
+          Px[i]      = (Float_t) par.px();
+          Py[i]      = (Float_t) par.py();
+          Pz[i]      = (Float_t) par.pz();
+          E[i]       = (Float_t) par.e();
+          Vx[i]      = 0.0;
+          Vy[i]      = 0.0;
+          Vz[i]      = 0.0;
+          chi2pid[i] = 0.0;
+          status[i]  = 0;
+          beta[i]    = 0.0;
+        }
+        tr->Fill();
+      }
+    }
 
+  } // end EVENT LOOP
+
+  cout << "Number of dihadrons generated: " << tr->GetEntries() << endl;
   cout << "Writing output file:" << endl << "   " << outFileN << endl;
   outFile->Write();
-  tr->Print();
   return 0;
 
-} // end main
+}
 
 
 /////////////////////////////////////////////
