@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
   bool useStringSelection = stringSelection[0]!=0 && stringSelection[1]!=0;
 
   Pythia pythia;
-  Event& event = pythia.event;
+  Event& EV = pythia.event;
   auto fhooks = std::make_shared<SimpleStringSpinner>();
   fhooks->plugInto(pythia);
 
@@ -158,49 +158,47 @@ int main(int argc, char** argv) {
   pythia.readString("StringSpinner:thetaLT = 0");
 
   // Choose to assign polarisations.
-  int modeSpin;
+  int beamSpin, targetSpin;
   bool beamPolarized   = false;
   bool targetPolarized = false;
   Vec4 SNucleon, SQuark;
   switch(mode) {
-    case 0: // UT, spin up
-      targetPolarized = true;
-      modeSpin = 1;
-      SNucleon.p(0.0, (double)modeSpin, 0.0, 0.0);
-      break;
-    case 1: // UT, spin down
-      targetPolarized = true;
-      modeSpin = -1;
-      SNucleon.p(0.0, (double)modeSpin, 0.0, 0.0);
-      break;
-    case 2: // LU, spin +
+    case 0: // LU, spin +
       beamPolarized = true;
-      modeSpin = 1;
-      SQuark.p(0.0, 0.0, -1.0*(double)modeSpin, 0.0); // minus sign, since quark momentum is reversed after hard scattering
+      beamSpin      = 1;
       break;
-    case 3: // LU, spin -
+    case 1: // LU, spin -
       beamPolarized = true;
-      modeSpin = -1;
-      SQuark.p(0.0, 0.0, -1.0*(double)modeSpin, 0.0); // minus sign, since quark momentum is reversed after hard scattering
+      beamSpin      = -1;
+      break;
+    case 2: // UL, spin +
+      targetPolarized = true;
+      targetSpin      = 1;
+      break;
+    case 3: // UL, spin -
+      targetPolarized = true;
+      targetSpin      = -1;
       break;
   }
 
   std::string polStr;
-  if(targetPolarized) {
-    switch(modeSpin) {
-      case 1:  polStr = "0.0,1.0,0.0";  break;
-      case -1: polStr = "0.0,-1.0,0.0"; break;
-    }
-    pythia.readString("StringSpinner:targetPolarisation = " + polStr);
-  }
   if(beamPolarized) {
-    switch(modeSpin) {
+    SQuark.p(0.0, 0.0, (double)(-beamSpin), 0.0); // minus sign, since quark momentum is reversed after hard scattering
+    switch(beamSpin) {
       case 1:  polStr = "0.0,0.0,-1.0"; break; // minus sign, since quark momentum is reversed after hard scattering
       case -1: polStr = "0.0,0.0,1.0";  break; // minus sign, since quark momentum is reversed after hard scattering
     }
     std::vector<std::string> quarks = {"u", "d", "s", "ubar", "dbar", "sbar"};
     for(auto quark : quarks)
       pythia.readString("StringSpinner:" + quark + "Polarisation = " + polStr);
+  }
+  if(targetPolarized) {
+    SNucleon.p(0.0, 0.0, (double)targetSpin, 0.0);
+    switch(targetSpin) {
+      case 1:  polStr = "0.0,0.0,1.0";  break;
+      case -1: polStr = "0.0,0.0,-1.0"; break;
+    }
+    pythia.readString("StringSpinner:targetPolarisation = " + polStr);
   }
 
   // Initialize.
@@ -224,8 +222,9 @@ int main(int argc, char** argv) {
   Float_t chi2pid[nPar];
   Int_t   status[nPar];
   Float_t beta[nPar];
+  Float_t Q2, W, x, y;
 
-  auto SetParticleBranch = [&tr] (TString parStr, TString brName, void * brAddr, TString type) {
+  auto SetParticleBranch = [&tr] (TString parStr, TString brName, void *brAddr, TString type) {
     TString fullBrName = parStr + TString("_") + brName;
     tr->Branch(fullBrName, brAddr, fullBrName + TString("/") + type);
   };
@@ -247,52 +246,71 @@ int main(int argc, char** argv) {
     SetParticleBranch(parName[p], "status",  &(status[p]),  "I");
     SetParticleBranch(parName[p], "beta",    &(beta[p]),    "F");
   }
+  tr->Branch("Q2", &Q2, "Q2/F"); // inclusive kinematics directly from pythia
+  tr->Branch("W",  &W,  "W/F");
+  tr->Branch("x",  &x,  "x/F");
+  tr->Branch("y",  &y,  "y/F");
 
+  // decode pairType
+  Int_t whichHad[2];
+  DecodePairType(pairType, whichHad[qA], whichHad[qB]);
+  auto elePID = PartPID(kE);
+  Int_t whichPIDs[2];
+  for(int h=0; h<2; h++) whichPIDs[h] = PartPID(whichHad[h]);
+  cout << "Selecting dihadrons with PIDs (" << whichPIDs[qA] << ", " << whichPIDs[qB] << ")" << endl;
+  return 0;
 
-  // Begin event loop.
+  ////////////////////////////////////////////////////////////////////
+  // EVENT LOOP
+  ////////////////////////////////////////////////////////////////////
   for (int iEvent = 0; iEvent < nEvent; ++iEvent) {
 
     if (!pythia.next()) continue;
 
     // string selection
     if(useStringSelection) {
-      if( event[7].id() != stringSelection[0] ||
-          event[8].id() != stringSelection[1] ) continue;
+      if( EV[7].id() != stringSelection[0] ||
+          EV[8].id() != stringSelection[1] ) continue;
     }
-    // cout << "string: " << event[7].id() << " === " << event[8].id() << endl;
+    // cout << "string: " << EV[7].id() << " === " << EV[8].id() << endl;
 
-    // Construct a DISKinematics class.
-    DISKinematics dis(event[1].p(), event[5].p(), event[2].p());
+    // if(iEvent < 3) EV.list();
 
-    // Momenta of the exchanged photon and target nucleon in the GNS.
-    Vec4 pPhoton  = dis.GNS * dis.q;
-    Vec4 pNucleon = dis.GNS * dis.hadin;
+    // event-level branches
+    runnum   = 11;
+    evnum    = (Int_t) iEvent;
+    helicity = beamPolarized ? (Int_t) beamSpin : 0;
 
-    // Rotate the target polarization vector to the GNS, and calculate the transverse polarization
-    // and azimuthal angle.
-    Vec4 SNucleonGNS = dis.GNS * SNucleon;
-    double ST   = targetPolarized ? SNucleonGNS.pT()  : 0.0;
-    double phiS = targetPolarized ? SNucleonGNS.phi() : 0.0;
-    if(phiS<0.0) phiS += 2.0 * M_PI;
+    // inclusive kinematics directly from pythia (cf. those calculated from scattered lepton)
+    DISKinematics dis(EV[1].p(), EV[5].p(), EV[2].p());
+    Q2 = (Float_t) dis.Q2;
+    W  = (Float_t) TMath::Sqrt(dis.W2);
+    x  = (Float_t) dis.xB;
+    y  = (Float_t) dis.y;
 
-    // List some events.
-    if (iEvent < 3) event.list();
-
-    // Loop inside the event output.
-    for (int i = 0; i < event.size(); ++i){
-
-      // Hadron momentum in the GNS, id and status.
-      Vec4 pHad     = dis.GNS * event[i].p();
-      int idHad     = event[i].id();
-      int statusHad = event[i].status();
-
-      // Hadrons fractional energy, azimuthal angle and transverse momentum squared in the GNS.
-      double zh     = ( pHad * pNucleon ) / (pNucleon * pPhoton);
-      double phiHad = pHad.phi();
-      double pT2    = pHad.pT2();
-      if(phiHad<0) phiHad += 2.0 * M_PI;
-
-    } // End loop on particle within the same event.
+    // find hadrons and electron
+    std::vector<Int_t> hadIdxList[2];
+    Int_t eleIdx = -1;
+    double eleE = 0;
+    for(int row = 0; row < EV.size(); ++row) {
+      auto par = EV[row];
+      if(!par.isFinal()) continue;
+      if(par.id() == elePID) {
+        if(par.e() > eleE) {
+          eleE   = par.e();
+          eleIdx = row;
+        }
+      } else {
+        for(int h = 0; h < 2; h++) {
+          if(par.id() == whichPIDs[h]) {
+            hadIdxList[h].push_back(row);
+          }
+        }
+      }
+    }
+    if(eleIdx == -1) continue;
+    if(hadIdxList[qA].empty()) continue;
+    if(hadIdxList[qB].empty()) continue;
 
   } // End loop on events.
 
@@ -312,10 +330,10 @@ int main(int argc, char** argv) {
 TString GetModeStr(Int_t mode) {
   TString ret;
   switch(mode) {
-    case 0: ret="UT, spin up";   break;
-    case 1: ret="UT, spin down"; break;
-    case 2: ret="LU, spin +";    break;
-    case 3: ret="LU, spin -";    break;
+    case 0: ret="LU, spin +"; break;
+    case 1: ret="LU, spin -"; break;
+    case 2: ret="UL, spin +"; break;
+    case 3: ret="UL, spin -"; break;
     default:
             cerr << "ERROR: unknown mode " << mode << endl;
             ret = "UNKNOWN MODE";
