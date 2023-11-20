@@ -25,19 +25,20 @@ int main(int argc, char** argv) {
   Int_t mode       = 0;
   TString outFileN = Form("sss/%d.root",mode);
   int seed         = -1;
+  int pairType     = EncodePairType(kPip,kPim);
   int stringSelection[2]         = {2, 2101}; // u === (ud)_0
   TString stringSelectionDesc[2] = {"u", "(ud)_0"};
   if(argc==1) {
-    cerr << "USAGE: " << argv[0] <<
-      " [numEvents]" <<
-      " [mode(def=" << mode << ")]" <<
-      " [outputFileName(def=" << outFileN << ")]" <<
-      " [stringSelection0 (default=" << stringSelection[0] << " for '" << stringSelectionDesc[0] << "')]" <<
-      " [stringSelection1 (default=" << stringSelection[1] << " for '" << stringSelectionDesc[1] << "')]" <<
-      " [seed(def=" << seed << ")]" <<
-      endl;
-    cerr << endl;
-    cerr << "MODES: " << endl;
+    cerr << endl << "USAGE: " << argv[0] << " [ARGUMENTS]..." << endl;
+    cerr << endl << "ARGUMENTS:" << endl;
+    cerr << " [numEvents]" << endl;
+    cerr << " [mode (default=" << mode << ")]" << endl;
+    cerr << " [outputFileName (default=" << outFileN << ")]" << endl;
+    cerr << " [pairType (default=0x" << std::hex << pairType << std::dec << ")]" << endl;
+    cerr << " [stringSelection0 (default=" << stringSelection[0] << " for '" << stringSelectionDesc[0] << "')]" << endl;
+    cerr << " [stringSelection1 (default=" << stringSelection[1] << " for '" << stringSelectionDesc[1] << "')]" << endl;
+    cerr << " [seed (default=" << seed << ")]" << endl;
+    cerr << endl << "MODES: " << endl;
     for(int m=0; m<4; m++) cerr << "  " << m << ": " << GetModeStr(m) << endl;
     cerr << endl;
     cerr << "NOTE: set stringSelection arguments both to 0 to disable filtering of events by strings" << endl;
@@ -46,18 +47,21 @@ int main(int argc, char** argv) {
     return 2;
   }
   Long64_t nEvent;
-  if(argc>1) nEvent             = (Long64_t)strtof(argv[1],NULL);
-  if(argc>2) mode               = (Int_t)strtof(argv[2],NULL);
-  if(argc>3) outFileN           = TString(argv[3]); else outFileN = Form("out/%d.root",mode);
-  if(argc>4) stringSelection[0] = (int)strtof(argv[4],NULL);
-  if(argc>5) stringSelection[1] = (int)strtof(argv[5],NULL);
-  if(argc>6) seed               = (int)strtof(argv[6],NULL);
+  int ai = 1;
+  if(argc>ai) nEvent             = (Long64_t)strtof(argv[ai++],NULL);
+  if(argc>ai) mode               = (Int_t)strtof(argv[ai++],NULL);
+  if(argc>ai) outFileN           = TString(argv[ai++]);
+  if(argc>ai) pairType           = (int)strtof(argv[ai++],NULL);
+  if(argc>ai) stringSelection[0] = (int)strtof(argv[ai++],NULL);
+  if(argc>ai) stringSelection[1] = (int)strtof(argv[ai++],NULL);
+  if(argc>ai) seed               = (int)strtof(argv[ai++],NULL);
   TString modeStr = GetModeStr(mode);
   if(modeStr.Contains("UNKNOWN")) return 1;
   cout << "ARGS: "        << endl;
   cout << "  nEvent           = " << nEvent   << endl;
   cout << "  mode             = " << mode     << ": " << modeStr << endl;
   cout << "  outFileN         = " << outFileN << endl;
+  cout << "  pairType         = " << "0x" << std::hex << pairType << std::dec << endl;
   cout << "  stringSelection0 = " << stringSelection[0] << endl;
   cout << "  stringSelection1 = " << stringSelection[1] << endl;
   cout << "  seed             = " << seed     << endl;
