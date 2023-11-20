@@ -308,9 +308,8 @@ int main(int argc, char** argv) {
         }
       }
     }
-    if(eleIdx == -1) continue;
-    if(hadIdxList[qA].empty()) continue;
-    if(hadIdxList[qB].empty()) continue;
+    if(eleIdx == -1 || hadIdxList[qA].empty() || hadIdxList[qB].empty())
+      continue;
 
   } // End loop on events.
 
