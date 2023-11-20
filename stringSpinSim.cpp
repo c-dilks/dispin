@@ -7,6 +7,10 @@
 #include "Pythia8/Pythia.h"
 #include "StringSpinner.h"
 
+// ROOT
+#include <TFile.h>
+#include <TTree.h>
+
 // dispin
 #include "Constants.h"
 #include "Tools.h"
@@ -202,6 +206,49 @@ int main(int argc, char** argv) {
   // Initialize.
   pythia.init();
 
+
+  ////////////////////////////////////////////////////////////////////
+
+
+  // define output tree
+  auto outFile = new TFile(outFileN, "RECREATE");
+  auto tr      = new TTree("ditr", "ditr"); // name expected by calcKinematics.cpp
+                                            //
+  enum parEnum {kEle,kHadA,kHadB,nPar};
+  TString parName[nPar] = {"ele", "hadA", "hadB" };
+
+  Int_t   runnum, evnum, helicity;
+  Int_t   Row[nPar], Pid[nPar];
+  Float_t Px[nPar], Py[nPar], Pz[nPar], E[nPar];
+  Float_t Vx[nPar], Vy[nPar], Vz[nPar];
+  Float_t chi2pid[nPar];
+  Int_t   status[nPar];
+  Float_t beta[nPar];
+
+  auto SetParticleBranch = [&tr] (TString parStr, TString brName, void * brAddr, TString type) {
+    TString fullBrName = parStr + TString("_") + brName;
+    tr->Branch(fullBrName, brAddr, fullBrName + TString("/") + type);
+  };
+
+  tr->Branch("runnum",   &runnum,   "runnum/I");
+  tr->Branch("evnum",    &evnum,    "evnum/I");
+  tr->Branch("helicity", &helicity, "helicity/I");
+  for(int p=0; p<nPar; p++) {
+    SetParticleBranch(parName[p], "Row",     &(Row[p]),     "I");
+    SetParticleBranch(parName[p], "Pid",     &(Pid[p]),     "I");
+    SetParticleBranch(parName[p], "Px",      &(Px[p]),      "F");
+    SetParticleBranch(parName[p], "Py",      &(Py[p]),      "F");
+    SetParticleBranch(parName[p], "Pz",      &(Pz[p]),      "F");
+    SetParticleBranch(parName[p], "E",       &(E[p]),       "F");
+    SetParticleBranch(parName[p], "Vx",      &(Vx[p]),      "F");
+    SetParticleBranch(parName[p], "Vy",      &(Vy[p]),      "F");
+    SetParticleBranch(parName[p], "Vz",      &(Vz[p]),      "F");
+    SetParticleBranch(parName[p], "chi2pid", &(chi2pid[p]), "F");
+    SetParticleBranch(parName[p], "status",  &(status[p]),  "I");
+    SetParticleBranch(parName[p], "beta",    &(beta[p]),    "F");
+  }
+
+
   // Begin event loop.
   for (int iEvent = 0; iEvent < nEvent; ++iEvent) {
 
@@ -249,6 +296,9 @@ int main(int argc, char** argv) {
 
   } // End loop on events.
 
+  cout << "Writing output file:" << endl << "   " << outFileN << endl;
+  outFile->Write();
+  tr->Print();
   return 0;
 
 } // end main
