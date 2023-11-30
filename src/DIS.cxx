@@ -10,7 +10,7 @@ DIS::DIS() {
   debug = false;
   speedup = false;
 
-  BeamEn = 10.6041; // default (RGA Fall 18); see SetBeamEnFromRun()
+  BeamEn = DEFAULT_BEAM_ENERGY;
 
   vecBeam = TLorentzVector(
     0.0,

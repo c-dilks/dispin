@@ -6,12 +6,18 @@
 
 // pi
 // ---------------------------------------------------
-static Double_t PI = TMath::Pi();
-static Double_t PIe = TMath::Pi() + 0.3;
+static const Double_t PI = TMath::Pi();
+static const Double_t PIe = TMath::Pi() + 0.3;
 
 // undefined constant
-static Double_t UNDEF = -10000;
+static const Double_t UNDEF = -10000;
 
+// special run numbers
+static const Int_t RUNNUM_MC = 11; // TODO: when we have real run numbers, this will change!
+static const Int_t RUNNUM_STRING_SPINNER = 15;
+
+// default beam energy
+static const Float_t DEFAULT_BEAM_ENERGY = 10.6041; // default (RGA Fall18)
 
 // useful enumerators
 enum xyz_enum { eX, eY, eZ };
@@ -434,7 +440,7 @@ enum torus_enum {
   kInbending = -1,
   kOutbending = 1
 };
-// get torus, given runnum; if MC the runnum is always 11, so use fileName instead
+// get torus, given runnum; if MC the runnum is always RUNNUM_MC, so use fileName instead
 static Int_t RundepTorus(Int_t run, TString fileName="") {
   if     (run>= 5032 && run<= 5419) return kInbending;  // rga_inbending_fa18
   else if(run>= 5422 && run<= 5666) return kOutbending; // rga_outbending_fa18
@@ -443,14 +449,15 @@ static Int_t RundepTorus(Int_t run, TString fileName="") {
   else if(run>=11093 && run<=11283) return kOutbending; // rgb_outbending_fa19
   else if(run>=11284 && run<=11300) return kInbending;  // rgb_BAND_inbending_fa19
   else if(run>=11323 && run<=11571) return kInbending;  // rgb_inbending_wi20
-  else if(run==11) {
+  else if(run==RUNNUM_MC) {
     if(fileName.Contains("inbending")) return kInbending;
     else if(fileName.Contains("outbending")) return kOutbending;
     else {
-      fprintf(stderr,"ERROR: RundepTorus file name or path does not contain 'inbending' or 'outbending' (necessary if runnum==11)\n");
+      fprintf(stderr,"ERROR: RundepTorus file name or path does not contain 'inbending' or 'outbending' (necessary if runnum==%d)\n", RUNNUM_MC);
       return kInbending;
     }
   }
+  else if(run==RUNNUM_STRING_SPINNER) return kInbending;
   else {
     fprintf(stderr,"ERROR: RundepTorus unknown for run %d\n",run);
     return kInbending;
@@ -467,7 +474,8 @@ static Float_t RundepBeamEn(Int_t run) {
   else if(run>=11093 && run<=11283) return 10.4096; // rgb fall 19
   else if(run>=11284 && run<=11300) return 4.17179; // rgb fall BAND_FT 19
   else if(run>=11323 && run<=11571) return 10.3894; // rgb winter 20 (RCDB may still be incorrect)
-  else if(run==11)                  return 10.6041; // MC for RGA inbending
+  else if(run==RUNNUM_MC)             return DEFAULT_BEAM_ENERGY; // MC for RGA inbending
+  else if(run==RUNNUM_STRING_SPINNER) return DEFAULT_BEAM_ENERGY; // String Spinner
   else {
     fprintf(stderr,"ERROR: RundepBeamEn unknown for run %d\n",run);
     return 0.0;
@@ -512,7 +520,8 @@ static Float_t RundepPolarization(Int_t run, Bool_t v=true) {
   else if(run>=11335 && run<=11387) return v? 0.85048 : 0.01530;
   else if(run>=11389 && run<=11571) return v? 0.84262 : 0.01494; // NOTE: table last updated 1/15/2020, but run ended on 1/30
   /* MC */
-  else if(run==11) return v? 0.86 : 0.0; // MC
+  else if(run==RUNNUM_MC)             return v? 0.86 : 0.0; // MC
+  else if(run==RUNNUM_STRING_SPINNER) return v? 1.00 : 0.0; // String Spinner
   else {
     fprintf(stderr,"ERROR: RundepPolarization unknown for run %d\n",run);
     return 0.0;

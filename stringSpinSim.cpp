@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
   //// incoming particles
   ParticleData& pdt = pythia.particleData;
   double eNucleon  = pdt.m0(2212); // proton beam energy (target mass)
-  double pLepton   = 10.6; // electron beam momentum
+  double pLepton   = DEFAULT_BEAM_ENERGY; // electron beam momentum
   double eLepton   = Tools::PMtoE(pLepton, pdt.m0(11)); // electron beam energy
   //// phase space
   double Q2min     = 1.0; // minimum Q2
@@ -246,10 +246,10 @@ int main(int argc, char** argv) {
     SetParticleBranch(parName[p], "status",  &(status[p]),  "I");
     SetParticleBranch(parName[p], "beta",    &(beta[p]),    "F");
   }
-  tr->Branch("Q2", &Q2, "Q2/F"); // inclusive kinematics directly from pythia
-  tr->Branch("W",  &W,  "W/F");
-  tr->Branch("x",  &x,  "x/F");
-  tr->Branch("y",  &y,  "y/F");
+  tr->Branch("SS_Q2", &Q2, "SS_Q2/F"); // inclusive kinematics directly from pythia
+  tr->Branch("SS_W",  &W,  "SS_W/F");
+  tr->Branch("SS_x",  &x,  "SS_x/F");
+  tr->Branch("SS_y",  &y,  "SS_y/F");
 
   // decode pairType
   Int_t h0, h1;
@@ -279,7 +279,7 @@ int main(int argc, char** argv) {
     // if(iEvent < 3) EV.list();
 
     // event-level branches
-    runnum   = 11;
+    runnum   = RUNNUM_STRING_SPINNER;
     evnum    = (Int_t) iEvent;
     helicity = beamPolarized ? (Int_t) beamSpin : 0;
 
