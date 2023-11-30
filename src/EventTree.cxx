@@ -540,7 +540,7 @@ void EventTree::GetTrajectories(Long64_t i, Bool_t prog) {
 // translate "helicity" to a local index for the spin
 Int_t EventTree::SpinState() {
   
-  if(runnum!=RUNNUM_MC) { // data run
+  if(runnum!=RUNNUM_MC && runnum!=RUNNUM_STRING_SPINNER) { // data run
     if(RundepHelicityFlip(runnum)) { // helicity flipped
       switch(helicity) {
         case  1: return sM;
