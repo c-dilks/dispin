@@ -1,6 +1,9 @@
 #!/usr/bin/env ruby
 
 if ARGV.length != 1
+  $stderr.puts "======================================="
+  $stderr.puts "WARNING: condor scripts are deprecated!"
+  $stderr.puts "======================================="
   $stderr.puts "USAGE: #{$0} [outroot dir]"
   exit 2
 end

@@ -2,6 +2,9 @@
 
 exe="buildSpinroot"
 if [ $# -eq 0 ]; then
+  echo "======================================="
+  echo "WARNING: condor scripts are deprecated!"
+  echo "======================================="
   echo "usage: $0 [ARGUMENTS]"
   echo ""
   echo "the first argument must be the directory of outroot files to analyze;"

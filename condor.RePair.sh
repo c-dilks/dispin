@@ -2,6 +2,9 @@
 
 exe="RePair"
 if [ $# -ne 2 ]; then
+  echo "======================================="
+  echo "WARNING: condor scripts are deprecated!"
+  echo "======================================="
   echo "usage: $0 [input outrootDir] [output outrootDir]"
   echo " N.B.: output directory must exist"
   exit 1
