@@ -57,7 +57,6 @@ mkdir -p `dirname $outfile`
 slurm.buildSpinroot.sh $args
 sleep 3
 waitForSlurm.sh dispin_buildSpinroot
-echo "EXIT PREMATURELY, FOR DEBUGGING!" && exit
 
 
 # concatenate spinroot files to catTree.root

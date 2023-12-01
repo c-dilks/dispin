@@ -240,9 +240,12 @@ EventTree::EventTree(TString filelist_, Int_t whichPair_) {
       gen_hadParentPid[h] = -1;
     };
   };
+
   // - string spinner branches
-  useStringSpinner = chain->GetBranch("SS_Q2") != nullptr;
-  if(useStringSpinner) {
+  useStringSpinner = false;
+  if(chain->GetBranch("SS_Q2")) {
+    useStringSpinner = true;
+    printf("These data are from StringSpinner\n");
     chain->SetBranchAddress("SS_Q2", &SS_Q2);
     chain->SetBranchAddress("SS_W",  &SS_W);
     chain->SetBranchAddress("SS_x",  &SS_x);
