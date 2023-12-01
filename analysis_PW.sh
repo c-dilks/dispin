@@ -5,16 +5,16 @@ setnum=$1
 
 case $setnum in
   1)
-    condor.buildSpinroot.sh outroot.inbending -b -i1 # vs. x 
+    slurm.buildSpinroot.sh outroot.inbending -b -i1 # vs. x 
     ;;
   2)
-    condor.buildSpinroot.sh outroot.inbending -b -i2 # vs. Mh 
+    slurm.buildSpinroot.sh outroot.inbending -b -i2 # vs. Mh 
     ;;
   3)
-    condor.buildSpinroot.sh outroot.inbending -b -i32 # vs. z , for 2 Mh bins
+    slurm.buildSpinroot.sh outroot.inbending -b -i32 # vs. z , for 2 Mh bins
     ;;
   4)
-    condor.buildSpinroot.sh outroot.inbending -b -i42 # vs. PhPerp, for 2 Mh bins 
+    slurm.buildSpinroot.sh outroot.inbending -b -i42 # vs. PhPerp, for 2 Mh bins 
     ;;
   *)
     echo "ERROR: unknown set_number"
