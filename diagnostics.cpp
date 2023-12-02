@@ -533,6 +533,19 @@ int main(int argc, char** argv) {
    TH1D * dihadronCntDist = new TH1D("dihadronCntDist","number of dihadrons per event",10,0,10);
    Int_t evnumTmp = -10000;
    Int_t dihadronCnt = 0;
+
+   // string spinner plots
+   TH2D * SS_Q2_diff;
+   TH2D * SS_W_diff;
+   TH2D * SS_x_diff;
+   TH2D * SS_y_diff;
+   if(ev->useStringSpinner) {
+     auto diffRange = [] (auto &h, auto scale) { return scale * (h->GetXaxis()->GetXmax() - h->GetXaxis()->GetXmin()); };
+     SS_Q2_diff = new TH2D("SS_Q2_diff", "Q^{2}: comparison between Pythia and Reconstructed;gen;rec - gen", NBINS, Q2Dist->GetXaxis()->GetXmin(), Q2Dist->GetXaxis()->GetXmax(), NBINS, -diffRange(Q2Dist, 0.02), diffRange(Q2Dist, 0.02));
+     SS_W_diff  = new TH2D("SS_W_diff",  "W: comparison between Pythia and Reconstructed;gen;rec - gen",     NBINS, WDist->GetXaxis()->GetXmin(),  WDist->GetXaxis()->GetXmax(),  NBINS, -diffRange(WDist,  0.02), diffRange(WDist,  0.02));
+     SS_x_diff  = new TH2D("SS_x_diff",  "x: comparison between Pythia and Reconstructed;gen;rec - gen",     NBINS, XDist->GetXaxis()->GetXmin(),  XDist->GetXaxis()->GetXmax(),  NBINS, -diffRange(XDist,  0.2),  diffRange(XDist,  0.2));
+     SS_y_diff  = new TH2D("SS_y_diff",  "y: comparison between Pythia and Reconstructed;gen;rec - gen",     NBINS, YDist->GetXaxis()->GetXmin(),  YDist->GetXaxis()->GetXmax(),  NBINS, -diffRange(YDist,  0.02), diffRange(YDist,  0.02));
+   }
   
 
    ///////////////////////////
@@ -748,6 +761,12 @@ int main(int argc, char** argv) {
 
        diphMdist->Fill(ev->objDiphoton->M);
 
+       if(ev->useStringSpinner) {
+         SS_Q2_diff->Fill(ev->SS_Q2, ev->Q2 - ev->SS_Q2);
+         SS_W_diff->Fill(ev->SS_W,  ev->W  - ev->SS_W );
+         SS_x_diff->Fill(ev->SS_x,  ev->x  - ev->SS_x );
+         SS_y_diff->Fill(ev->SS_y,  ev->y  - ev->SS_y );
+       }
 
      };
 
@@ -956,6 +975,16 @@ int main(int argc, char** argv) {
      kfVsPhiHR[k]->Write();
    };
    outfile->cd("/");
+
+   if(ev->useStringSpinner) {
+     outfile->mkdir("string_spinner");
+     outfile->cd("string_spinner");
+     SS_Q2_diff->Write();
+     SS_W_diff->Write();
+     SS_x_diff->Write();
+     SS_y_diff->Write();
+     outfile->cd("/");
+   }
 
    outfile->Close();
 

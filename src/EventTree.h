@@ -251,6 +251,7 @@ class EventTree : public TObject
 
     // - string spinner branches
     Float_t SS_Q2, SS_W, SS_x, SS_y;
+    Bool_t useStringSpinner;
 
   private:
     TChain * chain;
@@ -277,9 +278,6 @@ class EventTree : public TObject
 
     Bool_t isDiphoton[2];
     Float_t minP[2];
-
-    Bool_t useStringSpinner;
-
 
   ClassDef(EventTree,1);
 };
