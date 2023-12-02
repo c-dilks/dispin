@@ -2,13 +2,13 @@
 # loop stringSpinSim.exe
 
 # settings #################
-NumEventsPerFile = 1e3.to_i
+NumEventsPerFile = 5e6.to_i
 NumFiles         = 10
 Modes            = [ 0, 1 ] # stringSpinSim.exe modes
 DiskimDir        = 'diskim.sss'
 OutrootDir       = 'outroot.sss'
 PairType         = '0x34'
-NCPUs            = 6   # number of CPUs per node to allocate for slurm
+NCPUs            = 1  # number of CPUs per node to allocate for slurm
 TimeLim          = 48 # time limit [hr]
 ############################
 
