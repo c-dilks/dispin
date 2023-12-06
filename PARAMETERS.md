@@ -26,9 +26,9 @@ _cf._ those from `claspyth`:
 
 We'll need to translate these Pythia 6 parameters to Pythia 8, since StringSpinner uses Pythia 8:
 
-| Pythia 6                      | Pythia 8                   | Description                                     |
-| ---                           | ---                        |
-| `PARJ(11)`                    | `StringFlav:mesonUDvector` | vector/pseudoscalar for light ($u$, $d$) mesons |
-| `PARJ(12)`                    | `StringFlav:mesonSvector`  | vector/pseudoscalar for strange mesons          |
-| `PARJ(21)`                    | possibly `StringPT:sigma`  | width of $p_T$ distribution (in fragmentation)  |
-| `PARP(99)` or LEPTO `PARL(3)` |                            | width of $k_T$ distribution (in initial)        |
+| Pythia 6                      | Pythia 8                                    | Description                                     |
+| ---                           | ---                                         | ---                                             |
+| `PARJ(11)`                    | `StringFlav:mesonUDvector`                  | vector/pseudoscalar for light ($u$, $d$) mesons |
+| `PARJ(12)`                    | `StringFlav:mesonSvector`                   | vector/pseudoscalar for strange mesons          |
+| `PARJ(21)`                    | possibly `StringPT:sigma`                   | width of $p_T$ distribution (in fragmentation)  |
+| `PARP(99)` or LEPTO `PARL(3)` | possibly `BeamRemnants:primordialKTremnant` | width of $k_T$ distribution (in initial)        |

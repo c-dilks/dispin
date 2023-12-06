@@ -128,10 +128,6 @@ int main(int argc, char** argv) {
   pythia.readString("PartonLevel:MPI = off");
   pythia.readString("HadronLevel:BoseEinstein = off");
 
-  // Primordial kT is switched off.
-  pythia.readString("BeamRemnants:primordialKT = off");        // Allow or not selection of primordial kT according to the parameter values.
-  pythia.readString("BeamRemnants:primordialKTremnant = 0.0"); // The width sigma_remn, assigned as a primordial kT to beam-remnant partons.
-
   // Switches for hadron production and decay.
   // pythia.readString("HadronLevel:Decay= off");
   pythia.readString("111:onMode = off"); // pi0
@@ -158,6 +154,9 @@ int main(int argc, char** argv) {
   pythia.readString("StringFlav:mesonUDvector = 0.7"); // ratio vector/pseudoscalar for light (u, d) mesons (analogous to PARJ(11): fraction of $\rho / \pi$)
   pythia.readString("StringFlav:mesonSvector = 0.75"); // ratio vector/pseudoscalar for strange mesons      (analogous to PARJ(12): fraction of $K^* / K$)
   pythia.readString("StringPT:sigma = 0.5");           // pT width of the fragmentation process (analogous to PARJ(21))
+  pythia.readString("BeamRemnants:primordialKT = on");          // Allow or not selection of primordial kT according to the parameter values.
+  pythia.readString("BeamRemnants:primordialKTremnant = 0.64"); // The width sigma_remn, assigned as a primordial kT to beam-remnant partons.
+
 
   // StringSpinner settings.
   // Value of the free parameters |GL/GT| and thetaLT = arg(GL/GT).
