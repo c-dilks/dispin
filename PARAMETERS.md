@@ -24,4 +24,11 @@ _cf._ those from `claspyth`:
 - $p_T$: <https://github.com/JeffersonLab/claspyth/blob/1d6bd7fa4e9a187d2fcf158651638a1aecf3a761/input.10.6gev.with-comments#L140>
 - $k_T$: <https://github.com/JeffersonLab/claspyth/blob/1d6bd7fa4e9a187d2fcf158651638a1aecf3a761/input.10.6gev.with-comments#L117>
 
-We'll need to translate these Pythia 6 parameters to Pythia 8, since StringSpinner uses Pythia 8.
+We'll need to translate these Pythia 6 parameters to Pythia 8, since StringSpinner uses Pythia 8:
+
+| Pythia 6                      | Pythia 8                   | Description                                     |
+| ---                           | ---                        |
+| `PARJ(11)`                    | `StringFlav:mesonUDvector` | vector/pseudoscalar for light ($u$, $d$) mesons |
+| `PARJ(12)`                    | `StringFlav:mesonSvector`  | vector/pseudoscalar for strange mesons          |
+| `PARJ(21)`                    | possibly `StringPT:sigma`  | width of $p_T$ distribution (in fragmentation)  |
+| `PARP(99)` or LEPTO `PARL(3)` |                            | width of $k_T$ distribution (in initial)        |

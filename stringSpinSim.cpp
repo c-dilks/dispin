@@ -153,6 +153,12 @@ int main(int argc, char** argv) {
   pythia.readString("StringPT:enhancedFraction = 0."); // the fraction of string breaks with enhanced width.
   pythia.readString("StringPT:enhancedWidth = 0.");    // the enhancement of the width in this fraction.
 
+  // Settings from `clasdis`
+  // - pythia 6 -> 8 translation from: https://skands.web.cern.ch/slides/11/11-02-skands-uemb.pdf
+  pythia.readString("StringFlav:mesonUDvector = 0.7"); // ratio vector/pseudoscalar for light (u, d) mesons (analogous to PARJ(11): fraction of $\rho / \pi$)
+  pythia.readString("StringFlav:mesonSvector = 0.75"); // ratio vector/pseudoscalar for strange mesons      (analogous to PARJ(12): fraction of $K^* / K$)
+  pythia.readString("StringPT:sigma = 0.5");           // pT width of the fragmentation process (analogous to PARJ(21))
+
   // StringSpinner settings.
   // Value of the free parameters |GL/GT| and thetaLT = arg(GL/GT).
   pythia.readString("StringSpinner:GLGT = 5");
