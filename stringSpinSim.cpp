@@ -77,91 +77,12 @@ int main(int argc, char** argv) {
   auto fhooks = std::make_shared<SimpleStringSpinner>();
   fhooks->plugInto(pythia);
 
-  // HARD-CODED SETTINGS ////////////////////////////////////////////
-  //// incoming particles
-  ParticleData& pdt = pythia.particleData;
-  double eNucleon  = pdt.m0(2212); // proton beam energy (target mass)
-  double pLepton   = DEFAULT_BEAM_ENERGY; // electron beam momentum
-  double eLepton   = Tools::PMtoE(pLepton, pdt.m0(11)); // electron beam energy
-  //// phase space
-  double Q2min     = 1.0; // minimum Q2
-  ///////////////////////////////////////////////////////////////////
+  // load steering file
+  pythia.readFile("stringSpinSim.cmnd");
 
   // Seed
   pythia.readString("Random:setSeed = on");
   pythia.settings.parm("Random:seed",seed);
-
-  // Set up incoming beams, for frame with unequal beam energies.
-  pythia.readString("Beams:frameType = 2");   // the beams are back-to-back, but with different energies
-  pythia.readString("Beams:idA = 11");        // BeamA = electron
-  pythia.readString("Beams:idB = 2212");      // BeamB = proton
-  pythia.settings.parm("Beams:eA", eLepton);  // BeamA energy
-  pythia.settings.parm("Beams:eB", eNucleon); // BeamB energy
-
-  // Interaction mechanism.
-  pythia.readString("WeakBosonExchange:ff2ff(t:gmZ) = on"); // $\gamma*/Z^0$ $t$-channel exchange, with full interference between $\gamma*$ and $Z^0$
-
-  // Phase-space cut: minimal Q2 of process.
-  pythia.settings.parm("PhaseSpace:Q2Min", Q2min);
-
-  // Go down to low x-Bjorken.
-  pythia.readString("PhaseSpace:pTHatMinDiverge = 0.5"); // extra $p_T$ cut to avoid divergences of some processes in the $p_T \to 0$ limit
-  pythia.readString("PhaseSpace:mHatMin = 0.");          // minimum invariant mass
-
-  // Set dipole recoil on. Necessary for DIS + shower.
-  pythia.readString("SpaceShower:dipoleRecoil = off");
-
-  // QED radiation off lepton not handled yet by the new procedure.
-  // these are recommended when `SpaceShower:dipoleRecoil = on`
-  pythia.readString("PDF:lepton = off");              // do not use parton densities for lepton beams
-  pythia.readString("TimeShower:QEDshowerByL = off"); // disallow leptons to radiate photons
-
-  // Choice of PDF = CTEQ5L LO (pSet=2).
-  pythia.readString("PDF:pSet = 2");
-  pythia.readString("PDF:pHardSet = 2");
-
-  // Switch off resonance decays, ISR, FSR, MPI and Bose-Einstein.
-  pythia.readString("ProcessLevel:resonanceDecays = off");
-  pythia.readString("PartonLevel:FSRinResonances = off");
-  pythia.readString("PartonLevel:FSR = off");
-  pythia.readString("PartonLevel:ISR = off");
-  pythia.readString("PartonLevel:MPI = off");
-  pythia.readString("HadronLevel:BoseEinstein = off");
-
-  // Switches for hadron production and decay.
-  // pythia.readString("HadronLevel:Decay= off");
-  pythia.readString("111:onMode = off"); // pi0
-  pythia.readString("311:onMode = off"); // K0
-  pythia.readString("211:onMode = off"); // pi+
-  // pythia.readString("221:onMode = off"); // eta
-  // pythia.readString("331:onMode = off"); // eta'
-  // pythia.readString("311:onMode = off"); // K0 decay
-
-  // Invariant mass distribution of resonances as in the string+3P0 model.
-  pythia.readString("ParticleData:modeBreitWigner=3"); // particles registered as having a mass width are given a mass in the range m_min < m < m_max, according to a truncated relativistic Breit-Wigner, i.e. quadratic in m.
-
-  // Switch off automatic event listing in favour of manual.
-  pythia.readString("Next:numberShowInfo = 0");
-  pythia.readString("Next:numberShowProcess = 0");
-  pythia.readString("Next:numberShowEvent = 1");
-
-  // Settings of string fragmentation parameters.
-  pythia.readString("StringPT:enhancedFraction = 0."); // the fraction of string breaks with enhanced width.
-  pythia.readString("StringPT:enhancedWidth = 0.");    // the enhancement of the width in this fraction.
-
-  // Settings from `clasdis`
-  // - pythia 6 -> 8 translation from: https://skands.web.cern.ch/slides/11/11-02-skands-uemb.pdf
-  pythia.readString("StringFlav:mesonUDvector = 0.7"); // ratio vector/pseudoscalar for light (u, d) mesons (analogous to PARJ(11): fraction of $\rho / \pi$)
-  pythia.readString("StringFlav:mesonSvector = 0.75"); // ratio vector/pseudoscalar for strange mesons      (analogous to PARJ(12): fraction of $K^* / K$)
-  pythia.readString("StringPT:sigma = 0.5");           // pT width of the fragmentation process (analogous to PARJ(21))
-  pythia.readString("BeamRemnants:primordialKT = on");          // Allow or not selection of primordial kT according to the parameter values.
-  pythia.readString("BeamRemnants:primordialKTremnant = 0.64"); // The width sigma_remn, assigned as a primordial kT to beam-remnant partons.
-
-
-  // StringSpinner settings.
-  // Value of the free parameters |GL/GT| and thetaLT = arg(GL/GT).
-  pythia.readString("StringSpinner:GLGT = 5");
-  pythia.readString("StringSpinner:thetaLT = 0");
 
   // Choose to assign polarisations.
   int beamSpin, targetSpin;
