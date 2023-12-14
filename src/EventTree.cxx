@@ -250,6 +250,8 @@ EventTree::EventTree(TString filelist_, Int_t whichPair_) {
     chain->SetBranchAddress("SS_W",  &SS_W);
     chain->SetBranchAddress("SS_x",  &SS_x);
     chain->SetBranchAddress("SS_y",  &SS_y);
+    chain->SetBranchAddress("gen_hadParentIdx",gen_hadParentIdx);
+    chain->SetBranchAddress("gen_hadParentPid",gen_hadParentPid);
   }
 
   // instantiate useful objects

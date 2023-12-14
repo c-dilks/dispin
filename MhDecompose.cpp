@@ -138,11 +138,13 @@ TCanvas * BuildCanvas(TString distName) {
 int main(int argc, char** argv) {
 
   // ARGUMENTS
-  infiles = "outroot.mcrec.injgen/*.root";
-  dataPlotsFile = "plots.mctest.root"; // plots.root for data (from diagnostics)
   whichPair = EncodePairType(kPip,kPim);
-  if(argc>1) infiles = TString(argv[1]);
-  if(argc>2) dataPlotsFile = TString(argv[2]);
+  if(argc<3) {
+    fprintf(stderr,"USAGE: %s [outroot file(s)] [diagnostics plots.root file] [pairType]\n",argv[0]);
+    return 1;
+  }
+  infiles = TString(argv[1]);
+  dataPlotsFile = TString(argv[2]);
   if(argc>3) whichPair = (Int_t)strtof(argv[3],NULL);
 
 
