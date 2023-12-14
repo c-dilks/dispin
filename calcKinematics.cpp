@@ -151,7 +151,10 @@ int main(int argc, char** argv) {
       SetParticleBranchAddress(parMCname[p],"matchDist",&(genMatchDist[p]));
       SetParticleBranchAddress(parMCname[p],"parentIdx",&(genParentIdx[p]));
       SetParticleBranchAddress(parMCname[p],"parentPid",&(genParentPid[p]));
-    };
+    } else if(useStringSpinner) {
+      SetParticleBranchAddress(parName[p],"parentIdx",&(genParentIdx[p]));
+      SetParticleBranchAddress(parName[p],"parentPid",&(genParentPid[p]));
+    }
     if(!useStringSpinner) {
       // - detector info
       SetParticleBranchAddress(parName[p],"pcal_found",&(fidu[p]->part_Cal_PCAL_found[0]));
@@ -359,6 +362,8 @@ int main(int argc, char** argv) {
     outrootTr->Branch("SS_W",  &SS_W,  "SS_W/F");
     outrootTr->Branch("SS_x",  &SS_x,  "SS_x/F");
     outrootTr->Branch("SS_y",  &SS_y,  "SS_y/F");
+    outrootTr->Branch("gen_hadParentIdx", gen_hadParentIdx, "gen_hadParentIdx[2]/I");
+    outrootTr->Branch("gen_hadParentPid", gen_hadParentPid, "gen_hadParentPid[2]/I");
   }
 
 
@@ -410,10 +415,22 @@ int main(int argc, char** argv) {
       dih->CalculateKinematics( traj[kHadA], traj[kHadB], disEv );
       fiduCutHad[qA] = fidu[kHadA]->fiduCut;
       fiduCutHad[qB] = fidu[kHadB]->fiduCut;
+      if(useStringSpinner) {
+        gen_hadParentIdx[qA] = genParentIdx[kHadA];
+        gen_hadParentPid[qA] = genParentPid[kHadA];
+        gen_hadParentIdx[qB] = genParentIdx[kHadB];
+        gen_hadParentPid[qB] = genParentPid[kHadB];
+      }
     } else {
       dih->CalculateKinematics( traj[kHadB], traj[kHadA], disEv );
       fiduCutHad[qA] = fidu[kHadB]->fiduCut;
       fiduCutHad[qB] = fidu[kHadA]->fiduCut;
+      if(useStringSpinner) {
+        gen_hadParentIdx[qA] = genParentIdx[kHadB];
+        gen_hadParentPid[qA] = genParentPid[kHadB];
+        gen_hadParentIdx[qB] = genParentIdx[kHadA];
+        gen_hadParentPid[qB] = genParentPid[kHadA];
+      }
     };
 
     
@@ -422,7 +439,7 @@ int main(int argc, char** argv) {
 
 
     // MC information
-    if(useMC) {
+    if(useMC && !useStringSpinner) {
 
       // compute DIS and dihadron kinematics from generated, matched set
       if(dataStream=="mcrec") {

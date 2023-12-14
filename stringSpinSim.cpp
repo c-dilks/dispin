@@ -149,6 +149,8 @@ int main(int argc, char** argv) {
   Float_t chi2pid[nPar];
   Int_t   status[nPar];
   Float_t beta[nPar];
+  Int_t   genParentIdx[nPar];
+  Int_t   genParentPid[nPar];
   Float_t Q2, W, x, y;
 
   auto SetParticleBranch = [&tr] (TString parStr, TString brName, void *brAddr, TString type) {
@@ -160,18 +162,20 @@ int main(int argc, char** argv) {
   tr->Branch("evnum",    &evnum,    "evnum/I");
   tr->Branch("helicity", &helicity, "helicity/I");
   for(int p=0; p<nPar; p++) {
-    SetParticleBranch(parName[p], "Row",     &(Row[p]),     "I");
-    SetParticleBranch(parName[p], "Pid",     &(Pid[p]),     "I");
-    SetParticleBranch(parName[p], "Px",      &(Px[p]),      "F");
-    SetParticleBranch(parName[p], "Py",      &(Py[p]),      "F");
-    SetParticleBranch(parName[p], "Pz",      &(Pz[p]),      "F");
-    SetParticleBranch(parName[p], "E",       &(E[p]),       "F");
-    SetParticleBranch(parName[p], "Vx",      &(Vx[p]),      "F");
-    SetParticleBranch(parName[p], "Vy",      &(Vy[p]),      "F");
-    SetParticleBranch(parName[p], "Vz",      &(Vz[p]),      "F");
-    SetParticleBranch(parName[p], "chi2pid", &(chi2pid[p]), "F");
-    SetParticleBranch(parName[p], "status",  &(status[p]),  "I");
-    SetParticleBranch(parName[p], "beta",    &(beta[p]),    "F");
+    SetParticleBranch(parName[p], "Row",       &(Row[p]),          "I");
+    SetParticleBranch(parName[p], "Pid",       &(Pid[p]),          "I");
+    SetParticleBranch(parName[p], "Px",        &(Px[p]),           "F");
+    SetParticleBranch(parName[p], "Py",        &(Py[p]),           "F");
+    SetParticleBranch(parName[p], "Pz",        &(Pz[p]),           "F");
+    SetParticleBranch(parName[p], "E",         &(E[p]),            "F");
+    SetParticleBranch(parName[p], "Vx",        &(Vx[p]),           "F");
+    SetParticleBranch(parName[p], "Vy",        &(Vy[p]),           "F");
+    SetParticleBranch(parName[p], "Vz",        &(Vz[p]),           "F");
+    SetParticleBranch(parName[p], "chi2pid",   &(chi2pid[p]),      "F");
+    SetParticleBranch(parName[p], "status",    &(status[p]),       "I");
+    SetParticleBranch(parName[p], "beta",      &(beta[p]),         "F");
+    SetParticleBranch(parName[p], "parentIdx", &(genParentIdx[p]), "I");
+    SetParticleBranch(parName[p], "parentPid", &(genParentPid[p]), "I");
   }
   tr->Branch("SS_Q2", &Q2, "SS_Q2/F"); // inclusive kinematics directly from pythia
   tr->Branch("SS_W",  &W,  "SS_W/F");
@@ -258,6 +262,38 @@ int main(int argc, char** argv) {
           chi2pid[i] = 0.0;
           status[i]  = 0;
           beta[i]    = 0.0;
+          // get parent(s)
+          if(i == kEle) { // don't bother for electron
+            genParentIdx[i] = 0;
+            genParentPid[i] = 0;
+          } else {
+            genParentIdx[i] = (Int_t) UNDEF;
+            genParentPid[i] = (Int_t) UNDEF;
+            auto mom1idx    = par.mother1();
+            auto mom2idx    = par.mother2();
+            if(mom1idx>0 && mom2idx==0) { // single mother
+              genParentIdx[i] = mom1idx;
+              genParentPid[i] = (Int_t) EV[mom1idx].id();
+            }
+            else if(mom1idx>0 && mom2idx>0 && mom1idx<mom2idx) { // multiple mothers
+              auto st = std::abs(par.status());
+              if(st>=81 && st<=86) { // string fragmentation
+                // cout << "STRING: " << EV[mom1idx].id() << " " << EV[mom2idx].id() << endl;
+                genParentIdx[i] = mom1idx; // set "the" parent to the quark `stringSelection[0]`, as opposed to the diquark `stringSelection[1]`
+                genParentPid[i] = 92; // means "string fragment" downstream
+              }
+              else if(st>=101 && st<=106) { // R-hadron formation
+                cerr << "WARNING: parent R-hadron formation not handled" << endl;
+              }
+              else { // 2 distinct mothers, from 2->n hard scattering
+                if(Pid[i]!=elePID)
+                  cerr << "WARNING: parent 2->n hard scattering not handled" << endl;
+              }
+            }
+            else {
+              cerr << "WARNING: parent case not handled" << endl;
+            }
+          }
         }
         tr->Fill();
       }
