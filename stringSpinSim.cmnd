@@ -60,13 +60,15 @@ StringPT:enhancedWidth = 0.0    ! the enhancement of the width in this fraction.
 
 ! Settings from `clasdis`
 ! - pythia 6 -> 8 translation from: https://skands.web.cern.ch/slides/11/11-02-skands-uemb.pdf
-StringFlav:mesonUDvector = 0.7          ! ratio vector/pseudoscalar for light (u, d) mesons (analogous to PARJ(11): fraction of $\rho / \pi$)
-StringFlav:mesonSvector = 0.75          ! ratio vector/pseudoscalar for strange mesons      (analogous to PARJ(12): fraction of $K^* / K$)
+! - ratios of vector mesons to pseudoscalar mesons
+StringFlav:mesonUDvector = 0.7          ! for light (u, d) mesons (analogous to PARJ(11): fraction of $\rho / \pi$)
+StringFlav:mesonSvector = 0.75          ! for strange mesons      (analogous to PARJ(12): fraction of $K^* / K$)
+! - momentum widths
 StringPT:sigma = 0.5                    ! pT width of the fragmentation process (analogous to PARJ(21))
-! BeamRemnants:primordialKT = on          ! Allow or not selection of primordial kT according to the parameter values.
-! BeamRemnants:primordialKTremnant = 0.64 ! The width sigma_remn, assigned as a primordial kT to beam-remnant partons. (analogous to PARJ(99))
 BeamRemnants:primordialKT = off         ! Allow or not selection of primordial kT according to the parameter values.
-BeamRemnants:primordialKTremnant = 0.0  ! clasdis=0.64 ! The width sigma_remn, assigned as a primordial kT to beam-remnant partons. (analogous to PARJ(99))
+                                        ! TODO: why do we get NO events if this is `on`?
+BeamRemnants:primordialKTremnant = 0.64 ! The width sigma_remn, assigned as a primordial kT to beam-remnant partons. (analogous to PARJ(99))
+                                        ! NOTE: this is ignored when `primordialKT == off`
 
 ! StringSpinner settings.
 StringSpinner:GLGT = 5     ! free parameter |GL/GT|

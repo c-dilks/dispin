@@ -55,6 +55,7 @@ to this analysis
 - build with `buildStringSpinner.sh`
   - needs Pythia 8.3 (on Arch: `pythia8` and `python-pythia8`)
   - needs `gfortran` (on Arch: `gcc-fortran`)
+  - see [StringSpinner documentation](doc/stringspinner.md) for usage
 
 
 ### Ruby

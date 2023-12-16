@@ -1,4 +1,25 @@
-# Pythia Parameters
+# StringSpinner Usage guide
+
+```bash
+buildStringSpinner.sh
+```
+
+Make or symlink directories:
+```
+diskim.sss
+outroot.sss
+```
+
+Generate `outroot` files, then the `catTree` (see settings in the script first):
+```bash
+loop_stringSpinSim.rb
+catTreeMaker.sh outroot.sss data
+```
+- runs `stringSpinSim.cpp`
+- Pythia configuration is in `stringSpinSim.cmnd` (see below for details)
+
+
+## Pythia Parameters
 
 - `SpaceShower:dipoleRecoil`: for DIS this should be `on`, but Albi has it set to `off`
   - if set to `on`, recommended to also set:
@@ -12,7 +33,7 @@
   - $\pi^0$, $K^0$, and $\pi^+$ are all set to `off`; is this correct?
   - no others are set to `on`
 
-## Vector Meson Decay Fractions
+### Vector Meson Decay Fractions
 
 Need to tune some Pythia parameters since the fraction of rho mesons appears to be too small, relative to its BG. Some Pythia 6 parameters we use in `clasdis`:
 - fraction $\rho/\pi$, and fraction $K^\*/K$: <https://github.com/JeffersonLab/clasdis/blob/6f2a40feac88d6726a37b75c05951ab808a74773/clasDIS.F#L257-L258>
@@ -30,5 +51,5 @@ We'll need to translate these Pythia 6 parameters to Pythia 8, since StringSpinn
 | ---                           | ---                                         | ---                                             |
 | `PARJ(11)`                    | `StringFlav:mesonUDvector`                  | vector/pseudoscalar for light ($u$, $d$) mesons |
 | `PARJ(12)`                    | `StringFlav:mesonSvector`                   | vector/pseudoscalar for strange mesons          |
-| `PARJ(21)`                    | possibly `StringPT:sigma`                   | width of $p_T$ distribution (in fragmentation)  |
-| `PARP(99)` or LEPTO `PARL(3)` | possibly `BeamRemnants:primordialKTremnant` | width of $k_T$ distribution (in initial)        |
+| `PARJ(21)`                    | `StringPT:sigma`                            | width of $p_T$ distribution (in fragmentation)  |
+| `PARP(99)` or LEPTO `PARL(3)` | possibly `BeamRemnants:primordialKTremnant`, but we get **no events** when we turn on `BeamRemnants:primordialKT` | width of $k_T$ distribution (in initial)        |
