@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
 
   // Seed
   pythia.readString("Random:setSeed = on");
-  pythia.settings.parm("Random:seed", seed);
+  pythia.readString("Random:seed = " + std::to_string(seed));
 
   // Choose to assign polarisations.
   int beamSpin, targetSpin;
