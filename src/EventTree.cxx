@@ -563,7 +563,7 @@ Int_t EventTree::SpinState() {
     return UNDEF;
   }
 
-  else { // MC run - use injected helicity (DEPRECATED by `InjectionModel`)
+  else if(runnum==RUNNUM_MC) { // MC run - use injected helicity (DEPRECATED by `InjectionModel`)
     /////////
     /* since usage of this method for MC has been replaced by InjectionModel, 
      * we now just return `sP`, a value that will not cause an error in the 
@@ -589,7 +589,15 @@ Int_t EventTree::SpinState() {
       default: fprintf(stderr,"WARNING: bad SpinState request: %d\n",helicityMC[whichHelicityMC]);
     };
     */
-  };
+  }
+
+  else if(runnum==RUNNUM_STRING_SPINNER) {
+    switch(helicity) {
+      case  1: return sP;
+      case -1: return sM;
+      case  0: return UNDEF;
+    }
+  }
   return UNDEF;
 };
 
