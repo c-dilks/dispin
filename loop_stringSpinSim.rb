@@ -26,19 +26,33 @@ jobFileName   = "jobs.stringSpinner.slurm"
 slurmFileName = jobFileName.gsub /^jobs/, "job"
 jobFile       = File.open jobFileName, 'w'
 
+# generate a unique, random seed
+PYTHIA_MAX_SEED = 900_000_000 # see pythia param `Random:seed`; cannot generate more than this many jobs
+usedSeeds = [0]
+generateSeed = Proc.new do |s|
+  if usedSeeds.include? s
+    generateSeed.call 1 + rand(PYTHIA_MAX_SEED)
+  else
+    usedSeeds.append s
+    s
+  end
+end
+
 # define job commands
 jobFile.puts '#!/bin/bash'
 jobFile.puts 'case $1 in'
 njobs = 0
 NumFiles.times do |filenum|
   Modes.each do |mode|
-    diskimFile = "#{DiskimDir}/mode#{mode}_file#{filenum}.root"
+    uniqueRandomSeed = generateSeed.call 0
+    diskimFile = "#{DiskimDir}/mode#{mode}_file#{filenum}_seed#{uniqueRandomSeed}.root"
     cmd = [
       [
         'stringSpinSim.exe',
         NumEventsPerFile,
         mode,
         diskimFile,
+        uniqueRandomSeed,
         PairType,
       ].join(' '),
       [

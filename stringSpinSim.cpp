@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
   // arguments
   Int_t mode       = 0;
   TString outFileN = Form("sss/%d.root",mode);
-  int seed         = -1;
+  int seed         = -1; // -1: default seed;  0: based on time;  1-900_000_000: fixed seed
   int pairType     = EncodePairType(kPip,kPim);
   int stringSelection[2]         = {2, 2101}; // u === (ud)_0
   TString stringSelectionDesc[2] = {"u", "(ud)_0"};
@@ -38,10 +38,10 @@ int main(int argc, char** argv) {
     cerr << " [numEvents]" << endl;
     cerr << " [mode (default=" << mode << ")]" << endl;
     cerr << " [outputFileName (default=" << outFileN << ")]" << endl;
+    cerr << " [seed (default=" << seed << ")]" << endl;
     cerr << " [pairType (default=0x" << std::hex << pairType << std::dec << ")]" << endl;
     cerr << " [stringSelection0 (default=" << stringSelection[0] << " for '" << stringSelectionDesc[0] << "')]" << endl;
     cerr << " [stringSelection1 (default=" << stringSelection[1] << " for '" << stringSelectionDesc[1] << "')]" << endl;
-    cerr << " [seed (default=" << seed << ")]" << endl;
     cerr << endl << "MODES: " << endl;
     for(int m=0; m<4; m++) cerr << "  " << m << ": " << GetModeStr(m) << endl;
     cerr << endl;
@@ -55,20 +55,20 @@ int main(int argc, char** argv) {
   if(argc>ai) nEvent             = (Long64_t)strtof(argv[ai++],NULL);
   if(argc>ai) mode               = (Int_t)strtof(argv[ai++],NULL);
   if(argc>ai) outFileN           = TString(argv[ai++]);
+  if(argc>ai) seed               = (int)strtof(argv[ai++],NULL);
   if(argc>ai) pairType           = (int)strtof(argv[ai++],NULL);
   if(argc>ai) stringSelection[0] = (int)strtof(argv[ai++],NULL);
   if(argc>ai) stringSelection[1] = (int)strtof(argv[ai++],NULL);
-  if(argc>ai) seed               = (int)strtof(argv[ai++],NULL);
   TString modeStr = GetModeStr(mode);
   if(modeStr.Contains("UNKNOWN")) return 1;
   cout << "ARGS: "        << endl;
   cout << "  nEvent           = " << nEvent   << endl;
   cout << "  mode             = " << mode     << ": " << modeStr << endl;
   cout << "  outFileN         = " << outFileN << endl;
+  cout << "  seed             = " << seed     << endl;
   cout << "  pairType         = " << "0x" << std::hex << pairType << std::dec << endl;
   cout << "  stringSelection0 = " << stringSelection[0] << endl;
   cout << "  stringSelection1 = " << stringSelection[1] << endl;
-  cout << "  seed             = " << seed     << endl;
 
   bool useStringSelection = stringSelection[0]!=0 && stringSelection[1]!=0;
 
@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
 
   // Seed
   pythia.readString("Random:setSeed = on");
-  pythia.settings.parm("Random:seed",seed);
+  pythia.settings.parm("Random:seed", seed);
 
   // Choose to assign polarisations.
   int beamSpin, targetSpin;
