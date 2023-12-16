@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.8
+#!/usr/bin/env python3
 # draw partial wave plots, with shared axes
 
 import matplotlib.pyplot as plt
@@ -89,7 +89,7 @@ CALLING {sys.argv[0]}:
 # OPTIONS ################
 includeMeq0 = False
 transparentBG = False
-includePrelimLabel = True
+includePrelimLabel = False
 ##########################
 if outputEXT!="png": # some features only work for png
     transparentBG = False
@@ -99,8 +99,8 @@ asymMin = None
 if scheme==0: # twist3 m==0 states only
     asymMax = 0.25
 elif scheme==2: # twist2
-    asymMin = -0.06
-    asymMax = 0.06
+    asymMin = -0.10
+    asymMax = 0.10
 elif scheme==3: # twist3
     asymMin = -0.06
     asymMax = 0.08
