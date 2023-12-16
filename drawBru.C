@@ -93,7 +93,7 @@ void drawBru(
         nParams = 0;
         for(int i=0; i<paramSet->get()->size(); i++) {
           if(nParams>BruBin::nParamsMax) {
-            fprintf(stderr,"ERROR: too many params\n"); return 1; };
+            fprintf(stderr,"ERROR: too many params\n"); return; };
           paramName = (*(paramSet->get()))[i]->GetName();
           if(paramName=="NLL") continue;
           if(paramName.Contains("Yld")) moduList[nParams] = nullptr;
