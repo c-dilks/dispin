@@ -21,14 +21,10 @@ catTreeMaker.sh outroot.sss data
 - runs `stringSpinSim.cpp`
 - Pythia configuration is in `stringSpinSim.cmnd` (see below for details)
 
-Fit:
+Fit and plot asymmetries
 ```bash
-root -b -q $BRUFIT/macros/LoadBru.C asymBruFit.C'("catTreeData.sss.0x34.idx.root", "", "bruspin/bruspin.sss", "minuit", "", 0x34, 2, 6)'
-```
-
-Plot:
-```bash
-for s in 2 3; do pwPlot.py -s$s -e'from StringSpinner' -x'$M_h$ [GeV]' bruspin/bruspin.sss/asym_minuit_BL0.root; done
+finalFit_stringspinner.sh
+finalPlot_stringspinner.sh
 ```
 
 
