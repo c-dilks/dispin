@@ -5,15 +5,14 @@
 
 // pythia, stringspinner
 #include "Pythia8/Pythia.h"
-#include "StringSpinner.h"
+#include <StringSpinner.h>
 
 // ROOT
 #include <TFile.h>
 #include <TTree.h>
 
 // dispin
-#include "Constants.h"
-#include "Tools.h"
+#include "src/Constants.h"
 
 using namespace Pythia8;
 

@@ -1,5 +1,4 @@
 #include <cstdlib>
-#include <iostream>
 
 // ROOT
 #include "TFile.h"
@@ -7,7 +6,6 @@
 #include "TChain.h"
 #include "TString.h"
 #include "TMath.h"
-#include "TSystem.h"
 #include "TRegexp.h"
 #include "TH1.h"
 #include "TH2.h"
@@ -16,12 +14,9 @@
 #include "TGraph.h"
 
 // Dispin
-#include "Constants.h"
-#include "Tools.h"
-#include "DIS.h"
-#include "Trajectory.h"
-#include "Dihadron.h"
-#include "EventTree.h"
+#include "src/Constants.h"
+#include "src/Tools.h"
+#include "src/EventTree.h"
 
 void HadronCompareCanv(TCanvas * canv, TH1D * dist[2], TH2D * corr);
 void Hadron2dCanv(TCanvas * canv, TH2D * distA, TH2D * distB);

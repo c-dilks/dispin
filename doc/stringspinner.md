@@ -17,9 +17,21 @@ Generate `outroot` files, then the `catTree` (see settings in the script first):
 ```bash
 loop_stringSpinSim.rb
 catTreeMaker.sh outroot.sss data
+mv <output cattree file> catTrees/
 ```
 - runs `stringSpinSim.cpp`
 - Pythia configuration is in `stringSpinSim.cmnd` (see below for details)
+
+Compare kinematics
+```bash
+CompareCatTreeDists.C'("catTrees/catTreeData.sss.0x34.idx.root","catTrees/catTreeData.rga.pm.bibending.all.idx.root")'
+```
+
+$M_h$ Decomposition
+```bash
+diagnostics.exe "outroot.sss/*.root" plots.sss.root
+MhDecompose.exe "outroot.sss/*.root" plots.sss.root
+```
 
 Fit and plot asymmetries
 ```bash
