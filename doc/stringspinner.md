@@ -10,7 +10,7 @@ Make or symlink directories:
 ```
 diskim.sss
 outroot.sss
-bruspin.sss
+bruspin/bruspin.sss
 ```
 
 Generate `outroot` files, then the `catTree` (see settings in the script first):
@@ -23,12 +23,12 @@ catTreeMaker.sh outroot.sss data
 
 Fit:
 ```bash
-root -b -q $BRUFIT/macros/LoadBru.C asymBruFit.C'("catTreeData.sss.0x34.idx.root", "", "bruspin.sss", "minuit", "", 0x34, 2, 6)'
+root -b -q $BRUFIT/macros/LoadBru.C asymBruFit.C'("catTreeData.sss.0x34.idx.root", "", "bruspin/bruspin.sss", "minuit", "", 0x34, 2, 6)'
 ```
 
 Plot:
 ```bash
-for s in 2 3; do pwPlot.py -s$s -e'from StringSpinner' -x'$M_h$ [GeV]' bruspin.sss/asym_minuit_BL0.root; done
+for s in 2 3; do pwPlot.py -s$s -e'from StringSpinner' -x'$M_h$ [GeV]' bruspin/bruspin.sss/asym_minuit_BL0.root; done
 ```
 
 

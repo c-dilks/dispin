@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# loop stringSpinSim.exe
+# loop stringSpinSim.exe -> calcKinematics.exe
 
 # settings #################
 NumEventsPerFile = 5e6.to_i
