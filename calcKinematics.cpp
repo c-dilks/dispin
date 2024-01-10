@@ -2,24 +2,19 @@
 // branches associated with dihadrons
 
 #include <cstdlib>
-#include <iostream>
 
 // ROOT
 #include "TFile.h"
 #include "TTree.h"
 #include "TString.h"
-#include "TMath.h"
-#include "TSystem.h"
 #include "TRegexp.h"
-#include "TObjArray.h"
-#include "TLorentzVector.h"
 
 // dispin
-#include "Constants.h"
-#include "DIS.h"
-#include "Trajectory.h"
-#include "FiducialCuts.h"
-#include "Dihadron.h"
+#include "src/Constants.h"
+#include "src/DIS.h"
+#include "src/Trajectory.h"
+#include "src/FiducialCuts.h"
+#include "src/Dihadron.h"
 
 
 enum parEnum {kEle,kHadA,kHadB,nPar};
@@ -433,7 +428,7 @@ int main(int argc, char** argv) {
       }
     };
 
-    
+
     // get EC sector for electron
     eleSector = fidu[kEle]->determineSectorEC(0);
 

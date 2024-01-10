@@ -80,10 +80,20 @@ QADB qa = new QADB()
 
 
 // check `dataStream` variable
-def useMC
-if(dataStream=='data') useMC=false
-else if(dataStream=='mcrec') useMC=true
-else if(dataStream=='mcgen') useMC=true
+def useMC    = false // true if any MC mode is set
+def useMCgen = false // true if reading ALL MC generated particles
+def useMCrec = false // true if reading MC reconstructed particles, with matched generated particles
+if(dataStream=='data') {
+  useMC = false
+}
+else if(dataStream=='mcrec') {
+  useMC    = true
+  useMCrec = true
+}
+else if(dataStream=='mcgen') {
+  useMC    = true
+  useMCgen = true
+}
 else {
   System.err << "ERROR: unrecognized dataStream\n"
   return
@@ -175,6 +185,9 @@ def calorimeterList = ['pcal','ecin','ecout']
 
 // closure to define tree leaves for detectors
 def buildDetectorLeaves = { par ->
+  if(useMCgen) {
+    return []
+  }
   return [
     /* calorimeters */
     calorimeterList.collect{ detName ->
@@ -194,6 +207,9 @@ def buildDetectorLeaves = { par ->
 
 // closure for filling detector tree leaves
 def fillDetectorLeaves = { br ->
+  if(useMCgen) {
+    return []
+  }
   def leaves = []
   def brDet = br['detector']
   def found
@@ -252,18 +268,38 @@ def growParticleTree = { pidList, pid ->
   //   'vx,vy,vz' -> vertex
   //   etc.
   def particleTree = rowList.collect { row ->
-    [
+    def result = [
       'row':row,
       'particle':new Particle(
         pid,
         *['px','py','pz'].collect{particleBank.getFloat(it,row)}
       ),
       *:['vx','vy','vz'].collectEntries{[it,particleBank.getFloat(it,row)]},
-      'chi2pid':particleBank.getFloat('chi2pid',row),
-      'status':particleBank.getShort('status',row),
-      'beta':particleBank.getFloat('beta',row),
-      'detector':getDetectorBranch(row)
     ]
+    if(!useMCgen) {
+      result += [
+        'chi2pid':  particleBank.getFloat('chi2pid',row),
+        'status':   particleBank.getShort('status',row),
+        'beta':     particleBank.getFloat('beta',row),
+        'detector': getDetectorBranch(row),
+      ]
+    }
+    else { // if(useMCgen)
+      // get parent info (NOTE: `particleBank` in this context is actually `MC::Lund`)
+      def parent_idx = particleBank.getByte('parent',row)
+      def parent_row = (0..<particleBank.rows()).find{
+        parent_idx == particleBank.getByte('index',it)
+      }
+      def parent_pid = particleBank.getInt('pid',parent_row)
+      result += [
+        'chi2pid': 0.0,
+        'status':  0,
+        'beta':    0.0,
+        'parentIdx': parent_idx,
+        'parentPid': parent_pid,
+      ]
+    }
+    return result
   }
 
   // verbose printing
@@ -364,16 +400,23 @@ def growMCtree = { pidList, pid ->
 
 // closure to define tree leaves for particles
 def buildParticleLeaves = { par ->
-  return [
+  def result = [
     'Row/I',
     'Pid/I',
     'Px','Py','Pz',
     'E',
     'Vx','Vy','Vz',
     'chi2pid','status/I','beta'
-  ].collect{par+'_'+it}
+  ]
+  if(useMCgen) {
+    result += [
+      'parentIdx/I',
+      'parentPid/I',
+    ]
+  }
+  return result.collect{par+'_'+it}
 }
-def buildMCleaves = { par ->
+def buildMCrecLeaves = { par ->
   return [
     'Row/I',
     'Pid/I',
@@ -388,7 +431,7 @@ def buildMCleaves = { par ->
 // closure to fill particle tree leaves
 def fillParticleLeaves = { br ->
   def pid = br.particle.pid()
-  return [
+  result = [
     br.row,
     pid,
     br.particle.px(), br.particle.py(), br.particle.pz(),
@@ -396,6 +439,13 @@ def fillParticleLeaves = { br ->
     br.vx, br.vy, br.vz,
     br.chi2pid, br.status, br.beta,
   ]
+  if(useMCgen) {
+    result += [
+      br.parentIdx,
+      br.parentPid,
+    ]
+  }
+  return result
 }
 def fillMCleaves = { br ->
   if(br!=null) {
@@ -435,11 +485,11 @@ def ditrLeafNames = [
   *buildParticleLeaves('hadA'), *buildDetectorLeaves('hadA'),
   *buildParticleLeaves('hadB'), *buildDetectorLeaves('hadB'),
 ]
-if(useMC) {
+if(useMCrec) {
   ditrLeafNames += [
-    *buildMCleaves('gen_ele'),
-    *buildMCleaves('gen_hadA'),
-    *buildMCleaves('gen_hadB')
+    *buildMCrecLeaves('gen_ele'),
+    *buildMCrecLeaves('gen_hadA'),
+    *buildMCrecLeaves('gen_hadB')
   ]
 }
 
@@ -505,22 +555,22 @@ inHipoList.each { inHipoFile ->
        event.hasBank("RUN::config") ) {
 
       // get banks
-      particleBank = event.getBank("REC::Particle")
-      eventBank = event.getBank("REC::Event")
-      configBank = event.getBank("RUN::config")
-      calBank = event.getBank("REC::Calorimeter")
-      trkBank = event.getBank("REC::Track")
-      trajBank = event.getBank("REC::Traj")
-      if(useMC) {
+      particleBank = useMCgen ? event.getBank("MC::Lund") : event.getBank("REC::Particle")
+      eventBank    = event.getBank("REC::Event")
+      configBank   = event.getBank("RUN::config")
+      calBank      = event.getBank("REC::Calorimeter")
+      trkBank      = event.getBank("REC::Track")
+      trajBank     = event.getBank("REC::Traj")
+      if(useMCrec) {
         mcParticleBank = event.getBank("MC::Particle")
-        lundBank = event.getBank("MC::Lund")
+        lundBank       = event.getBank("MC::Lund")
       }
 
 
       // get event-level information
       helicity = eventBank.getByte('helicity',0)
-      runnum = configBank.getInt('run',0)
-      evnum = configBank.getInt('event',0)
+      runnum   = configBank.getInt('run',0)
+      evnum    = configBank.getInt('event',0)
       if(once) {
         println "ANALYZING RUN $runnum"
         once = false
@@ -538,18 +588,18 @@ inHipoList.each { inHipoFile ->
 
 
       // get list of PIDs, with list index corresponding to bank row
-      pids = (0..<particleBank.rows()).collect{ 
+      pids = (0..<particleBank.rows()).collect{
         particleBank.getInt('pid',it)
       }
       if(verbose) println "PIDs = $pids"
 
 
-      // read MC generated particles
+      // read MC generated particles, for matching to MC reconstructed particles
       // - mcgenTreeList is a list of trees; one list element = one PID;
-      //   each list element is a 'tree': a list of subtrees (branches), one for 
+      //   each list element is a 'tree': a list of subtrees (branches), one for
       //   for each particle with that PID
-      if(useMC) {
-        mcPids = (0..<mcParticleBank.rows()).collect{ 
+      if(useMCrec) {
+        mcPids = (0..<mcParticleBank.rows()).collect{
           mcParticleBank.getInt('pid',it)
         }
         if(verbose) println "MC PIDs = $mcPids"
@@ -562,7 +612,7 @@ inHipoList.each { inHipoFile ->
       }
 
 
-      
+
       //----------------------------------
       // find the DIS electron
       //----------------------------------
@@ -622,7 +672,7 @@ inHipoList.each { inHipoFile ->
 
 
               // MC matching
-              if(useMC) {
+              if(useMCrec) {
                 mcgenSet = [eleDIS,hadA,hadB].collect{ rec ->
                   def minDist = 10000.0
                   def dist
@@ -660,7 +710,7 @@ inHipoList.each { inHipoFile ->
                 *fillParticleLeaves(hadA), *fillDetectorLeaves(hadA),
                 *fillParticleLeaves(hadB), *fillDetectorLeaves(hadB),
               ]
-              if(useMC)
+              if(useMCrec)
                 ditrLeafVals += [
                   *fillMCleaves(mcEle),
                   *fillMCleaves(mcHadA),
@@ -682,7 +732,7 @@ inHipoList.each { inHipoFile ->
               ditr.fill(ditrLeafVals_casted)
 
               // print dihadron hadrons
-              if(verbose) { 
+              if(verbose) {
                 20.times{print '.'}
                 println " dihadron "+
                   hadPIDlist[hadIdxA]+" "+hadPIDlist[hadIdxB]+"  rows "+
