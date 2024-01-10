@@ -7,18 +7,25 @@ DEPS += -Isrc
 
 
 # assume each .cpp file has main and build corresponding .exe executable
-SOURCES := $(basename $(wildcard *.cpp))
+# - omit any .cpp files which should be built with separate recipes
+SOURCES := $(filter-out stringSpinSim, $(basename $(wildcard *.cpp)))
 EXES := $(addsuffix .exe, $(SOURCES))
 
 
 #--------------------------------------------
 
 
-all: 
+all:
 	$(MAKE) -C src
 	make exe
 
 exe: $(EXES)
+
+stringSpinSim: DEPS += -I${PYTHIADIR}/include
+stringSpinSim: LIBS += -L${PYTHIADIR}/lib -lpythia8 -ldl
+stringSpinSim: DEPS += -I${STRINGSPINNER}
+stringSpinSim: LIBS += ${STRINGSPINNER}/mc3P0.o ${STRINGSPINNER}/def.o -lgfortran
+stringSpinSim: stringSpinSim.exe
 
 %.exe: %.o
 	@echo "--- make executable $@"

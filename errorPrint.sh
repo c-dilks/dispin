@@ -1,5 +1,6 @@
 #!/bin/bash
-grep -HE '.*' /farm_out/`whoami`/*.err |\
+[ $# -ge 1 ] && filter=$1 || filter=*
+grep -HE '.*' /farm_out/$LOGNAME/${filter}.err |\
 grep -vE '█' |\
 grep -vE '═' |\
 grep -vE 'Physics Division' |\
