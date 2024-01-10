@@ -27,14 +27,6 @@ LIBS += -lMinuit -lRooFitCore -lRooFit -lRooStats -lProof -lMathMore
 DEPS += -I$(BRUFIT)/core
 LIBS += -L$(BRUFIT)/lib -lbrufit
 
-# Pythia
-DEPS += -I${PYTHIADIR}/include
-LIBS += -L${PYTHIADIR}/lib -lpythia8 -ldl
-
-# StringSpinner
-DEPS += -I${STRINGSPINNER}
-LIBS += ${STRINGSPINNER}/mc3P0.o ${STRINGSPINNER}/def.o -lgfortran
-
 # QADB
 DEPS += -I$(QADB)/srcC/rapidjson/include -I$(QADB)/srcC/include
 

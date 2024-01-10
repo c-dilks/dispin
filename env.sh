@@ -35,4 +35,4 @@ env|grep --color -w PYTHIADIR
 echo "=============================="
 
 # checks
-[ -z "$PYTHIADIR" ] && echo "ERROR: Pythia8 not found!" >&2
+[ -z "$PYTHIADIR" ] && echo "WARNING: Pythia8 not found!" >&2

@@ -3,7 +3,7 @@
 Build:
 ```bash
 buildStringSpinner.sh
-make
+make stringSpinSim
 ```
 
 Make or symlink directories:
