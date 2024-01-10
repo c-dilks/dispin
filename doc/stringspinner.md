@@ -24,7 +24,7 @@ mv <output cattree file> catTrees/
 
 Compare kinematics
 ```bash
-CompareCatTreeDists.C'("catTrees/catTreeData.sss.0x34.idx.root","catTrees/catTreeData.rga.pm.bibending.all.idx.root")'
+root -b -q CompareCatTreeDists.C'("catTrees/catTreeData.sss.0x34.idx.root","catTrees/catTreeData.rga.pm.bibending.all.idx.root")'
 ```
 
 $M_h$ Decomposition

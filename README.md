@@ -52,6 +52,7 @@ to this analysis
     `-DCMAKE_C_COMPILER=/path/to/newer/gcc`
 
 ### StringSpinner
+- this is _optional_
 - build with `buildStringSpinner.sh`
   - needs Pythia 8.3 (on Arch: `pythia8` and `python-pythia8`)
   - needs `gfortran` (on Arch: `gcc-fortran`)

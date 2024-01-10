@@ -475,7 +475,7 @@ static Float_t RundepBeamEn(Int_t run) {
   else if(run>=11284 && run<=11300) return 4.17179; // rgb fall BAND_FT 19
   else if(run>=11323 && run<=11571) return 10.3894; // rgb winter 20 (RCDB may still be incorrect)
   else if(run==RUNNUM_MC)             return DEFAULT_BEAM_ENERGY; // MC for RGA inbending
-  else if(run==RUNNUM_STRING_SPINNER) return DEFAULT_BEAM_ENERGY; // String Spinner
+  else if(run==RUNNUM_STRING_SPINNER) return DEFAULT_BEAM_ENERGY; // StringSpinner
   else {
     fprintf(stderr,"ERROR: RundepBeamEn unknown for run %d\n",run);
     return 0.0;
@@ -521,7 +521,7 @@ static Float_t RundepPolarization(Int_t run, Bool_t v=true) {
   else if(run>=11389 && run<=11571) return v? 0.84262 : 0.01494; // NOTE: table last updated 1/15/2020, but run ended on 1/30
   /* MC */
   else if(run==RUNNUM_MC)             return v? 0.86 : 0.0; // MC
-  else if(run==RUNNUM_STRING_SPINNER) return v? 1.00 : 0.0; // String Spinner
+  else if(run==RUNNUM_STRING_SPINNER) return v? 1.00 : 0.0; // StringSpinner
   else {
     fprintf(stderr,"ERROR: RundepPolarization unknown for run %d\n",run);
     return 0.0;
