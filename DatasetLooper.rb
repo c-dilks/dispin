@@ -46,12 +46,18 @@ class DatasetLooper
     "rgb.inbending.sp19.pass2"       => { :dataset => "rgb.inbending.sp19",  :rating => "GOOD",  :source => "/cache/clas12/rg-b/production/recon/spring2019/torus-1/pass2/v0/dst/train/sidisdvcs",   :stream => "data",  },
     "rgb.inbending.sp20.pass1"       => { :dataset => "rgb.inbending.sp20",  :rating => "GOOD",  :source => "/cache/clas12/rg-b/production/recon/spring2020/torus-1/pass1/v1/dst/train/sidisdvcs",   :stream => "data",  },
     # MC -----------------------------------------------------------------
-    "mc.inbending.bg45"              => { :dataset => "mc.inbending.bg45",   :rating => "GOOD",  :source => "/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus-1/v1/bkg45nA_10604MeV", :stream => "mcrec", },
-    "mc.outbending.bg40"             => { :dataset => "mc.outbending.bg40",  :rating => "GOOD",  :source => "/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus+1/v1/bkg40nA_10604MeV", :stream => "mcrec", },
-    "mc.outbending.bg50"             => { :dataset => "mc.outbending.bg50",  :rating => "GOOD",  :source => "/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus+1/v1/bkg50nA_10604MeV", :stream => "mcrec", },
+    # inbending bg45
+    "mc.inbending.bg45"     => { :dataset => "mc.inbending.bg45",     :rating => "GOOD", :source => "/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus-1/v1/bkg45nA_10604MeV", :stream => "mcrec", },
+    "mcgen.inbending.bg45"  => { :dataset => "mcgen.inbending.bg45",  :rating => "GOOD", :source => "/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus-1/v1/bkg45nA_10604MeV", :stream => "mcgen", },
+    # outbending bg40
+    "mc.outbending.bg40"    => { :dataset => "mc.outbending.bg40",    :rating => "GOOD", :source => "/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus+1/v1/bkg40nA_10604MeV", :stream => "mcrec", },
+    "mcgen.outbending.bg40" => { :dataset => "mcgen.outbending.bg40", :rating => "GOOD", :source => "/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus+1/v1/bkg40nA_10604MeV", :stream => "mcgen", },
+    # outbending bg50
+    "mc.outbending.bg50"    => { :dataset => "mc.outbending.bg50",    :rating => "GOOD", :source => "/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus+1/v1/bkg50nA_10604MeV", :stream => "mcrec", },
+    "mcgen.outbending.bg50" => { :dataset => "mcgen.outbending.bg50", :rating => "GOOD", :source => "/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus+1/v1/bkg50nA_10604MeV", :stream => "mcgen", },
   }
 
- 
+
   #####################################
   # construction
 
