@@ -42,6 +42,7 @@ class EventTree : public TObject
     virtual void GetEvent(Long64_t i);
     void GetTrajectories(Long64_t i, Bool_t prog=false);
     Bool_t Valid();
+    Bool_t ValidStringSpinner();
 
     Int_t SpinState();
     virtual Int_t GetSpinIdx() { return SpinInt(SpinState()); };
@@ -248,6 +249,10 @@ class EventTree : public TObject
     Bool_t vzdiffBool;
     Float_t vzdiff[2];
 
+    // - string spinner branches
+    Float_t SS_Q2, SS_W, SS_x, SS_y;
+    Bool_t useStringSpinner;
+
   private:
     TChain * chain;
     TString filelist;
@@ -273,7 +278,6 @@ class EventTree : public TObject
 
     Bool_t isDiphoton[2];
     Float_t minP[2];
-
 
   ClassDef(EventTree,1);
 };

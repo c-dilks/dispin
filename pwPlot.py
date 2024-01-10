@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.8
+#!/usr/bin/env python3
 # draw partial wave plots, with shared axes
 
 import matplotlib.pyplot as plt
@@ -13,6 +13,7 @@ extraTitle = ''
 outputEXT = 'png'
 translation = 0.0
 legendLabels = []
+includePrelimLabel = False
 if len(sys.argv)-1 < 1:
     helpStr = f'''
     USAGE: {sys.argv[0]} [OPTION]... [FILE]...
@@ -54,16 +55,18 @@ if len(sys.argv)-1 < 1:
             string of labels, for a legend; each label should be delimited by a semicolon,
             and if you use this, the number of labels must match the number of FILES
 
+        -w  include PRELIMINARY watermark
+
     FILES
         brufit asym.root file(s), which will be stacked together on the output figure
-    
+
     See hard-coded OPTIONS in {sys.argv[0]} for more settings
 
     '''
     print(helpStr,file=sys.stderr)
     exit(2)
 
-try: opts,args = getopt.getopt(sys.argv[1:],'s:x:e:o:t:l:')
+try: opts,args = getopt.getopt(sys.argv[1:],'s:x:e:o:t:l:w')
 except getopt.GetoptError:
     print('\n\nERROR: invalid arguments')
     exit(2)
@@ -74,6 +77,7 @@ for opt,arg in opts:
     if(opt=="-o"): outputEXT = arg
     if(opt=="-t"): translation = float(arg)
     if(opt=="-l"): legendLabels = arg.split(';')
+    if(opt=="-w"): includePrelimLabel = True
 infiles = args
 print(f'''
 CALLING {sys.argv[0]}:
@@ -89,7 +93,6 @@ CALLING {sys.argv[0]}:
 # OPTIONS ################
 includeMeq0 = False
 transparentBG = False
-includePrelimLabel = True
 ##########################
 if outputEXT!="png": # some features only work for png
     transparentBG = False
@@ -99,11 +102,11 @@ asymMin = None
 if scheme==0: # twist3 m==0 states only
     asymMax = 0.25
 elif scheme==2: # twist2
-    asymMin = -0.06
-    asymMax = 0.06
+    asymMin = -0.095
+    asymMax = 0.095
 elif scheme==3: # twist3
-    asymMin = -0.06
-    asymMax = 0.08
+    asymMin = -0.095
+    asymMax = 0.095
 elif scheme==4: # DSIDIS
     asymMax = 0.095
 elif scheme==12: # twist2, no theta-dependence
@@ -379,9 +382,9 @@ for l,lmap in plotmap.items():
                 color=mkrCol,
                 ecolor=errCol,
                 linestyle='None',
-                elinewidth=1,
+                elinewidth=2,
                 markersize=mkrSize,
-                capsize=0,
+                capsize=mkrSize / 2.0,
                 zorder=10+infileIdx,
                 label=label,
             )
@@ -498,7 +501,7 @@ plt.ylim(asymMin,asymMax)
 # legend
 if len(legendLabels)>0 and scheme<2000:
     location = 'upper right'
-    padding = 1 
+    padding = 1
     if scheme==2 or scheme==3: padding=5
     if scheme==32 or scheme==33: padding=12
     fig.legend(loc=location, borderaxespad=padding)

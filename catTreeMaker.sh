@@ -53,18 +53,10 @@ echo "outfile=$outfile"
 mkdir -p `dirname $outfile`
 
 
-# call buildSpinroot.exe on condor or slurm
-if [[ $(hostname) =~ "ifarm" ]]; then
-  echo "on ifarm, will use SLURM"
-  slurm.buildSpinroot.sh $args
-  sleep 3
-  waitForSlurm.sh dispin_buildSpinroot
-else
-  echo "not on ifarm, will use CONDOR"
-  condor.buildSpinroot.sh $args
-  sleep 3
-  waitForCondor.sh
-fi
+# call buildSpinroot.exe on slurm
+slurm.buildSpinroot.sh $args
+sleep 3
+waitForSlurm.sh dispin_buildSpinroot
 
 
 # concatenate spinroot files to catTree.root

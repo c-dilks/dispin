@@ -9,3 +9,6 @@
 [submodule "deps/clas12-qadb"]
 	path = deps/clas12-qadb
 	url = https://github.com/JeffersonLab/clas12-qadb.git
+[submodule "deps/StringSpinner"]
+	path = deps/StringSpinner
+	url = https://gitlab.com/albikerbizi/stringspinner.git

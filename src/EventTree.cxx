@@ -241,6 +241,19 @@ EventTree::EventTree(TString filelist_, Int_t whichPair_) {
     };
   };
 
+  // - string spinner branches
+  useStringSpinner = false;
+  if(chain->GetBranch("SS_Q2")) {
+    useStringSpinner = true;
+    printf("These data are from StringSpinner\n");
+    chain->SetBranchAddress("SS_Q2", &SS_Q2);
+    chain->SetBranchAddress("SS_W",  &SS_W);
+    chain->SetBranchAddress("SS_x",  &SS_x);
+    chain->SetBranchAddress("SS_y",  &SS_y);
+    chain->SetBranchAddress("gen_hadParentIdx",gen_hadParentIdx);
+    chain->SetBranchAddress("gen_hadParentPid",gen_hadParentPid);
+  }
+
   // instantiate useful objects
   objDihadron = new Dihadron();
   objDIS = new DIS();
@@ -479,12 +492,18 @@ void EventTree::GetEvent(Long64_t i) {
 /////////////////////////////////////////////////////////
 // MAIN ANALYSIS CUT
 Bool_t EventTree::Valid() {
+  if(useStringSpinner) return ValidStringSpinner();
   return cutDIS && cutDihadron && cutHelicity && 
          cutFiducial && cutPID && cutVertex && cutFR;
   // NOTE: if you want to disable `cutDihadron`, you likely want to ensure `Tools::PairSame` is still checked
   //return Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) && cutHelicity; // disable "all" cuts
 };
 /////////////////////////////////////////////////////////
+
+// Analysis cut for String Spinner MC data
+Bool_t EventTree::ValidStringSpinner() {
+  return cutDIS && cutDihadron && cutHelicity && cutFR;
+};
 
 
 // just get trajectories (faster than GetEvent, since
@@ -526,7 +545,7 @@ void EventTree::GetTrajectories(Long64_t i, Bool_t prog) {
 // translate "helicity" to a local index for the spin
 Int_t EventTree::SpinState() {
   
-  if(runnum!=11) { // data run
+  if(runnum!=RUNNUM_MC && runnum!=RUNNUM_STRING_SPINNER) { // data run
     if(RundepHelicityFlip(runnum)) { // helicity flipped
       switch(helicity) {
         case  1: return sM;
@@ -544,7 +563,7 @@ Int_t EventTree::SpinState() {
     return UNDEF;
   }
 
-  else { // MC run - use injected helicity (DEPRECATED by `InjectionModel`)
+  else if(runnum==RUNNUM_MC) { // MC run - use injected helicity (DEPRECATED by `InjectionModel`)
     /////////
     /* since usage of this method for MC has been replaced by InjectionModel, 
      * we now just return `sP`, a value that will not cause an error in the 
@@ -570,7 +589,15 @@ Int_t EventTree::SpinState() {
       default: fprintf(stderr,"WARNING: bad SpinState request: %d\n",helicityMC[whichHelicityMC]);
     };
     */
-  };
+  }
+
+  else if(runnum==RUNNUM_STRING_SPINNER) {
+    switch(helicity) {
+      case  1: return sP;
+      case -1: return sM;
+      case  0: return UNDEF;
+    }
+  }
   return UNDEF;
 };
 
@@ -699,7 +726,7 @@ Bool_t EventTree::CheckSampFrac() {
       // sfSigma[1][0] = 0.1752;  sfSigma[1][1] = 0.1975;  sfSigma[1][2] = 0.1458;  sfSigma[1][3] = 0.1787;  sfSigma[1][4] = 0.0414;  sfSigma[1][5] = 0.2873;
       // sfSigma[2][0] = -0.0405; sfSigma[2][1] = -0.2537; sfSigma[2][2] = 0.2474;  sfSigma[2][3] = 0.4116;  sfSigma[2][4] = 1.2172;  sfSigma[2][5] = -0.4651;
     }
-    else if(runnum==11) { // MC
+    else if(runnum==RUNNUM_MC) { // MC
       for(int s=0; s<6; s++) {
         sfMu[0][s] = 0.248605;
         sfMu[1][s] = -0.844221;

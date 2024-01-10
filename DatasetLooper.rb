@@ -91,16 +91,16 @@ class DatasetLooper
     @binHash = Hash.new
     if dihadronTok==:p0 or dihadronTok==:m0 # less pi0 statistics, coarser binning
       @binHash = {
-        1 => { :bins=>[3], :name=>'x', :xTitle=>'$x$',         :xTranslation=>0.006 },
-        2 => { :bins=>[3], :name=>'m', :xTitle=>'$M_h$ [GeV]', :xTranslation=>0.020 },
-        3 => { :bins=>[3], :name=>'z', :xTitle=>'$z$',         :xTranslation=>0.010 },
+        1 => { :bins=>[3], :name=>'x', :xTitle=>'$x$',         :xTranslation=>0.0 },
+        2 => { :bins=>[3], :name=>'m', :xTitle=>'$M_h$ [GeV]', :xTranslation=>0.0 },
+        3 => { :bins=>[3], :name=>'z', :xTitle=>'$z$',         :xTranslation=>0.0 },
       }
     else # pi+pi- binning scheme
       @binHash = {
-        1  => { :bins=>[6],   :name=>'x',   :xTitle=>'$x$',         :xTranslation=>0.006      },
-        2  => { :bins=>[6],   :name=>'m',   :xTitle=>'$M_h$ [GeV]', :xTranslation=>0.020      },
-        32 => { :bins=>[3,2], :name=>'zm',  :xTitle=>'$z$',         :blTitle=>'$M_h$ __BL__', :xTranslation=>0.010 },
-        42 => { :bins=>[3,2], :name=>'ptm', :xTitle=>'$p_T$ [GeV]', :blTitle=>'$M_h$ __BL__', :xTranslation=>0.015 },
+        1  => { :bins=>[6],   :name=>'x',   :xTitle=>'$x$',         :xTranslation=>0.0      },
+        2  => { :bins=>[6],   :name=>'m',   :xTitle=>'$M_h$ [GeV]', :xTranslation=>0.0      },
+        32 => { :bins=>[3,2], :name=>'zm',  :xTitle=>'$z$',         :blTitle=>'$M_h$ __BL__', :xTranslation=>0.0 },
+        42 => { :bins=>[3,2], :name=>'ptm', :xTitle=>'$p_T$ [GeV]', :blTitle=>'$M_h$ __BL__', :xTranslation=>0.0 },
       }
     end
     ###########################

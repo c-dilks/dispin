@@ -15,7 +15,7 @@ EXES := $(addsuffix .exe, $(SOURCES))
 
 
 all: 
-	@cd src; make
+	$(MAKE) -C src
 	make exe
 
 exe: $(EXES)

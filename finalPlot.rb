@@ -15,8 +15,8 @@ dihadronSym = ARGV[0].to_sym
 looper = DatasetLooper.new(dihadronSym)
 
 # settings #################
-subDir     = "bruspin.volatile"
-idString   = "may6"
+subDir     = "bruspin"
+idString   = "TRANSVERSITY2022"
 datasets   = looper.allsetListLoopOnlyData
 minimizers = [
   "minuit",
@@ -126,6 +126,7 @@ looper.binHash.keys.product(tori,minimizers,schemes[dihadronSym]).each do |ivTyp
       "-s#{scheme}",
       "-o#{outputFormat}",
       "-l'#{legendLabels.join(';')}'",
+      ['TRANSVERSITY2022'].include?(idString) ? '-w' : '',
       *titleOpts,
       *bruFiles,
     ].join(' ')

@@ -1,4 +1,6 @@
 #!/bin/bash
+#
+# run certain `CompareBruAsym` commands
 
 if [ $# -ne 1 ]; then echo "USAGE: $0 [set]"; exit 1; fi
 setnum=$1
@@ -101,6 +103,14 @@ case $setnum in
     root CompareBruAsym.C'''(
       "xF>0",      "bruspin.XFtest.XFgt0.z.mh/asym_minuit_BL0.root",
       "no xF cut", "bruspin.XFtest.XFfull.z.mh/asym_minuit_BL0.root"
+    )'''
+    ;;
+
+  ### StringSpinner
+  5550)
+    root CompareBruAsym.C'''(
+      "StringSpinner",            "bruspin/bruspin.sss/asym_minuit_BL0.root",
+      "CLAS12 Transversity 2022", "bruspin/TRANSVERSITY2022.rga.pm.bibending.all.m.minuit/asym_minuit_BL0.root"
     )'''
     ;;
   *)
