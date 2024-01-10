@@ -25,7 +25,7 @@ class DatasetLooper
   # hash table for dataset sources
   # key := dataset SOURCE name, which may differ from the dataset in @datasetList, since more than one
   #        source may be used for a single data set
-  # :dataset := the data set name, used in @datasetList; there may be more dataset than in @datasetList,
+  # :dataset := the data set name, used in @datasetList; there may be more datasets than in @datasetList,
   #             but only the datasets in @datasetList will be processed in analysis code
   # :rating  := a status or comment to remind what the dataset is used for, quality, etc.;
   #             "GOOD"  => good for physics analysis
