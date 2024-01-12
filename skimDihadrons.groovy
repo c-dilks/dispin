@@ -81,7 +81,7 @@ QADB qa = new QADB()
 
 // check `dataStream` variable
 def useMC    = false // true if any MC mode is set
-def useMCgen = false // true if reading ALL MC generated particles
+def useMCgen = false // true if reading only MC generated particles
 def useMCrec = false // true if reading MC reconstructed particles, with matched generated particles
 if(dataStream=='data') {
   useMC = false
@@ -180,14 +180,11 @@ def calorimeterLeafList = [
 ]
 
 // list of  calorimeters
-def calorimeterList = ['pcal','ecin','ecout'] 
+def calorimeterList = ['pcal','ecin','ecout']
 //def calorimeterList = ['pcal'] // pcal only
 
 // closure to define tree leaves for detectors
 def buildDetectorLeaves = { par ->
-  if(useMCgen) {
-    return []
-  }
   return [
     /* calorimeters */
     calorimeterList.collect{ detName ->
@@ -207,9 +204,6 @@ def buildDetectorLeaves = { par ->
 
 // closure for filling detector tree leaves
 def fillDetectorLeaves = { br ->
-  if(useMCgen) {
-    return []
-  }
   def leaves = []
   def brDet = br['detector']
   def found
@@ -408,7 +402,10 @@ def buildParticleLeaves = { par ->
     'Vx','Vy','Vz',
     'chi2pid','status/I','beta'
   ]
-  if(useMCgen) {
+  if(!useMCgen) {
+    result += buildDetectorLeaves(par)
+  }
+  else {
     result += [
       'parentIdx/I',
       'parentPid/I',
@@ -439,7 +436,10 @@ def fillParticleLeaves = { br ->
     br.vx, br.vy, br.vz,
     br.chi2pid, br.status, br.beta,
   ]
-  if(useMCgen) {
+  if(!useMCgen) {
+    result += fillDetectorLeaves(br)
+  }
+  else {
     result += [
       br.parentIdx,
       br.parentPid,
@@ -481,9 +481,9 @@ def fillMCleaves = { br ->
 // tree leaf names
 def ditrLeafNames = [
   'runnum/I', 'evnum/I', 'helicity/I',
-  *buildParticleLeaves('ele'), *buildDetectorLeaves('ele'),
-  *buildParticleLeaves('hadA'), *buildDetectorLeaves('hadA'),
-  *buildParticleLeaves('hadB'), *buildDetectorLeaves('hadB'),
+  *buildParticleLeaves('ele'),
+  *buildParticleLeaves('hadA'),
+  *buildParticleLeaves('hadB'),
 ]
 if(useMCrec) {
   ditrLeafNames += [
@@ -706,9 +706,9 @@ inHipoList.each { inHipoFile ->
               // fill tree (be sure order matches defined order from `ditrLeafNames`)
               ditrLeafVals = [
                 runnum, evnum, helicity,
-                *fillParticleLeaves(eleDIS), *fillDetectorLeaves(eleDIS),
-                *fillParticleLeaves(hadA), *fillDetectorLeaves(hadA),
-                *fillParticleLeaves(hadB), *fillDetectorLeaves(hadB),
+                *fillParticleLeaves(eleDIS),
+                *fillParticleLeaves(hadA),
+                *fillParticleLeaves(hadB),
               ]
               if(useMCrec)
                 ditrLeafVals += [
