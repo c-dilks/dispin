@@ -281,10 +281,14 @@ def growParticleTree = { pidList, pid ->
     else { // if(useMCgen)
       // get parent info (NOTE: `particleBank` in this context is actually `MC::Lund`)
       def parent_idx = particleBank.getByte('parent',row)
-      def parent_row = (0..<particleBank.rows()).find{
-        parent_idx == particleBank.getByte('index',it)
+      def parent_row = (0..<particleBank.rows()).find{ parent_idx == particleBank.getByte('index',it) }
+      def parent_pid
+      if(parent_row != null) {
+        parent_pid = particleBank.getInt('pid',parent_row)
+      } else {
+        parent_idx = -1
+        parent_pid = -1
       }
-      def parent_pid = particleBank.getInt('pid',parent_row)
       result += [
         'chi2pid': 0.0,
         'status':  0,
@@ -627,7 +631,9 @@ inHipoList.each { inHipoFile ->
       //      one candidate DIS electron was found)
       eleDIS = eleTree.max{it.particle.e()}
       // CUT: electron must be in FD trigger
-      if( eleDIS.status <= -3000 || eleDIS.status > -2000) continue
+      if(!useMCgen) {
+        if(eleDIS.status <= -3000 || eleDIS.status > -2000) continue
+      }
 
       if(verbose) { println "----- eleDIS:"; println eleDIS.particle; }
 
@@ -637,7 +643,7 @@ inHipoList.each { inHipoFile ->
       //------------------------------
 
       // first build a list of hadron trees; one list element = one PID
-      //   each list element is a 'tree': a list of subtrees (branches), one for 
+      //   each list element is a 'tree': a list of subtrees (branches), one for
       //   for each particle with that PID
       eventHasPipPim = false
       if(verbose) println "..... hadrons:"
@@ -667,9 +673,10 @@ inHipoList.each { inHipoFile ->
               // CUT: reject hadrons which are only in the CD; they will fail
               //      fiducial cuts because they do not have a DC trajectory,
               //      but rather only a CVT trajectory
-              if( (hadA.status>=4000 && hadA.status<5000) ||
-                  (hadB.status>=4000 && hadB.status<5000) ) return
-
+              if(!useMCgen) {
+                if( (hadA.status>=4000 && hadA.status<5000) ||
+                    (hadB.status>=4000 && hadB.status<5000) ) return
+              }
 
               // MC matching
               if(useMCrec) {
