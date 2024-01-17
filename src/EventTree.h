@@ -252,6 +252,7 @@ class EventTree : public TObject
     // - string spinner branches
     Float_t SS_Q2, SS_W, SS_x, SS_y;
     Bool_t useStringSpinner;
+    Bool_t useMCgen; // clasdis mc generator data
 
   private:
     TChain * chain;
