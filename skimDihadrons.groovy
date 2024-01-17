@@ -290,15 +290,25 @@ def growParticleTree = { pidList, pid ->
         parent_pid = -1
       }
       result += [
-        'chi2pid': 0.0,
-        'status':  0,
-        'beta':    0.0,
+        'chi2pid':   0.0,
+        'status':    0,
+        'beta':      0.0,
         'parentIdx': parent_idx,
         'parentPid': parent_pid,
+        'type':      particleBank.getByte('type',row),
       ]
     }
     return result
   }
+  .findAll{ // filter out MC-generated beam particles
+    if(useMCgen) {
+      return it.type != 21 // FIXME: 21 seems to be beam particle for data we looked at so far, but this may not be generally true
+    }
+    else {
+      return true
+    }
+  }
+
 
   // verbose printing
   if(verbose) {
