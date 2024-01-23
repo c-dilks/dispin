@@ -68,9 +68,11 @@ _cf._ those from `claspyth`:
 
 We'll need to translate these Pythia 6 parameters to Pythia 8, since StringSpinner uses Pythia 8:
 
-| Pythia 6                      | Pythia 8                                    | Description                                     |
-| ---                           | ---                                         | ---                                             |
-| `PARJ(11)`                    | `StringFlav:mesonUDvector`                  | vector/pseudoscalar for light ($u$, $d$) mesons |
-| `PARJ(12)`                    | `StringFlav:mesonSvector`                   | vector/pseudoscalar for strange mesons          |
-| `PARJ(21)`                    | `StringPT:sigma`                            | width of $p_T$ distribution (in fragmentation)  |
-| `PARP(99)` or LEPTO `PARL(3)` | possibly `BeamRemnants:primordialKTremnant`, but we get **no events** when we turn on `BeamRemnants:primordialKT` | width of $k_T$ distribution (in initial)        |
+| Pythia 6                      | Pythia 8                                        | Description                                     | Value |
+| ---                           | ---                                             | ---                                             | ---   |
+| `PARJ(11)`                    | `StringFlav:mesonUDvector`                      | vector/pseudoscalar for light ($u$, $d$) mesons | 0.70  |
+| `PARJ(12)`                    | `StringFlav:mesonSvector`                       | vector/pseudoscalar for strange mesons          | 0.75  |
+| `PARJ(21)`                    | `StringPT:sigma`                                | width of $p_T$ distribution (in fragmentation)  | 0.5   |
+| `PARP(99)` or LEPTO `PARL(3)` | possibly `BeamRemnants:primordialKTremnant`[^1] | width of $k_T$ distribution (in initial)        | 0.64  |
+
+[^1]: we get **no events** when we turn on `BeamRemnants:primordialKT`, so this can't be used yet
