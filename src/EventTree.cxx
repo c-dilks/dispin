@@ -244,7 +244,7 @@ EventTree::EventTree(TString filelist_, Int_t whichPair_) {
   // check if these are MC-generated data
   useMCgen = false;
   if(filelist.Contains("mcgen")) { // FIXME: make a better check than filename.Contains(...)
-    fprintf(stderr,"WARNING WARNING WARNING: assuming these are `clasdis` GENERATED data (see EventTree::Valid() for exact cuts\n");
+    fprintf(stderr,"WARNING WARNING WARNING: assuming these are `clasdis` GENERATED data (the cuts are not as tight as those for reconstructed data)\n");
     chain->SetBranchAddress("gen_hadParentIdx",gen_hadParentIdx);
     chain->SetBranchAddress("gen_hadParentPid",gen_hadParentPid);
     useMCgen = true;
