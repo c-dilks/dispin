@@ -241,6 +241,15 @@ EventTree::EventTree(TString filelist_, Int_t whichPair_) {
     };
   };
 
+  // check if these are MC-generated data
+  useMCgen = false;
+  if(filelist.Contains("mcgen")) { // FIXME: make a better check than filename.Contains(...)
+    fprintf(stderr,"WARNING WARNING WARNING: assuming these are `clasdis` GENERATED data (the cuts are not as tight as those for reconstructed data)\n");
+    chain->SetBranchAddress("gen_hadParentIdx",gen_hadParentIdx);
+    chain->SetBranchAddress("gen_hadParentPid",gen_hadParentPid);
+    useMCgen = true;
+  }
+
   // - string spinner branches
   useStringSpinner = false;
   if(chain->GetBranch("SS_Q2")) {
@@ -492,7 +501,7 @@ void EventTree::GetEvent(Long64_t i) {
 /////////////////////////////////////////////////////////
 // MAIN ANALYSIS CUT
 Bool_t EventTree::Valid() {
-  if(useStringSpinner) return ValidStringSpinner();
+  if(useStringSpinner || useMCgen) return ValidStringSpinner();
   return cutDIS && cutDihadron && cutHelicity && 
          cutFiducial && cutPID && cutVertex && cutFR;
   // NOTE: if you want to disable `cutDihadron`, you likely want to ensure `Tools::PairSame` is still checked
@@ -500,7 +509,7 @@ Bool_t EventTree::Valid() {
 };
 /////////////////////////////////////////////////////////
 
-// Analysis cut for String Spinner MC data
+// Analysis cut for String Spinner or generated MC data (since they are missing, e.g., detector-level raw data)
 Bool_t EventTree::ValidStringSpinner() {
   return cutDIS && cutDihadron && cutHelicity && cutFR;
 };

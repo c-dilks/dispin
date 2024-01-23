@@ -2,8 +2,13 @@
 
 # arguments
 if [ $# -lt 2 ]; then
-  echo """USAGE: $0 [outroot dir] [data/mc] [options]
-  options:
+  echo """USAGE: $0 [outroot dir] [data/mc] [options]...
+
+  [data/mc]
+    - use 'data' for real data, 'mcgen' stream, and StringSpinner generated data
+    - use 'mc' ONLY for 'mcrec' stream
+
+  [options]
     -p pairType
     -o output catTree.root file name"""
   exit 2
@@ -51,6 +56,7 @@ if [ -z "$outfile" ]; then
 fi
 echo "outfile=$outfile"
 mkdir -p `dirname $outfile`
+mkdir -p spinroot
 
 
 # call buildSpinroot.exe on slurm
