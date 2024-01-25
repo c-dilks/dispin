@@ -416,7 +416,7 @@ void EventTree::GetEvent(Long64_t i) {
   //   - if cuts pass, Idx is re-assigned based on
   //     classification of pi0 or pi0-BG
   // - later in cutDihadron, we will check the pairType; if
-  //   you asked for a pair which includes a pi0, then 
+  //   you asked for a pair which includes a pi0, then
   //   cutDihadron will only be true if the diphoton is
   //   classified as a pi0
   for(int h=0; h<2; h++) {
@@ -456,7 +456,7 @@ void EventTree::GetEvent(Long64_t i) {
 
   // dihadron cuts
   /* (note: PairSame ensures we have the correct channel, e.g., pi+pi-) */
-  cutDihadron = 
+  cutDihadron =
     Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) &&
     Zpair < 0.95 && /* legacy; redundant with Mx>1.5 */
     CheckMissingMass()
@@ -464,31 +464,38 @@ void EventTree::GetEvent(Long64_t i) {
 
 
   // vertex cuts
-  cutVertex = CheckVertex(); /* applies to electron and hadrons */
-
+  if(!useStringSpinner && !useMCgen)
+    cutVertex = CheckVertex(); /* applies to electron and hadrons */
+  else
+    cutVertex = true; // unless the vertex is smeared in the generated data, this cut is not useful
 
   // fiducial cuts
-  // - note: status is required to be in FD, as a prerequisite 
-  cutFiducial = eleFiduCut && hadFiduCut[qA] && hadFiduCut[qB];
+  // - note: status is required to be in FD, as a prerequisite
+  if(!useStringSpinner && !useMCgen)
+    cutFiducial = eleFiduCut && hadFiduCut[qA] && hadFiduCut[qB];
+  else
+    cutFiducial = true; // generated data have no detector info, ignore this cut
 
 
   // PID refinement cuts
+  // IMPORTANT: cuts that need detector info should be separate functions, and only applied to
+  //            real or reconstructed-MC data (not to generated-MC data)
   // -- electron
-  cutElePID = 
+  cutElePID =
     eleTheta>5 && eleTheta<35 &&
     eleP > 2 && /* legacy; redudant with y<0.8 cut */
-    elePCALen > 0.07 &&
-    CheckSampFrac(); /* sampling fraction cuts (diagonal cut and (mu,std) cut) */
+    ( useStringSpinner || useMCgen || CheckPCALen()   ) &&  /* PCAL energy cut */
+    ( useStringSpinner || useMCgen || CheckSampFrac() ); /* sampling fraction cuts (diagonal cut and (mu,std) cut) */
   // -- pions
   for(int h=0; h<2; h++) {
     minP[h] = isDiphoton[h] ? 0.0 : 1.25;
-    cutHadPID[h] = 
+    cutHadPID[h] =
       hadTheta[h]>5 && hadTheta[h]<35 &&
       hadP[h] > minP[h] && /* minimum P cut only for charged hadrons */
-      CheckHadChi2pid(h); /* refined hadron chi2pid cut */
+      ( useStringSpinner || useMCgen || CheckHadChi2pid(h) ); /* refined hadron chi2pid cut */
   };
   cutPID = cutElePID && cutHadPID[qA] && cutHadPID[qB];
-  
+
 
   // check if helicity is defined
   sps = this->SpinState();
@@ -501,18 +508,12 @@ void EventTree::GetEvent(Long64_t i) {
 /////////////////////////////////////////////////////////
 // MAIN ANALYSIS CUT
 Bool_t EventTree::Valid() {
-  if(useStringSpinner || useMCgen) return ValidStringSpinner();
-  return cutDIS && cutDihadron && cutHelicity && 
+  return cutDIS && cutDihadron && cutHelicity &&
          cutFiducial && cutPID && cutVertex && cutFR;
   // NOTE: if you want to disable `cutDihadron`, you likely want to ensure `Tools::PairSame` is still checked
   //return Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) && cutHelicity; // disable "all" cuts
 };
 /////////////////////////////////////////////////////////
-
-// Analysis cut for String Spinner or generated MC data (since they are missing, e.g., detector-level raw data)
-Bool_t EventTree::ValidStringSpinner() {
-  return cutDIS && cutDihadron && cutHelicity && cutFR;
-};
 
 
 // just get trajectories (faster than GetEvent, since
@@ -661,6 +662,11 @@ Bool_t EventTree::CheckMissingMass() {
   return Mmiss>1.5; // default
 };
 
+
+// PCAL energy cut
+Bool_t EventTree::CheckPCALen() {
+  return elePCALen > 0.07;
+}
 
 
 // sampling fraction (SF) cut, for electrons
