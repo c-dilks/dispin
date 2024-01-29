@@ -42,7 +42,6 @@ class EventTree : public TObject
     virtual void GetEvent(Long64_t i);
     void GetTrajectories(Long64_t i, Bool_t prog=false);
     Bool_t Valid();
-    Bool_t ValidStringSpinner();
 
     Int_t SpinState();
     virtual Int_t GetSpinIdx() { return SpinInt(SpinState()); };
@@ -50,6 +49,7 @@ class EventTree : public TObject
     Float_t PolarizationError();
     Float_t Rellum();
     Bool_t CheckVertex();
+    Bool_t CheckPCALen();
     Bool_t CheckSampFrac();
     Bool_t CheckHadChi2pid(Int_t had);
     Bool_t CheckMissingMass();
