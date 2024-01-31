@@ -4,8 +4,8 @@
 # include <vector>
 
 // pythia, stringspinner
-#include "Pythia8/Pythia.h"
-#include <StringSpinner.h>
+#include <Pythia8/Pythia.h>
+#include "deps/StringSpinner/StringSpinner.h"
 
 // ROOT
 #include <TFile.h>

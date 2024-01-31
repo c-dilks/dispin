@@ -30,6 +30,14 @@ LIBS += -L$(BRUFIT)/lib -lbrufit
 # QADB
 DEPS += -I$(QADB)/srcC/rapidjson/include -I$(QADB)/srcC/include
 
+# StringSpinner + Pythia 8
+ifdef STRINGSPINNER
+	DEPS += -I${PYTHIADIR}/include
+	LIBS += -L${PYTHIADIR}/lib -lpythia8 -ldl
+	DEPS += -I${STRINGSPINNER}
+	LIBS += ${STRINGSPINNER}/mc3P0.o ${STRINGSPINNER}/def.o -lgfortran
+endif
+
 # DiSpin shared object name and source directory
 DISPIN = DiSpin
 DISPINOBJ := lib$(DISPIN).so
