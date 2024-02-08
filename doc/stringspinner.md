@@ -10,7 +10,6 @@ Make or symlink directories:
 ```
 diskim.sss
 outroot.sss
-bruspin/bruspin.sss
 ```
 
 Generate `outroot` files, then the `catTree` (see settings in the script first):

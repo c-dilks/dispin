@@ -3,7 +3,7 @@
 
 # settings #################
 NumEventsPerFile = 5e6.to_i
-NumFiles         = 10
+NumFiles         = 60
 Modes            = [ 0, 1 ] # stringSpinSim.exe modes
 DiskimDir        = 'diskim.sss'
 OutrootDir       = 'outroot.sss'
@@ -59,6 +59,7 @@ NumFiles.times do |filenum|
         'calcKinematics.exe',
         diskimFile,
         OutrootDir,
+        'mcgen',
       ].join(' ')
     ].join(' && ')
     puts cmd
