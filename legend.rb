@@ -7,7 +7,6 @@ r.gROOT.SetBatch true
 
 legend = r.TLegend.new 0.1, 0.1, 0.9, 0.9
 
-# asymmetry graphs
 graphs = {
   :asymmetry => {
     :rga => { :title=>'Proton Target',   :style=>r.kFullCircle, :color=>r.kRed-7  },
