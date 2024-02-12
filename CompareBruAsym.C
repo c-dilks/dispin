@@ -17,7 +17,7 @@ class AsymGr : public TObject {
 //..................................................//
 
 void DiffGraph(
-  TGraphErrors * g1, TGraphErrors *g2, TGraphErrors * diff);
+  TGraphErrors * g1, TGraphErrors *g2, TGraphErrors * diff, int whichError);
 
 
 //..................................................//
@@ -57,6 +57,12 @@ void CompareBruAsym(
     };
   };
 
+  // choose error calculation
+  // 1: completely uncorrelated errors (datasets are disjoint)
+  // 2: completely correlated errors (one set is subset of other)
+  int whichError = 2;
+  if((titleBlue+titleRed).Contains("StringSpinner"))
+    whichError = 1;
 
   //....................................
 
@@ -216,7 +222,7 @@ void CompareBruAsym(
       for(int f=0; f<2; f++)
         agr[f] = (AsymGr*) AsymGrList[f]->At(links[n][f]);
       diffGr = new TGraphErrors();
-      DiffGraph(agr[azul]->gr,agr[rojo]->gr,diffGr);
+      DiffGraph(agr[azul]->gr,agr[rojo]->gr,diffGr,whichError);
       diffGr->Draw("APE");
       zeroLine = new TLine(
         diffGr->GetXaxis()->GetXmin(),0,diffGr->GetXaxis()->GetXmax(),0);
@@ -239,7 +245,7 @@ void CompareBruAsym(
 //..................................................//
 
 void DiffGraph(
-  TGraphErrors * g1, TGraphErrors *g2, TGraphErrors * diff) {
+  TGraphErrors * g1, TGraphErrors *g2, TGraphErrors * diff, int whichError) {
 
   if(g1->GetN()!=g2->GetN()) {
     fprintf(stderr,"ERROR: number of bins differ\n");
@@ -276,13 +282,12 @@ void DiffGraph(
     ey1 = g1->GetErrorY(i);
     ey2 = g2->GetErrorY(i);
     ydiff = y1-y2; // difference
-    int whichError = 2;
     switch(whichError) {
-      case 1: 
+      case 1:
         cout << "ASSUMING COMPLETELY UNCORRELATED ERRORS (datasets are disjoint)" << endl;
         eydiff = TMath::Sqrt(ey1*ey1+ey2*ey2); // uncorrelated error
         break;
-      case 2: 
+      case 2:
         cout << "ASSUMING COMPLETELY CORRELATED ERRORS (one set is subset of other)" << endl;
         eydiff = TMath::Sqrt(TMath::Abs(ey1*ey1-ey2*ey2)); // correlated error
         break;

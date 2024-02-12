@@ -2,26 +2,21 @@
 // branches associated with dihadrons
 
 #include <cstdlib>
-#include <iostream>
 
 // ROOT
 #include "TFile.h"
 #include "TTree.h"
 #include "TString.h"
-#include "TMath.h"
-#include "TSystem.h"
 #include "TRegexp.h"
-#include "TObjArray.h"
-#include "TLorentzVector.h"
 #include "TRandom.h"
 #include "TRandomGen.h"
 
 // dispin
-#include "Constants.h"
-#include "DIS.h"
-#include "Trajectory.h"
-#include "FiducialCuts.h"
-#include "Dihadron.h"
+#include "src/Constants.h"
+#include "src/DIS.h"
+#include "src/Trajectory.h"
+#include "src/FiducialCuts.h"
+#include "src/Dihadron.h"
 
 
 enum parEnum {kEle,kHadA,kHadB,nPar};
@@ -85,26 +80,34 @@ int main(int argc, char** argv) {
   diskimFile = new TFile(infileN,"READ");
   ditr = (TTree*) diskimFile->Get("ditr");
 
-  // check MC arguments
-  Bool_t useMC, useRadBeam;
+  // check datastream; determine the MC type
+  Bool_t useData  = false;
+  Bool_t useMCgen = false;
+  Bool_t useMCrec = false;
+  Bool_t useRadBeam = false;
   if(dataStream.Contains(TRegexp("rad$"))) {
     useRadBeam = true;
     fprintf(stderr,"\nWARNING: using radiative-corrected beam energy model !!!\n\n");
     dataStream(TRegexp("rad$")) = "";
-  } else useRadBeam = false;
-  if(dataStream=="data") useMC=false;
+  }
+  if(dataStream=="data") {
+    useData=true;
+  }
   else if(dataStream=="mcrec") {
-    useMC=true;
+    useMCrec=true;
     if(injectStream!="injrec" && injectStream!="injgen") {
       fprintf(stderr,"ERROR: unrecognized injectStream\n");
       return 0;
     };
   }
-  else if(dataStream=="mcgen") useMC=true;
+  else if(dataStream=="mcgen") {
+    useMCgen=true;
+  }
   else {
     fprintf(stderr,"ERROR: unrecognized dataStream\n");
     return 0;
   };
+  Bool_t useStringSpinner = ditr->GetBranch("SS_Q2") != nullptr;
 
 
   // define branch vars
@@ -153,8 +156,67 @@ int main(int argc, char** argv) {
     SetParticleBranchAddress(parName[p],"chi2pid",&(chi2pid[p]));
     SetParticleBranchAddress(parName[p],"status",&(status[p]));
     SetParticleBranchAddress(parName[p],"beta",&(beta[p]));
+    if(useData || useMCrec) {
+      // - detector info
+      SetParticleBranchAddress(parName[p],"pcal_found",&(fidu[p]->part_Cal_PCAL_found[0]));
+      SetParticleBranchAddress(parName[p],"pcal_sector",&(fidu[p]->part_Cal_PCAL_sector[0]));
+      SetParticleBranchAddress(parName[p],"pcal_energy",&(fidu[p]->part_Cal_PCAL_energy[0]));
+      SetParticleBranchAddress(parName[p],"pcal_time",&(fidu[p]->part_Cal_PCAL_time[0]));
+      SetParticleBranchAddress(parName[p],"pcal_path",&(fidu[p]->part_Cal_PCAL_path[0]));
+      SetParticleBranchAddress(parName[p],"pcal_x",&(fidu[p]->part_Cal_PCAL_x[0]));
+      SetParticleBranchAddress(parName[p],"pcal_y",&(fidu[p]->part_Cal_PCAL_y[0]));
+      SetParticleBranchAddress(parName[p],"pcal_z",&(fidu[p]->part_Cal_PCAL_z[0]));
+      SetParticleBranchAddress(parName[p],"pcal_lu",&(fidu[p]->part_Cal_PCAL_lu[0]));
+      SetParticleBranchAddress(parName[p],"pcal_lv",&(fidu[p]->part_Cal_PCAL_lv[0]));
+      SetParticleBranchAddress(parName[p],"pcal_lw",&(fidu[p]->part_Cal_PCAL_lw[0]));
+      //
+      SetParticleBranchAddress(parName[p],"ecin_found",&(fidu[p]->part_Cal_ECIN_found[0]));
+      SetParticleBranchAddress(parName[p],"ecin_sector",&(fidu[p]->part_Cal_ECIN_sector[0]));
+      SetParticleBranchAddress(parName[p],"ecin_energy",&(fidu[p]->part_Cal_ECIN_energy[0]));
+      SetParticleBranchAddress(parName[p],"ecin_time",&(fidu[p]->part_Cal_ECIN_time[0]));
+      SetParticleBranchAddress(parName[p],"ecin_path",&(fidu[p]->part_Cal_ECIN_path[0]));
+      SetParticleBranchAddress(parName[p],"ecin_x",&(fidu[p]->part_Cal_ECIN_x[0]));
+      SetParticleBranchAddress(parName[p],"ecin_y",&(fidu[p]->part_Cal_ECIN_y[0]));
+      SetParticleBranchAddress(parName[p],"ecin_z",&(fidu[p]->part_Cal_ECIN_z[0]));
+      SetParticleBranchAddress(parName[p],"ecin_lu",&(fidu[p]->part_Cal_ECIN_lu[0]));
+      SetParticleBranchAddress(parName[p],"ecin_lv",&(fidu[p]->part_Cal_ECIN_lv[0]));
+      SetParticleBranchAddress(parName[p],"ecin_lw",&(fidu[p]->part_Cal_ECIN_lw[0]));
+      //
+      SetParticleBranchAddress(parName[p],"ecout_found",&(fidu[p]->part_Cal_ECOUT_found[0]));
+      SetParticleBranchAddress(parName[p],"ecout_sector",&(fidu[p]->part_Cal_ECOUT_sector[0]));
+      SetParticleBranchAddress(parName[p],"ecout_energy",&(fidu[p]->part_Cal_ECOUT_energy[0]));
+      SetParticleBranchAddress(parName[p],"ecout_time",&(fidu[p]->part_Cal_ECOUT_time[0]));
+      SetParticleBranchAddress(parName[p],"ecout_path",&(fidu[p]->part_Cal_ECOUT_path[0]));
+      SetParticleBranchAddress(parName[p],"ecout_x",&(fidu[p]->part_Cal_ECOUT_x[0]));
+      SetParticleBranchAddress(parName[p],"ecout_y",&(fidu[p]->part_Cal_ECOUT_y[0]));
+      SetParticleBranchAddress(parName[p],"ecout_z",&(fidu[p]->part_Cal_ECOUT_z[0]));
+      SetParticleBranchAddress(parName[p],"ecout_lu",&(fidu[p]->part_Cal_ECOUT_lu[0]));
+      SetParticleBranchAddress(parName[p],"ecout_lv",&(fidu[p]->part_Cal_ECOUT_lv[0]));
+      SetParticleBranchAddress(parName[p],"ecout_lw",&(fidu[p]->part_Cal_ECOUT_lw[0]));
+      //
+      SetParticleBranchAddress(parName[p],"dcTrk_found",&(fidu[p]->part_DC_Track_found[0]));
+      SetParticleBranchAddress(parName[p],"dcTrk_chi2",&(fidu[p]->part_DC_Track_chi2[0]));
+      SetParticleBranchAddress(parName[p],"dcTrk_ndf",&(fidu[p]->part_DC_Track_NDF[0]));
+      SetParticleBranchAddress(parName[p],"dcTrk_status",&(fidu[p]->part_DC_Track_status[0]));
+      //
+      SetParticleBranchAddress(parName[p],"dcTraj_found",&(fidu[p]->part_DC_Traj_found[0]));
+      SetParticleBranchAddress(parName[p],"dcTraj_c1x",&(fidu[p]->part_DC_c1x[0]));
+      SetParticleBranchAddress(parName[p],"dcTraj_c1y",&(fidu[p]->part_DC_c1y[0]));
+      SetParticleBranchAddress(parName[p],"dcTraj_c1z",&(fidu[p]->part_DC_c1z[0]));
+      SetParticleBranchAddress(parName[p],"dcTraj_c2x",&(fidu[p]->part_DC_c2x[0]));
+      SetParticleBranchAddress(parName[p],"dcTraj_c2y",&(fidu[p]->part_DC_c2y[0]));
+      SetParticleBranchAddress(parName[p],"dcTraj_c2z",&(fidu[p]->part_DC_c2z[0]));
+      SetParticleBranchAddress(parName[p],"dcTraj_c3x",&(fidu[p]->part_DC_c3x[0]));
+      SetParticleBranchAddress(parName[p],"dcTraj_c3y",&(fidu[p]->part_DC_c3y[0]));
+      SetParticleBranchAddress(parName[p],"dcTraj_c3z",&(fidu[p]->part_DC_c3z[0]));
+    }
+    else if(useMCgen || useStringSpinner) {
+      // parent info
+      SetParticleBranchAddress(parName[p],"parentIdx",&(genParentIdx[p]));
+      SetParticleBranchAddress(parName[p],"parentPid",&(genParentPid[p]));
+    }
     // - MC generated particle info, matched to recon info
-    if(useMC && dataStream=="mcrec") {
+    if(useMCrec) {
       SetParticleBranchAddress(parMCname[p],"Row",&(genRow[p]));
       SetParticleBranchAddress(parMCname[p],"Pid",&(genPid[p]));
       SetParticleBranchAddress(parMCname[p],"Px",&(genPx[p]));
@@ -167,61 +229,16 @@ int main(int argc, char** argv) {
       SetParticleBranchAddress(parMCname[p],"matchDist",&(genMatchDist[p]));
       SetParticleBranchAddress(parMCname[p],"parentIdx",&(genParentIdx[p]));
       SetParticleBranchAddress(parMCname[p],"parentPid",&(genParentPid[p]));
-    };
-    // - detector info
-    SetParticleBranchAddress(parName[p],"pcal_found",&(fidu[p]->part_Cal_PCAL_found[0]));
-    SetParticleBranchAddress(parName[p],"pcal_sector",&(fidu[p]->part_Cal_PCAL_sector[0]));
-    SetParticleBranchAddress(parName[p],"pcal_energy",&(fidu[p]->part_Cal_PCAL_energy[0]));
-    SetParticleBranchAddress(parName[p],"pcal_time",&(fidu[p]->part_Cal_PCAL_time[0]));
-    SetParticleBranchAddress(parName[p],"pcal_path",&(fidu[p]->part_Cal_PCAL_path[0]));
-    SetParticleBranchAddress(parName[p],"pcal_x",&(fidu[p]->part_Cal_PCAL_x[0]));
-    SetParticleBranchAddress(parName[p],"pcal_y",&(fidu[p]->part_Cal_PCAL_y[0]));
-    SetParticleBranchAddress(parName[p],"pcal_z",&(fidu[p]->part_Cal_PCAL_z[0]));
-    SetParticleBranchAddress(parName[p],"pcal_lu",&(fidu[p]->part_Cal_PCAL_lu[0]));
-    SetParticleBranchAddress(parName[p],"pcal_lv",&(fidu[p]->part_Cal_PCAL_lv[0]));
-    SetParticleBranchAddress(parName[p],"pcal_lw",&(fidu[p]->part_Cal_PCAL_lw[0]));
-    //
-    SetParticleBranchAddress(parName[p],"ecin_found",&(fidu[p]->part_Cal_ECIN_found[0]));
-    SetParticleBranchAddress(parName[p],"ecin_sector",&(fidu[p]->part_Cal_ECIN_sector[0]));
-    SetParticleBranchAddress(parName[p],"ecin_energy",&(fidu[p]->part_Cal_ECIN_energy[0]));
-    SetParticleBranchAddress(parName[p],"ecin_time",&(fidu[p]->part_Cal_ECIN_time[0]));
-    SetParticleBranchAddress(parName[p],"ecin_path",&(fidu[p]->part_Cal_ECIN_path[0]));
-    SetParticleBranchAddress(parName[p],"ecin_x",&(fidu[p]->part_Cal_ECIN_x[0]));
-    SetParticleBranchAddress(parName[p],"ecin_y",&(fidu[p]->part_Cal_ECIN_y[0]));
-    SetParticleBranchAddress(parName[p],"ecin_z",&(fidu[p]->part_Cal_ECIN_z[0]));
-    SetParticleBranchAddress(parName[p],"ecin_lu",&(fidu[p]->part_Cal_ECIN_lu[0]));
-    SetParticleBranchAddress(parName[p],"ecin_lv",&(fidu[p]->part_Cal_ECIN_lv[0]));
-    SetParticleBranchAddress(parName[p],"ecin_lw",&(fidu[p]->part_Cal_ECIN_lw[0]));
-    //
-    SetParticleBranchAddress(parName[p],"ecout_found",&(fidu[p]->part_Cal_ECOUT_found[0]));
-    SetParticleBranchAddress(parName[p],"ecout_sector",&(fidu[p]->part_Cal_ECOUT_sector[0]));
-    SetParticleBranchAddress(parName[p],"ecout_energy",&(fidu[p]->part_Cal_ECOUT_energy[0]));
-    SetParticleBranchAddress(parName[p],"ecout_time",&(fidu[p]->part_Cal_ECOUT_time[0]));
-    SetParticleBranchAddress(parName[p],"ecout_path",&(fidu[p]->part_Cal_ECOUT_path[0]));
-    SetParticleBranchAddress(parName[p],"ecout_x",&(fidu[p]->part_Cal_ECOUT_x[0]));
-    SetParticleBranchAddress(parName[p],"ecout_y",&(fidu[p]->part_Cal_ECOUT_y[0]));
-    SetParticleBranchAddress(parName[p],"ecout_z",&(fidu[p]->part_Cal_ECOUT_z[0]));
-    SetParticleBranchAddress(parName[p],"ecout_lu",&(fidu[p]->part_Cal_ECOUT_lu[0]));
-    SetParticleBranchAddress(parName[p],"ecout_lv",&(fidu[p]->part_Cal_ECOUT_lv[0]));
-    SetParticleBranchAddress(parName[p],"ecout_lw",&(fidu[p]->part_Cal_ECOUT_lw[0]));
-    //
-    SetParticleBranchAddress(parName[p],"dcTrk_found",&(fidu[p]->part_DC_Track_found[0]));
-    SetParticleBranchAddress(parName[p],"dcTrk_chi2",&(fidu[p]->part_DC_Track_chi2[0]));
-    SetParticleBranchAddress(parName[p],"dcTrk_ndf",&(fidu[p]->part_DC_Track_NDF[0]));
-    SetParticleBranchAddress(parName[p],"dcTrk_status",&(fidu[p]->part_DC_Track_status[0]));
-    //
-    SetParticleBranchAddress(parName[p],"dcTraj_found",&(fidu[p]->part_DC_Traj_found[0]));
-    SetParticleBranchAddress(parName[p],"dcTraj_c1x",&(fidu[p]->part_DC_c1x[0]));
-    SetParticleBranchAddress(parName[p],"dcTraj_c1y",&(fidu[p]->part_DC_c1y[0]));
-    SetParticleBranchAddress(parName[p],"dcTraj_c1z",&(fidu[p]->part_DC_c1z[0]));
-    SetParticleBranchAddress(parName[p],"dcTraj_c2x",&(fidu[p]->part_DC_c2x[0]));
-    SetParticleBranchAddress(parName[p],"dcTraj_c2y",&(fidu[p]->part_DC_c2y[0]));
-    SetParticleBranchAddress(parName[p],"dcTraj_c2z",&(fidu[p]->part_DC_c2z[0]));
-    SetParticleBranchAddress(parName[p],"dcTraj_c3x",&(fidu[p]->part_DC_c3x[0]));
-    SetParticleBranchAddress(parName[p],"dcTraj_c3y",&(fidu[p]->part_DC_c3y[0]));
-    SetParticleBranchAddress(parName[p],"dcTraj_c3z",&(fidu[p]->part_DC_c3z[0]));
+    }
   };
-
+  // - additional String Spinner branches
+  Float_t SS_Q2, SS_W, SS_x, SS_y;
+  if(useStringSpinner) {
+    ditr->SetBranchAddress("SS_Q2", &SS_Q2);
+    ditr->SetBranchAddress("SS_W",  &SS_W);
+    ditr->SetBranchAddress("SS_x",  &SS_x);
+    ditr->SetBranchAddress("SS_y",  &SS_y);
+  }
 
   // define outroot file
   TString outrootFileN = infileN;
@@ -296,7 +313,7 @@ int main(int argc, char** argv) {
   outrootTr->Branch("helicity",&helicity,"helicity/I");
 
 
-  // - MC branches
+  // - MC branches: generated matched to reconstructed
   Float_t gen_eleMatchDist;
   Float_t gen_hadMatchDist[2];
   Int_t gen_hadParentIdx[2];
@@ -304,63 +321,70 @@ int main(int argc, char** argv) {
   Bool_t gen_eleIsMatch;
   Bool_t gen_hadIsMatch[2];
   Bool_t isMatch[nPar];
-  if(useMC) {
-    // MC matching generated branches
-    if(dataStream=="mcrec") {
-      // - generated DIS kinematics branches
-      outrootTr->Branch("gen_W",&(disEvMC->W),"gen_W/F");
-      outrootTr->Branch("gen_Q2",&(disEvMC->Q2),"gen_Q2/F");
-      outrootTr->Branch("gen_Nu",&(disEvMC->Nu),"gen_Nu/F");
-      outrootTr->Branch("gen_x",&(disEvMC->x),"gen_x/F");
-      outrootTr->Branch("gen_y",&(disEvMC->y),"gen_y/F");
-      // - generated electron kinematics branches
-      outrootTr->Branch("gen_eleE",&(disEvMC->eleE),"gen_eleE/F");
-      outrootTr->Branch("gen_eleP",&(disEvMC->eleP),"gen_eleP/F");
-      outrootTr->Branch("gen_elePt",&(disEvMC->elePt),"gen_elePt/F");
-      outrootTr->Branch("gen_eleEta",&(disEvMC->eleEta),"gen_eleEta/F");
-      outrootTr->Branch("gen_elePhi",&(disEvMC->elePhi),"gen_elePhi/F");
-      outrootTr->Branch("gen_eleVertex",disEvMC->eleVertex,"gen_eleVertex[3]/F");
-      // - generated hadron branches
-      outrootTr->Branch("gen_pairType",&(dihMC->pairType),"gen_pairType/I");
-      outrootTr->Branch("gen_hadRow",dihMC->hadRow,"gen_hadRow[2]/I");
-      outrootTr->Branch("gen_hadIdx",dihMC->hadIdx,"gen_hadIdx[2]/I");
-      outrootTr->Branch("gen_hadE",dihMC->hadE,"gen_hadE[2]/F");
-      outrootTr->Branch("gen_hadP",dihMC->hadP,"gen_hadP[2]/F");
-      outrootTr->Branch("gen_hadPt",dihMC->hadPt,"gen_hadPt[2]/F");
-      outrootTr->Branch("gen_hadEta",dihMC->hadEta,"gen_hadEta[2]/F");
-      outrootTr->Branch("gen_hadPhi",dihMC->hadPhi,"gen_hadPhi[2]/F");
-      outrootTr->Branch("gen_hadXF",dihMC->hadXF,"gen_hadXF[2]/F");
-      outrootTr->Branch("gen_hadVertex",dihMC->hadVertex,"gen_hadVertex[2][3]/F");
-      // - generated dihadron branches
-      outrootTr->Branch("gen_Mh",&(dihMC->Mh),"gen_Mh/F");
-      outrootTr->Branch("gen_Mmiss",&(dihMC->Mmiss),"gen_Mmiss/F");
-      outrootTr->Branch("gen_Z",dihMC->z,"gen_Z[2]/F");
-      outrootTr->Branch("gen_Zpair",&(dihMC->zpair),"gen_Zpair/F");
-      outrootTr->Branch("gen_xF",&(dihMC->xF),"gen_xF/F");
-      outrootTr->Branch("gen_alpha",&(dihMC->alpha),"gen_alpha/F");
-      outrootTr->Branch("gen_theta",&(dihMC->theta),"gen_theta/F");
-      outrootTr->Branch("gen_zeta",&(dihMC->zeta),"gen_zeta/F");
-      outrootTr->Branch("gen_Ph",&(dihMC->PhMag),"gen_Ph/F");
-      outrootTr->Branch("gen_PhPerp",&(dihMC->PhPerpMag),"gen_PhPerp/F");
-      outrootTr->Branch("gen_PhEta",&(dihMC->PhEta),"gen_PhEta/F");
-      outrootTr->Branch("gen_PhPhi",&(dihMC->PhPhi),"gen_PhPhi/F");
-      outrootTr->Branch("gen_R",&(dihMC->RMag),"gen_R/F");
-      outrootTr->Branch("gen_RPerp",&(dihMC->RPerpMag),"gen_RPerp/F");
-      outrootTr->Branch("gen_RT",&(dihMC->RTMag),"gen_RT/F");
-      outrootTr->Branch("gen_PhiH",&(dihMC->PhiH),"gen_PhiH/F");
-      outrootTr->Branch("gen_PhiRq",&(dihMC->PhiRq),"gen_PhiRq/F");
-      outrootTr->Branch("gen_PhiRp",&(dihMC->PhiRp),"gen_PhiRp/F");
-      outrootTr->Branch("gen_PhiRp_r",&(dihMC->PhiRp_r),"gen_PhiRp_r/F");
-      outrootTr->Branch("gen_PhiRp_g",&(dihMC->PhiRp_g),"gen_PhiRp_g/F");
-      // - match quality
-      outrootTr->Branch("gen_eleIsMatch",&gen_eleIsMatch,"gen_eleIsMatch/O");
-      outrootTr->Branch("gen_hadIsMatch",gen_hadIsMatch,"gen_hadIsMatch[2]/O");
-      outrootTr->Branch("gen_eleMatchDist",&gen_eleMatchDist,"gen_eleMatchDist/F");
-      outrootTr->Branch("gen_hadMatchDist",gen_hadMatchDist,"gen_hadMatchDist[2]/F");
-      outrootTr->Branch("gen_hadParentIdx",gen_hadParentIdx,"gen_hadParentIdx[2]/I");
-      outrootTr->Branch("gen_hadParentPid",gen_hadParentPid,"gen_hadParentPid[2]/I");
-    };
-  };
+  if(useMCrec) {
+    // - generated DIS kinematics branches
+    outrootTr->Branch("gen_W",&(disEvMC->W),"gen_W/F");
+    outrootTr->Branch("gen_Q2",&(disEvMC->Q2),"gen_Q2/F");
+    outrootTr->Branch("gen_Nu",&(disEvMC->Nu),"gen_Nu/F");
+    outrootTr->Branch("gen_x",&(disEvMC->x),"gen_x/F");
+    outrootTr->Branch("gen_y",&(disEvMC->y),"gen_y/F");
+    // - generated electron kinematics branches
+    outrootTr->Branch("gen_eleE",&(disEvMC->eleE),"gen_eleE/F");
+    outrootTr->Branch("gen_eleP",&(disEvMC->eleP),"gen_eleP/F");
+    outrootTr->Branch("gen_elePt",&(disEvMC->elePt),"gen_elePt/F");
+    outrootTr->Branch("gen_eleEta",&(disEvMC->eleEta),"gen_eleEta/F");
+    outrootTr->Branch("gen_elePhi",&(disEvMC->elePhi),"gen_elePhi/F");
+    outrootTr->Branch("gen_eleVertex",disEvMC->eleVertex,"gen_eleVertex[3]/F");
+    // - generated hadron branches
+    outrootTr->Branch("gen_pairType",&(dihMC->pairType),"gen_pairType/I");
+    outrootTr->Branch("gen_hadRow",dihMC->hadRow,"gen_hadRow[2]/I");
+    outrootTr->Branch("gen_hadIdx",dihMC->hadIdx,"gen_hadIdx[2]/I");
+    outrootTr->Branch("gen_hadE",dihMC->hadE,"gen_hadE[2]/F");
+    outrootTr->Branch("gen_hadP",dihMC->hadP,"gen_hadP[2]/F");
+    outrootTr->Branch("gen_hadPt",dihMC->hadPt,"gen_hadPt[2]/F");
+    outrootTr->Branch("gen_hadEta",dihMC->hadEta,"gen_hadEta[2]/F");
+    outrootTr->Branch("gen_hadPhi",dihMC->hadPhi,"gen_hadPhi[2]/F");
+    outrootTr->Branch("gen_hadXF",dihMC->hadXF,"gen_hadXF[2]/F");
+    outrootTr->Branch("gen_hadVertex",dihMC->hadVertex,"gen_hadVertex[2][3]/F");
+    // - generated dihadron branches
+    outrootTr->Branch("gen_Mh",&(dihMC->Mh),"gen_Mh/F");
+    outrootTr->Branch("gen_Mmiss",&(dihMC->Mmiss),"gen_Mmiss/F");
+    outrootTr->Branch("gen_Z",dihMC->z,"gen_Z[2]/F");
+    outrootTr->Branch("gen_Zpair",&(dihMC->zpair),"gen_Zpair/F");
+    outrootTr->Branch("gen_xF",&(dihMC->xF),"gen_xF/F");
+    outrootTr->Branch("gen_alpha",&(dihMC->alpha),"gen_alpha/F");
+    outrootTr->Branch("gen_theta",&(dihMC->theta),"gen_theta/F");
+    outrootTr->Branch("gen_zeta",&(dihMC->zeta),"gen_zeta/F");
+    outrootTr->Branch("gen_Ph",&(dihMC->PhMag),"gen_Ph/F");
+    outrootTr->Branch("gen_PhPerp",&(dihMC->PhPerpMag),"gen_PhPerp/F");
+    outrootTr->Branch("gen_PhEta",&(dihMC->PhEta),"gen_PhEta/F");
+    outrootTr->Branch("gen_PhPhi",&(dihMC->PhPhi),"gen_PhPhi/F");
+    outrootTr->Branch("gen_R",&(dihMC->RMag),"gen_R/F");
+    outrootTr->Branch("gen_RPerp",&(dihMC->RPerpMag),"gen_RPerp/F");
+    outrootTr->Branch("gen_RT",&(dihMC->RTMag),"gen_RT/F");
+    outrootTr->Branch("gen_PhiH",&(dihMC->PhiH),"gen_PhiH/F");
+    outrootTr->Branch("gen_PhiRq",&(dihMC->PhiRq),"gen_PhiRq/F");
+    outrootTr->Branch("gen_PhiRp",&(dihMC->PhiRp),"gen_PhiRp/F");
+    outrootTr->Branch("gen_PhiRp_r",&(dihMC->PhiRp_r),"gen_PhiRp_r/F");
+    outrootTr->Branch("gen_PhiRp_g",&(dihMC->PhiRp_g),"gen_PhiRp_g/F");
+    // - match quality
+    outrootTr->Branch("gen_eleIsMatch",&gen_eleIsMatch,"gen_eleIsMatch/O");
+    outrootTr->Branch("gen_hadIsMatch",gen_hadIsMatch,"gen_hadIsMatch[2]/O");
+    outrootTr->Branch("gen_eleMatchDist",&gen_eleMatchDist,"gen_eleMatchDist/F");
+    outrootTr->Branch("gen_hadMatchDist",gen_hadMatchDist,"gen_hadMatchDist[2]/F");
+  }
+  // - parent info
+  if(useMCrec || useMCgen || useStringSpinner) {
+    outrootTr->Branch("gen_hadParentIdx", gen_hadParentIdx, "gen_hadParentIdx[2]/I");
+    outrootTr->Branch("gen_hadParentPid", gen_hadParentPid, "gen_hadParentPid[2]/I");
+  }
+  // - StringSpinner branches
+  if(useStringSpinner) {
+    outrootTr->Branch("SS_Q2", &SS_Q2, "SS_Q2/F");
+    outrootTr->Branch("SS_W",  &SS_W,  "SS_W/F");
+    outrootTr->Branch("SS_x",  &SS_x,  "SS_x/F");
+    outrootTr->Branch("SS_y",  &SS_y,  "SS_y/F");
+  }
 
 
 
@@ -413,68 +437,76 @@ int main(int argc, char** argv) {
       dih->CalculateKinematics( traj[kHadA], traj[kHadB], disEv );
       fiduCutHad[qA] = fidu[kHadA]->fiduCut;
       fiduCutHad[qB] = fidu[kHadB]->fiduCut;
+      if(useMCgen || useStringSpinner) {
+        gen_hadParentIdx[qA] = genParentIdx[kHadA];
+        gen_hadParentPid[qA] = genParentPid[kHadA];
+        gen_hadParentIdx[qB] = genParentIdx[kHadB];
+        gen_hadParentPid[qB] = genParentPid[kHadB];
+      }
     } else {
       dih->CalculateKinematics( traj[kHadB], traj[kHadA], disEv );
       fiduCutHad[qA] = fidu[kHadB]->fiduCut;
       fiduCutHad[qB] = fidu[kHadA]->fiduCut;
+      if(useMCgen || useStringSpinner) {
+        gen_hadParentIdx[qA] = genParentIdx[kHadB];
+        gen_hadParentPid[qA] = genParentPid[kHadB];
+        gen_hadParentIdx[qB] = genParentIdx[kHadA];
+        gen_hadParentPid[qB] = genParentPid[kHadA];
+      }
     };
 
-    
+
     // get EC sector for electron
     eleSector = fidu[kEle]->determineSectorEC(0);
 
 
     // MC information
-    if(useMC) {
-
-      // compute DIS and dihadron kinematics from generated, matched set
-      if(dataStream=="mcrec") {
-        // reset branch vars
-        disEvMC->ResetVars();
-        dihMC->ResetVars();
-        gen_eleIsMatch = false;
-        gen_eleMatchDist = UNDEF;
-        for(int h=0; h<2; h++) {
-          gen_hadIsMatch[h] = false;
-          gen_hadMatchDist[h] = UNDEF;
-          gen_hadParentIdx[h] = -1;
-          gen_hadParentPid[h] = -1;
-        };
-        // get momenta and verteces
-        for(int p=0; p<nPar; p++) {
-          trajMC[p]->Row = genRow[p];
-          trajMC[p]->Idx = PIDtoIdx(genPid[p]);
-          trajMC[p]->Momentum.SetPxPyPzE(genPx[p],genPy[p],genPz[p],genE[p]);
-          trajMC[p]->Vertex.SetXYZ(genVx[p],genVy[p],genVz[p]);
-          isMatch[p] = trajMC[p]->Row>=0; // true if valid match
-        };
-        // calculate kinematics
-        if(isMatch[kEle]) {
-          gen_eleIsMatch = true;
-          if(!useRadBeam) disEvMC->SetBeamEnFromRun(runnum);
-          else disEvMC->SetBeamEn(disEv->BeamEn); // if useRadBeam, copy BeamEn from disEv
-          disEvMC->CalculateKinematics(trajMC[kEle]);
-          gen_eleMatchDist = genMatchDist[kEle];
-          if(isMatch[kHadA] && isMatch[kHadB]) {
-            gen_hadIsMatch[qA] = true;
-            gen_hadIsMatch[qB] = true;
-            if(CorrectOrder( trajMC[kHadA]->Idx, trajMC[kHadB]->Idx )) {
-              dihMC->CalculateKinematics(trajMC[kHadA],trajMC[kHadB],disEvMC);
-              gen_hadMatchDist[qA] = genMatchDist[kHadA];
-              gen_hadMatchDist[qB] = genMatchDist[kHadB];
-              gen_hadParentIdx[qA] = genParentIdx[kHadA];
-              gen_hadParentIdx[qB] = genParentIdx[kHadB];
-              gen_hadParentPid[qA] = genParentPid[kHadA];
-              gen_hadParentPid[qB] = genParentPid[kHadB];
-            } else {
-              dihMC->CalculateKinematics(trajMC[kHadB],trajMC[kHadA],disEvMC);
-              gen_hadMatchDist[qA] = genMatchDist[kHadB];
-              gen_hadMatchDist[qB] = genMatchDist[kHadA];
-              gen_hadParentIdx[qA] = genParentIdx[kHadB];
-              gen_hadParentIdx[qB] = genParentIdx[kHadA];
-              gen_hadParentPid[qA] = genParentPid[kHadB];
-              gen_hadParentPid[qB] = genParentPid[kHadA];
-            };
+    if(useMCrec) {
+      // reset branch vars
+      disEvMC->ResetVars();
+      dihMC->ResetVars();
+      gen_eleIsMatch = false;
+      gen_eleMatchDist = UNDEF;
+      for(int h=0; h<2; h++) {
+        gen_hadIsMatch[h] = false;
+        gen_hadMatchDist[h] = UNDEF;
+        gen_hadParentIdx[h] = -1;
+        gen_hadParentPid[h] = -1;
+      };
+      // get momenta and verteces
+      for(int p=0; p<nPar; p++) {
+        trajMC[p]->Row = genRow[p];
+        trajMC[p]->Idx = PIDtoIdx(genPid[p]);
+        trajMC[p]->Momentum.SetPxPyPzE(genPx[p],genPy[p],genPz[p],genE[p]);
+        trajMC[p]->Vertex.SetXYZ(genVx[p],genVy[p],genVz[p]);
+        isMatch[p] = trajMC[p]->Row>=0; // true if valid match
+      };
+      // calculate kinematics
+      if(isMatch[kEle]) {
+        gen_eleIsMatch = true;
+        if(!useRadBeam) disEvMC->SetBeamEnFromRun(runnum);
+        else disEvMC->SetBeamEn(disEv->BeamEn); // if useRadBeam, copy BeamEn from disEv
+        disEvMC->CalculateKinematics(trajMC[kEle]);
+        gen_eleMatchDist = genMatchDist[kEle];
+        if(isMatch[kHadA] && isMatch[kHadB]) {
+          gen_hadIsMatch[qA] = true;
+          gen_hadIsMatch[qB] = true;
+          if(CorrectOrder( trajMC[kHadA]->Idx, trajMC[kHadB]->Idx )) {
+            dihMC->CalculateKinematics(trajMC[kHadA],trajMC[kHadB],disEvMC);
+            gen_hadMatchDist[qA] = genMatchDist[kHadA];
+            gen_hadMatchDist[qB] = genMatchDist[kHadB];
+            gen_hadParentIdx[qA] = genParentIdx[kHadA];
+            gen_hadParentIdx[qB] = genParentIdx[kHadB];
+            gen_hadParentPid[qA] = genParentPid[kHadA];
+            gen_hadParentPid[qB] = genParentPid[kHadB];
+          } else {
+            dihMC->CalculateKinematics(trajMC[kHadB],trajMC[kHadA],disEvMC);
+            gen_hadMatchDist[qA] = genMatchDist[kHadB];
+            gen_hadMatchDist[qB] = genMatchDist[kHadA];
+            gen_hadParentIdx[qA] = genParentIdx[kHadB];
+            gen_hadParentIdx[qB] = genParentIdx[kHadA];
+            gen_hadParentPid[qA] = genParentPid[kHadB];
+            gen_hadParentPid[qB] = genParentPid[kHadA];
           };
         };
       };

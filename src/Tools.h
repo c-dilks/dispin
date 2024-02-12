@@ -114,6 +114,10 @@ class Tools {
     static Float_t EMtoP(Float_t energy, Float_t mass) {
       return TMath::Sqrt( TMath::Power(energy,2) - TMath::Power(mass,2) );
     };
+    // convert |Momentum| and Mass to Energy
+    static Float_t PMtoE(Float_t momentum, Float_t mass) {
+      return TMath::Sqrt( TMath::Power(momentum,2) + TMath::Power(mass,2) );
+    };
 
 
 

@@ -45,7 +45,6 @@
 #include <RooAddPdf.h>
 #include <RooPlot.h>
 #include <RooNLLVar.h>
-#include <RooMinuit.h>
 
 
 // dispin

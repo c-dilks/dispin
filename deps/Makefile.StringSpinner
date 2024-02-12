@@ -1,0 +1,26 @@
+#################################################################################################
+##### HACK: modified Makefile to use to build `StringSpinner` such that `dispin` can use it #####
+#################################################################################################
+# Path to Pythia8 installation
+include Makefile.inc
+PYTHIAXMLDIR=$(PYTHIADIR)/share/Pythia8/xmldoc
+
+CXX=g++
+CXXFLAGS=-g -O -std=c++11 -fPIC
+INCLUDEDIR=$(PYTHIADIR)/include
+LIBDIR=$(PYTHIADIR)/lib
+FC=gfortran
+FFLAGS=-O0 -g -frecord-marker=8 -fbounds-check -fPIC
+
+dis: dis.cc StringSpinner.h Transversity.h VectorMesonDecays.h PrimordialKT.h mc3P0.o def.o
+	$(CXX) $(CXXFLAGS) -I$(INCLUDEDIR) -o $@ $< mc3P0.o def.o -lgfortran -L$(LIBDIR) -Wl,-rpath $(LIBDIR) -lpythia8 -ldl
+
+def.o: definitions.f90 
+	$(FC) -c $(FFLAGS) $< -o $@ 
+
+mc3P0.o: mc3P0.f90 def.o
+	$(FC) -c $(FFLAGS) $< def.o
+
+clean:
+	rm -f mc3P0.o dis routines.mod m20.o def.o event.o routines_and_functions.mod eventdefinition.mod newvariables.mod parameters.o parameters.mod 
+

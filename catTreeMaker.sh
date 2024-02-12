@@ -2,8 +2,13 @@
 
 # arguments
 if [ $# -lt 2 ]; then
-  echo """USAGE: $0 [outroot dir] [data/mc] [options]
-  options:
+  echo """USAGE: $0 [outroot dir] [data/mc] [options]...
+
+  [data/mc]
+    - use 'data' for real data, 'mcgen' stream, and StringSpinner generated data
+    - use 'mc' ONLY for 'mcrec' stream
+
+  [options]
     -p pairType
     -o output catTree.root file name"""
   exit 2
@@ -51,20 +56,13 @@ if [ -z "$outfile" ]; then
 fi
 echo "outfile=$outfile"
 mkdir -p `dirname $outfile`
+mkdir -p spinroot
 
 
-# call buildSpinroot.exe on condor or slurm
-if [[ $(hostname) =~ "ifarm" ]]; then
-  echo "on ifarm, will use SLURM"
-  slurm.buildSpinroot.sh $args
-  sleep 3
-  waitForSlurm.sh dispin_buildSpinroot
-else
-  echo "not on ifarm, will use CONDOR"
-  condor.buildSpinroot.sh $args
-  sleep 3
-  waitForCondor.sh
-fi
+# call buildSpinroot.exe on slurm
+slurm.buildSpinroot.sh $args
+sleep 3
+waitForSlurm.sh dispin_buildSpinroot
 
 
 # concatenate spinroot files to catTree.root

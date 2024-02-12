@@ -49,6 +49,7 @@ class EventTree : public TObject
     Float_t PolarizationError();
     Float_t Rellum();
     Bool_t CheckVertex();
+    Bool_t CheckPCALen();
     Bool_t CheckSampFrac();
     Bool_t CheckHadChi2pid(Int_t had);
     Bool_t CheckMissingMass();
@@ -248,6 +249,11 @@ class EventTree : public TObject
     Bool_t vzdiffBool;
     Float_t vzdiff[2];
 
+    // - string spinner branches
+    Float_t SS_Q2, SS_W, SS_x, SS_y;
+    Bool_t useStringSpinner;
+    Bool_t useMCgen; // clasdis mc generator data
+
   private:
     TChain * chain;
     TString filelist;
@@ -275,7 +281,6 @@ class EventTree : public TObject
     Float_t minP[2];
 
     Bool_t hasBeamE;
-
 
   ClassDef(EventTree,1);
 };

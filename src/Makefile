@@ -14,9 +14,9 @@ HEADERS := $(filter-out $(LINKDEF), $(wildcard *.h)) $(LINKDEF)
 #-----------------------------------------------
 
 
-$(DISPINOBJ): $(DICT) $(HEADERS) $(SOURCES)
+../$(DISPINOBJ): $(DICT) $(HEADERS) $(SOURCES)
 	@echo "----- build $@ -----"
-	$(CXX) $(SOURCES) -shared -o ../$@ $(FLAGS) $(DEPS) $(LIBS)
+	$(CXX) $(SOURCES) -shared -o $@ $(FLAGS) $(DEPS) $(LIBS)
 
 $(DICT): $(HEADERS)
 	@echo "----- generate dictionary $@ -----"

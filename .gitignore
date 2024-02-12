@@ -10,6 +10,7 @@ src/*.pcm
 *.npz
 *.png
 *.pdf
+*.sif
 !docDiagram.pdf
 .~lock*
 src/DiSpinDict.*
@@ -44,7 +45,7 @@ tmp/*
 *.tex
 tags
 files.list
-bruspin.*
+/bruspin*
 catTree*.bak
 catTrees.archive*
 catTrees.pi0

@@ -24,7 +24,43 @@ class DatasetLooper
   # directories
   CatTreeDir = "catTrees"
   SplotDir = "splot"
- 
+
+  # hash table for dataset sources
+  # key := dataset SOURCE name, which may differ from the dataset in @datasetList, since more than one
+  #        source may be used for a single data set
+  # :dataset := the data set name, used in @datasetList; there may be more datasets than in @datasetList,
+  #             but only the datasets in @datasetList will be processed in analysis code
+  # :rating  := a status or comment to remind what the dataset is used for, quality, etc.;
+  #             "GOOD"  => good for physics analysis
+  #             "maybe" => may be okay for analysis, with some effort (see Ruby comment)
+  #             "old"   => deprecated for analysis, e.g., a Pass1 replaced by Pass2
+  # :source  := the path to the source trains
+  # :stream  := either "data", "mcrec", or "mcgen" (see `slurm.diskim.h`)
+  DatasetSourceHash = {
+    # RGA ----------------------------------------------------------------
+    "rga.inbending.fa18.lowDC.pass1" => { :dataset => "rga.inbending.fa18",  :rating => "maybe", :source => "/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1b/train/nSidis",           :stream => "data",  }, # low DC voltage, similar to Spring 2018
+    "rga.inbending.fa18.pass1"       => { :dataset => "rga.inbending.fa18",  :rating => "GOOD",  :source => "/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1/dst/train/nSidis",        :stream => "data",  },
+    "rga.outbending.fa18.pass1"      => { :dataset => "rga.outbending.fa18", :rating => "GOOD",  :source => "/cache/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/nSidis",        :stream => "data",  },
+    "rga.inbending.sp19.pass1"       => { :dataset => "rga.inbending.sp19",  :rating => "old",   :source => "/cache/clas12/rg-a/production/recon/spring2019/torus-1/pass1/v1/dst/train/nSidis",      :stream => "data",  },
+    "rga.inbending.sp19.pass2"       => { :dataset => "rga.inbending.sp19",  :rating => "GOOD",  :source => "/cache/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/train/nSidis",         :stream => "data",  },
+    # RGB ----------------------------------------------------------------
+    "rgb.outbending.fa19.pass1"      => { :dataset => "rgb.outbending.fa19", :rating => "GOOD",  :source => "/cache/clas12/rg-b/production/recon/fall2019/torus+1/pass1/v1/dst/train/sidisdvcs",     :stream => "data",  },
+    "rgb.inbending.sp19.pass1"       => { :dataset => "rgb.inbending.sp19",  :rating => "old",   :source => "/cache/clas12/rg-b/production/recon/spring2019/torus-1/pass1/v0/dst/train/sidisdvcs",   :stream => "data",  },
+    "rgb.inbending.sp19.pass2"       => { :dataset => "rgb.inbending.sp19",  :rating => "GOOD",  :source => "/cache/clas12/rg-b/production/recon/spring2019/torus-1/pass2/v0/dst/train/sidisdvcs",   :stream => "data",  },
+    "rgb.inbending.sp20.pass1"       => { :dataset => "rgb.inbending.sp20",  :rating => "GOOD",  :source => "/cache/clas12/rg-b/production/recon/spring2020/torus-1/pass1/v1/dst/train/sidisdvcs",   :stream => "data",  },
+    # MC -----------------------------------------------------------------
+    # inbending bg45
+    "mc.inbending.bg45"     => { :dataset => "mc.inbending.bg45",     :rating => "GOOD", :source => "/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus-1/v1/bkg45nA_10604MeV", :stream => "mcrec", },
+    "mcgen.inbending.bg45"  => { :dataset => "mcgen.inbending.bg45",  :rating => "GOOD", :source => "/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus-1/v1/bkg45nA_10604MeV", :stream => "mcgen", },
+    # outbending bg40
+    "mc.outbending.bg40"    => { :dataset => "mc.outbending.bg40",    :rating => "GOOD", :source => "/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus+1/v1/bkg40nA_10604MeV", :stream => "mcrec", },
+    "mcgen.outbending.bg40" => { :dataset => "mcgen.outbending.bg40", :rating => "GOOD", :source => "/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus+1/v1/bkg40nA_10604MeV", :stream => "mcgen", },
+    # outbending bg50
+    "mc.outbending.bg50"    => { :dataset => "mc.outbending.bg50",    :rating => "GOOD", :source => "/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus+1/v1/bkg50nA_10604MeV", :stream => "mcrec", },
+    "mcgen.outbending.bg50" => { :dataset => "mcgen.outbending.bg50", :rating => "GOOD", :source => "/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus+1/v1/bkg50nA_10604MeV", :stream => "mcgen", },
+  }
+
+
   #####################################
   # construction
 
@@ -42,7 +78,9 @@ class DatasetLooper
       retry
     end
 
-    # list of datasets
+    # list of datasets, for analysis
+    # - these dataset names will be referenced in various places, namely the outroot directory names
+    # - only the ones included here will be processed for analysis (so you can turn some on/off)
     @datasetList = [
       "#{@mcPrefix}.inbending.bg45",
       "#{@mcPrefix}.outbending.bg40",
@@ -98,16 +136,16 @@ class DatasetLooper
     @binHash = Hash.new
     if dihadronTok==:p0 or dihadronTok==:m0 # less pi0 statistics, coarser binning
       @binHash = {
-        1 => { :bins=>[3], :name=>'x', :xTitle=>'$x$',         :xTranslation=>0.006 },
-        2 => { :bins=>[3], :name=>'m', :xTitle=>'$M_h$ [GeV]', :xTranslation=>0.020 },
-        3 => { :bins=>[3], :name=>'z', :xTitle=>'$z$',         :xTranslation=>0.010 },
+        1 => { :bins=>[3], :name=>'x', :xTitle=>'$x$',         :xTranslation=>0.0 },
+        2 => { :bins=>[3], :name=>'m', :xTitle=>'$M_h$ [GeV]', :xTranslation=>0.0 },
+        3 => { :bins=>[3], :name=>'z', :xTitle=>'$z$',         :xTranslation=>0.0 },
       }
     else # pi+pi- binning scheme
       @binHash = {
-        1  => { :bins=>[6],   :name=>'x',   :xTitle=>'$x$',         :xTranslation=>0.006      },
-        2  => { :bins=>[6],   :name=>'m',   :xTitle=>'$M_h$ [GeV]', :xTranslation=>0.020      },
-        32 => { :bins=>[3,2], :name=>'zm',  :xTitle=>'$z$',         :blTitle=>'$M_h$ __BL__', :xTranslation=>0.010 },
-        42 => { :bins=>[3,2], :name=>'ptm', :xTitle=>'$p_T$ [GeV]', :blTitle=>'$M_h$ __BL__', :xTranslation=>0.015 },
+        1  => { :bins=>[6],   :name=>'x',   :xTitle=>'$x$',         :xTranslation=>0.0      },
+        2  => { :bins=>[6],   :name=>'m',   :xTitle=>'$M_h$ [GeV]', :xTranslation=>0.0      },
+        32 => { :bins=>[3,2], :name=>'zm',  :xTitle=>'$z$',         :blTitle=>'$M_h$ __BL__', :xTranslation=>0.0 },
+        42 => { :bins=>[3,2], :name=>'ptm', :xTitle=>'$p_T$ [GeV]', :blTitle=>'$M_h$ __BL__', :xTranslation=>0.0 },
       }
     end
     ###########################

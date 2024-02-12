@@ -248,6 +248,28 @@ EventTree::EventTree(TString filelist_, Int_t whichPair_) {
     };
   };
 
+  // check if these are MC-generated data
+  useMCgen = false;
+  if(filelist.Contains("mcgen")) { // FIXME: make a better check than filename.Contains(...)
+    fprintf(stderr,"WARNING WARNING WARNING: assuming these are `clasdis` GENERATED data (the cuts are not as tight as those for reconstructed data)\n");
+    chain->SetBranchAddress("gen_hadParentIdx",gen_hadParentIdx);
+    chain->SetBranchAddress("gen_hadParentPid",gen_hadParentPid);
+    useMCgen = true;
+  }
+
+  // - string spinner branches
+  useStringSpinner = false;
+  if(chain->GetBranch("SS_Q2")) {
+    useStringSpinner = true;
+    printf("These data are from StringSpinner\n");
+    chain->SetBranchAddress("SS_Q2", &SS_Q2);
+    chain->SetBranchAddress("SS_W",  &SS_W);
+    chain->SetBranchAddress("SS_x",  &SS_x);
+    chain->SetBranchAddress("SS_y",  &SS_y);
+    chain->SetBranchAddress("gen_hadParentIdx",gen_hadParentIdx);
+    chain->SetBranchAddress("gen_hadParentPid",gen_hadParentPid);
+  }
+
   // instantiate useful objects
   objDihadron = new Dihadron();
   objDIS = new DIS();
@@ -404,7 +426,7 @@ void EventTree::GetEvent(Long64_t i) {
   //   - if cuts pass, Idx is re-assigned based on
   //     classification of pi0 or pi0-BG
   // - later in cutDihadron, we will check the pairType; if
-  //   you asked for a pair which includes a pi0, then 
+  //   you asked for a pair which includes a pi0, then
   //   cutDihadron will only be true if the diphoton is
   //   classified as a pi0
   for(int h=0; h<2; h++) {
@@ -444,7 +466,7 @@ void EventTree::GetEvent(Long64_t i) {
 
   // dihadron cuts
   /* (note: PairSame ensures we have the correct channel, e.g., pi+pi-) */
-  cutDihadron = 
+  cutDihadron =
     Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) &&
     Zpair < 0.95 && /* legacy; redundant with Mx>1.5 */
     CheckMissingMass()
@@ -452,31 +474,38 @@ void EventTree::GetEvent(Long64_t i) {
 
 
   // vertex cuts
-  cutVertex = CheckVertex(); /* applies to electron and hadrons */
-
+  if(!useStringSpinner && !useMCgen)
+    cutVertex = CheckVertex(); /* applies to electron and hadrons */
+  else
+    cutVertex = true; // unless the vertex is smeared in the generated data, this cut is not useful
 
   // fiducial cuts
-  // - note: status is required to be in FD, as a prerequisite 
-  cutFiducial = eleFiduCut && hadFiduCut[qA] && hadFiduCut[qB];
+  // - note: status is required to be in FD, as a prerequisite
+  if(!useStringSpinner && !useMCgen)
+    cutFiducial = eleFiduCut && hadFiduCut[qA] && hadFiduCut[qB];
+  else
+    cutFiducial = true; // generated data have no detector info, ignore this cut
 
 
   // PID refinement cuts
+  // IMPORTANT: cuts that need detector info should be separate functions, and only applied to
+  //            real or reconstructed-MC data (not to generated-MC data)
   // -- electron
-  cutElePID = 
+  cutElePID =
     eleTheta>5 && eleTheta<35 &&
     eleP > 2 && /* legacy; redudant with y<0.8 cut */
-    elePCALen > 0.07 &&
-    CheckSampFrac(); /* sampling fraction cuts (diagonal cut and (mu,std) cut) */
+    ( useStringSpinner || useMCgen || CheckPCALen()   ) &&  /* PCAL energy cut */
+    ( useStringSpinner || useMCgen || CheckSampFrac() ); /* sampling fraction cuts (diagonal cut and (mu,std) cut) */
   // -- pions
   for(int h=0; h<2; h++) {
     minP[h] = isDiphoton[h] ? 0.0 : 1.25;
-    cutHadPID[h] = 
+    cutHadPID[h] =
       hadTheta[h]>5 && hadTheta[h]<35 &&
       hadP[h] > minP[h] && /* minimum P cut only for charged hadrons */
-      CheckHadChi2pid(h); /* refined hadron chi2pid cut */
+      ( useStringSpinner || useMCgen || CheckHadChi2pid(h) ); /* refined hadron chi2pid cut */
   };
   cutPID = cutElePID && cutHadPID[qA] && cutHadPID[qB];
-  
+
 
   // check if helicity is defined
   sps = this->SpinState();
@@ -489,7 +518,7 @@ void EventTree::GetEvent(Long64_t i) {
 /////////////////////////////////////////////////////////
 // MAIN ANALYSIS CUT
 Bool_t EventTree::Valid() {
-  return cutDIS && cutDihadron && cutHelicity && 
+  return cutDIS && cutDihadron && cutHelicity &&
          cutFiducial && cutPID && cutVertex && cutFR;
   // NOTE: if you want to disable `cutDihadron`, you likely want to ensure `Tools::PairSame` is still checked
   //return Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) && cutHelicity; // disable "all" cuts
@@ -539,7 +568,7 @@ void EventTree::GetTrajectories(Long64_t i, Bool_t prog) {
 // translate "helicity" to a local index for the spin
 Int_t EventTree::SpinState() {
   
-  if(runnum!=11) { // data run
+  if(runnum!=RUNNUM_MC && runnum!=RUNNUM_STRING_SPINNER) { // data run
     if(RundepHelicityFlip(runnum)) { // helicity flipped
       switch(helicity) {
         case  1: return sM;
@@ -557,7 +586,7 @@ Int_t EventTree::SpinState() {
     return UNDEF;
   }
 
-  else { // MC run - use injected helicity (DEPRECATED by `InjectionModel`)
+  else if(runnum==RUNNUM_MC) { // MC run - use injected helicity (DEPRECATED by `InjectionModel`)
     /////////
     /* since usage of this method for MC has been replaced by InjectionModel, 
      * we now just return `sP`, a value that will not cause an error in the 
@@ -583,7 +612,15 @@ Int_t EventTree::SpinState() {
       default: fprintf(stderr,"WARNING: bad SpinState request: %d\n",helicityMC[whichHelicityMC]);
     };
     */
-  };
+  }
+
+  else if(runnum==RUNNUM_STRING_SPINNER) {
+    switch(helicity) {
+      case  1: return sP;
+      case -1: return sM;
+      case  0: return UNDEF;
+    }
+  }
   return UNDEF;
 };
 
@@ -638,6 +675,11 @@ Bool_t EventTree::CheckMissingMass() {
   return Mmiss>1.5; // default
 };
 
+
+// PCAL energy cut
+Bool_t EventTree::CheckPCALen() {
+  return elePCALen > 0.07;
+}
 
 
 // sampling fraction (SF) cut, for electrons
@@ -712,7 +754,7 @@ Bool_t EventTree::CheckSampFrac() {
       // sfSigma[1][0] = 0.1752;  sfSigma[1][1] = 0.1975;  sfSigma[1][2] = 0.1458;  sfSigma[1][3] = 0.1787;  sfSigma[1][4] = 0.0414;  sfSigma[1][5] = 0.2873;
       // sfSigma[2][0] = -0.0405; sfSigma[2][1] = -0.2537; sfSigma[2][2] = 0.2474;  sfSigma[2][3] = 0.4116;  sfSigma[2][4] = 1.2172;  sfSigma[2][5] = -0.4651;
     }
-    else if(runnum==11) { // MC
+    else if(runnum==RUNNUM_MC) { // MC
       for(int s=0; s<6; s++) {
         sfMu[0][s] = 0.248605;
         sfMu[1][s] = -0.844221;

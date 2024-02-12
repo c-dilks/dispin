@@ -12,14 +12,28 @@ pushd j2root
 source setup.sh
 popd
 
-pushd clasqaDB
+pushd clas12-qadb
 source env.sh
 popd
 
 popd
 
+# find pythia
+pythia_search=pythia8-config
+which $pythia_search &&
+  export PYTHIADIR=$(realpath $(dirname $(which $pythia_search))/..) &&
+  export STRINGSPINNER=${DISPIN_HOME}/deps/StringSpinner
+
 # print results
+echo ""
+echo "===== DISPIN ENVIRONMENT ====="
 env|grep --color -w DISPIN_HOME
 env|grep --color -w BRUFIT
 env|grep --color -w LD_LIBRARY_PATH
 env|grep --color -w JYPATH
+env|grep --color -w PYTHIADIR
+env|grep --color -w STRINGSPINNER
+echo "=============================="
+
+# checks
+[ -z "$PYTHIADIR" ] && echo "WARNING: Pythia8 not found!" >&2

@@ -2,6 +2,9 @@
 
 exe="diagnosticsDiphoton"
 if [ $# -lt 1 ]; then
+  echo "======================================="
+  echo "WARNING: condor scripts are deprecated!"
+  echo "======================================="
   echo "usage: $0 [input outrootDir] [ARGUMENTS]"
   echo ""
   echo "[ARGUMENTS] are those of diagnosticsDiphoton.exe listed below, except input outroot file":

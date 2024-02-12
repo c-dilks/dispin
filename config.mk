@@ -18,18 +18,10 @@ FLAGS += -O0
 
 
 # ROOT
-#DEPS = $(shell root-config --cflags) # contains deprecated flags
+FLAGS += $(shell root-config --cflags)
 DEPS = -I$(shell root-config --incdir)
 LIBS = $(shell root-config --glibs)
 LIBS += -lMinuit -lRooFitCore -lRooFit -lRooStats -lProof -lMathMore
-
-# HIPO
-#DEPS += -I$(HIPO)/hipo4
-#LIBS += -L$(HIPO)/lib -lhipo4
-
-# clas12root
-#DEPS += -I$(CLAS12ROOT)/hipo4 -I$(CLAS12ROOT)/Clas12Banks -I$(CLAS12ROOT)/Clas12Root
-#LIBS += -L$(CLAS12ROOT)/lib -lClas12Banks -lClas12Root -lHipo4 -llz4
 
 # BruFit
 DEPS += -I$(BRUFIT)/core
@@ -37,6 +29,14 @@ LIBS += -L$(BRUFIT)/lib -lbrufit
 
 # QADB
 DEPS += -I$(QADB)/srcC/rapidjson/include -I$(QADB)/srcC/include
+
+# StringSpinner + Pythia 8
+ifdef STRINGSPINNER
+	DEPS += -I${PYTHIADIR}/include
+	LIBS += -L${PYTHIADIR}/lib -lpythia8 -ldl
+	DEPS += -I${STRINGSPINNER}
+	LIBS += ${STRINGSPINNER}/mc3P0.o ${STRINGSPINNER}/def.o -lgfortran
+endif
 
 # DiSpin shared object name and source directory
 DISPIN = DiSpin

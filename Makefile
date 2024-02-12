@@ -7,15 +7,17 @@ DEPS += -Isrc
 
 
 # assume each .cpp file has main and build corresponding .exe executable
-SOURCES := $(basename $(wildcard *.cpp))
+ifdef STRINGSPINNER
+	SOURCES := $(basename $(wildcard *.cpp))
+else
+	SOURCES := $(filter-out stringSpinSim, $(basename $(wildcard *.cpp)))
+endif
 EXES := $(addsuffix .exe, $(SOURCES))
-
 
 #--------------------------------------------
 
-
-all: 
-	@cd src; make
+all:
+	$(MAKE) -C src
 	make exe
 
 exe: $(EXES)

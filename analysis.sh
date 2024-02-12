@@ -7,16 +7,16 @@ if [ $# -ge 2 ]; then outrootDir=$2; fi
 
 case $setnum in
   1)
-    condor.buildSpinroot.sh $outrootDir -b -i1 # vs. x 
+    slurm.buildSpinroot.sh $outrootDir -b -i1 # vs. x 
     ;;
   2)
-    condor.buildSpinroot.sh $outrootDir -b -i2 # vs. Mh 
+    slurm.buildSpinroot.sh $outrootDir -b -i2 # vs. Mh 
     ;;
   3)
-    condor.buildSpinroot.sh $outrootDir -b -i32 # vs. z , for 2 Mh bins
+    slurm.buildSpinroot.sh $outrootDir -b -i32 # vs. z , for 2 Mh bins
     ;;
   4)
-    condor.buildSpinroot.sh $outrootDir -b -i42 # vs. PhPerp, for 2 Mh bins 
+    slurm.buildSpinroot.sh $outrootDir -b -i42 # vs. PhPerp, for 2 Mh bins 
     ;;
   *)
     echo "ERROR: unknown set_number"
