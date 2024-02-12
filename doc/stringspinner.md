@@ -10,7 +10,6 @@ Make or symlink directories:
 ```
 diskim.sss
 outroot.sss
-bruspin/bruspin.sss
 ```
 
 Generate `outroot` files, then the `catTree` (see settings in the script first):
@@ -24,7 +23,7 @@ mv <output cattree file> catTrees/
 
 Compare kinematics
 ```bash
-root -b -q CompareCatTreeDists.C'("catTrees/catTreeData.sss.0x34.idx.root","catTrees/catTreeData.rga.pm.bibending.all.idx.root")'
+root -b -q CompareCatTreeDists.C'("catTrees/catTreeData.sss.0x34.idx.root","catTrees/catTreeData.mcgen.inbending.bg45.0x34.idx.root")'
 ```
 
 $M_h$ Decomposition
