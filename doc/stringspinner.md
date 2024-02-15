@@ -21,16 +21,20 @@ mv <output cattree file> catTrees/
 - runs `stringSpinSim.cpp`
 - Pythia configuration is in `stringSpinSim.cmnd` (see below for details)
 
-Compare kinematics
-```bash
-root -b -q CompareCatTreeDists.C'("catTrees/catTreeData.sss.0x34.idx.root","catTrees/catTreeData.mcgen.inbending.bg45.0x34.idx.root")'
-```
-
 $M_h$ Decomposition
 ```bash
 diagnostics.exe "outroot.sss/*.root" plots.sss.root
-MhDecompose.exe "outroot.sss/*.root" plots.sss.root
+MhDecompose.exe "outroot.sss/*.root" plots.sss.root mhdecomp.sss.root
+diagnostics.exe "outroot.mcgen.inbending.bg45/*.root" plots.mcgen.root
+MhDecompose.exe "outroot.mcgen.inbending.bg45/*.root" plots.mcgen.root mhdecomp.mcgen.root
 ```
+
+Compare kinematics
+```bash
+root -b -q CompareCatTreeDists.C'("catTrees/catTreeData.sss.0x34.idx.root","catTrees/catTreeData.mcgen.inbending.bg45.0x34.idx.root")'
+root -b -q CompareDiagnosticsDists.C'("plots.sss.root","plots.mcgen.root","diagcomp.sss","StringSpinner","CLAS12 MCgen")'
+```
+
 
 Fit and plot asymmetries
 ```bash
