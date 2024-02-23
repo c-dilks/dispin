@@ -58,6 +58,11 @@ class DatasetLooper
     # outbending bg50
     "mc.outbending.bg50"    => { :dataset => "mc.outbending.bg50",    :rating => "GOOD", :source => "/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus+1/v1/bkg50nA_10604MeV", :stream => "mcrec", },
     "mcgen.outbending.bg50" => { :dataset => "mcgen.outbending.bg50", :rating => "GOOD", :source => "/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus+1/v1/bkg50nA_10604MeV", :stream => "mcgen", },
+    # Systematics --------------------------------------------------------
+    # positron skims
+    "positron.rga.inbending.fa18.pass2"  => { :dataset => "positron.rga.inbending.fa18",  :rating => "GOOD", :source => "/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass2/main/train/InclusivePositron",  :stream => "data", },
+    "positron.rga.outbending.fa18.pass2" => { :dataset => "positron.rga.outbending.fa18", :rating => "GOOD", :source => "/cache/clas12/rg-a/production/recon/fall2018/torus+1/pass2/train/InclusivePositron",       :stream => "data", },
+    "positron.rga.inbending.sp19.pass2"  => { :dataset => "positron.rga.inbending.sp19",  :rating => "GOOD", :source => "/cache/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/train/InclusivePositron", :stream => "data", },
   }
 
 
