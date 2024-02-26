@@ -90,6 +90,10 @@ int main(int argc, char** argv) {
     fprintf(stderr,"\nWARNING: using radiative-corrected beam energy model !!!\n\n");
     dataStream(TRegexp("rad$")) = "";
   }
+  if(dataStream.Contains(TRegexp("positron$"))) {
+    fprintf(stderr,"\nWARNING: using positrons in place of DIS electrons !!!\n\n");
+    dataStream(TRegexp("positron$")) = "";
+  }
   if(dataStream=="data") {
     useData=true;
   }
