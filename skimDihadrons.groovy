@@ -192,7 +192,7 @@ def calorimeterList = ['pcal','ecin','ecout']
 //def calorimeterList = ['pcal'] // pcal only
 
 // closure to define tree leaves for detectors
-def buildDetectorLeaves = { par ->
+def buildDetectorLeaves = {
   return [
     /* calorimeters */
     calorimeterList.collect{ detName ->
@@ -206,7 +206,7 @@ def buildDetectorLeaves = { par ->
     (1..3).collect{ reg ->
       ['x','y','z'].collect{ coord -> "dcTraj_c${reg}${coord}" }
     }
-  ].flatten().collect{par+'_'+it}
+  ].flatten()
 }
 
 
@@ -425,7 +425,7 @@ def buildParticleLeaves = { par ->
     'chi2pid','status/I','beta'
   ]
   if(!useMCgen) {
-    result += buildDetectorLeaves(par)
+    result += buildDetectorLeaves()
   }
   else {
     result += [
