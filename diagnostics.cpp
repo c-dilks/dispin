@@ -201,8 +201,8 @@ int main(int argc, char** argv) {
 
    TH2D * MmissVsMh = new TH2D("MmissVsMh","M_{X} vs. M_{h};M_{h};M_{X}",
      NBINS,0,2.5,
-     NBINS,0.5,3);
-   
+     NBINS,0.5,4);
+
    TH1D * PhiHDist = new TH1D("PhiHDist","#phi_{h} distribution;#phi_{h}",
      NBINS,-PIe,PIe);
    TH1D * PhiRDist = new TH1D("PhiRDist","#phi_{R} distribution;#phi_{R}",
@@ -278,7 +278,12 @@ int main(int argc, char** argv) {
    TH2D * XFvsZ[2];
    TH2D * YHvsMh[2];
    TH2D * XFvsMh[2];
-   TH2D * PperpvsMh[2];
+   TH2D * hadPvsMh[2];
+   TH2D * hadPvsMmiss[2];
+   TH2D * hadPperpVsMh[2];
+   TH2D * hadPperpVsMmiss[2];
+   TH2D * hadZvsMh[2];
+   TH2D * hadZvsMmiss[2];
    TH2D * hadPperpVsYH[2];
    TH2D * dihPhiHvsHadPhiH[2];
    for(int h=0; h<2; h++) {
@@ -312,9 +317,24 @@ int main(int argc, char** argv) {
      XFvsMh[h] = new TH2D(TString("XFvsMh_"+hadName[h]),
        TString(hadTitle[h]+" x_{F} vs. M_{h};M_{h};x_{F}"),
        2*NBINS,0,3,NBINS,-1,1);
-     PperpvsMh[h] = new TH2D(TString("PperpvsMh_"+hadName[h]),
+     hadPvsMh[h] = new TH2D(TString("hadPvsMh_"+hadName[h]),
+       TString(hadTitle[h]+" p vs. M_{h};M_{h};p"),
+       2*NBINS,0,3,NBINS,0,8);
+     hadPvsMmiss[h] = new TH2D(TString("hadPvsMmiss_"+hadName[h]),
+       TString(hadTitle[h]+" p vs. M_{X};M_{X};p"),
+       2*NBINS,-1,4,NBINS,0,8);
+     hadPperpVsMh[h] = new TH2D(TString("hadPperpVsMh_"+hadName[h]),
        TString(hadTitle[h]+" p_{perp} vs. M_{h};M_{h};p_{perp}"),
        2*NBINS,0,3,NBINS,0,2);
+     hadPperpVsMmiss[h] = new TH2D(TString("hadPperpVsMmiss_"+hadName[h]),
+       TString(hadTitle[h]+" p_{perp} vs. M_{X};M_{X};p_{perp}"),
+       2*NBINS,-1,4,NBINS,0,2);
+     hadZvsMh[h] = new TH2D(TString("hadZvsMh_"+hadName[h]),
+       TString(hadTitle[h]+" z vs. M_{h};M_{h};z"),
+       2*NBINS,0,3,NBINS,0,1);
+     hadZvsMmiss[h] = new TH2D(TString("hadZvsMmiss_"+hadName[h]),
+       TString(hadTitle[h]+" z vs. M_{X};M_{X};z"),
+       2*NBINS,-1,4,NBINS,0,1);
      hadPperpVsYH[h] = new TH2D(TString("hadPperpVsYH_"+hadName[h]),
        TString(hadTitle[h]+" p_{perp} vs. Y_{h};Y_{h};p_{perp}"),
        NBINS,-4,4,NBINS,0,2);
@@ -383,7 +403,7 @@ int main(int argc, char** argv) {
    TH2D * MhVsAlpha = new TH2D(
      "MhVsAlpha","M_{h} vs. #alpha [deg];#alpha [deg];M_{h}",
      NBINS,0,75,NBINS,0,3);
-   
+
    TH1D * sinThetaDist = new TH1D("sinThetaDist",
      "sin(#theta) distribution;sin(#theta)",NBINS,-1.1,1.1);
    TH1D * sinThetaCosThetaDist = new TH1D("sinThetaCosThetaDist",
@@ -687,7 +707,12 @@ int main(int argc, char** argv) {
          XFvsZ[h]->Fill(ev->Z[h],ev->hadXF[h]);
          YHvsMh[h]->Fill(ev->Mh,ev->hadYH[h]);
          XFvsMh[h]->Fill(ev->Mh,ev->hadXF[h]);
-         PperpvsMh[h]->Fill(ev->Mh,ev->hadPperp[h]);
+         hadPvsMh[h]->Fill(ev->Mh,ev->hadP[h]);
+         hadPvsMmiss[h]->Fill(ev->Mmiss,ev->hadP[h]);
+         hadPperpVsMh[h]->Fill(ev->Mh,ev->hadPperp[h]);
+         hadPperpVsMmiss[h]->Fill(ev->Mmiss,ev->hadPperp[h]);
+         hadZvsMh[h]->Fill(ev->Mh,ev->Z[h]);
+         hadZvsMmiss[h]->Fill(ev->Mmiss,ev->Z[h]);
          hadPperpVsYH[h]->Fill(ev->hadYH[h],ev->hadPperp[h]);
          dihPhiHvsHadPhiH[h]->Fill(ev->hadPhiH[h],ev->PhiH);
        };
@@ -904,7 +929,12 @@ int main(int argc, char** argv) {
 
    diphMdist->Write();
 
-   for(int h=0; h<2; h++) PperpvsMh[h]->Write();
+   for(int h=0; h<2; h++) hadPvsMh[h]->Write();
+   for(int h=0; h<2; h++) hadPvsMmiss[h]->Write();
+   for(int h=0; h<2; h++) hadPperpVsMh[h]->Write();
+   for(int h=0; h<2; h++) hadPperpVsMmiss[h]->Write();
+   for(int h=0; h<2; h++) hadZvsMh[h]->Write();
+   for(int h=0; h<2; h++) hadZvsMmiss[h]->Write();
    for(int h=0; h<2; h++) dihPhiHvsHadPhiH[h]->Write();
    for(int h=0; h<2; h++) hadPhiHDist[h]->Write();
    PhPerpVsMh->Write(); 

@@ -17,6 +17,10 @@ graphs = {
     :a => { :title=>'StringSpinner', :style=>r.kFullTriangleUp,   :color=>r.kGreen+1  },
     :b => { :title=>'CLAS12 MCgen',  :style=>r.kFullTriangleDown, :color=>r.kViolet+2 },
   },
+  :CompareDiagnosticsDists => {
+    :a => { :title=>'StringSpinner', :style=>r.kFullCircle, :color=>r.kRed-7  },
+    :b => { :title=>'CLAS12 MCgen',  :style=>r.kFullCircle, :color=>r.kBlue+3 },
+  },
 }
 
 if ARGV.empty?
