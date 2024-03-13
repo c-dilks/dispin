@@ -39,12 +39,25 @@ int main(int argc, char** argv) {
     cerr << "USAGE: " << argv[0];
     for(const auto& [leptoName, _] : leptos)
       cerr << " [" << leptoName << "]";
-    cerr << endl << " - each argument should be an outroot dir" << endl;
+    cerr << endl;
+    cerr << " - each argument should be an outroot dir" << endl;
+    cerr << " - the binning schemes are hard-coded; this will run all of them at once" << endl;
     return 2;
   }
   for(int a=1; a<5; a++)
     outrootDirs.push_back(TString(argv[a]));
   auto whichPair = EncodePairType(kPip,kPim); // FIXME
+
+  // set binning schemes
+  std::map<std::string, std::unique_ptr<Binning>> BSmap;
+  BSmap.insert({"x", std::make_unique<Binning>()});
+  BSmap.insert({"m", std::make_unique<Binning>()});
+  BSmap.insert({"zm", std::make_unique<Binning>()});
+  BSmap.insert({"ptm", std::make_unique<Binning>()});
+  BSmap.at("x")->SetScheme(whichPair, 1, 6);
+  BSmap.at("m")->SetScheme(whichPair, 2, 6);
+  BSmap.at("zm")->SetScheme(whichPair, 32, 3, 2);
+  BSmap.at("ptm")->SetScheme(whichPair, 42, 3, 2);
 
   // read event trees
   std::vector<std::unique_ptr<EventTree>> evTrees;
@@ -64,9 +77,8 @@ int main(int argc, char** argv) {
   std::vector<TH1D*> leptoP;
   std::vector<TH2D*> leptoThetaVsP;
   std::vector<TH2D*> leptoQ2vsX;
+  std::vector<TH1D*> dihX;
   std::vector<TH1D*> dihMh;
-  std::vector<TH1D*> dihZ;
-  std::vector<TH1D*> dihPhPerp;
   std::vector<TH2D*> dihZvsMh;
   std::vector<TH2D*> dihPhPerpVsMh;
   std::vector<long> leptoCounts;
@@ -75,11 +87,27 @@ int main(int argc, char** argv) {
     leptoP.push_back(new TH1D(leptoName+"_p", leptoTitle+" p;p [GeV]", NBINS, 0, 11));
     leptoThetaVsP.push_back(new TH2D(leptoName+"_theta_vs_p", leptoTitle+" #theta vs. p;p [GeV];#theta [deg]", NBINS, 0, 11, NBINS, 0, 40));
     leptoQ2vsX.push_back(new TH2D(leptoName+"_Q2_vs_x", leptoTitle+" Q^{2} vs. x;x;Q^{2} [GeV^{2}]", NBINS, 0, 1, NBINS, 0, 12));
-    dihMh.push_back(new TH1D(leptoName+"_dihadron_Mh", leptoTitle+" dihadron M_{h};M_{h} [GeV]", NBINS, 0, 3));
-    dihZ.push_back(new TH1D(leptoName+"_dihadron_z", leptoTitle+" dihadron z;z", NBINS, 0, 1));
-    dihPhPerp.push_back(new TH1D(leptoName+"_dihadron_PhPerp", leptoTitle+" dihadron P_{h}^{perp};P_{h}^{perp} [GeV]", NBINS, 0, 2));
-    dihZvsMh.push_back(new TH2D(leptoName+"_dihadron_z_vs_Mh", leptoTitle+" dihadron z vs. M_{h};M_{h} [GeV];z", NBINS, 0, 3, NBINS, 0, 1));
-    dihPhPerpVsMh.push_back(new TH2D(leptoName+"_dihadron_PhPerp_vs_Mh", leptoTitle+" dihadron P_{h}^{perp} vs. M_{h};M_{h} [GeV];P_{h}^{perp} [GeV]", NBINS, 0, 3, NBINS, 0, 2));
+    dihX.push_back(new TH1D(
+          leptoName+"_dihadron_x",
+          leptoTitle+" x;x",
+          BSmap.at("x")->GetBinArray(0)->GetArray()
+          ));
+    dihMh.push_back(new TH1D(
+          leptoName+"_dihadron_Mh",
+          leptoTitle+" dihadron M_{h};M_{h} [GeV]",
+          BSMap.at("m")->GetBinArray(0)->GetArray()
+          ));
+    dihZvsMh.push_back(new TH2D(leptoName+"_dihadron_z_vs_Mh",
+          leptoTitle+" dihadron z vs. M_{h};M_{h} [GeV];z",
+          BSMap.at("zm")->GetBinArray(1)->GetArray(),
+          BSMap.at("zm")->GetBinArray(0)->GetArray()
+          ));
+    dihPhPerpVsMh.push_back(new TH2D(
+          leptoName+"_dihadron_PhPerp_vs_Mh",
+          leptoTitle+" dihadron P_{h}^{perp} vs. M_{h};M_{h} [GeV];P_{h}^{perp} [GeV]",
+          BSMap.at("ptm")->GetBinArray(1)->GetArray(),
+          BSMap.at("ptm")->GetBinArray(0)->GetArray()
+          ));
     leptoCounts.push_back(0);
   }
 
@@ -94,9 +122,8 @@ int main(int argc, char** argv) {
         leptoP.at(idx)->Fill(ev->eleP);
         leptoThetaVsP.at(idx)->Fill(ev->eleP, ev->eleTheta);
         leptoQ2vsX.at(idx)->Fill(ev->x, ev->Q2);
+        dihX.at(idx)->Fill(ev->x);
         dihMh.at(idx)->Fill(ev->Mh);
-        dihZ.at(idx)->Fill(ev->Zpair);
-        dihPhPerp.at(idx)->Fill(ev->PhPerp);
         dihZvsMh.at(idx)->Fill(ev->Mh, ev->Zpair);
         dihPhPerpVsMh.at(idx)->Fill(ev->Mh, ev->PhPerp);
         // CUT: equal acceptance
@@ -119,17 +146,30 @@ int main(int argc, char** argv) {
     leptoP.at(idx)->Scale(1.0 / norm);
     leptoThetaVsP.at(idx)->Scale(1.0 / norm);
     leptoQ2vsX.at(idx)->Scale(1.0 / norm);
+    dihX.at(idx)->Scale(1.0 / norm);
     dihMh.at(idx)->Scale(1.0 / norm);
-    dihZ.at(idx)->Scale(1.0 / norm);
-    dihPhPerp.at(idx)->Scale(1.0 / norm);
     dihZvsMh.at(idx)->Scale(1.0 / norm);
     dihPhPerpVsMh.at(idx)->Scale(1.0 / norm);
   };
-  normalize(cInbendingElectron, leptoCounts.at(cInbendingElectron));
+  normalize(cInbendingElectron,  leptoCounts.at(cInbendingElectron));
   normalize(cOutbendingElectron, leptoCounts.at(cOutbendingElectron));
+  normalize(cInbendingPositron,  leptoCounts.at(cInbendingElectron));
+  normalize(cOutbendingPositron, leptoCounts.at(cOutbendingElectron));
+
+  // compute nonDIS electron contamination
+  auto compute_systematic = [&] (auto hist_vec) {
+    hist_vec.at(cInbendingPositron)->Divide(hist_vec.at(cOutbendingElectron));
+    hist_vec.at(cOutbendingPositron)->Divide(hist_vec.at(cInbendingElectron));
+    hist_vec.at(cInbendingPositron)->SetTitle("non-DIS contamination of outbending data");
+    hist_vec.at(cOutbendingPositron)->SetTitle("non-DIS contamination of inbending data");
+  };
+  compute_systematic(dihX);
+  compute_systematic(dihMh);
+  compute_systematic(dihZvsMh);
+  compute_systematic(dihPhPerpVsMh);
 
   // draw
-  auto canvNorm = new TCanvas("canvNorm", "canvNorm", 800, 600);
+  auto canvNorm = new TCanvas("canvNorm", "canvNorm", 2*800, 600);
   canvNorm->Divide(2,1);
   canvNorm->cd(1);
   leptoTheta.at(cInbendingElectron)->SetLineColor(kBlue);
@@ -142,6 +182,26 @@ int main(int argc, char** argv) {
   leptoP.at(cInbendingElectron)->Draw();
   leptoP.at(cOutbendingElectron)->Draw("same");
 
+  int nCols = 2;
+  int nRows = 2;
+  std::map<file_classes, TCanvas*> canvSystematic;
+  canvSystematic.insert({cOutbendingPositron, new TCanvas("canvSystematicInbending",  "canvSystematicInbending",  nCols*800, nRows*600)});
+  canvSystematic.insert({cInbendingPositron,  new TCanvas("canvSystematicOutbending", "canvSystematicOutbending", nCols*800, nRows*600)});
+  for(auto& [idx, canv] : canvSystematic) {
+    canv->Divide(nCols, nRows);
+    for(int padNum=1; padNum<=nCols*nRows; padNum++) {
+      auto pad = canv->GetPad(padNum);
+      pad->SetGrid(1,1);
+      pad->SetLeftMargin(1.2);
+      pad->SetRightMargin(1.2);
+      pad->SetBottomMargin(1.2);
+    }
+    canv->cd(1); dihX.at(idx)->Draw();
+    canv->cd(2); dihMh.at(idx)->Draw();
+    canv->cd(3); dihZvsMh.at(idx)->Draw("colztext");
+    canv->cd(4); dihPhPerpVsMh.at(idx)->Draw("colztext");
+  }
+
   // write
   canvNorm->Write();
   for(std::size_t idx=0; idx<leptoCounts.size(); idx++) {
@@ -149,9 +209,8 @@ int main(int argc, char** argv) {
     leptoP.at(idx)->Write();
     leptoThetaVsP.at(idx)->Write();
     leptoQ2vsX.at(idx)->Write();
+    dihX.at(idx)->Write();
     dihMh.at(idx)->Write();
-    dihZ.at(idx)->Write();
-    dihPhPerp.at(idx)->Write();
     dihZvsMh.at(idx)->Write();
     dihPhPerpVsMh.at(idx)->Write();
   }
