@@ -9,6 +9,7 @@
 #include <TCanvas.h>
 
 #include "src/EventTree.h"
+#include "src/Binning.h"
 
 using std::cout;
 using std::cerr;
@@ -90,23 +91,29 @@ int main(int argc, char** argv) {
     dihX.push_back(new TH1D(
           leptoName+"_dihadron_x",
           leptoTitle+" x;x",
+          BSmap.at("x")->GetBinArray(0)->GetSize(),
           BSmap.at("x")->GetBinArray(0)->GetArray()
           ));
     dihMh.push_back(new TH1D(
           leptoName+"_dihadron_Mh",
           leptoTitle+" dihadron M_{h};M_{h} [GeV]",
-          BSMap.at("m")->GetBinArray(0)->GetArray()
+          BSmap.at("m")->GetBinArray(0)->GetSize(),
+          BSmap.at("m")->GetBinArray(0)->GetArray()
           ));
     dihZvsMh.push_back(new TH2D(leptoName+"_dihadron_z_vs_Mh",
           leptoTitle+" dihadron z vs. M_{h};M_{h} [GeV];z",
-          BSMap.at("zm")->GetBinArray(1)->GetArray(),
-          BSMap.at("zm")->GetBinArray(0)->GetArray()
+          BSmap.at("zm")->GetBinArray(1)->GetSize(),
+          BSmap.at("zm")->GetBinArray(1)->GetArray(),
+          BSmap.at("zm")->GetBinArray(0)->GetSize(),
+          BSmap.at("zm")->GetBinArray(0)->GetArray()
           ));
     dihPhPerpVsMh.push_back(new TH2D(
           leptoName+"_dihadron_PhPerp_vs_Mh",
           leptoTitle+" dihadron P_{h}^{perp} vs. M_{h};M_{h} [GeV];P_{h}^{perp} [GeV]",
-          BSMap.at("ptm")->GetBinArray(1)->GetArray(),
-          BSMap.at("ptm")->GetBinArray(0)->GetArray()
+          BSmap.at("ptm")->GetBinArray(1)->GetSize(),
+          BSmap.at("ptm")->GetBinArray(1)->GetArray(),
+          BSmap.at("ptm")->GetBinArray(0)->GetSize(),
+          BSmap.at("ptm")->GetBinArray(0)->GetArray()
           ));
     leptoCounts.push_back(0);
   }
