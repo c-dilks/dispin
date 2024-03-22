@@ -20,6 +20,7 @@ using namespace std;
 
 TString infiles;
 TString dataPlotsFile;
+TString outfileN;
 Int_t whichPair;
 Int_t whichHad[2];
 TString hadName[2];
@@ -134,13 +135,14 @@ int main(int argc, char** argv) {
 
   // ARGUMENTS
   whichPair = EncodePairType(kPip,kPim);
-  if(argc<3) {
-    fprintf(stderr,"USAGE: %s [outroot file(s)] [diagnostics plots.root file] [pairType]\n",argv[0]);
+  if(argc<4) {
+    fprintf(stderr,"USAGE: %s [outroot file(s)] [diagnostics plots.root file] [output file name] [pairType]\n",argv[0]);
     return 1;
   }
   infiles = TString(argv[1]);
   dataPlotsFile = TString(argv[2]);
-  if(argc>3) whichPair = (Int_t)strtof(argv[3],NULL);
+  outfileN = TString(argv[3]);
+  if(argc>4) whichPair = (Int_t)strtof(argv[4],NULL);
 
 
   // get hadron pair from whichPair; note that in the print out, the 
@@ -166,6 +168,7 @@ int main(int argc, char** argv) {
   dataDists.insert(pair<TString,TH1D*>("x",(TH1D*)plotsFile->Get("XDist")));
   dataDists.insert(pair<TString,TH1D*>("z",(TH1D*)plotsFile->Get("ZpairDist")));
   dataDists.insert(pair<TString,TH1D*>("PhPerp",(TH1D*)plotsFile->Get("PhPerpDist")));
+  dataDists.insert(pair<TString,TH1D*>("Mmiss",(TH1D*)plotsFile->Get("MmissDist")));
   dataDists.insert(pair<TString,TH1D*>("xF",(TH1D*)plotsFile->Get("xFDist")));
   dataDists.insert(pair<TString,TH1D*>("YH",(TH1D*)plotsFile->Get("YHDist")));
   for(int h=0; h<2; h++) {
@@ -189,7 +192,7 @@ int main(int argc, char** argv) {
   };
 
   // define output file
-  TFile * outfile = new TFile("mhdecomp.root","RECREATE");
+  TFile * outfile = new TFile(outfileN,"RECREATE");
 
 
   // define Parent objects, and store them in a map
@@ -268,6 +271,7 @@ int main(int argc, char** argv) {
         par.dists.at("x")->Fill(ev->x);
         par.dists.at("z")->Fill(ev->Zpair);
         par.dists.at("PhPerp")->Fill(ev->PhPerp);
+        par.dists.at("Mmiss")->Fill(ev->Mmiss);
         par.dists.at("xF")->Fill(ev->xF);
         par.dists.at("YH")->Fill(ev->YH);
         for(int h=0; h<2; h++) {
@@ -308,6 +312,7 @@ int main(int argc, char** argv) {
 
   // close
   outfile->Close();
+  printf("Wrote %s\n", outfileN.Data());
   return 0;
 };
 

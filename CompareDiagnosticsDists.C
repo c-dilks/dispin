@@ -325,7 +325,6 @@ void CompareDiagnosticsDists(
   };
 
 
-
   // make comparison plots ////////////////////////////
 
   // DIS
@@ -334,6 +333,17 @@ void CompareDiagnosticsDists(
   LatexClearPage();
   CompareDist("WDist","$W$","W");
   CompareDist("YDist","$y$","y");
+  LatexClearPage();
+
+  // single particle kinematics
+  CompareDist("elePDist","$p\\left(e^-\\right)$","p(e^{-})");
+  CompareDist("eleThetaDist","$\\theta_{\\mbox{lab}}\\left(e^-\\right)$","#theta_{lab}(e^{-})");
+  LatexClearPage();
+  CompareDistHadron("hadPDist","p","p");
+  LatexClearPage();
+  CompareDistHadron("hadThetaDist","\\theta_{\\mbox{lab}}","#theta_{lab}");
+  LatexClearPage();
+  CompareDistHadron("hadXFDist","x_F","x_{F}");
   LatexClearPage();
 
   // dihadron
@@ -352,36 +362,31 @@ void CompareDiagnosticsDists(
   CompareDistHadron("hadPhiHDist","\\phih","#phi_{h}");
   LatexClearPage();
 
-  // fragmentation region
-  CompareDistHadron("hadXFDist","x_F","x_{F}");
-  LatexClearPage();
-
-  // PID
-  CompareDist("eleThetaDist","$\\theta_{\\mbox{lab}}\\left(e^-\\right)$","#theta_{lab}(e^{-})");
-  CompareDist("elePDist","$p\\left(e^-\\right)$","p(e^{-})");
-  LatexClearPage();
-  CompareDist("elePCALenDist","$E_{PCAL}\\left(e^-\\right)$","E_{PCAL}(e^{-})");
-  CompareDist("eleECINenDist","$E_{ECIN}\\left(e^-\\right)$","E_{ECIN}(e^{-})");
-  LatexClearPage();
-  CompareDist("eleECOUTenDist","$E_{ECOUT}\\left(e^-\\right)$","E_{ECOUT}(e^{-})");
-  CompareDist("eleSampFracDist","electron sampling fraction","S.F.(e^{-})");
-  LatexClearPage();
-  CompareDistHadron("hadThetaDist","\\theta_{\\mbox{lab}}","#theta_{lab}");
-  LatexClearPage();
-  CompareDistHadron("hadPDist","p","p");
-  LatexClearPage();
-  CompareDistHadron("hadChi2pidDist","\\chipid","#chi^{2}_{pid}");
-  LatexClearPage();
-  CompareDist2D("eleDiagonalSFdist","$E_{\\mbox{PCAL}}/p$","$E_{\\mbox{ECIN}}/p$");
-  LatexClearPage();
-  CompareDist2D("eleSFvsP","$p$","electron sampling fraction");
-  LatexClearPage();
-  CompareDist2D("eleECALvsPCALedep","$E_{\\mbox{PCAL}}$","$E_{\\mbox{ECAL}}$");
-  LatexClearPage();
-  CompareDist2D("piPlushadChi2pidVsP","$p$","$\\pip~\\chipid$");
-  LatexClearPage();
-  CompareDist2D("piMinushadChi2pidVsP","$p$","$\\pim~\\chipid$");
-  LatexClearPage();
+  // PID refinement
+  if(infile0N.Contains("sss") || infile0N.Contains("mcgen") ||
+     infile1N.Contains("sss") || infile1N.Contains("mcgen") ) {
+    printf("NOTE: these are MC-generated data; not producing detector-dependent plots\n");
+  }
+  else {
+    CompareDist("elePCALenDist","$E_{PCAL}\\left(e^-\\right)$","E_{PCAL}(e^{-})");
+    CompareDist("eleECINenDist","$E_{ECIN}\\left(e^-\\right)$","E_{ECIN}(e^{-})");
+    LatexClearPage();
+    CompareDist("eleECOUTenDist","$E_{ECOUT}\\left(e^-\\right)$","E_{ECOUT}(e^{-})");
+    CompareDist("eleSampFracDist","electron sampling fraction","S.F.(e^{-})");
+    LatexClearPage();
+    CompareDistHadron("hadChi2pidDist","\\chipid","#chi^{2}_{pid}");
+    LatexClearPage();
+    CompareDist2D("eleDiagonalSFdist","$E_{\\mbox{PCAL}}/p$","$E_{\\mbox{ECIN}}/p$");
+    LatexClearPage();
+    CompareDist2D("eleSFvsP","$p$","electron sampling fraction");
+    LatexClearPage();
+    CompareDist2D("eleECALvsPCALedep","$E_{\\mbox{PCAL}}$","$E_{\\mbox{ECAL}}$");
+    LatexClearPage();
+    CompareDist2D("piPlushadChi2pidVsP","$p$","$\\pip~\\chipid$");
+    LatexClearPage();
+    CompareDist2D("piMinushadChi2pidVsP","$p$","$\\pim~\\chipid$");
+    LatexClearPage();
+  }
 
   // vertex
   CompareDistHadron("hadEleVzDiffDist","v_z","v_{z}","-v_z\\left(e^-\\right)","-v_{z}(e^{-})");
@@ -390,6 +395,21 @@ void CompareDiagnosticsDists(
   CompareDist("eleVzDist","$v_z\\left(e^-\\right)$","v_{z}(e^{-})");
   LatexClearPage();
 
+  // 2D plots
+  CompareDist2D("Q2vsX",                   "$x$",     "$Q^{2}$");      LatexClearPage();
+  CompareDist2D("MmissVsMh",               "$M_{h}$", "$M_{X}$");      LatexClearPage();
+  CompareDist2D("hadPvsMh_piPlus",         "$M_{h}$", "$p$");          LatexClearPage();
+  CompareDist2D("hadPvsMh_piMinus",        "$M_{h}$", "$p$");          LatexClearPage();
+  CompareDist2D("hadPvsMmiss_piPlus",      "$M_{X}$", "$p$");          LatexClearPage();
+  CompareDist2D("hadPvsMmiss_piMinus",     "$M_{X}$", "$p$");          LatexClearPage();
+  CompareDist2D("hadPperpVsMh_piPlus",     "$M_{h}$", "$p_{\\perp}$"); LatexClearPage();
+  CompareDist2D("hadPperpVsMh_piMinus",    "$M_{h}$", "$p_{\\perp}$"); LatexClearPage();
+  CompareDist2D("hadPperpVsMmiss_piPlus",  "$M_{X}$", "$p_{\\perp}$"); LatexClearPage();
+  CompareDist2D("hadPperpVsMmiss_piMinus", "$M_{X}$", "$p_{\\perp}$"); LatexClearPage();
+  CompareDist2D("hadZvsMh_piPlus",         "$M_{h}$", "$z$");          LatexClearPage();
+  CompareDist2D("hadZvsMh_piMinus",        "$M_{h}$", "$z$");          LatexClearPage();
+  CompareDist2D("hadZvsMmiss_piPlus",      "$M_{X}$", "$z$");          LatexClearPage();
+  CompareDist2D("hadZvsMmiss_piMinus",     "$M_{X}$", "$z$");          LatexClearPage();
 
   /*
   CompareDist2Dproj(
@@ -401,7 +421,6 @@ void CompareDiagnosticsDists(
       );
   */
   /*
-  CompareDist2D("Q2vsX");
   CompareDist2D("eleVxyDist");
   CompareDist2D("eleEvsPhi");
   CompareDist2D("vzDiffEleHad");

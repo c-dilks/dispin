@@ -56,6 +56,7 @@ void CompareCatTreeDists(
   CompareDist("PhiR","#phi_{R}");
   CompareDist("Theta","#theta");
   CompareDist("XF","x_{F}");
+  CompareDist("Mmiss","M_{X}");
   CompareDist("DYsgn","#Delta Y_{h}");
   // CompareDist("diphM","M_{#gamma#gamma} [GeV]");
 };
