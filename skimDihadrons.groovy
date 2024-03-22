@@ -14,7 +14,6 @@ import org.jlab.detector.base.DetectorType
 import org.jlab.jroot.ROOTFile
 import groovy.json.JsonOutput
 import java.lang.Math.*
-import clasqa.QADB
 
 
 ////////////////////////
@@ -73,10 +72,6 @@ def pids = []
 def pidsMC = []
 def mcgenSet = []
 def mcEle,mcHadA,mcHadB
-
-
-// setup QA database
-QADB qa = new QADB()
 
 
 // check `dataStream` variable
@@ -590,15 +585,6 @@ inHipoList.each { inHipoFile ->
         once = false
       }
       if(verbose) println "evnum = $evnum"
-
-
-      // CUT: data monitoring QA cut (not applied to MC)
-      if(!useMC) {
-        if(!qa.OkForAsymmetry(runnum,evnum)) {
-          //println "toss file " + qa.getFilenum() + " (evnum=$evnum)"
-          continue;
-        }
-      }
 
 
       // get list of PIDs, with list index corresponding to bank row

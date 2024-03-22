@@ -4,8 +4,9 @@ ClassImp(EventTree)
 
 using namespace std;
 
+EventTree::EventTree() : qa(std::make_unique<QA::QADB>()) {}
 
-EventTree::EventTree(TString filelist_, Int_t whichPair_) {
+EventTree::EventTree(TString filelist_, Int_t whichPair_) : qa(std::make_unique<QA::QADB>()) {
   printf("EventTree instantiated\n");
 
   debug = true;
@@ -116,7 +117,7 @@ EventTree::EventTree(TString filelist_, Int_t whichPair_) {
 
   // MC branches
   if(chain->GetBranch("gen_hadMatchDist")) {
-    MCrecMode = true;
+    useMCrec = true;
     chain->SetBranchAddress("gen_W",&gen_W);
     chain->SetBranchAddress("gen_Q2",&gen_Q2);
     chain->SetBranchAddress("gen_Nu",&gen_Nu);
@@ -180,7 +181,7 @@ EventTree::EventTree(TString filelist_, Int_t whichPair_) {
       helicityMCinjected = false;
     };
   } else { 
-    MCrecMode = false;
+    useMCrec = false;
     for(int hh=0; hh<NumInjectionsMax; hh++) helicityMC[hh]=0; 
     helicityMCinjected = false;
     gen_W = UNDEF;
@@ -316,10 +317,10 @@ void EventTree::GetEvent(Long64_t i) {
   // convert eta to polar angle theta 
   // (not to be confused with partial wave theta)
   eleTheta = Tools::EtaToTheta(eleEta);
-  gen_eleTheta = MCrecMode ? Tools::EtaToTheta(gen_eleEta) : UNDEF;
+  gen_eleTheta = useMCrec ? Tools::EtaToTheta(gen_eleEta) : UNDEF;
   for(int h=0; h<2; h++) {
     hadTheta[h] = Tools::EtaToTheta(hadEta[h]);
-    gen_hadTheta[h] = MCrecMode ? Tools::EtaToTheta(gen_hadEta[h]) : UNDEF;
+    gen_hadTheta[h] = useMCrec ? Tools::EtaToTheta(gen_hadEta[h]) : UNDEF;
   };
 
   // compute gamma and epsilon
@@ -378,6 +379,12 @@ void EventTree::GetEvent(Long64_t i) {
   /**************************************/
   /* cut definitions                    */
   /**************************************/
+
+  // QA cuts
+  if(!useMCrec && !useMCgen && !useStringSpinner)
+    cutQA = qa->OkForAsymmetry(runnum, evnum);
+  else
+    cutQA = true; // no QA for MC data
 
   // DIS cuts
   cutQ2 = Q2 > 1.0; /* legacy */
@@ -508,7 +515,7 @@ void EventTree::GetEvent(Long64_t i) {
 /////////////////////////////////////////////////////////
 // MAIN ANALYSIS CUT
 Bool_t EventTree::Valid() {
-  return cutDIS && cutDihadron && cutHelicity &&
+  return cutQA && cutDIS && cutDihadron && cutHelicity &&
          cutFiducial && cutPID && cutVertex && cutFR;
   // NOTE: if you want to disable `cutDihadron`, you likely want to ensure `Tools::PairSame` is still checked
   //return Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) && cutHelicity; // disable "all" cuts
@@ -988,7 +995,7 @@ Float_t EventTree::GetDepolarizationRatio(Int_t twist) {
 }
 // get depolarization ratio from generated kinematics
 Float_t EventTree::GetDepolarizationRatio_gen(Int_t twist) {
-  if(!MCrecMode) {
+  if(!useMCrec) {
     fprintf(stderr,"ERROR: not an MC file, calling GetDepolarizationRatio instead\n");
     return GetDepolarizationRatio(twist);
   };

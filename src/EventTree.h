@@ -9,6 +9,9 @@
 #include <map>
 #include <vector>
 
+// CLAS12
+#include <QADB.h>
+
 // ROOT
 #include "TSystem.h"
 #include "TObject.h"
@@ -35,7 +38,7 @@
 class EventTree : public TObject
 {
   public:
-    EventTree() {};
+    EventTree();
     EventTree(TString filelist_, Int_t whichPair_=0x34);
     ~EventTree();
 
@@ -172,7 +175,7 @@ class EventTree : public TObject
     ///////////////////////////
     //   EventCuts
     ///////////////////////////
-    Bool_t cutQ2,cutW,cutY,cutDIS,cutFR;
+    Bool_t cutQ2,cutW,cutY,cutDIS,cutFR,cutQA;
     Bool_t cutCFR[2];
     Bool_t cutTFR[2];
     Bool_t cutDihadron;
@@ -186,7 +189,8 @@ class EventTree : public TObject
 
     // tree banches used for matching MCgen event
     Int_t whichHelicityMC;
-    Bool_t MCrecMode;
+    Bool_t useMCrec;
+    Bool_t useMCgen;
     Float_t gen_W;
     Float_t gen_Q2;
     Float_t gen_Nu;
@@ -252,9 +256,9 @@ class EventTree : public TObject
     // - string spinner branches
     Float_t SS_Q2, SS_W, SS_x, SS_y;
     Bool_t useStringSpinner;
-    Bool_t useMCgen; // clasdis mc generator data
 
   private:
+    std::unique_ptr<QA::QADB> qa;
     TChain * chain;
     TString filelist;
     Int_t whichHad[2];
