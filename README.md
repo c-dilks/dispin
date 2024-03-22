@@ -189,4 +189,22 @@ flowchart TB
   end
   MigrationResult(migration/*.png<br/>migration/*.npz):::data
   OutrootsOnlyMC --> MigrationAlg1 --> MigrationRoots --> MigrationAlg2 --> MigrationResult
+
+  RunDiskimRad[runDiskim.sh with datastream<br/>datarad or mcrecrad]:::alg
+  RadRoots[(radroot files)]:::bigdata
+  RadAlg1[systematicRadiative1.cpp]:::alg
+  RadTrees(radiative/tree*.root):::data
+  RadAlg2[systematicRadiative2.rb]:::alg
+  Outroots --> RadAlg1
+  RunDiskimRad --> RadRoots --> RadAlg1
+  RadAlg1 --> RadTrees --> RadAlg2
+
+  MisPID[systematicsMisPID.nb]:::alg
+
+  RunDiskimPositron[runDiskim.sh with datastream<br/>datapositron]:::alg
+  PositronRoots[(positron outroot files<br/>Inbending / Outbending)]:::bigdata
+  PositronAlg[systematicNonDIS.cpp]:::alg
+  RunDiskimPositron --> PositronRoots
+  Outroots --> PositronAlg
+  PositronRoots --> PositronAlg
 ```
