@@ -38,16 +38,13 @@ class DatasetLooper
   # :stream  := either "data", "mcrec", or "mcgen" (see `slurm.diskim.h`)
   DatasetSourceHash = {
     # RGA ----------------------------------------------------------------
-    "rga.inbending.fa18.lowDC.pass1" => { :dataset => "rga.inbending.fa18",  :rating => "maybe", :source => "/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1b/train/nSidis",           :stream => "data",  }, # low DC voltage, similar to Spring 2018
-    "rga.inbending.fa18.pass1"       => { :dataset => "rga.inbending.fa18",  :rating => "GOOD",  :source => "/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1/dst/train/nSidis",        :stream => "data",  },
-    "rga.outbending.fa18.pass1"      => { :dataset => "rga.outbending.fa18", :rating => "GOOD",  :source => "/cache/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/nSidis",        :stream => "data",  },
-    "rga.inbending.sp19.pass1"       => { :dataset => "rga.inbending.sp19",  :rating => "old",   :source => "/cache/clas12/rg-a/production/recon/spring2019/torus-1/pass1/v1/dst/train/nSidis",      :stream => "data",  },
-    "rga.inbending.sp19.pass2"       => { :dataset => "rga.inbending.sp19",  :rating => "GOOD",  :source => "/cache/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/train/nSidis",         :stream => "data",  },
+    "rga.inbending.fa18.pass2"  => { :dataset => "rga.inbending.fa18",  :rating => "GOOD", :source => "/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass2/main/train/nSidis",  :stream => "data", },
+    "rga.outbending.fa18.pass2" => { :dataset => "rga.outbending.fa18", :rating => "GOOD", :source => "/cache/clas12/rg-a/production/recon/fall2018/torus+1/pass2/train/nSidis",       :stream => "data", },
+    "rga.inbending.sp19.pass2"  => { :dataset => "rga.inbending.sp19",  :rating => "GOOD", :source => "/cache/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/train/nSidis", :stream => "data", },
     # RGB ----------------------------------------------------------------
-    "rgb.outbending.fa19.pass1"      => { :dataset => "rgb.outbending.fa19", :rating => "GOOD",  :source => "/cache/clas12/rg-b/production/recon/fall2019/torus+1/pass1/v1/dst/train/sidisdvcs",     :stream => "data",  },
-    "rgb.inbending.sp19.pass1"       => { :dataset => "rgb.inbending.sp19",  :rating => "old",   :source => "/cache/clas12/rg-b/production/recon/spring2019/torus-1/pass1/v0/dst/train/sidisdvcs",   :stream => "data",  },
-    "rgb.inbending.sp19.pass2"       => { :dataset => "rgb.inbending.sp19",  :rating => "GOOD",  :source => "/cache/clas12/rg-b/production/recon/spring2019/torus-1/pass2/v0/dst/train/sidisdvcs",   :stream => "data",  },
-    "rgb.inbending.sp20.pass1"       => { :dataset => "rgb.inbending.sp20",  :rating => "GOOD",  :source => "/cache/clas12/rg-b/production/recon/spring2020/torus-1/pass1/v1/dst/train/sidisdvcs",   :stream => "data",  },
+    "rgb.inbending.sp19.pass2"  => { :dataset => "rgb.inbending.sp19",  :rating => "GOOD", :source => "/cache/clas12/rg-b/production/recon/spring2019/torus-1/pass2/v0/dst/train/sidisdvcs", :stream => "data", },
+    "rgb.outbending.fa19.pass2" => { :dataset => "rgb.outbending.fa19", :rating => "GOOD", :source => "/cache/clas12/rg-b/production/recon/fall2019/torus+1/pass2/v1/dst/train/sidisdvcs",   :stream => "data", },
+    "rgb.inbending.sp20.pass2"  => { :dataset => "rgb.inbending.sp20",  :rating => "GOOD", :source => "/cache/clas12/rg-b/production/recon/spring2020/torus-1/pass2/v1/dst/train/sidisdvcs", :stream => "data", },
     # MC -----------------------------------------------------------------
     # inbending bg45
     "mc.inbending.bg45"     => { :dataset => "mc.inbending.bg45",     :rating => "GOOD", :source => "/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus-1/v1/bkg45nA_10604MeV", :stream => "mcrec", },
