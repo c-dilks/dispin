@@ -204,6 +204,7 @@ flowchart TB
   RunDiskimPositron[runDiskim.sh with datastream<br/>datapositron]:::alg
   PositronRoots[(positron outroot files<br/>Inbending / Outbending)]:::bigdata
   PositronAlg[systematicNonDIS.cpp]:::alg
+  RunDiskimPositron --> PositronRoots
   Outroots --> PositronAlg
   PositronRoots --> PositronAlg
 ```
