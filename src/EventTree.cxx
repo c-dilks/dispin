@@ -282,7 +282,7 @@ EventTree::EventTree(TString filelist_, Int_t whichPair_) : qa(std::make_unique<
   };
   whichHelicityMC = 0;
 
-  RNG = new TRandomMixMax(14972); // seed
+  // RNG = new TRandomMixMax(0); // seed
 
 };
 

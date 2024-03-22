@@ -121,7 +121,7 @@ int main(int argc, char** argv) {
   modu[modHR] =  new Modulation(2,1,1,0,false,Modulation::kLU);
   modu[modR] =   new Modulation(3,1,1,0,false,Modulation::kLU);
   modu[mod2HR] = new Modulation(3,1,-1,0,false,Modulation::kLU);
-  RNG = new TRandomMixMax(14972); // seed
+  RNG = new TRandomMixMax(0); // seed
   Int_t ii;
   Bool_t once = true;
   Bool_t success;

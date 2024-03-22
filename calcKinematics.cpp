@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
     trajMC[p] = new Trajectory();
     fidu[p] = new FiducialCuts();
   };
-  RNG = new TRandomMixMax(42567);
+  RNG = new TRandomMixMax(0); // use UUID seed
   evnumTmp = -10000;
   beamEtmp = 0.0;
 

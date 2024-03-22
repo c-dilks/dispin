@@ -20,8 +20,8 @@
 #include "TFile.h"
 #include "TString.h"
 #include "TMath.h"
-#include "TRandom.h"
-#include "TRandomGen.h"
+// #include "TRandom.h"
+// #include "TRandomGen.h"
 
 // dispin
 #include "Constants.h"
@@ -278,7 +278,7 @@ class EventTree : public TObject
     Float_t dfA;
 
     Bool_t helicityMCinjected;
-    TRandom * RNG;
+    // TRandom * RNG;
     Int_t sps;
 
     Bool_t isDiphoton[2];
