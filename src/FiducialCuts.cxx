@@ -45,7 +45,7 @@ void FiducialCuts::ApplyCuts(int runnum_, int pid_, TString fileName_) {
   /// --> inbending electrons: DC_fiducial_cut_XY
   /// --> inbending hadrons:   DC_fiducial_cut_theta_phi
   /// --> all outbending:      DC_fiducial_cut_XY
-  if(pid_==11) { // electrons
+  if(pid_==11 || pid_==-11) { // electrons (or positrons, specifically for non-DIS electrons systematics study)
     // PCAL cut on lv and lw (9cm)
     fcutElePCAL = this->EC_hit_position_fiducial_cut_homogeneous(0,cLoose);
     // DC cuts on chi2/NDF, using straight lines on xy hit plane
@@ -467,6 +467,7 @@ bool FiducialCuts::DC_fiducial_cut_theta_phi(int j, int region, int part_pid){
   switch (part_pid)
   {
     case 11: pid = 0; break;
+    case -11: pid = 0; break;
     case 2212: pid = 1; break;
     case 211: pid = 2; break;
     case -211: pid = 3; break;
@@ -682,6 +683,9 @@ bool FiducialCuts::DC_fiducial_cut_XY(int j, int region, int part_pid)
   switch (part_pid)
   {
     case 11: 
+      pid = 0; 
+      break;
+    case -11: 
       pid = 0; 
       break;
     case 2212: 

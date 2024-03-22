@@ -6,6 +6,8 @@
 .nfs*
 src/*.pcm
 *.root
+*.npy
+*.npz
 *.png
 *.pdf
 *.sif
@@ -15,6 +17,8 @@ src/DiSpinDict.*
 outz
 outroot
 outroot.*
+radroot
+radroot.*
 diskim
 *.slurm
 *.condor
@@ -43,6 +47,8 @@ tags
 files.list
 /bruspin*
 catTree*.bak
-catTree.archive*
+catTrees.archive*
+catTrees.pi0
 catTrees
 catTreeWeights
+*.json

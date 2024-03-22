@@ -114,6 +114,13 @@ EventTree::EventTree(TString filelist_, Int_t whichPair_) : qa(std::make_unique<
   chain->SetBranchAddress("runnum",&runnum);
   chain->SetBranchAddress("evnum",&evnum);
   chain->SetBranchAddress("helicity",&helicity);
+  if(chain->GetBranch("beamE")) {
+    hasBeamE = true;
+    chain->SetBranchAddress("beamE",&beamE);
+  } else {
+    hasBeamE = false;
+    beamE = 0;
+  };
 
   // MC branches
   if(chain->GetBranch("gen_hadMatchDist")) {
@@ -275,7 +282,7 @@ EventTree::EventTree(TString filelist_, Int_t whichPair_) : qa(std::make_unique<
   };
   whichHelicityMC = 0;
 
-  RNG = new TRandomMixMax(14972); // seed
+  // RNG = new TRandomMixMax(0); // seed
 
 };
 
@@ -284,6 +291,9 @@ void EventTree::GetEvent(Long64_t i) {
   if(i%10000==0) printf("[+] %.2f%%\n",100*(float)i/((float)ENT));
 
   chain->GetEntry(i);
+
+  // use beam energy from tree branch, if available; otherwise use RundepBeamEn from Constants.h
+  if(!hasBeamE) beamE = RundepBeamEn(runnum);
 
   // set preferred PhiR angle
   PhiR = PhiRp; // preferred definition by Bacchetta (see Dihadron.cxx)
@@ -531,6 +541,9 @@ void EventTree::GetTrajectories(Long64_t i, Bool_t prog) {
   if(prog && i%10000==0) printf("[+] %.2f%%\n",100*(float)i/((float)ENT));
 
   chain->GetEntry(i);
+
+  // use beam energy from tree branch, if available; otherwise use RundepBeamEn from Constants.h
+  if(!hasBeamE) beamE = RundepBeamEn(runnum);
 
   // get electron trajectory
   eleMom.SetPtEtaPhiE(elePt,eleEta,elePhi,eleE);
@@ -944,7 +957,8 @@ DIS * EventTree::GetDISObj() {
   trEle->chi2pid = eleChi2pid;
   trEle->Vertex.SetXYZ(eleVertex[eX],eleVertex[eY],eleVertex[eZ]);
 
-  objDIS->CalculateKinematics(trEle,runnum);
+  objDIS->SetBeamEn(beamE);
+  objDIS->CalculateKinematics(trEle);
   return objDIS;
 };
 

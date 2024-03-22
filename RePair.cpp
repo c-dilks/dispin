@@ -75,6 +75,7 @@ int main(int argc, char** argv) {
   outTr->Branch("Nu",&(disEv->Nu),"Nu/F");
   outTr->Branch("x",&(disEv->x),"x/F");
   outTr->Branch("y",&(disEv->y),"y/F");
+  outTr->Branch("beamE",&(disEv->BeamEn),"beamE/F");
   // - electron kinematics branches
   outTr->Branch("eleE",&(disEv->eleE),"eleE/F");
   outTr->Branch("eleP",&(disEv->eleP),"eleP/F");
@@ -143,10 +144,68 @@ int main(int argc, char** argv) {
   outTr->Branch("diphM",&(diphot->M),"diphM/F");
   outTr->Branch("diphZE",&(diphot->ZE),"diphZE/F");
   outTr->Branch("diphVtxDiff",&(diphot->VtxDiff),"diphVtxDiff/F");
-  // - MC branches // TODO
+  ///////////////////// MC branches
   outTr->Branch("diphMCpi0",&(diphot->IsMCpi0),"diphMCpi0/O"); // true iff MC pi0 decay
   outTr->Branch("diphMCmatchDist",&(diphot->MCmatchDist),"diphMCmatchDist/D"); // hypot( photon1_matchDist, photon2_matchDist )
-
+  /* (TODO: propagate generated kinematics branches
+   * - need to generalize or duplicate EventTree::GetTrajectories, since
+   *   we are looping with Ensemble here, not EventTree
+   * - the commented out branches below are ready to be used, we just
+   *   need to make sure that all the EventTree variables are set correctly
+   */
+  // // - generated DIS kinematics
+  // outTr->Branch("gen_W",&(ev->gen_W),"gen_W/F");
+  // outTr->Branch("gen_Q2",&(ev->gen_Q2),"gen_Q2/F");
+  // outTr->Branch("gen_Nu",&(ev->gen_Nu),"gen_Nu/F");
+  // outTr->Branch("gen_x",&(ev->gen_x),"gen_x/F");
+  // outTr->Branch("gen_y",&(ev->gen_y),"gen_y/F");
+  // // - generated electron kinematics branches
+  // outTr->Branch("gen_eleE",&(ev->gen_eleE),"gen_eleE/F");
+  // outTr->Branch("gen_eleP",&(ev->gen_eleP),"gen_eleP/F");
+  // outTr->Branch("gen_elePt",&(ev->gen_elePt),"gen_elePt/F");
+  // outTr->Branch("gen_eleEta",&(ev->gen_eleEta),"gen_eleEta/F");
+  // outTr->Branch("gen_elePhi",&(ev->gen_elePhi),"gen_elePhi/F");
+  // outTr->Branch("gen_eleVertex",ev->gen_eleVertex,"gen_eleVertex[3]/F");
+  // // - generated hadron branches
+  // outTr->Branch("gen_pairType",&(ev->gen_pairType),"gen_pairType/I");
+  // outTr->Branch("gen_hadRow",ev->gen_hadRow,"gen_hadRow[2]/I");
+  // outTr->Branch("gen_hadIdx",ev->gen_hadIdx,"gen_hadIdx[2]/I");
+  // outTr->Branch("gen_hadE",ev->gen_hadE,"gen_hadE[2]/F");
+  // outTr->Branch("gen_hadP",ev->gen_hadP,"gen_hadP[2]/F");
+  // outTr->Branch("gen_hadPt",ev->gen_hadPt,"gen_hadPt[2]/F");
+  // outTr->Branch("gen_hadEta",ev->gen_hadEta,"gen_hadEta[2]/F");
+  // outTr->Branch("gen_hadPhi",ev->gen_hadPhi,"gen_hadPhi[2]/F");
+  // outTr->Branch("gen_hadXF",ev->gen_hadXF,"gen_hadXF[2]/F");
+  // outTr->Branch("gen_hadVertex",ev->gen_hadVertex,"gen_hadVertex[2][3]/F");
+  // // - generated dihadron branches
+  // outTr->Branch("gen_Mh",&(ev->gen_Mh),"gen_Mh/F");
+  // outTr->Branch("gen_Mmiss",&(ev->gen_Mmiss),"gen_Mmiss/F");
+  // outTr->Branch("gen_Z",ev->gen_Z,"gen_Z[2]/F");
+  // outTr->Branch("gen_Zpair",&(ev->gen_Zpair),"gen_Zpair/F");
+  // outTr->Branch("gen_xF",&(ev->gen_xF),"gen_xF/F");
+  // outTr->Branch("gen_alpha",&(ev->gen_alpha),"gen_alpha/F");
+  // outTr->Branch("gen_theta",&(ev->gen_theta),"gen_theta/F");
+  // outTr->Branch("gen_zeta",&(ev->gen_zeta),"gen_zeta/F");
+  // outTr->Branch("gen_Ph",&(ev->gen_Ph),"gen_Ph/F");
+  // outTr->Branch("gen_PhPerp",&(ev->gen_PhPerp),"gen_PhPerp/F");
+  // outTr->Branch("gen_PhEta",&(ev->gen_PhEta),"gen_PhEta/F");
+  // outTr->Branch("gen_PhPhi",&(ev->gen_PhPhi),"gen_PhPhi/F");
+  // outTr->Branch("gen_R",&(ev->gen_R),"gen_R/F");
+  // outTr->Branch("gen_RPerp",&(ev->gen_RPerp),"gen_RPerp/F");
+  // outTr->Branch("gen_RT",&(ev->gen_RT),"gen_RT/F");
+  // outTr->Branch("gen_PhiH",&(ev->gen_PhiH),"gen_PhiH/F");
+  // outTr->Branch("gen_PhiRq",&(ev->gen_PhiRq),"gen_PhiRq/F");
+  // outTr->Branch("gen_PhiRp",&(ev->gen_PhiRp),"gen_PhiRp/F");
+  // outTr->Branch("gen_PhiRp_r",&(ev->gen_PhiRp_r),"gen_PhiRp_r/F");
+  // outTr->Branch("gen_PhiRp_g",&(ev->gen_PhiRp_g),"gen_PhiRp_g/F");
+  // // - match quality
+  // outTr->Branch("gen_eleIsMatch",&(ev->gen_eleIsMatch),"gen_eleIsMatch/O");
+  // outTr->Branch("gen_hadIsMatch",ev->gen_hadIsMatch,"gen_hadIsMatch[2]/O");
+  // outTr->Branch("gen_eleMatchDist",&(ev->gen_eleMatchDist),"gen_eleMatchDist/F");
+  // outTr->Branch("gen_hadMatchDist",ev->gen_hadMatchDist,"gen_hadMatchDist[2]/F");
+  // // - other
+  // outTr->Branch("gen_hadParentIdx",ev->gen_hadParentIdx,"gen_hadParentIdx[2]/I");
+  // outTr->Branch("gen_hadParentPid",ev->gen_hadParentPid,"gen_hadParentPid[2]/I");
 
 
   // ensemble loop ===================================
@@ -157,10 +216,8 @@ int main(int argc, char** argv) {
 
     // get DIS event, and calculate kinematics
     ev->GetTrajectories(ens->GetEnum());
-    disEv->CalculateKinematics(
-      ev->GetElectronTraj(),
-      ev->runnum
-    );
+    disEv->SetBeamEn(ev->beamE); // must use stored beamE, in case we changed it upstream somewhere
+    disEv->CalculateKinematics(ev->GetElectronTraj());
 
 
     // loop over dihadrons ----------------------

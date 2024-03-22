@@ -10,12 +10,15 @@ class DatasetLooper
   # CONSTANTS
 
   # dihadron types
-  # - if used 'truncation' for yield balancing when buidling bibending sets, :useTruncation should be true
+  # - if used 'truncation' for yield balancing when building bibending sets, :useTruncation should be true
+  # - mcPrefix (note: must start with 'mc'): 
+  #   - 'mc' is for pi+pi- only, has generated kinematics, not RePaired (and no diphotons anyway)
+  #   - 'mcd' is for pi+pi0 and pi-pi0, is RePaired, does not have generated kinematics
   Dihadrons = {
-    :pm   => { :title=>'pi+pi-', :latex=>'$\pi^+\pi^-$', :pairType=>0x34, :useTruncation=>false },
-    :p0   => { :title=>'pi+pi0', :latex=>'$\pi^+\pi^0$', :pairType=>0x3b, :useTruncation=>true  },
-    :m0   => { :title=>'pi0pi-', :latex=>'$\pi^0\pi^-$', :pairType=>0xb4, :useTruncation=>true  },
-    :none => { :title=>'',       :latex=>'',             :pairType=>0,    :useTruncation=>false },
+    :pm   => { :title=>'pi+pi-', :latex=>'$\pi^+\pi^-$', :pairType=>0x34, :useTruncation=>false, :mcPrefix=>'mc'  },
+    :p0   => { :title=>'pi+pi0', :latex=>'$\pi^+\pi^0$', :pairType=>0x3b, :useTruncation=>true,  :mcPrefix=>'mcd' },
+    :m0   => { :title=>'pi0pi-', :latex=>'$\pi^0\pi^-$', :pairType=>0xb4, :useTruncation=>true,  :mcPrefix=>'mcd' },
+    :none => { :title=>'',       :latex=>'',             :pairType=>0,    :useTruncation=>false, :mcPrefix=>'mc'  },
   }
 
   # directories
@@ -55,6 +58,11 @@ class DatasetLooper
     # outbending bg50
     "mc.outbending.bg50"    => { :dataset => "mc.outbending.bg50",    :rating => "GOOD", :source => "/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus+1/v1/bkg50nA_10604MeV", :stream => "mcrec", },
     "mcgen.outbending.bg50" => { :dataset => "mcgen.outbending.bg50", :rating => "GOOD", :source => "/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus+1/v1/bkg50nA_10604MeV", :stream => "mcgen", },
+    # Systematics --------------------------------------------------------
+    # positron skims
+    "positron.rga.inbending.fa18.pass2"  => { :dataset => "positron.rga.inbending.fa18",  :rating => "GOOD", :source => "/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass2/main/train/InclusivePositron",  :stream => "datapositron", },
+    "positron.rga.outbending.fa18.pass2" => { :dataset => "positron.rga.outbending.fa18", :rating => "GOOD", :source => "/cache/clas12/rg-a/production/recon/fall2018/torus+1/pass2/train/InclusivePositron",       :stream => "datapositron", },
+    "positron.rga.inbending.sp19.pass2"  => { :dataset => "positron.rga.inbending.sp19",  :rating => "GOOD", :source => "/cache/clas12/rg-a/production/recon/spring2019/torus-1/pass2/dst/train/InclusivePositron", :stream => "datapositron", },
   }
 
 
@@ -64,13 +72,24 @@ class DatasetLooper
   # constructor
   def initialize(dihadronTok=:none)
 
+    # channel-specific vars
+    begin
+      @pairType      = Dihadrons[dihadronTok][:pairType]
+      @useTruncation = Dihadrons[dihadronTok][:useTruncation]
+      @mcPrefix      = Dihadrons[dihadronTok][:mcPrefix]
+    rescue
+      $stderr.puts "\nERROR: unknown dihadron in DatasetLooper\n\n"
+      dihadronTok = :none
+      retry
+    end
+
     # list of datasets, for analysis
     # - these dataset names will be referenced in various places, namely the outroot directory names
     # - only the ones included here will be processed for analysis (so you can turn some on/off)
     @datasetList = [
-      "mc.inbending.bg45",
-      "mc.outbending.bg40",
-      "mc.outbending.bg50",
+      "#{@mcPrefix}.inbending.bg45",
+      "#{@mcPrefix}.outbending.bg40",
+      "#{@mcPrefix}.outbending.bg50",
       "rga.inbending.fa18",
       "rga.inbending.sp19",
       "rga.outbending.fa18",
@@ -81,14 +100,6 @@ class DatasetLooper
 
     # add dihadron token to each dataset (if specified)
     # - useful for creating an instance for a specific dihadron pairType
-    begin
-      @pairType      = Dihadrons[dihadronTok][:pairType]
-      @useTruncation = Dihadrons[dihadronTok][:useTruncation]
-    rescue
-      $stderr.puts "\nERROR: unknown dihadron in DatasetLooper\n\n"
-      dihadronTok = :none
-      retry
-    end
     unless dihadronTok==:none
       @datasetList.map! do |dataset|
         dataset.split('.').insert(1,dihadronTok.to_s).join('.')
@@ -117,8 +128,9 @@ class DatasetLooper
     # if we used truncation, we have `mca` and `mcb` instead of `mc`
     if @useTruncation
       @allsetList = @allsetList.map do |set|
-        if set.split('.').include?('mc') and set.split('.').include?('bibending')
-          [ set.sub('mc','mca'), set.sub('mc','mcb') ]
+        if set.split('.').include?(@mcPrefix) and set.split('.').include?('bibending')
+          [ set.sub(@mcPrefix,@mcPrefix+'a'),
+            set.sub(@mcPrefix,@mcPrefix+'b') ]
         else
           set
         end
@@ -156,6 +168,7 @@ class DatasetLooper
   ListOfLists.each{ |sym| attr_accessor sym }
   attr_accessor :pairType
   attr_accessor :useTruncation
+  attr_accessor :mcPrefix
   attr_accessor :binHash
 
 
@@ -255,6 +268,7 @@ class DatasetLooper
     toks = dataset.split('.').map do |tok|
       tok = tok.upcase if tok.match? /rga|rgb|mc/
       tok = tok.gsub(/bg/,"(BG-merged ") + " nA)" if tok.match? /^bg/
+      tok.gsub!(/MCD/,"MC")
       tok.gsub!(/MCA/,"MC")
       tok.gsub!(/MCB/,"MC")
       tok.gsub!(/^fa/,"Fall 20")
@@ -288,11 +302,11 @@ class DatasetLooper
     results = searchList.find_all{ |set| set.include? torus }
     ### if truncation was used, match `mca` or `mcb`, rather than `mc`
     if @useTruncation
-      if torus=='bibending' and results.find{ |result| result.include?"mc" }
+      if torus=='bibending' and results.find{ |result| result.include?@mcPrefix }
         if dataset.include?"rga"
-          return results.find{ |result| result.include?"mca" }
+          return results.find{ |result| result.include?(@mcPrefix+'a') }
         elsif dataset.include?"rgb"
-          return results.find{ |result| result.include?"mcb" }
+          return results.find{ |result| result.include?(@mcPrefix+'b') }
         else
           $stderr.puts "ERROR in DatasetLooper.matchByTorus (see class)"
           return results.first

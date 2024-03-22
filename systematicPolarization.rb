@@ -8,7 +8,15 @@ require 'pry'
 require './DatasetLooper.rb'
 require 'RubyROOT'
 include Root
-dl = DatasetLooper.new
+
+# args
+if ARGV.length!=1
+  $stderr.puts "USAGE #{$0} [DIHADRON]"
+  DatasetLooper.printDihadrons
+  exit 2
+end
+dihadronSym = ARGV[0].to_sym
+dl = DatasetLooper.new(dihadronSym)
 
 #################################################
 DatasetList = dl.allsetListLoopOnlyData
@@ -23,6 +31,7 @@ DatasetList.each do |dataset|
 
   # check existence
   catTreeFileN = DatasetLooper.catTreeBaseName(dataset)+".idx.root"
+  puts "READ #{catTreeFileN}"
   if not File.exist? catTreeFileN
     $stderr.puts "ERROR: #{catTreeFileN} not found"
     next

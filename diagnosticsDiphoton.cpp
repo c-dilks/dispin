@@ -231,10 +231,8 @@ int main(int argc, char** argv) {
         };
 
         // need DIS kinematics
-        disEv->CalculateKinematics(
-          ev->GetElectronTraj(),
-          ev->runnum
-        );
+        disEv->SetBeamEn(ev->beamE);
+        disEv->CalculateKinematics(ev->GetElectronTraj());
 
         // calculate diphoton kinematics
         diphot->CalculateKinematics(
