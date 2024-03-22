@@ -80,6 +80,14 @@ QADB qa = new QADB()
 
 
 // check `dataStream` variable
+//// first check if there are any 'special' strings in `dataStream`
+def disLeptonID = 11 // DIS lepton PDG code (11 for electron)
+if(dataStream.contains('positron')) {
+  disLeptonID = -11 // reconstruct DIS with the positron, in place of the electron
+}
+//// then remove any 'special' strings
+[ /positron$/, /rad$/ ].each{ dataStream = dataStream.replaceAll(it,'') }
+//// then check if these are data, MC generated, or MC reconstructed
 def useMC    = false // true if any MC mode is set
 def useMCgen = false // true if reading only MC generated particles
 def useMCrec = false // true if reading MC reconstructed particles, with matched generated particles
@@ -184,7 +192,7 @@ def calorimeterList = ['pcal','ecin','ecout']
 //def calorimeterList = ['pcal'] // pcal only
 
 // closure to define tree leaves for detectors
-def buildDetectorLeaves = { par ->
+def buildDetectorLeaves = {
   return [
     /* calorimeters */
     calorimeterList.collect{ detName ->
@@ -198,7 +206,7 @@ def buildDetectorLeaves = { par ->
     (1..3).collect{ reg ->
       ['x','y','z'].collect{ coord -> "dcTraj_c${reg}${coord}" }
     }
-  ].flatten().collect{par+'_'+it}
+  ].flatten()
 }
 
 
@@ -417,7 +425,7 @@ def buildParticleLeaves = { par ->
     'chi2pid','status/I','beta'
   ]
   if(!useMCgen) {
-    result += buildDetectorLeaves(par)
+    result += buildDetectorLeaves()
   }
   else {
     result += [
@@ -618,7 +626,7 @@ inHipoList.each { inHipoFile ->
         }
         if(verbose) println "MC PIDs = $mcPids"
         mcgenTreeList = hadPIDlist.collect{ growMCtree(mcPids,it) }
-        mcgenTreeList << growMCtree(mcPids,11)
+        mcgenTreeList << growMCtree(mcPids,disLeptonID)
         if(verbose) {
           println "MCGENTREELIST"
           println pPrint(mcgenTreeList)
@@ -630,7 +638,7 @@ inHipoList.each { inHipoFile ->
       //----------------------------------
       // find the DIS electron
       //----------------------------------
-      eleTree = growParticleTree(pids,11)
+      eleTree = growParticleTree(pids,disLeptonID)
       //if(verbose) { println "----- eleTree:"; println eleTree; }
 
       // skip event if no electron found

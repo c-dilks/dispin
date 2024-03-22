@@ -11,8 +11,11 @@ if [ $# -lt 1 ];then
   set -e
   echo ""
   echo "Alternatively,"
-  echo "   $0 [train directory] [outroot dir] [optional:data/mcrec/mcgen] [optional:skim/dst]"
+  echo "   $0 [train directory] [outroot dir] [datastream:data/mcrec/mcgen] [optional:skim/dst]"
+  echo ""
+  echo "      OPTIONS FOR SYSTEMATIC STUDIES:"
   echo "      - append \"rad\" to the end of datastream to re-run calcKinematics with RC beam model"
+  echo "      - append \"positron\" to the end of datastream to reconstruct DIS kinematics with the POSITRON"
   exit 2
 fi
 

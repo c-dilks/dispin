@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
   TString dataStream = "data";
   TString injectStream = "injgen";
   if(argc<=1) {
-    printf("USAGE: %s [diskim file] [outrootDir(default=outroot)] [dataStream(default=data)]\n",argv[0]);
+    printf("USAGE: %s [diskim file] [outrootDir(default=outroot)] [dataStream(default=data)] [injectStream(default=injgen)]\n",argv[0]);
     printf(" - data streams: data, mcrec, mcgen\n");
     printf("   - add \"rad\" to the data stream string to use radiative-corrected beam energy model\n");
     printf(" - additional argument for MC: [injgen/injrec]\n");
@@ -89,6 +89,10 @@ int main(int argc, char** argv) {
     useRadBeam = true;
     fprintf(stderr,"\nWARNING: using radiative-corrected beam energy model !!!\n\n");
     dataStream(TRegexp("rad$")) = "";
+  }
+  if(dataStream.Contains(TRegexp("positron$"))) {
+    fprintf(stderr,"\nWARNING: using positrons in place of DIS electrons !!!\n\n");
+    dataStream(TRegexp("positron$")) = "";
   }
   if(dataStream=="data") {
     useData=true;
