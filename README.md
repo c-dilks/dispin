@@ -207,4 +207,7 @@ flowchart TB
   RunDiskimPositron --> PositronRoots
   Outroots --> PositronAlg
   PositronRoots --> PositronAlg
+
+  SysUnc(sysunc/<br/>systematic uncertainty results):::data
+  PolAlg --> SysUnc
 ```
