@@ -171,8 +171,7 @@ flowchart TB
   Outroots --> OutrootsOnlyMC
 
   PolAlg[systematicPolarization.rb]:::alg
-  Pol(systematicPolarization.tex):::data
-  CatTreesOnlyData --> PolAlg --> Pol
+  CatTreesOnlyData --> PolAlg
 
   subgraph systematicBaryonDecayLoop.rb
       BaryonAlg1[systematicBaryonDecay1.cpp]:::alg
@@ -207,7 +206,7 @@ flowchart TB
   PositronRoots --> PositronAlg
 
   subgraph Results sysunc/
-      PolResult(sysunc/polarization/polarization.dat):::data
+      PolResult(sysunc/polarization/polarization.dat<br/>sysunc/polarization/polarization.tex):::data
       BaryonResult(sysunc/baryonDecay/*.png<br/>sysunc/baryonDecay/*.json):::data
       MigrationResult(sysunc/binMigration/*.png<br/>sysunc/binMigration/*.npz):::data
   end
