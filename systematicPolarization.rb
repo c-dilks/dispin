@@ -81,7 +81,7 @@ ap outHash
 
 # sysunc file
 basename   = File.basename($0,".rb")
-sysuncName = "sysunc/#{basename}.dat"
+sysuncName = "sysunc/polarization/polarization.dat"
 sysuncOut  = File.open(sysuncName,'w')
 DatasetList.each do |dataset|
   next if outHash[dataset].nil?
