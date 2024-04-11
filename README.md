@@ -176,18 +176,17 @@ flowchart TB
 
   subgraph systematicBaryonDecayLoop.rb
       BaryonAlg1[systematicBaryonDecay1.cpp]:::alg
-      BaryonTrees(sysunc/baryonTrees/*.root):::data
+      BaryonTrees(sysunc/baryonDecay/*.root):::data
       BaryonAlg2[systematicBaryonDecay2.rb]:::alg
   end
   OutrootsOnlyMC --> BaryonAlg1 --> BaryonTrees --> BaryonAlg2
 
   subgraph systematicBinMigrationLoop.rb
       MigrationAlg1[systematicBinMigration1.cpp]:::alg
-      MigrationRoots(migration/*.root):::data
+      MigrationRoots(sysunc/binMigration/*.root):::data
       MigrationAlg2[systematicBinMigration2.rb]:::alg
   end
-  MigrationResult(migration/*.png<br/>migration/*.npz):::data
-  OutrootsOnlyMC --> MigrationAlg1 --> MigrationRoots --> MigrationAlg2 --> MigrationResult
+  OutrootsOnlyMC --> MigrationAlg1 --> MigrationRoots --> MigrationAlg2
 
   RunDiskimRad[runDiskim.sh with datastream<br/>datarad or mcrecrad]:::alg
   RadRoots[(radroot files)]:::bigdata
@@ -209,8 +208,10 @@ flowchart TB
 
   subgraph Results sysunc/
       PolResult(sysunc/polarization/polarization.dat):::data
-      BaryonResult(sysunc/baryonTrees/*.png<br/>sysunc/baryonTrees/*.json):::data
+      BaryonResult(sysunc/baryonDecay/*.png<br/>sysunc/baryonDecay/*.json):::data
+      MigrationResult(sysunc/binMigration/*.png<br/>sysunc/binMigration/*.npz):::data
   end
-  PolAlg --> PolResult
-  BaryonAlg2 --> BaryonResult
+  PolAlg        --> PolResult
+  BaryonAlg2    --> BaryonResult
+  MigrationAlg2 --> MigrationResult
 ```

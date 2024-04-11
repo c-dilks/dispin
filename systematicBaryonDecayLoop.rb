@@ -20,7 +20,7 @@ dl = DatasetLooper.new(dihadronSym)
 mcSets  = dl.allsetListLoopOnlyMC.reject{|f|f.include?'bibending'} # do not include bibending
 ivTypes = dl.binHash.keys#.select{|i|i==2}
 limiter = 0 # this many events, per dataset (set to zero to take all)
-ResultDir = 'sysunc/baryonTrees'
+ResultDir = 'sysunc/baryonDecay'
 ############################
 
 # output directory

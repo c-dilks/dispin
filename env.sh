@@ -24,6 +24,14 @@ which $pythia_search &&
   export PYTHIADIR=$(realpath $(dirname $(which $pythia_search))/..) &&
   export STRINGSPINNER=${DISPIN_HOME}/deps/StringSpinner
 
+# set python environment
+if type virtualenvwrapper.sh > /dev/null; then
+  echo "Found virtualenvwrapper; calling 'workon dispin'"
+  workon dispin
+else
+  echo "WARNING: virtualenvwrapper not found; either install it or make your own virtual environment in your preferred way"
+fi
+
 # print results
 echo ""
 echo "===== DISPIN ENVIRONMENT ====="

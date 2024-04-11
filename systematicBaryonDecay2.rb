@@ -49,7 +49,7 @@ pyimport 'uproot',  as: :up
 
 if ARGV.length < 1
   $stderr.puts """
-USAGE: #{$0} [baryonTrees/ root file] [output file prefix (optional)] [specific parentPID (optional)
+USAGE: #{$0} [baryon tree root file] [output file prefix (optional)] [specific parentPID (optional)
   - specify a specific parentPID, if you want to see fractions from that specific parent, otherwise
     they will be calculated for all baryons
   """
