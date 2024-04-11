@@ -24,7 +24,7 @@ pyimport 'uproot', as: :up
 
 # arguments
 if ARGV.length < 2
-  $stderr.puts "USAGE: #{$0} [radiative/ root file] [ivType] [output file prefix (optional)]"
+  $stderr.puts "USAGE: #{$0} [radiative tree root file] [ivType] [output file prefix (optional)]"
   exit 2
 end
 inFileN = ARGV[0]

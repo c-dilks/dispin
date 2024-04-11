@@ -190,7 +190,7 @@ flowchart TB
   RunDiskimRad[runDiskim.sh with datastream<br/>datarad or mcrecrad]:::alg
   RadRoots[(radroot files)]:::bigdata
   RadAlg1[systematicRadiative1.cpp]:::alg
-  RadTrees(radiative/tree*.root):::data
+  RadTrees(sysunc/radiative/tree*.root):::data
   RadAlg2[systematicRadiative2.rb]:::alg
   Outroots --> RadAlg1
   RunDiskimRad --> RadRoots --> RadAlg1
@@ -209,8 +209,10 @@ flowchart TB
       PolResult(sysunc/polarization/polarization.dat<br/>sysunc/polarization/polarization.tex):::data
       BaryonResult(sysunc/baryonDecay/*.png<br/>sysunc/baryonDecay/*.json):::data
       MigrationResult(sysunc/binMigration/*.png<br/>sysunc/binMigration/*.npz):::data
+      RadResult(sysunc/radiative/*.png<br/>sysunc/radiative/*.json):::data
   end
   PolAlg        --> PolResult
   BaryonAlg2    --> BaryonResult
   MigrationAlg2 --> MigrationResult
+  RadAlg2       --> RadResult
 ```
