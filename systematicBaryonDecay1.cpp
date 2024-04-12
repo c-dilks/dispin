@@ -117,15 +117,15 @@ int main(int argc, char** argv) {
 
   // define output file
   if(outFileN=="") {
-    gROOT->ProcessLine(".! mkdir -p baryonTrees");
+    gROOT->ProcessLine(".! mkdir -p sysunc/baryonDecay");
     if(inputType==iDir) {
-      outFileN = "baryonTrees/tree";
+      outFileN = "sysunc/baryonDecay/tree";
       outFileN += "_" + PairName(pairType);
       for(int d=0; d<BS->dimensions; d++) outFileN += "_" + BS->GetIVname(d);
       outFileN += ".root";
     } else if(inputType==iFile) {
       outFileN = inputData;
-      outFileN(TRegexp("^.*/")) = "baryonTrees/tree.";
+      outFileN(TRegexp("^.*/")) = "sysunc/baryonDecay/tree.";
     };
   }
   printf("\nCREATING TREE FILE = %s\n\n",outFileN.Data());

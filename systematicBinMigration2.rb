@@ -26,7 +26,7 @@ SaveFigure = true
 
 # arguments
 if ARGV.length < 1
-  $stderr.puts "USAGE: #{$0} [migration/ root file] [output file prefix (optional)] [iv0 name] [iv1 name] [iv2 name]"
+  $stderr.puts "USAGE: #{$0} [migration tree root file] [output file prefix (optional)] [iv0 name] [iv1 name] [iv2 name]"
   $stderr.puts "       (iv names are also optional, can include latex)"
   exit 2
 end
@@ -255,6 +255,11 @@ asymSysUncH = nBinsTotal.times.map do |k|
 end.to_h
 puts "FAKE UNCERTAINTY:"
 ap asymSysUncH
+$stderr.puts """
+WARNING WARNING WARNING: since this systematic requires asymmetries, the full
+calculation is not yet complete!
+
+"""
 ######################################################################
 ######################################################################
 ######################################################################

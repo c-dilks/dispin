@@ -127,15 +127,15 @@ int main(int argc, char** argv) {
 
   // define output file
   if(outFileN=="") {
-    gROOT->ProcessLine(".! mkdir -p radiative");
+    gROOT->ProcessLine(".! mkdir -p sysunc/radiative");
     if(inputType==iDir) {
-      outFileN = "radiative/tree";
+      outFileN = "sysunc/radiative/tree";
       outFileN += "_" + PairName(pairType);
       for(int d=0; d<BS->dimensions; d++) outFileN += "_" + BS->GetIVname(d);
       outFileN += ".root";
     } else if(inputType==iFile) {
       outFileN = inFiles[nom];
-      outFileN(TRegexp("^.*/")) = "radiative/tree.";
+      outFileN(TRegexp("^.*/")) = "sysunc/radiative/tree.";
     };
   }
   printf("\nCREATING TREE FILE = %s\n\n",outFileN.Data());

@@ -115,15 +115,15 @@ int main(int argc, char** argv) {
 
   // define output file
   if(outFileN=="") {
-    gROOT->ProcessLine(".! mkdir -p migration");
+    gROOT->ProcessLine(".! mkdir -p sysunc/binMigration");
     if(inputType==iDir) {
-      outFileN = "migration/hist";
+      outFileN = "sysunc/binMigration/hist";
       outFileN += "_" + PairName(pairType);
       for(int d=0; d<BS->dimensions; d++) outFileN += "_" + BS->GetIVname(d);
       outFileN += ".root";
     } else if(inputType==iFile) {
       outFileN = inputData;
-      outFileN(TRegexp("^.*/")) = "migration/hist.";
+      outFileN(TRegexp("^.*/")) = "sysunc/binMigration/hist.";
     };
   }
   printf("\nCREATING TREE FILE = %s\n\n",outFileN.Data());
