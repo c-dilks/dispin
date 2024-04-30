@@ -70,6 +70,11 @@ BeamRemnants:primordialKT = off         ! Allow or not selection of primordial k
 BeamRemnants:primordialKTremnant = 0.64 ! The width sigma_remn, assigned as a primordial kT to beam-remnant partons. (analogous to PARJ(99))
                                         ! NOTE: this is ignored when `primordialKT == off`
 
-! StringSpinner settings.
-StringSpinner:GLGT = 5     ! free parameter |GL/GT|
+!!! StringSpinner settings
+
+StringSpinner:GLGT = 0.2   ! free parameter |GL/GT|
+                           ! NOTE: fraction of long. pol. VMs: fL = |GL/GT|^2 / ( 2 + |GL/GT|^2 )
+                           ! 0 <= fL <= 1
+
 StringSpinner:thetaLT = 0  ! free parameter arg(GL/GT)
+                           ! -PI <= thetaLT <= +PI
