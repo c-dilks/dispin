@@ -434,8 +434,8 @@ for l,lmap in plotmap.items():
         else:
             ket = "$|\\ell,"+str(m)+"\\rangle$"
         if scheme==4:
-            if m==0: ket="$|\sin(\Delta\phi)\\rangle$"
-            elif m==1: ket="$|\sin(2\Delta\phi)\\rangle$"
+            if m==0: ket="$|\\sin(\\Delta\\phi)\\rangle$"
+            elif m==1: ket="$|\\sin(2\\Delta\\phi)\\rangle$"
         axs[r,c].text(
             0.05,0.9,
             ket,
