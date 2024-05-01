@@ -19,6 +19,7 @@ rm -rfv build
 rm -fv macros/*.so
 
 # build main shared lib
+unset CMAKE_GENERATOR
 mkdir -p build
 pushd build
 cmake -DCMAKE_C_COMPILER=$(which gcc) ../
