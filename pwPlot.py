@@ -102,11 +102,11 @@ asymMin = None
 if scheme==0: # twist3 m==0 states only
     asymMax = 0.25
 elif scheme==2: # twist2
-    asymMin = -0.095
-    asymMax = 0.095
+    asymMin = -0.150
+    asymMax = 0.150
 elif scheme==3: # twist3
-    asymMin = -0.095
-    asymMax = 0.095
+    asymMin = -0.150
+    asymMax = 0.150
 elif scheme==4: # DSIDIS
     asymMax = 0.095
 elif scheme==12: # twist2, no theta-dependence
