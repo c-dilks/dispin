@@ -447,6 +447,21 @@ int main(int argc, char** argv) {
        5*NBINS,0,10,5*NBINS,0.7,1.2);
    };
 
+   // dihadron symmetry plots (e.g., for checking correlations with VM polarization)
+   TH1D * symHadP     = new TH1D("symHadP",     "hadron p symmetry",        NBINS, 0,   1);
+   TH1D * symHadPt    = new TH1D("symHadPt",    "hadron p_{T} symmetry",    NBINS, 0,   1);
+   TH1D * symHadPperp = new TH1D("symHadPperp", "hadron p_{perp} symmetry", NBINS, 0,   1);
+   TH1D * symHadZ     = new TH1D("symHadZ",     "hadron z symmetry",        NBINS, 0,   1);
+   TH1D * symHadXF    = new TH1D("symHadXF",    "hadron x_{F} difference",  NBINS, -2,  2);
+   TH1D * symHadYH    = new TH1D("symHadYH",    "hadron Y_{h} difference",  NBINS, -6,  6);
+   TH1D * symHadTheta = new TH1D("symHadTheta", "hadron #theta difference", NBINS, -40, 40);
+   auto fill_symmetry_hist = [] (TH1* hist, double a, double b) {
+     if(std::abs(a+b)>0)
+       hist->Fill(std::abs(a-b)/(a+b));
+   };
+   auto fill_difference_hist = [] (TH1* hist, double a, double b) {
+     hist->Fill(a-b);
+   };
 
    // ECAL energy, sampling fraction (for electrons)
    TH1D * elePCALenDist = new TH1D("elePCALenDist","electron PCAL energy",NBINS,0,1.8);
@@ -573,7 +588,7 @@ int main(int argc, char** argv) {
    Int_t hadI[2];
    Float_t alphaDeg;
    for(int i=0; i<ev->ENT; i++) {
-     //if(i>10000) break; // limiter
+     // if(i>10000) break; // limiter
 
      ev->GetEvent(i);
 
@@ -649,6 +664,14 @@ int main(int argc, char** argv) {
          hadPtVsPhi[h]->Fill(ev->hadPhi[h],ev->hadPt[h]);
        };
        vzDiffHadHad->Fill(ev->hadVertex[qA][eZ]-ev->hadVertex[qB][eZ]);
+
+       fill_symmetry_hist(symHadP,       ev->hadP[qA],     ev->hadP[qB]);
+       fill_symmetry_hist(symHadPt,      ev->hadPt[qA],    ev->hadPt[qB]);
+       fill_symmetry_hist(symHadPperp,   ev->hadPperp[qA], ev->hadPperp[qB]);
+       fill_symmetry_hist(symHadZ,       ev->Z[qA],        ev->Z[qB]);
+       fill_difference_hist(symHadXF,    ev->hadXF[qA],    ev->hadXF[qB]);
+       fill_difference_hist(symHadYH,    ev->hadYH[qA],    ev->hadYH[qB]);
+       fill_difference_hist(symHadTheta, ev->hadTheta[qA], ev->hadTheta[qB]);
 
        deltaPhi = Tools::AdjAngle(ev->hadPhi[qA] - ev->hadPhi[qB]);
        deltaPhiDist->Fill(deltaPhi);
@@ -1010,6 +1033,17 @@ int main(int argc, char** argv) {
      SS_y_diff->Write();
      outfile->cd("/");
    }
+
+   outfile->mkdir("symmetry");
+   outfile->cd("symmetry");
+   symHadP->Write();
+   symHadPt->Write();
+   symHadPperp->Write();
+   symHadZ->Write();
+   symHadXF->Write();
+   symHadYH->Write();
+   symHadTheta->Write();
+   outfile->cd("/");
 
    outfile->Close();
 
