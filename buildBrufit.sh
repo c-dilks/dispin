@@ -19,9 +19,13 @@ rm -rfv build
 rm -fv macros/*.so
 
 # build main shared lib
-cmake -B build -DCMAKE_C_COMPILER=$(which gcc)
-cmake --build build -j$ncpu
-cmake --install build
+unset CMAKE_GENERATOR
+mkdir -p build
+pushd build
+cmake -DCMAKE_C_COMPILER=$(which gcc) ../
+make -j$ncpu install
+cmake -DCMAKE_C_COMPILER=$(which gcc) ../
+make -j$ncpu install
 popd
 
 # build aux shared lib(s)
