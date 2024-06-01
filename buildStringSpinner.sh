@@ -9,6 +9,7 @@ if [ $# -ne 1 ]; then
 fi
 ncpu=$1
 [ -z "$PYTHIADIR" ] && echo "ERROR: source env.sh" >&2 && exit 1
+touch deps/StringSpinner/Makefile.inc # needs to at least exist
 pushd deps/StringSpinner
 
 # clean
