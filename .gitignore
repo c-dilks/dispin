@@ -19,7 +19,7 @@ outroot
 outroot.*
 radroot
 radroot.*
-diskim
+diskim*
 *.slurm
 *.condor
 logfiles/*

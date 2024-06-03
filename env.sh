@@ -5,6 +5,9 @@ export DISPIN_HOME=$(dirname $(realpath $0))
 export BRUFIT=${DISPIN_HOME}/deps/brufit
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${BRUFIT}/lib
 
+# kludge to set JAVA_HOME, which is only needed for j2root
+[ -z "$JAVA_HOME" ] && export JAVA_HOME=$(realpath $(dirname $(realpath $(which java)))/..)
+
 # set dependency environment variables
 pushd deps
 
@@ -38,6 +41,7 @@ echo "===== DISPIN ENVIRONMENT ====="
 env|grep --color -w DISPIN_HOME
 env|grep --color -w BRUFIT
 env|grep --color -w LD_LIBRARY_PATH
+env|grep --color -w JAVA_HOME
 env|grep --color -w JYPATH
 env|grep --color -w PYTHIADIR
 env|grep --color -w STRINGSPINNER
