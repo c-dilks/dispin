@@ -6,7 +6,7 @@ if [ $# -lt 2 ]; then
   USAGE: $0 [set_number] [prefix]
 
     [set_number]: defines the binning scheme; see the script
-    [prefix]:     directory name prefix, e.g., stringspinner.GLGT_5.thetaLT_0
+    [prefix]:     directory name prefix, e.g., sss.GLGT_5.thetaLT_0
   """ >&2
   exit 2
 fi
