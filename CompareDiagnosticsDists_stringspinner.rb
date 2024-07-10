@@ -60,12 +60,15 @@ end
 
 # make plots
 first = true
-fixme normalizer
 file_list.each do |file_hash|
   file_obj = r.TFile.new file_hash[:name], 'READ'
+  # get the electron yield, for normalization
+  ele_yield = file_obj.Get('dihadronCntDist').GetEntries
+  # draw each plot
   plot_list.each do |plot_hash|
     plot_hash[:canv].cd
     plot = file_obj.Get plot_hash[:name]
+    plot.Scale 1.0 / ele_yield
     plot.SetName "#{plot.GetName}_#{file_hash[:id]}"
     plot.SetMarkerStyle file_hash[:style]
     plot.SetMarkerColor file_hash[:color]
