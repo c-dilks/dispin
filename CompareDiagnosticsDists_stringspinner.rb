@@ -12,7 +12,17 @@ r.gROOT.SetBatch true
 # to decide the input files, their plot styles, etc.
 ##################################################################################
 # get the list of files, and decide legend titles and plot styles
-file_list = Dir.glob("plots.outroot.sss*.root").map do |file_name|
+file_list = [
+  {
+    :name  => 'plots.mcgen.root',
+    :title => 'CLASDIS',
+    :id    => 'origin',
+    :color => r.kBlack,
+    :style => r.kFullCross,
+    :special => true,
+  }
+]
+Dir.glob("plots.outroot.sss*.root").each do |file_name|
   # make the title
   file_id    = file_name.gsub(/^plots.*sss\./,'').gsub(/\.root$/,'')
   glgt_mag   = file_id.sub(/\.thetaLT.*/,'').split('_').last.to_f
@@ -40,7 +50,7 @@ file_list = Dir.glob("plots.outroot.sss*.root").map do |file_name|
     style = r.kFullTriangleUp
   end
   # hash
-  {
+  file_list << {
     :name  => file_name,
     :title => file_title,
     :id    => file_id,
@@ -64,7 +74,7 @@ plot_list = [
 ].map do |plot_name|
   {
     :name => plot_name,
-    :canv => r.TCanvas.new("canv_#{plot_name}", "canv_#{plot_name}", 2400, 1800),
+    :canv => r.TCanvas.new("canv_#{plot_name}", "canv_#{plot_name}", 1600, 1200),
   }
 end
 
@@ -79,15 +89,24 @@ file_list.each do |file_hash|
   first_plot = true
   plot_list.each do |plot_hash|
     plot_hash[:canv].cd
+    plot_hash[:canv].SetGrid 1,1
     plot = file_obj.Get plot_hash[:name]
     plot.Scale 1.0 / ele_yield
-    plot.SetName "#{plot.GetName}_#{file_hash[:id]}"
+    # plot.SetName "#{plot.GetName}_#{file_hash[:id]}"
     plot.SetMarkerStyle file_hash[:style]
     plot.SetMarkerColor file_hash[:color]
     plot.SetMarkerSize 1.5
-    plot.GetXaxis.SetRangeUser 0.25, 1.0
-    plot.Draw first_file ? 'p hist' : 'p hist same'
-    legend.AddEntry plot, file_hash[:title], 'p' if first_plot
+    plot.GetXaxis.SetRangeUser 0.25, 1.0 if plot_hash[:name] == 'MhDist'
+    if file_hash.has_key?(:special) and file_hash[:special]
+      plot.SetLineWidth 3
+      plot.SetLineColor file_hash[:color]
+      plot.SetFillColor r.kGray
+      plot.Draw first_file ? 'hist' : 'hist same'
+      legend.AddEntry plot, file_hash[:title], 'l' if first_plot
+    else
+      plot.Draw first_file ? 'p hist' : 'p hist same'
+      legend.AddEntry plot, file_hash[:title], 'p' if first_plot
+    end
     first_plot = false
   end
   first_file = false
