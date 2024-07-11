@@ -102,8 +102,8 @@ asymMin = None
 if scheme==0: # twist3 m==0 states only
     asymMax = 0.25
 elif scheme==2: # twist2
-    asymMin = -0.150
-    asymMax = 0.150
+    asymMin = -0.095
+    asymMax = 0.095
 elif scheme==3: # twist3
     asymMin = -0.150
     asymMax = 0.150
@@ -501,9 +501,9 @@ plt.ylim(asymMin,asymMax)
 # legend
 if len(legendLabels)>0 and scheme<2000:
     location = 'upper right'
-    padding = 1
-    if scheme==2 or scheme==3: padding=5
-    if scheme==32 or scheme==33: padding=12
+    padding = 3
+    # if scheme==2 or scheme==3: padding=5
+    # if scheme==32 or scheme==33: padding=12
     fig.legend(loc=location, borderaxespad=padding)
 
 # draw plots, either to file or to viewer

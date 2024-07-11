@@ -71,11 +71,11 @@ plot_list = [
   'PhiHDist',
   'PhiRDist',
   'thetaDist',
-  # '/symmetry/symHadP',
-  # '/symmetry/symHadPt',
-  # '/symmetry/symHadPperp',
-  # '/symmetry/symHadZ',
-  # '/symmetry/symHadTheta',
+  '/symmetry/symHadP',
+  '/symmetry/symHadPt',
+  '/symmetry/symHadPperp',
+  '/symmetry/symHadZ',
+  '/symmetry/symHadTheta',
 ].map do |plot_name|
   {
     :name => plot_name,
@@ -87,17 +87,16 @@ end
 legend = r.TLegend.new 0.1, 0.1, 0.9, 0.9
 first_file = true
 file_list.each do |file_hash|
-  file_obj = r.TFile.new file_hash[:name], 'READ'
+  file_hash[:obj] = r.TFile.new file_hash[:name], 'READ'
   # get the electron yield, for normalization
-  ele_yield = file_obj.Get('dihadronCntDist').GetEntries
+  ele_yield = file_hash[:obj].Get('dihadronCntDist').GetEntries
   # draw each plot
   first_plot = true
   plot_list.each do |plot_hash|
     plot_hash[:canv].cd
     plot_hash[:canv].SetGrid 1,1
-    plot = file_obj.Get plot_hash[:name]
+    plot = file_hash[:obj].Get(plot_hash[:name])#.Clone "#{plot_hash[:name].gsub '/', '_'}_#{file_hash[:id]}"
     plot.Scale 1.0 / ele_yield
-    # plot.SetName "#{plot.GetName}_#{file_hash[:id]}"
     plot.SetMarkerStyle file_hash[:style]
     plot.SetMarkerColor file_hash[:color]
     plot.SetMarkerSize 1.5
@@ -106,11 +105,19 @@ file_list.each do |file_hash|
       plot.SetLineWidth 3
       plot.SetLineColor file_hash[:color]
       plot.SetFillColor r.kGray
+      puts "draw plot '#{plot.GetName}'"
       plot.Draw first_file ? 'hist' : 'hist same'
-      legend.AddEntry plot, file_hash[:title], 'lf' if first_plot
+      if first_plot
+        puts "add legend entry '#{file_hash[:title]}'"
+        legend.AddEntry plot, file_hash[:title], 'lf'
+      end
     else
+      puts "draw plot '#{plot.GetName}'"
       plot.Draw first_file ? 'p hist' : 'p hist same'
-      legend.AddEntry plot, file_hash[:title], 'p' if first_plot
+      if first_plot
+        puts "add legend entry '#{file_hash[:title]}'"
+        legend.AddEntry plot, file_hash[:title], 'p'
+      end
     end
     first_plot = false
   end
@@ -118,9 +125,17 @@ file_list.each do |file_hash|
 end
 
 # output plots
-plot_list.each do |plot_hash|
-  plot_hash[:canv].SaveAs "ssscomp_#{plot_hash[:name].gsub '/', '_'}.png"
-end
+puts 'save legend'
 legend_canv = r.TCanvas.new 'legend', 'legend', 600, 600
 legend.Draw
 legend_canv.SaveAs 'legend.png'
+puts 'save plots'
+plot_list.each do |plot_hash|
+  puts "save #{plot_hash[:name]}"
+  plot_hash[:canv].SaveAs "ssscomp_#{plot_hash[:name].gsub '/', '_'}.png"
+end
+
+# close
+file_list.each do |file_hash|
+  file_hash[:obj].Close
+end
