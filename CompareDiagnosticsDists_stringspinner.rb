@@ -80,27 +80,36 @@ plot_list = [
   {
     :name => plot_name,
     :canv => r.TCanvas.new("canv_#{plot_name}", "canv_#{plot_name}", 1600, 1200),
+    :max => 0.0,
   }
 end
 
 # make plots
 legend = r.TLegend.new 0.1, 0.1, 0.9, 0.9
 first_file = true
+## get normalizers and maxima
 file_list.each do |file_hash|
   file_hash[:obj] = r.TFile.new file_hash[:name], 'READ'
   # get the electron yield, for normalization
-  ele_yield = file_hash[:obj].Get('dihadronCntDist').GetEntries
-  # draw each plot
+  file_hash[:ele_yield] = file_hash[:obj].Get('dihadronCntDist').GetEntries
+  # get maxima
+  plot_list.each do |plot_hash|
+    plot_hash[:max] = [ plot_hash[:max], file_hash[:obj].Get(plot_hash[:name]).GetMaximum/file_hash[:ele_yield] ].max
+  end
+end
+## draw each plot
+file_list.each do |file_hash|
   first_plot = true
   plot_list.each do |plot_hash|
     plot_hash[:canv].cd
     plot_hash[:canv].SetGrid 1,1
     plot = file_hash[:obj].Get(plot_hash[:name])#.Clone "#{plot_hash[:name].gsub '/', '_'}_#{file_hash[:id]}"
-    plot.Scale 1.0 / ele_yield
+    plot.Scale 1.0 / file_hash[:ele_yield]
     plot.SetMarkerStyle file_hash[:style]
     plot.SetMarkerColor file_hash[:color]
     plot.SetMarkerSize 1.5
     plot.GetXaxis.SetRangeUser 0.25, 1.0 if plot_hash[:name] == 'MhDist'
+    plot.GetYaxis.SetRangeUser 0.0, plot_hash[:max]*1.1
     if file_hash.has_key?(:special) and file_hash[:special]
       plot.SetLineWidth 3
       plot.SetLineColor file_hash[:color]
