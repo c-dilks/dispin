@@ -71,6 +71,11 @@ plot_list = [
   'PhiHDist',
   'PhiRDist',
   'thetaDist',
+  # '/symmetry/symHadP',
+  # '/symmetry/symHadPt',
+  # '/symmetry/symHadPperp',
+  # '/symmetry/symHadZ',
+  # '/symmetry/symHadTheta',
 ].map do |plot_name|
   {
     :name => plot_name,
@@ -102,7 +107,7 @@ file_list.each do |file_hash|
       plot.SetLineColor file_hash[:color]
       plot.SetFillColor r.kGray
       plot.Draw first_file ? 'hist' : 'hist same'
-      legend.AddEntry plot, file_hash[:title], 'l' if first_plot
+      legend.AddEntry plot, file_hash[:title], 'lf' if first_plot
     else
       plot.Draw first_file ? 'p hist' : 'p hist same'
       legend.AddEntry plot, file_hash[:title], 'p' if first_plot
@@ -114,7 +119,7 @@ end
 
 # output plots
 plot_list.each do |plot_hash|
-  plot_hash[:canv].SaveAs "ssscomp_#{plot_hash[:name]}.png"
+  plot_hash[:canv].SaveAs "ssscomp_#{plot_hash[:name].gsub '/', '_'}.png"
 end
 legend_canv = r.TCanvas.new 'legend', 'legend', 600, 600
 legend.Draw
