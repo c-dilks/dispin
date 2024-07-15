@@ -69,6 +69,9 @@ BeamRemnants:primordialKT = off         ! Allow or not selection of primordial k
                                         ! TODO: why do we get NO events if this is `on`?
 BeamRemnants:primordialKTremnant = 0.64 ! The width sigma_remn, assigned as a primordial kT to beam-remnant partons. (analogous to PARJ(99))
                                         ! NOTE: this is ignored when `primordialKT == off`
+! - fragmentation parameters
+StringZ:aLund = 1.2
+StringZ:bLund = 0.58
 
 !!! StringSpinner settings
 
