@@ -75,7 +75,7 @@ StringZ:bLund = 0.58
 
 !!! StringSpinner settings
 
-StringSpinner:GLGT = 0.2   ! free parameter |GL/GT|
+StringSpinner:GLGT = 1.4   ! free parameter |GL/GT|
                            ! NOTE: fraction of long. pol. VMs: fL = |GL/GT|^2 / ( 2 + |GL/GT|^2 )
                            ! 0 <= fL <= 1
 
