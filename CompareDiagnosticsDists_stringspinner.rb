@@ -22,7 +22,7 @@ file_list = [
     :special => true,
   }
 ]
-Dir.glob("plots.outroot.sss*.root").each do |file_name|
+Dir.glob("plots.outroot.sss*.root").reject{|f|f.include?'test'}.each do |file_name|
   # make the title
   file_id    = file_name.gsub(/^plots.*sss\./,'').gsub(/\.root$/,'')
   glgt_mag   = file_id.sub(/\.thetaLT.*/,'').split('_').last.to_f
