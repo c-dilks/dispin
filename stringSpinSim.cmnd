@@ -65,7 +65,7 @@ StringFlav:mesonUDvector = 0.7          ! for light (u, d) mesons (analogous to 
 StringFlav:mesonSvector = 0.75          ! for strange mesons      (analogous to PARJ(12): fraction of $K^* / K$)
 ! - momentum widths
 StringPT:sigma = 0.5                    ! pT width of the fragmentation process (analogous to PARJ(21))
-BeamRemnants:primordialKT = off         ! Allow or not selection of primordial kT according to the parameter values.
+BeamRemnants:primordialKT = on          ! Allow or not selection of primordial kT according to the parameter values.
                                         ! TODO: why do we get NO events if this is `on`?
 BeamRemnants:primordialKTremnant = 0.64 ! The width sigma_remn, assigned as a primordial kT to beam-remnant partons. (analogous to PARJ(99))
                                         ! NOTE: this is ignored when `primordialKT == off`
