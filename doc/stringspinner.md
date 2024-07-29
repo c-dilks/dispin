@@ -71,13 +71,12 @@ _cf._ those from `claspyth`:
 
 We'll need to translate these Pythia 6 parameters to Pythia 8, since StringSpinner uses Pythia 8:
 
-| Pythia 6                      | Pythia 8                                        | Description                                     | Value |
-| ---                           | ---                                             | ---                                             | ---   |
-| `PARJ(11)`                    | `StringFlav:mesonUDvector`                      | vector/pseudoscalar for light ($u$, $d$) mesons | 0.70  |
-| `PARJ(12)`                    | `StringFlav:mesonSvector`                       | vector/pseudoscalar for strange mesons          | 0.75  |
-| `PARJ(21)`                    | `StringPT:sigma`                                | width of $p_T$ distribution (in fragmentation)  | 0.5   |
-| `PARP(99)` or LEPTO `PARL(3)` | possibly `BeamRemnants:primordialKTremnant`[^1] | width of $k_T$ distribution (in initial)        | 0.64  |
-| `PARJ(41)`                    | `StringZ:aLund`                                 | fragmentation function parameter $a$ in $\frac{1}{z} (1-z)^a \exp(-b m_T^2 / z)$ | 1.2  |
-| `PARJ(42)`                    | `StringZ:bLund`                                 | fragmentation function parameter $b$ in $\frac{1}{z} (1-z)^a \exp(-b m_T^2 / z)$ | 0.58 |
+| Pythia 6                      | Pythia 8                                 | Description                                     | Value |
+| ---                           | ---                                      | ---                                             | ---   |
+| `PARJ(11)`                    | `StringFlav:mesonUDvector`               | vector/pseudoscalar for light ($u$, $d$) mesons | 0.70  |
+| `PARJ(12)`                    | `StringFlav:mesonSvector`                | vector/pseudoscalar for strange mesons          | 0.75  |
+| `PARJ(21)`                    | `StringPT:sigma`                         | width of $p_T$ distribution (in fragmentation)  | 0.5   |
+| `PARP(99)` or LEPTO `PARL(3)` | possibly `BeamRemnants:primordialKThard` | width of $k_T$ distribution (in initial)        | 0.64  |
+| `PARJ(41)`                    | `StringZ:aLund`                          | fragmentation function parameter $a$ in $\frac{1}{z} (1-z)^a \exp(-b m_T^2 / z)$ | 1.2  |
+| `PARJ(42)`                    | `StringZ:bLund`                          | fragmentation function parameter $b$ in $\frac{1}{z} (1-z)^a \exp(-b m_T^2 / z)$ | 0.58 |
 
-[^1]: we get **no events** when we turn on `BeamRemnants:primordialKT`, so this can't be used yet
