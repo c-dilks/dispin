@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # software paths
 export DISPIN_HOME=$(dirname $(realpath $0))
@@ -16,7 +16,7 @@ source setup.sh
 popd
 
 pushd clas12-qadb
-source env.sh
+source ./env.sh
 popd
 
 popd
@@ -27,13 +27,16 @@ which $pythia_search &&
   export PYTHIADIR=$(realpath $(dirname $(which $pythia_search))/..) &&
   export STRINGSPINNER=${DISPIN_HOME}/deps/StringSpinner
 
-# set python environment
-if type virtualenvwrapper.sh > /dev/null; then
-  echo "Found virtualenvwrapper; calling 'workon dispin'"
-  workon dispin
-else
-  echo "WARNING: virtualenvwrapper not found; either install it or make your own virtual environment in your preferred way"
-fi
+echo -e "\e[1;35m==============================================\e[0m" >&2
+echo -e "\e[1;35m[WARNING]: python venv sourcing not yet fixed!\e[0m" >&2
+echo -e "\e[1;35m==============================================\e[0m" >&2
+# # set python environment
+# if type virtualenvwrapper.sh > /dev/null; then
+#   echo "Found virtualenvwrapper; calling 'workon dispin'"
+#   workon dispin
+# else
+#   echo "WARNING: virtualenvwrapper not found; either install it or make your own virtual environment in your preferred way"
+# fi
 
 # print results
 echo ""
@@ -48,4 +51,4 @@ env|grep --color -w STRINGSPINNER
 echo "=============================="
 
 # checks
-[ -z "$PYTHIADIR" ] && echo "WARNING: Pythia8 not found!" >&2
+[ -z "$PYTHIADIR" ] && echo "WARNING: Pythia8 not found!" >&2 || true
