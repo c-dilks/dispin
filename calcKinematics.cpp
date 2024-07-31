@@ -311,6 +311,9 @@ int main(int argc, char** argv) {
   outrootTr->Branch("PhiRp",&(dih->PhiRp),"PhiRp/F"); // via R_T
   outrootTr->Branch("PhiRp_r",&(dih->PhiRp_r),"PhiRp_r/F"); // via R_T (frame-dependent)
   outrootTr->Branch("PhiRp_g",&(dih->PhiRp_g),"PhiRp_g/F"); // via eq. 9 in 1408.5721
+  // -- SDME kinematics
+  outrootTr->Branch("sdmePhiU",&(dih->sdmePhiU),"sdmePhiU/F");
+  outrootTr->Branch("sdmePhiL",&(dih->sdmePhiL),"sdmePhiL/F");
   // - event-level branches
   outrootTr->Branch("runnum",&runnum,"runnum/I");
   outrootTr->Branch("evnum",&evnum,"evnum/I");

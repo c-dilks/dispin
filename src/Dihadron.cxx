@@ -61,6 +61,7 @@ void Dihadron::CalculateKinematics(
   // get 3-momenta from 4-momenta
   pQ = disVecQ.Vect();
   pL = disVecBeam.Vect();
+  pLprime = disVecElectron.Vect();
   pPh = vecPh.Vect();
   pR = vecR.Vect();
   for(h=0; h<2; h++) pHad[h] = vecHad[h].Vect();
@@ -213,7 +214,7 @@ void Dihadron::ComputeAngles() {
 
   // then compute PhiR angle (all the ways)
   //
-  
+
 
   // perp-frame hadron 3-momenta
   for(h=0; h<2; h++) pHad_Perp[h] = Tools::Reject(pHad[h],pQ);
@@ -275,6 +276,12 @@ void Dihadron::ComputeAngles() {
 
   // set preferred PhiR definition
   PhiR = PhiRp;
+
+
+  // SDME kinematics, from https://arxiv.org/pdf/2210.16932
+  sdmePhiU = PlaneAngle(pQ,pPh,pL,pLprime);
+  sdmePhiL = PlaneAngle(pQ,pPh,pPh,pHad[qA]);
+
 };
 
 

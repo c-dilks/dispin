@@ -126,14 +126,18 @@ class Dihadron : public TObject
     // equation 9 in 1408.5721 (gliske, bacchetta, radici)
 
     Float_t PhiR; // preferred definition
-    
+
     //
     ///////////////////////////////////////////////////
+
+    // SDME azimuthal angles, from https://arxiv.org/pdf/2210.16932
+    Float_t sdmePhiU; // uppercase Phi, equivalent to -PhiH
+    Float_t sdmePhiL; // lowercase phi, approximately equivalent to PhiRp-PhiH
 
   private:
     int h;
 
-    TVector3 pQ,pL,pPh,pR;
+    TVector3 pQ,pL,pLprime,pPh,pR;
     TVector3 pHad[2];
     TVector3 pHad_Perp[2];
     TVector3 pPh_Perp;
