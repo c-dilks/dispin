@@ -30,12 +30,14 @@ class Modu {
   private:
     int key;
     TString name;
+    TString name2;
     func_t func;
   public:
-    Modu(int key_, TString name_, func_t func_) : key(key_), name(name_), func(func_) {}
+    Modu(int key_, TString name_, TString name2_, func_t func_) : key(key_), name(name_), name2(name2_), func(func_) {}
     Double_t Eval(EventTree* e) const { return func(e); }
     int GetKey() const { return key; }
     TString GetName() const { return name; }
+    TString GetName2() const { return name2; }
 };
 
 
@@ -76,30 +78,96 @@ int main(int argc, char** argv) {
    auto makeTw3pw = [](int m) { return [m](EventTree* ev) { return TMath::Sin((1-m)*ev->PhiH + m*ev->PhiR); }; };
    auto makeTw3pwSum  = [](int m) { return [m](EventTree* ev) { return 0.5 * (TMath::Sin((1+m)*ev->PhiH - m*ev->PhiR) + TMath::Sin((1-m)*ev->PhiH + m*ev->PhiR)); }; };
    auto makeTw3pwDiff = [](int m) { return [m](EventTree* ev) { return 0.5 * (TMath::Sin((1+m)*ev->PhiH - m*ev->PhiR) - TMath::Sin((1-m)*ev->PhiH + m*ev->PhiR)); }; };
+   auto makeDiFFs = [](int m, char const* ff) -> TString {
+     switch(m) {
+       case 0:
+         return Form("%s_{UU}^{s+p}, %s_{UL}^{sp}, %s_{LL}^{pp}", ff, ff, ff);
+         break;
+       case 1:
+       case -1:
+         return Form("%s_{UT}^{sp}, %s_{LT}^{pp}", ff, ff);
+         break;
+       case 2:
+       case -2:
+         return Form("%s_{TT}^{pp}", ff);
+         break;
+     }
+     return TString("unknown");
+   };
+   auto makeRho = [](char const* polGamma, char const* polRho) { return Form("#gamma_{%s}^{*} #rho_{%s}^{0}"); };
    std::vector<Modu> pwModus = {
-     Modu(0, pwTitle(2,1),  makeTw2pw(1)),
-     Modu(1, pwTitle(2,2),  makeTw2pw(2)),
-     Modu(2, pwTitle(3,0),  makeTw3pw(0)),
-     Modu(3, pwTitle(3,1),  makeTw3pw(1)),
-     Modu(4, pwTitle(3,2),  makeTw3pw(2)),
-     Modu(5, pwTitle(3,-1), makeTw3pw(-1)),
-     Modu(6, pwTitle(3,-2), makeTw3pw(-2)),
-     Modu(7, pwTitle(3,-1) + TString(" + ") + pwTitle(3,1), makeTw3pwSum(1)),
-     Modu(8, pwTitle(3,-2) + TString(" + ") + pwTitle(3,2), makeTw3pwSum(2)),
-     Modu(9, pwTitle(3,-1) + TString(" - ") + pwTitle(3,1), makeTw3pwDiff(1)),
-     Modu(10, pwTitle(3,-2) + TString(" - ") + pwTitle(3,2), makeTw3pwDiff(2))
+     Modu(0, pwTitle(2,1),  makeDiFFs(1,"G"),  makeTw2pw(1)),
+     Modu(1, pwTitle(2,2),  makeDiFFs(2,"G"),  makeTw2pw(2)),
+     Modu(2, pwTitle(3,0),  makeDiFFs(0,"H"),  makeTw3pw(0)),
+     Modu(3, pwTitle(3,1),  makeDiFFs(1,"H"),  makeTw3pw(1)),
+     Modu(4, pwTitle(3,2),  makeDiFFs(2,"H"),  makeTw3pw(2)),
+     Modu(5, pwTitle(3,-1), makeDiFFs(-1,"H"), makeTw3pw(-1)),
+     Modu(6, pwTitle(3,-2), makeDiFFs(-2,"H"), makeTw3pw(-2)),
+     Modu(7,  pwTitle(3,-1) + TString(" + ") + pwTitle(3,1), makeDiFFs(1,"H"), makeTw3pwSum(1)),
+     Modu(8,  pwTitle(3,-2) + TString(" + ") + pwTitle(3,2), makeDiFFs(2,"H"), makeTw3pwSum(2)),
+     Modu(9,  pwTitle(3,-1) + TString(" - ") + pwTitle(3,1), makeDiFFs(1,"H"), makeTw3pwDiff(1)),
+     Modu(10, pwTitle(3,-2) + TString(" - ") + pwTitle(3,2), makeDiFFs(2,"H"), makeTw3pwDiff(2))
    };
 
    // define SDME modulations
    auto sdmeTitle = [](int alpha, int hel, int helPrime) { return Form("r^{%d}_{%d%d}", alpha, hel, helPrime); };
    std::vector<Modu> sdmeModus = {
-     Modu(0, sdmeTitle(3,1,0), [](EventTree* ev) { return TMath::Sin(ev->sdmePhiL); }),
-     Modu(1, sdmeTitle(3,1,-1), [](EventTree* ev) { return TMath::Sin(2*ev->sdmePhiL); }),
-     Modu(2, sdmeTitle(7,1,0), [](EventTree* ev) { return TMath::Cos(ev->sdmePhiU) * TMath::Sin(ev->sdmePhiL); }),
-     Modu(3, sdmeTitle(7,1,-1), [](EventTree* ev) { return TMath::Cos(ev->sdmePhiU) * TMath::Sin(2*ev->sdmePhiL); }),
-     Modu(4, sdmeTitle(8,1,1) + TString(" and ") + sdmeTitle(8,0,0), [](EventTree* ev) { return TMath::Sin(ev->sdmePhiU); }),
-     Modu(5, sdmeTitle(8,1,0), [](EventTree* ev) { return TMath::Sin(ev->sdmePhiU) * TMath::Cos(ev->sdmePhiL); }),
-     Modu(6, sdmeTitle(8,1,-1), [](EventTree* ev) { return TMath::Sin(ev->sdmePhiU) * TMath::Cos(2*ev->sdmePhiL); })
+     Modu(
+         0,
+         sdmeTitle(3,1,0),
+         makeRho("T","L"),
+         [](EventTree* ev) { return TMath::Sin(ev->sdmePhiL); }),
+     Modu(
+         1,
+         sdmeTitle(3,1,-1),
+         makeRho("T","-T"),
+         [](EventTree* ev) { return TMath::Sin(2*ev->sdmePhiL); }),
+     Modu(
+         2,
+         sdmeTitle(8,1,1) + TString(" and ") + sdmeTitle(8,0,0),
+         makeRho("L","T") + TString(" and ") + makeRho("T","L"),
+         [](EventTree* ev) { return TMath::Sin(ev->sdmePhiU); }),
+     Modu(
+         3,
+         sdmeTitle(7,1,0),
+         TString("int. ") + makeRho("L","L") + TString(" & ") + makeRho("T","T"),
+         [](EventTree* ev) { return TMath::Cos(ev->sdmePhiU) * TMath::Sin(ev->sdmePhiL); }),
+     Modu(
+         4,
+         sdmeTitle(7,1,-1),
+         makeRho("L","T"),
+         [](EventTree* ev) { return TMath::Cos(ev->sdmePhiU) * TMath::Sin(2*ev->sdmePhiL); }),
+     Modu(
+         5,
+         sdmeTitle(8,1,0),
+         TString("int. ") + makeRho("L","L") + TString("&") + makeRho("T","T"),
+         [](EventTree* ev) { return TMath::Sin(ev->sdmePhiU) * TMath::Cos(ev->sdmePhiL); }),
+     Modu(
+         6,
+         sdmeTitle(8,1,-1),
+         makeRho("L","T"),
+         [](EventTree* ev) { return TMath::Sin(ev->sdmePhiU) * TMath::Cos(2*ev->sdmePhiL); }),
+     Modu(
+         7,
+         sdmeTitle(7,1,0) + TString("+") + sdmeTitle(8,1,0),
+         TString("int. ") + makeRho("L","L") + TString(" & ") + makeRho("T","T"),
+         [](EventTree* ev) { return TMath::Cos(ev->sdmePhiU) * TMath::Sin(ev->sdmePhiL) + TMath::Sin(ev->sdmePhiU) * TMath::Cos(ev->sdmePhiL); }),
+     Modu(
+         8,
+         sdmeTitle(7,1,-1) + TString("+") + sdmeTitle(8,1,-1),
+         makeRho("L","T"),
+         [](EventTree* ev) { return TMath::Cos(ev->sdmePhiU) * TMath::Sin(2*ev->sdmePhiL) + TMath::Sin(ev->sdmePhiU) * TMath::Cos(2*ev->sdmePhiL); }),
+     Modu(
+         9,
+         sdmeTitle(7,1,0) + TString("-") + sdmeTitle(8,1,0),
+         TString("int. ") + makeRho("L","L") + TString(" & ") + makeRho("T","T"),
+         [](EventTree* ev) { return TMath::Cos(ev->sdmePhiU) * TMath::Sin(ev->sdmePhiL) - TMath::Sin(ev->sdmePhiU) * TMath::Cos(ev->sdmePhiL); }),
+     Modu(
+         10,
+         sdmeTitle(7,1,-1) + TString("-") + sdmeTitle(8,1,-1),
+         makeRho("L","T"),
+         [](EventTree* ev) { return TMath::Cos(ev->sdmePhiU) * TMath::Sin(2*ev->sdmePhiL) - TMath::Sin(ev->sdmePhiU) * TMath::Cos(2*ev->sdmePhiL); })
+
    };
 
 
@@ -125,7 +193,7 @@ int main(int argc, char** argv) {
 
    printf("begin loop through %lld events...\n",ev->ENT);
    for(int i=0; i<ev->ENT; i++) {
-     // if(i>50000) break; // limiter
+     if(i>50000) break; // limiter
 
      ev->GetEvent(i);
 
@@ -151,7 +219,7 @@ int main(int argc, char** argv) {
 
    // draw
    int const numPlots = pwModus.size() * sdmeModus.size();
-   auto corrCanv = new TCanvas("corrCanv", "corrCanv", 1000, 1000);
+   auto corrCanv = new TCanvas("corrCanv", "corrCanv", pwModus.size()*100, sdmeModus.size()*80);
    corrCanv->Divide(pwModus.size() + 1, sdmeModus.size() + 1);
    for(const auto& [pwKey, sdmeDists] : corrDists) {
      for(const auto& [sdmeKey, corrDist] : sdmeDists) {
@@ -162,24 +230,35 @@ int main(int argc, char** argv) {
        corrDist->Draw("col");
      }
    }
+   Double_t const texX = 0.03;
+   Double_t const texY = 0.3;
+   Double_t const tex2Y = 0.6;
+   Double_t const texSize = 0.15;
    for(const auto& pwModu : pwModus) {
      auto corrPad = corrCanv->GetPad(pwModu.GetKey() + 2);
      corrPad->cd();
-     corrPad->DrawFrame(0,0,1,1);
-     auto tex = new TLatex(0.1, 0.3, pwModu.GetName());
-     tex->SetTextSize(0.14);
+     // corrPad->DrawFrame(0,0,1,1);
+     auto tex = new TLatex(texX, texY, pwModu.GetName());
+     auto tex2 = new TLatex(texX, tex2Y, pwModu.GetName2());
+     tex->SetTextSize(texSize);
+     tex2->SetTextSize(texSize);
      tex->Draw();
+     tex2->Draw();
    }
    for(const auto& sdmeModu : sdmeModus) {
      auto corrPad = corrCanv->GetPad((sdmeModu.GetKey() + 1) * (pwModus.size() + 1) + 1);
      corrPad->cd();
-     corrPad->DrawFrame(0,0,1,1);
-     auto tex = new TLatex(0.1, 0.3, sdmeModu.GetName());
-     tex->SetTextSize(0.14);
+     // corrPad->DrawFrame(0,0,1,1);
+     auto tex = new TLatex(texX, texY, sdmeModu.GetName());
+     auto tex2 = new TLatex(texX, tex2Y, sdmeModu.GetName2());
+     tex->SetTextSize(texSize);
+     tex2->SetTextSize(texSize);
      tex->Draw();
+     tex2->Draw();
    }
 
    // write plots
+   corrCanv->SaveAs("sdme.pdf");
    corrCanv->Write();
    for(const auto& [pwKey, sdmeDists] : corrDists) {
      for(const auto& [sdmeKey, corrDist] : sdmeDists) {
