@@ -1,12 +1,14 @@
 #!/usr/bin/env ruby
 # loop stringSpinSim.exe -> calcKinematics.exe
 
+require 'fileutils'
+
 # settings #################
 NumEventsPerFile = 5e6.to_i
-NumFiles         = 4
+NumFiles         = 2
 Modes            = [ 0, 1 ] # stringSpinSim.exe modes
-DiskimDir        = 'diskim.sss'
-OutrootDir       = 'outroot.sss'
+DiskimDir        = 'diskim.sss' # NOTE: files within this directory will be REMOVED
+OutrootDir       = 'outroot.sss' # NOTE: files within this directory will be REMOVED
 PairType         = '0x34'
 NCPUs            = 1  # number of CPUs per node to allocate for slurm
 TimeLim          = 48 # time limit [hr]
@@ -20,6 +22,10 @@ unless Dir.exists?(DiskimDir) and Dir.exists?(OutrootDir)
   end
   exit 1
 end
+
+# clean output dirs
+remove_rootfiles = [DiskimDir,OutrootDir].map{ |dir| Dir.glob("#{dir}/*.root") }.flatten
+FileUtils.rm remove_rootfiles, verbose: true unless remove_rootfiles.empty?
 
 # start job list file
 jobFileName   = "jobs.stringSpinner.slurm"

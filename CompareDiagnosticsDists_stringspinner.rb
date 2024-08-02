@@ -28,8 +28,8 @@ file_list = [
     :style => r.kFullCircle,
   },
   {
-    :name  => 'plots.sss.test_kt_1.13.root',
-    :title => 'S.S. sigmaKThard = 1.13',
+    :name  => 'plots.sss.root',
+    :title => 'S.S. new',
     :id    => 'origin',
     :color => r.kBlue,
     :style => r.kFullCircle,
