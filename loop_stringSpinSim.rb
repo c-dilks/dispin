@@ -3,7 +3,7 @@
 
 # settings #################
 NumEventsPerFile = 5e6.to_i
-NumFiles         = 60
+NumFiles         = 4
 Modes            = [ 0, 1 ] # stringSpinSim.exe modes
 DiskimDir        = 'diskim.sss'
 OutrootDir       = 'outroot.sss'
