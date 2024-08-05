@@ -17,7 +17,7 @@ file_list = [
     :name  => 'plots.outroot.sss.GLGT_1.4.thetaLT_0.testAandBparams.root',
     :title => 'S.S. kT off',
     :id    => 'origin',
-    :color => r.kRed,
+    :color => r.kOrange,
     :style => r.kFullCircle,
   },
   {
@@ -27,13 +27,27 @@ file_list = [
     :color => r.kGreen+1,
     :style => r.kFullCircle,
   },
+  # {
+  #   :name  => 'plots.sss.test_stopMass_0.3.root',
+  #   :title => 'S.S. stopMass = 0.3',
+  #   :id    => 'origin',
+  #   :color => r.kBlue,
+  #   :style => r.kFullCircle,
+  # },
   {
-    :name  => 'plots.sss.root',
-    :title => 'S.S. new',
+    :name  => 'plots.sss.test_stopMass_0.0.root',
+    :title => 'S.S. stopMass = 0.0',
     :id    => 'origin',
-    :color => r.kBlue,
+    :color => r.kMagenta,
     :style => r.kFullCircle,
   },
+  # {
+  #   :name  => 'plots.sss.test_stopMass_0.0.test_stopNewFlav_0.5.root',
+  #   :title => 'S.S. stopMass = 0.0, stopNewFlav = 0.5',
+  #   :id    => 'origin',
+  #   :color => r.kBlue,
+  #   :style => r.kFullCircle,
+  # },
   {
     :name  => 'plots.mcgen.root',
     :title => 'CLASDIS',
@@ -84,10 +98,10 @@ ap file_list
 
 # list of plots we want to draw
 plot_list = {
-  'MhDist' => {},
-  'Q2Dist' => {:logx=>false, :logy=>false},
-  'XDist' => {:logx=>false, :logy=>false},
+  'Q2Dist'     => {:logx=>false, :logy=>false},
+  'XDist'      => {:logx=>false, :logy=>false},
   'PhPerpDist' => {:logx=>false, :logy=>false},
+  'MhDist' => {},
   'ZpairDist' => {},
   'PhiHDist' => {},
   'PhiRDist' => {},
@@ -97,54 +111,88 @@ plot_list = {
   '/symmetry/symHadPperp' => {},
   '/symmetry/symHadZ' => {},
   '/symmetry/symHadTheta' => {},
+  'piPlushadEDist'      => { :subplot_of => 'hadECanv'     },
+  'piMinushadEDist'     => { :subplot_of => 'hadECanv'     },
+  'piPlushadPtDist'     => { :subplot_of => 'hadPtCanv'    },
+  'piMinushadPtDist'    => { :subplot_of => 'hadPtCanv'    },
+  'piPlushadPperpDist'  => { :subplot_of => 'hadPperpCanv' },
+  'piMinushadPperpDist' => { :subplot_of => 'hadPperpCanv' },
+  'piPlushadThetaDist'  => { :subplot_of => 'hadThetaCanv' },
+  'piMinushadThetaDist' => { :subplot_of => 'hadThetaCanv' },
+  'piPlushadZDist'      => { :subplot_of => 'hadZCanv'     },
+  'piMinushadZDist'     => { :subplot_of => 'hadZCanv'     },
+  'piPlushadXFDist'     => { :subplot_of => 'hadXFCanv'    },
+  'piMinushadXFDist'    => { :subplot_of => 'hadXFCanv'    },
 }.map do |plot_name,settings|
+  canv_name = "canv_#{plot_name.gsub /\//, '_'}"
   res = {
     :name => plot_name,
-    :canv => r.TCanvas.new("canv_#{plot_name}", "canv_#{plot_name}", 1600, 1200),
+    :canv => r.TCanvas.new(canv_name, canv_name, 1600, 1200),
     :max => 0.0,
+    :logx => false,
+    :logy => false,
   }
   settings.each{ |k,v| res[k] = v }
   res
 end
 
-# make plots
-legend = r.TLegend.new 0.1, 0.1, 0.9, 0.9
-first_file = true
-## get normalizers and maxima
+# get a plot from a TFile
+get_plot = Proc.new do |file_hash, plot_hash|
+  unless plot_hash.has_key? :subplot_of # the plot is at the top-level
+    file_hash[:obj].Get(plot_hash[:name])
+  else # otherwise, the plot is buried in a TPad; drill down and get it
+    hadcanv = file_hash[:obj].Get(plot_hash[:subplot_of])
+    hadpad = PyCall.iterable(hadcanv.GetListOfPrimitives).first
+    hadplot = PyCall.iterable(hadpad.GetListOfPrimitives).find{ |p| p.GetName == plot_hash[:name] }
+    case plot_hash[:name]
+    when /piPlus/
+      hadplot.SetTitle "#pi^{+} #{hadplot.GetTitle.gsub /distribution.*/, 'distribution'}"
+    when /piMinus/
+      hadplot.SetTitle "#pi^{-} #{hadplot.GetTitle.gsub /distribution.*/, 'distribution'}"
+    end
+    hadplot
+  end
+end
+
+# get normalizers and maxima
 file_list.each do |file_hash|
   file_hash[:obj] = r.TFile.new file_hash[:name], 'READ'
   # get the electron yield, for normalization
   file_hash[:ele_yield] = file_hash[:obj].Get('dihadronCntDist').GetEntries
   # get maxima
   plot_list.each do |plot_hash|
-    plot_hash[:max] = [ plot_hash[:max], file_hash[:obj].Get(plot_hash[:name]).GetMaximum/file_hash[:ele_yield] ].max
+    plot_hash[:max] = [ plot_hash[:max], get_plot.call(file_hash,plot_hash).GetMaximum/file_hash[:ele_yield] ].max
   end
 end
-## draw each plot
+ap plot_list
+
+# draw each plot
+legend = r.TLegend.new 0.1, 0.1, 0.9, 0.9
+first_file = true
 file_list.each do |file_hash|
   first_plot = true
   plot_list.each do |plot_hash|
-    plot_hash[:canv].cd
-    plot_hash[:canv].SetGrid 1,1
-    plot = file_hash[:obj].Get(plot_hash[:name])#.Clone "#{plot_hash[:name].gsub '/', '_'}_#{file_hash[:id]}"
+    plot = get_plot.call file_hash, plot_hash
     plot.Scale 1.0 / file_hash[:ele_yield]
     plot.SetMarkerStyle file_hash[:style]
     plot.SetMarkerColor file_hash[:color]
     plot.SetMarkerSize 0.75
     plot.GetXaxis.SetRangeUser 0.25, 1.0 if plot_hash[:name] == 'MhDist'
     plot.SetMaximum plot_hash[:max]*1.1
+    plot_hash[:canv].cd
+    plot_hash[:canv].SetGrid 1,1
     if file_hash.has_key?(:special) and file_hash[:special]
       plot.SetLineWidth 3
       plot.SetLineColor file_hash[:color]
       # plot.SetFillColor r.kGray
-      puts "draw plot '#{plot.GetName}'"
+      puts "draw plot '#{plot.GetName}' to canvas '#{plot_hash[:canv].GetName}'"
       plot.Draw first_file ? 'hist' : 'hist same'
       if first_plot
         puts "add legend entry '#{file_hash[:title]}'"
         legend.AddEntry plot, file_hash[:title], 'lf'
       end
     else
-      puts "draw plot '#{plot.GetName}'"
+      puts "draw plot '#{plot.GetName}' to canvas '#{plot_hash[:canv].GetName}'"
       plot.Draw first_file ? 'p hist' : 'p hist same'
       if first_plot
         puts "add legend entry '#{file_hash[:title]}'"
