@@ -8,6 +8,7 @@ Beams:eA = 10.60410 ! Beam energy
 Beams:eB = 0.93827  ! Target energy
 
 ! Interaction mechanism.
+! TODO: try turning this off
 WeakBosonExchange:ff2ff(t:gmZ) = on  ! $\gamma*/Z^0$ $t$-channel exchange, with full interference between $\gamma*$ and $Z^0$
 
 ! Phase-space cut: minimal Q2 of process.
@@ -18,16 +19,20 @@ PhaseSpace:pTHatMinDiverge = 0.5 ! extra $p_T$ cut to avoid divergences of some 
 PhaseSpace:mHatMin = 0.          ! minimum invariant mass
 
 ! Set dipole recoil on. Necessary for DIS + shower.
+!!! TODO: any effect if this is on? From footnote in Albi's paper: We also recall that in
+!!! StringSpinner the parton showers are switched off because presently the
+!!! string+3 P0 model does not handle the more general string configurations
+!!! involving multiple partons that would be produced in the showering process.
 SpaceShower:dipoleRecoil = off
 
 ! QED radiation off lepton not handled yet by the new procedure.
 ! these are recommended when `SpaceShower:dipoleRecoil = on`
-PDF:lepton = off              ! do not use parton densities for lepton beams
+PDF:lepton = off              ! do not use parton densities for lepton beams; leptons will carry the full energy
 TimeShower:QEDshowerByL = off ! disallow leptons to radiate photons
 
 ! Choice of PDF = CTEQ5L LO (pSet=2).
-PDF:pSet = 2
-PDF:pHardSet = 2
+PDF:pSet = 2 ! TODO: should we try a newer one?
+PDF:pHardSet = 2 ! TODO: if this is not set, it takes the value of `PDF:pSet`
 
 ! Switch off resonance decays, ISR, FSR, MPI and Bose-Einstein.
 ProcessLevel:resonanceDecays = off
@@ -39,9 +44,9 @@ HadronLevel:BoseEinstein = off
 
 ! Switches for hadron production and decay.
 ! HadronLevel:Decay = off
-111:onMode = off ! pi0
-311:onMode = off ! K0
-211:onMode = off ! pi+
+111:onMode = off ! pi0 ! TODO: this should probably be on
+311:onMode = off ! K0  ! TODO: this should probably be on
+211:onMode = off ! pi+ ! TODO: try turning this on.. any effect in pi+ distrubtions? what about pi-, `-211:onMode`?
 ! 221:onMode = off ! eta
 ! 331:onMode = off ! eta'
 ! 311:onMode = off ! K0 decay
