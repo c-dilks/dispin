@@ -75,7 +75,7 @@ BeamRemnants:primordialKTremnant = 0.0
 StringZ:aLund = 1.2
 StringZ:bLund = 0.58
 StringFragmentation:stopMass = 0.0  ! minimum mass for string fragmentation, roughly PARJ(33)?
-! StringFragmentation:stopNewFlav = 0.5 ! no effect, besides making event generation take significantly longer
+! StringFragmentation:stopNewFlav = 0.5 ! slightly worse, and makes event generation take significantly longer
 ! HadronLevel:mStringMin = 0.5 ! no effect
 
 !!! StringSpinner settings

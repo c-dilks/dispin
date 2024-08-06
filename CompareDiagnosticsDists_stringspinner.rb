@@ -188,13 +188,13 @@ file_list.each do |file_hash|
     plot_pad = plot_hash[:canv].GetPad 1
     plot_pad.cd
     if file_hash.has_key?(:baseline) and file_hash[:baseline]
-      rat_hash[plot_hash[:name]] = {
-        :baseline => plot.Clone('base_'+plot.GetName),
-        :pad => plot_hash[:canv].GetPad(2),
-        :rats => []
-      }
       plot.SetLineWidth 3
       plot.SetLineColor file_hash[:color]
+      rat_hash[plot_hash[:name]] = {
+        :baseline => plot.Clone('base_'+plot.GetName),
+        :canv => plot_hash[:canv],
+        :rats => []
+      }
       # plot.SetFillColor r.kGray
       puts "draw plot '#{plot.GetName}' to canvas '#{plot_hash[:canv].GetName}'"
       plot.Draw first_file ? 'hist' : 'hist same'
@@ -220,9 +220,15 @@ file_list.each do |file_hash|
   first_file = false
 end
 
+# redraw baseline plots on the top layer
+rat_hash.each do |name,hash|
+  hash[:canv].cd 1
+  hash[:baseline].Draw 'hist same'
+end
+
 # draw ratios
 rat_hash.each do |name,hash|
-  hash[:pad].cd
+  hash[:canv].cd 2
   hash[:rats].each_with_index do |rat_plot,idx|
     rat_plot.SetTitle ''
     rat_plot.GetYaxis.SetTitle 'ratio'
@@ -241,7 +247,15 @@ legend_canv.SaveAs 'ssscomp___legend.png'
 puts 'save plots'
 plot_list.each do |plot_hash|
   puts "save #{plot_hash[:name]}"
-  plot_hash[:canv].SaveAs "ssscomp_#{plot_hash[:name].gsub '/', '_'}.png"
+  ext = 'png'
+  out_name = "ssscomp_#{plot_hash[:name].gsub '/', '_'}.#{ext}"
+  ['piPlus','piMinus'].each do |str|
+    if out_name.match? /#{str}/
+      out_name.gsub! /#{str}/, ''
+      out_name.gsub! /#{ext}$/, "#{str}.#{ext}"
+    end
+  end
+  plot_hash[:canv].SaveAs out_name
 end
 
 # close
