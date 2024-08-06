@@ -14,6 +14,14 @@ r.gROOT.SetBatch true
 # get the list of files, and decide legend titles and plot styles
 file_list = [
   {
+    :name  => 'plots.mcgen.root',
+    :title => 'CLASDIS',
+    :id    => 'origin',
+    :color => r.kBlack,
+    :style => r.kFullCross,
+    :baseline => true, # baseline plot MUST be first, and there can only be one
+  },
+  {
     :name  => 'plots.outroot.sss.GLGT_1.4.thetaLT_0.testAandBparams.root',
     :title => 'S.S. kT off',
     :id    => 'origin',
@@ -48,14 +56,6 @@ file_list = [
   #   :color => r.kBlue,
   #   :style => r.kFullCircle,
   # },
-  {
-    :name  => 'plots.mcgen.root',
-    :title => 'CLASDIS',
-    :id    => 'origin',
-    :color => r.kBlack,
-    :style => r.kFullCross,
-    :special => true,
-  },
 ]
 # Dir.glob("plots.outroot.sss*.root").reject{|f|f.include?'test'}.each do |file_name|
 #   # make the title
@@ -106,33 +106,37 @@ plot_list = {
   'PhiHDist' => {},
   'PhiRDist' => {},
   'thetaDist' => {},
-  '/symmetry/symHadP' => {},
-  '/symmetry/symHadPt' => {},
-  '/symmetry/symHadPperp' => {},
-  '/symmetry/symHadZ' => {},
-  '/symmetry/symHadTheta' => {},
-  'piPlushadEDist'      => { :subplot_of => 'hadECanv'     },
-  'piMinushadEDist'     => { :subplot_of => 'hadECanv'     },
-  'piPlushadPtDist'     => { :subplot_of => 'hadPtCanv'    },
-  'piMinushadPtDist'    => { :subplot_of => 'hadPtCanv'    },
-  'piPlushadPperpDist'  => { :subplot_of => 'hadPperpCanv' },
-  'piMinushadPperpDist' => { :subplot_of => 'hadPperpCanv' },
-  'piPlushadThetaDist'  => { :subplot_of => 'hadThetaCanv' },
-  'piMinushadThetaDist' => { :subplot_of => 'hadThetaCanv' },
-  'piPlushadZDist'      => { :subplot_of => 'hadZCanv'     },
-  'piMinushadZDist'     => { :subplot_of => 'hadZCanv'     },
-  'piPlushadXFDist'     => { :subplot_of => 'hadXFCanv'    },
-  'piMinushadXFDist'    => { :subplot_of => 'hadXFCanv'    },
+  # '/symmetry/symHadP' => {},
+  # '/symmetry/symHadPt' => {},
+  # '/symmetry/symHadPperp' => {},
+  # '/symmetry/symHadZ' => {},
+  # '/symmetry/symHadTheta' => {},
+  # 'piPlushadEDist'      => { :subplot_of => 'hadECanv'     },
+  # 'piMinushadEDist'     => { :subplot_of => 'hadECanv'     },
+  # 'piPlushadPtDist'     => { :subplot_of => 'hadPtCanv'    },
+  # 'piMinushadPtDist'    => { :subplot_of => 'hadPtCanv'    },
+  # 'piPlushadPperpDist'  => { :subplot_of => 'hadPperpCanv' },
+  # 'piMinushadPperpDist' => { :subplot_of => 'hadPperpCanv' },
+  # 'piPlushadThetaDist'  => { :subplot_of => 'hadThetaCanv' },
+  # 'piMinushadThetaDist' => { :subplot_of => 'hadThetaCanv' },
+  # 'piPlushadZDist'      => { :subplot_of => 'hadZCanv'     },
+  # 'piMinushadZDist'     => { :subplot_of => 'hadZCanv'     },
+  # 'piPlushadXFDist'     => { :subplot_of => 'hadXFCanv'    },
+  # 'piMinushadXFDist'    => { :subplot_of => 'hadXFCanv'    },
 }.map do |plot_name,settings|
   canv_name = "canv_#{plot_name.gsub /\//, '_'}"
   res = {
     :name => plot_name,
-    :canv => r.TCanvas.new(canv_name, canv_name, 1600, 1200),
+    :canv => r.TCanvas.new(canv_name, canv_name, 1000, 1200),
     :max => 0.0,
     :logx => false,
     :logy => false,
   }
   settings.each{ |k,v| res[k] = v }
+  res[:canv].Divide 1,2
+  (1..2).each{ |pad| res[:canv].GetPad(pad).SetGrid 1,1 }
+  res[:canv].GetPad(1).SetBottomMargin 0.0
+  res[:canv].GetPad(2).SetTopMargin 0.0
   res
 end
 
@@ -169,19 +173,22 @@ ap plot_list
 # draw each plot
 legend = r.TLegend.new 0.1, 0.1, 0.9, 0.9
 first_file = true
+baseline_plots = Hash.new
 file_list.each do |file_hash|
   first_plot = true
   plot_list.each do |plot_hash|
     plot = get_plot.call file_hash, plot_hash
+    plot.GetYaxis.SetTitle 'normalized counts'
     plot.Scale 1.0 / file_hash[:ele_yield]
     plot.SetMarkerStyle file_hash[:style]
     plot.SetMarkerColor file_hash[:color]
     plot.SetMarkerSize 0.75
     plot.GetXaxis.SetRangeUser 0.25, 1.0 if plot_hash[:name] == 'MhDist'
     plot.SetMaximum plot_hash[:max]*1.1
-    plot_hash[:canv].cd
-    plot_hash[:canv].SetGrid 1,1
-    if file_hash.has_key?(:special) and file_hash[:special]
+    plot_pad = plot_hash[:canv].GetPad 1
+    plot_pad.cd
+    if file_hash.has_key?(:baseline) and file_hash[:baseline]
+      baseline_plots[plot_hash[:name]] = plot.Clone 'base_'+plot.GetName
       plot.SetLineWidth 3
       plot.SetLineColor file_hash[:color]
       # plot.SetFillColor r.kGray
@@ -199,9 +206,18 @@ file_list.each do |file_hash|
         legend.AddEntry plot, file_hash[:title], 'p'
       end
     end
+    if baseline_plots.has_key? plot_hash[:name]
+      rat_plot = plot.Clone 'rat_'+plot.GetName
+      rat_plot.SetTitle ';;ratio'
+      rat_plot.Divide baseline_plots[plot_hash[:name]]
+      rat_pad = plot_hash[:canv].cd 2
+      rat_plot.SetMinimum 0.5
+      rat_plot.SetMaximum 1.5
+      rat_plot.Draw (file_hash.has_key?(:baseline) and file_hash[:baseline]) ? 'p hist' : 'p hist same'
+    end
     first_plot = false
-    plot_hash[:canv].SetLogx if plot_hash[:logx]
-    plot_hash[:canv].SetLogy if plot_hash[:logy]
+    plot_pad.SetLogx if plot_hash[:logx]
+    plot_pad.SetLogy if plot_hash[:logy]
   end
   first_file = false
 end
