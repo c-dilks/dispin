@@ -106,23 +106,23 @@ plot_list = {
   'PhiHDist' => {},
   'PhiRDist' => {},
   'thetaDist' => {},
-  # '/symmetry/symHadP' => {},
-  # '/symmetry/symHadPt' => {},
-  # '/symmetry/symHadPperp' => {},
-  # '/symmetry/symHadZ' => {},
-  # '/symmetry/symHadTheta' => {},
-  # 'piPlushadEDist'      => { :subplot_of => 'hadECanv'     },
-  # 'piMinushadEDist'     => { :subplot_of => 'hadECanv'     },
-  # 'piPlushadPtDist'     => { :subplot_of => 'hadPtCanv'    },
-  # 'piMinushadPtDist'    => { :subplot_of => 'hadPtCanv'    },
-  # 'piPlushadPperpDist'  => { :subplot_of => 'hadPperpCanv' },
-  # 'piMinushadPperpDist' => { :subplot_of => 'hadPperpCanv' },
-  # 'piPlushadThetaDist'  => { :subplot_of => 'hadThetaCanv' },
-  # 'piMinushadThetaDist' => { :subplot_of => 'hadThetaCanv' },
-  # 'piPlushadZDist'      => { :subplot_of => 'hadZCanv'     },
-  # 'piMinushadZDist'     => { :subplot_of => 'hadZCanv'     },
-  # 'piPlushadXFDist'     => { :subplot_of => 'hadXFCanv'    },
-  # 'piMinushadXFDist'    => { :subplot_of => 'hadXFCanv'    },
+  '/symmetry/symHadP' => {},
+  '/symmetry/symHadPt' => {},
+  '/symmetry/symHadPperp' => {},
+  '/symmetry/symHadZ' => {},
+  '/symmetry/symHadTheta' => {},
+  'piPlushadEDist'      => { :subplot_of => 'hadECanv'     },
+  'piMinushadEDist'     => { :subplot_of => 'hadECanv'     },
+  'piPlushadPtDist'     => { :subplot_of => 'hadPtCanv'    },
+  'piMinushadPtDist'    => { :subplot_of => 'hadPtCanv'    },
+  'piPlushadPperpDist'  => { :subplot_of => 'hadPperpCanv' },
+  'piMinushadPperpDist' => { :subplot_of => 'hadPperpCanv' },
+  'piPlushadThetaDist'  => { :subplot_of => 'hadThetaCanv' },
+  'piMinushadThetaDist' => { :subplot_of => 'hadThetaCanv' },
+  'piPlushadZDist'      => { :subplot_of => 'hadZCanv'     },
+  'piMinushadZDist'     => { :subplot_of => 'hadZCanv'     },
+  'piPlushadXFDist'     => { :subplot_of => 'hadXFCanv'    },
+  'piMinushadXFDist'    => { :subplot_of => 'hadXFCanv'    },
 }.map do |plot_name,settings|
   canv_name = "canv_#{plot_name.gsub /\//, '_'}"
   res = {
@@ -173,7 +173,7 @@ ap plot_list
 # draw each plot
 legend = r.TLegend.new 0.1, 0.1, 0.9, 0.9
 first_file = true
-baseline_plots = Hash.new
+rat_hash = Hash.new
 file_list.each do |file_hash|
   first_plot = true
   plot_list.each do |plot_hash|
@@ -188,7 +188,11 @@ file_list.each do |file_hash|
     plot_pad = plot_hash[:canv].GetPad 1
     plot_pad.cd
     if file_hash.has_key?(:baseline) and file_hash[:baseline]
-      baseline_plots[plot_hash[:name]] = plot.Clone 'base_'+plot.GetName
+      rat_hash[plot_hash[:name]] = {
+        :baseline => plot.Clone('base_'+plot.GetName),
+        :pad => plot_hash[:canv].GetPad(2),
+        :rats => []
+      }
       plot.SetLineWidth 3
       plot.SetLineColor file_hash[:color]
       # plot.SetFillColor r.kGray
@@ -206,20 +210,27 @@ file_list.each do |file_hash|
         legend.AddEntry plot, file_hash[:title], 'p'
       end
     end
-    if baseline_plots.has_key? plot_hash[:name]
-      rat_plot = plot.Clone 'rat_'+plot.GetName
-      rat_plot.SetTitle ';;ratio'
-      rat_plot.Divide baseline_plots[plot_hash[:name]]
-      rat_pad = plot_hash[:canv].cd 2
-      rat_plot.SetMinimum 0.5
-      rat_plot.SetMaximum 1.5
-      rat_plot.Draw (file_hash.has_key?(:baseline) and file_hash[:baseline]) ? 'p hist' : 'p hist same'
+    if rat_hash.has_key? plot_hash[:name]
+      rat_hash[plot_hash[:name]][:rats] << plot.Clone('rat_'+plot.GetName)
     end
     first_plot = false
     plot_pad.SetLogx if plot_hash[:logx]
     plot_pad.SetLogy if plot_hash[:logy]
   end
   first_file = false
+end
+
+# draw ratios
+rat_hash.each do |name,hash|
+  hash[:pad].cd
+  hash[:rats].each_with_index do |rat_plot,idx|
+    rat_plot.SetTitle ''
+    rat_plot.GetYaxis.SetTitle 'ratio'
+    rat_plot.Divide hash[:baseline]
+    rat_plot.SetMinimum 0.1
+    rat_plot.SetMaximum 3.0
+    rat_plot.Draw idx==0 ? 'p hist' : 'p hist same'
+  end
 end
 
 # output plots
