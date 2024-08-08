@@ -16,7 +16,7 @@ file_list = [
   {
     :name  => 'plots.mcgen.root',
     :title => 'CLASDIS',
-    :id    => 'origin',
+    :id    => 'mcgen',
     :color => r.kBlack,
     :style => r.kFullCross,
     :baseline => true, # baseline plot MUST be first, and there can only be one
@@ -24,35 +24,35 @@ file_list = [
   {
     :name  => 'plots.outroot.sss.GLGT_1.4.thetaLT_0.testAandBparams.root',
     :title => 'S.S. kT off',
-    :id    => 'origin',
+    :id    => 'ktoff',
     :color => r.kOrange,
     :style => r.kFullCircle,
   },
   {
     :name  => 'plots.sss.test_kt_0.64.root',
     :title => 'S.S. sigmaKThard = 0.64',
-    :id    => 'origin',
+    :id    => 'kton',
     :color => r.kGreen+1,
     :style => r.kFullCircle,
   },
   # {
   #   :name  => 'plots.sss.test_stopMass_0.3.root',
   #   :title => 'S.S. stopMass = 0.3',
-  #   :id    => 'origin',
+  #   :id    => 'stopmass03',
   #   :color => r.kBlue,
   #   :style => r.kFullCircle,
   # },
   {
     :name  => 'plots.sss.test_stopMass_0.0.root',
     :title => 'S.S. stopMass = 0.0',
-    :id    => 'origin',
+    :id    => 'stopmass',
     :color => r.kMagenta,
     :style => r.kFullCircle,
   },
   # {
-  #   :name  => 'plots.sss.test_stopMass_0.0.test_stopNewFlav_0.5.root',
-  #   :title => 'S.S. stopMass = 0.0, stopNewFlav = 0.5',
-  #   :id    => 'origin',
+  #   :name  => 'plots.sss.test_dipoleRecol_on.root',
+  #   :title => 'S.S. test',
+  #   :id    => 'test',
   #   :color => r.kBlue,
   #   :style => r.kFullCircle,
   # },
@@ -99,19 +99,26 @@ ap file_list
 # list of plots we want to draw
 plot_list = {
   'Q2Dist'     => {:logx=>false, :logy=>false},
+  'WDist'      => {:logx=>false, :logy=>false},
   'XDist'      => {:logx=>false, :logy=>false},
+  'YDist'      => {:logx=>false, :logy=>false},
   'PhPerpDist' => {:logx=>false, :logy=>false},
   'MhDist' => {},
   'ZpairDist' => {},
   'PhiHDist' => {},
   'PhiRDist' => {},
   'thetaDist' => {},
+  'cosThetaDist' => {},
+  'MmissDist' => {},
+  'YHDist' => {},
+  'deltaPhiDist' => {},
   '/symmetry/symHadP' => {},
   '/symmetry/symHadPt' => {},
   '/symmetry/symHadPperp' => {},
   '/symmetry/symHadZ' => {},
   '/symmetry/symHadTheta' => {},
   'piPlushadEDist'      => { :subplot_of => 'hadECanv'     },
+  'piPlushadPDist'      => { :subplot_of => 'hadPCanv'     },
   'piMinushadEDist'     => { :subplot_of => 'hadECanv'     },
   'piPlushadPtDist'     => { :subplot_of => 'hadPtCanv'    },
   'piMinushadPtDist'    => { :subplot_of => 'hadPtCanv'    },
@@ -123,6 +130,11 @@ plot_list = {
   'piMinushadZDist'     => { :subplot_of => 'hadZCanv'     },
   'piPlushadXFDist'     => { :subplot_of => 'hadXFCanv'    },
   'piMinushadXFDist'    => { :subplot_of => 'hadXFCanv'    },
+  'depolarizationFactors/kfAvsMh' => { :projection => 'y', :title => 'A(#varepsilon,y) distribution' },
+  'depolarizationFactors/kfBvsMh' => { :projection => 'y', :title => 'B(#varepsilon,y) distribution'},
+  'depolarizationFactors/kfCvsMh' => { :projection => 'y', :title => 'C(#varepsilon,y) distribution'},
+  'depolarizationFactors/kfVvsMh' => { :projection => 'y', :title => 'V(#varepsilon,y) distribution'},
+  'depolarizationFactors/kfWvsMh' => { :projection => 'y', :title => 'W(#varepsilon,y) distribution'},
 }.map do |plot_name,settings|
   canv_name = "canv_#{plot_name.gsub /\//, '_'}"
   res = {
@@ -143,7 +155,19 @@ end
 # get a plot from a TFile
 get_plot = Proc.new do |file_hash, plot_hash|
   unless plot_hash.has_key? :subplot_of # the plot is at the top-level
-    file_hash[:obj].Get(plot_hash[:name])
+    hadplot = file_hash[:obj].Get(plot_hash[:name])
+    if plot_hash.has_key? :projection
+      case plot_hash[:projection]
+      when 'x'
+        resultplot = hadplot.ProjectionX "#{hadplot.GetName}_#{file_hash[:id]}"
+      when 'y'
+        resultplot = hadplot.ProjectionY "#{hadplot.GetName}_#{file_hash[:id]}"
+      end
+    else
+      resultplot = hadplot
+    end
+    resultplot.SetTitle plot_hash[:title] if plot_hash.has_key? :title
+    resultplot
   else # otherwise, the plot is buried in a TPad; drill down and get it
     hadcanv = file_hash[:obj].Get(plot_hash[:subplot_of])
     hadpad = PyCall.iterable(hadcanv.GetListOfPrimitives).first
