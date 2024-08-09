@@ -21,41 +21,69 @@ file_list = [
     :style => r.kFullCross,
     :baseline => true, # baseline plot MUST be first, and there can only be one
   },
-  {
-    :name  => 'plots.outroot.sss.GLGT_1.4.thetaLT_0.testAandBparams.root',
-    :title => 'S.S. kT off',
-    :id    => 'ktoff',
-    :color => r.kOrange,
-    :style => r.kFullCircle,
-  },
-  {
-    :name  => 'plots.sss.test_kt_0.64.root',
-    :title => 'S.S. sigmaKThard = 0.64',
-    :id    => 'kton',
-    :color => r.kGreen+1,
-    :style => r.kFullCircle,
-  },
-  # {
+  # { ### test enabling kT
+  #   :name  => 'plots.outroot.sss.GLGT_1.4.thetaLT_0.testAandBparams.root',
+  #   :title => 'S.S. kT off',
+  #   :id    => 'ktoff',
+  #   :color => r.kOrange,
+  #   :style => r.kFullCircle,
+  # },
+  # { ### test enabling kT
+  #   :name  => 'plots.sss.test_kt_0.64.root',
+  #   :title => 'S.S. sigmaKThard = 0.64',
+  #   :id    => 'kton',
+  #   :color => r.kGreen+1,
+  #   :style => r.kFullCircle,
+  # },
+  # { ### test decreasing stopMass
   #   :name  => 'plots.sss.test_stopMass_0.3.root',
   #   :title => 'S.S. stopMass = 0.3',
   #   :id    => 'stopmass03',
   #   :color => r.kBlue,
   #   :style => r.kFullCircle,
   # },
-  {
-    :name  => 'plots.sss.test_stopMass_0.0.root',
-    :title => 'S.S. stopMass = 0.0',
-    :id    => 'stopmass',
-    :color => r.kMagenta,
-    :style => r.kFullCircle,
-  },
-  # {
-  #   :name  => 'plots.sss.test_dipoleRecol_on.root',
-  #   :title => 'S.S. test',
-  #   :id    => 'test',
-  #   :color => r.kBlue,
+  # { ### test decreasing stopMass
+  #   :name  => 'plots.sss.test_stopMass_0.0.root',
+  #   :title => 'S.S. stopMass = 0.0',
+  #   :id    => 'stopmass00',
+  #   :color => r.kMagenta,
   #   :style => r.kFullCircle,
   # },
+  { ### test PDF sets
+    :name  => 'plots.sss.PDF2.root',
+    :title => 'S.S. CTEQ 5L, LO #alpha_{s}(M_{Z}) = 0.127',
+    :id    => 'pdf2',
+    :color => r.kRed,
+    :style => r.kFullCircle,
+  },
+  { ### test PDF sets
+    :name  => 'plots.sss.PDF13.root',
+    :title => 'S.S. NNPDF2.3 QCD+QED LO #alpha_{s}(M_{Z}) = 0.130',
+    :id    => 'pdf13',
+    :color => r.kCyan-7,
+    :style => r.kFullCircle,
+  },
+  # { ### test PDF sets
+  #   :name  => 'plots.sss.PDF14.root',
+  #   :title => 'S.S. NNPDF2.3 QCD+QED LO #alpha_{s}(M_{Z}) = 0.119',
+  #   :id    => 'pdf14',
+  #   :color => r.kViolet+1,
+  #   :style => r.kFullCircle,
+  # },
+  # { ### test PDF sets
+  #   :name  => 'plots.sss.PDF15.root',
+  #   :title => 'S.S. NNPDF2.3 QCD+QED NLO #alpha_{s}(M_{Z}) = 0.119',
+  #   :id    => 'pdf15',
+  #   :color => r.kGreen+2,
+  #   :style => r.kFullCircle,
+  # },
+  { ### test PDF sets
+    :name  => 'plots.sss.PDF16.root',
+    :title => 'S.S. NNPDF2.3 QCD+QED NNLO #alpha_{s}(M_{Z}) = 0.119',
+    :id    => 'pdf16',
+    :color => r.kBlue,
+    :style => r.kFullCircle,
+  },
 ]
 # Dir.glob("plots.outroot.sss*.root").reject{|f|f.include?'test'}.each do |file_name|
 #   # make the title
@@ -139,13 +167,13 @@ plot_list = {
   canv_name = "canv_#{plot_name.gsub /\//, '_'}"
   res = {
     :name => plot_name,
-    :canv => r.TCanvas.new(canv_name, canv_name, 1000, 1200),
+    :canv => r.TCanvas.new(canv_name, canv_name, 1000, 3*600),
     :max => 0.0,
     :logx => false,
     :logy => false,
   }
   settings.each{ |k,v| res[k] = v }
-  res[:canv].Divide 1,2
+  res[:canv].Divide 1,3
   (1..2).each{ |pad| res[:canv].GetPad(pad).SetGrid 1,1 }
   res[:canv].GetPad(1).SetBottomMargin 0.0
   res[:canv].GetPad(2).SetTopMargin 0.0
@@ -253,6 +281,7 @@ end
 # draw ratios
 rat_hash.each do |name,hash|
   hash[:canv].cd 2
+  hash[:rat_leg] = r.TLegend.new 0.1, 0.1, 0.9, 0.9
   hash[:rats].each_with_index do |rat_plot,idx|
     rat_plot.SetTitle ''
     rat_plot.GetYaxis.SetTitle 'ratio'
@@ -260,7 +289,17 @@ rat_hash.each do |name,hash|
     rat_plot.SetMinimum 0.1
     rat_plot.SetMaximum 3.0
     rat_plot.Draw idx==0 ? 'p hist' : 'p hist same'
+    # fit to 'ratio = 1' to get a chi2
+    rat_plot_xmin = rat_plot.GetXaxis.GetXmin
+    rat_plot_xmax = rat_plot.GetXaxis.GetXmax
+    rat_fit = r.TF1.new 'fit_'+rat_plot.GetName, 'pol0', rat_plot_xmin, rat_plot_xmax
+    rat_fit.FixParameter 0, 1
+    rat_plot.Fit rat_fit, 'NBQ', ''
+    chi2ndf = rat_fit.GetChisquare / rat_fit.GetNDF
+    hash[:rat_leg].AddEntry rat_plot, "#chi^{2}/NDF = #{chi2ndf.round 3}", 'p' unless idx==0
   end
+  hash[:canv].cd 3
+  hash[:rat_leg].Draw
 end
 
 # output plots

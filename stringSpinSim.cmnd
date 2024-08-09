@@ -31,8 +31,8 @@ PDF:lepton = off              ! do not use parton densities for lepton beams; le
 TimeShower:QEDshowerByL = off ! disallow leptons to radiate photons
 
 ! Choice of PDF = CTEQ5L LO (pSet=2).
-PDF:pSet = 2 ! TODO: should we try a newer one?
-PDF:pHardSet = 2 ! TODO: if this is not set, it takes the value of `PDF:pSet`
+PDF:pSet = 16 ! TODO: pick one!
+! PDF:extrapolate = on ! TODO: test  this?
 
 ! Switch off resonance decays, ISR, FSR, MPI and Bose-Einstein.
 ProcessLevel:resonanceDecays = off
