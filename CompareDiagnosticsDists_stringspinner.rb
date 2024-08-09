@@ -154,6 +154,8 @@ plot_list = {
   'piMinushadPperpDist' => { :subplot_of => 'hadPperpCanv' },
   'piPlushadThetaDist'  => { :subplot_of => 'hadThetaCanv' },
   'piMinushadThetaDist' => { :subplot_of => 'hadThetaCanv' },
+  'piPlushadPhiDist'    => { :subplot_of => 'hadPhiCanv'   },
+  'piMinushadPhiDist'   => { :subplot_of => 'hadPhiCanv'   },
   'piPlushadZDist'      => { :subplot_of => 'hadZCanv'     },
   'piMinushadZDist'     => { :subplot_of => 'hadZCanv'     },
   'piPlushadXFDist'     => { :subplot_of => 'hadXFCanv'    },
