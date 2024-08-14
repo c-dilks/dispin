@@ -31,8 +31,7 @@ PDF:lepton = off              ! do not use parton densities for lepton beams; le
 TimeShower:QEDshowerByL = off ! disallow leptons to radiate photons
 
 ! Choice of PDF = CTEQ5L LO (pSet=2).
-PDF:pSet = 16 ! TODO: pick one!
-! PDF:extrapolate = on ! TODO: test  this?
+PDF:pSet = 13
 
 ! Switch off resonance decays, ISR, FSR, MPI and Bose-Einstein.
 ProcessLevel:resonanceDecays = off
@@ -41,15 +40,6 @@ PartonLevel:FSR = off
 PartonLevel:ISR = off
 PartonLevel:MPI = off
 HadronLevel:BoseEinstein = off
-
-! Switches for hadron production and decay.
-! HadronLevel:Decay = off
-111:onMode = off ! pi0 ! TODO: this should probably be on
-311:onMode = off ! K0  ! TODO: this should probably be on
-211:onMode = off ! pi+ ! TODO: try turning this on.. any effect in pi+ distrubtions? what about pi-, `-211:onMode`?
-! 221:onMode = off ! eta
-! 331:onMode = off ! eta'
-! 311:onMode = off ! K0 decay
 
 ! Invariant mass distribution of resonances as in the string+3P0 model.
 ParticleData:modeBreitWigner=3 ! particles registered as having a mass width are given a mass in the range m_min < m < m_max, according to a truncated relativistic Breit-Wigner, i.e. quadratic in m.

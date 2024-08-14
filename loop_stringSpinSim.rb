@@ -15,7 +15,7 @@ TimeLim          = 48 # time limit [hr]
 ############################
 
 # check for output dir existence
-unless Dir.exists?(DiskimDir) and Dir.exists?(OutrootDir)
+unless Dir.exist?(DiskimDir) and Dir.exist?(OutrootDir)
   $stderr.puts "ERROR: please create or symlink output directories:"
   [DiskimDir,OutrootDir].each do |dir|
     $stderr.puts " - #{dir}"
