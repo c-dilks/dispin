@@ -44,14 +44,14 @@ HadronLevel:BoseEinstein = off
 ! Invariant mass distribution of resonances as in the string+3P0 model.
 ParticleData:modeBreitWigner=3 ! particles registered as having a mass width are given a mass in the range m_min < m < m_max, according to a truncated relativistic Breit-Wigner, i.e. quadratic in m.
 
-! Switch off automatic event listing in favour of manual.
-Next:numberShowInfo = 0
-Next:numberShowProcess = 0
-Next:numberShowEvent = 1
-
 ! Settings of string fragmentation parameters.
 StringPT:enhancedFraction = 0.0 ! the fraction of string breaks with enhanced width.
 StringPT:enhancedWidth = 0.0    ! the enhancement of the width in this fraction.
+StringZ:aLund = 1.2
+StringZ:bLund = 0.58
+StringFragmentation:stopMass = 0.0  ! minimum mass for string fragmentation, roughly PARJ(33)?
+! StringFragmentation:stopNewFlav = 0.5 ! slightly worse, and makes event generation take significantly longer
+! HadronLevel:mStringMin = 0.5 ! no effect
 
 ! Settings from `clasdis`
 ! - pythia 6 -> 8 translation from: https://skands.web.cern.ch/slides/11/11-02-skands-uemb.pdf
@@ -66,12 +66,6 @@ BeamRemnants:halfScaleForKT = 0.0       ! set these params to zero, to try to ma
 BeamRemnants:halfMassForKT = 0.0
 BeamRemnants:primordialKTremnant = 0.0
 
-! - fragmentation parameters
-StringZ:aLund = 1.2
-StringZ:bLund = 0.58
-StringFragmentation:stopMass = 0.0  ! minimum mass for string fragmentation, roughly PARJ(33)?
-! StringFragmentation:stopNewFlav = 0.5 ! slightly worse, and makes event generation take significantly longer
-! HadronLevel:mStringMin = 0.5 ! no effect
 
 !!! StringSpinner settings
 
@@ -81,3 +75,8 @@ StringSpinner:GLGT = 1.4   ! free parameter |GL/GT|
 
 StringSpinner:thetaLT = 0  ! free parameter arg(GL/GT)
                            ! -PI <= thetaLT <= +PI
+
+! Switch off automatic event listing in favour of manual.
+Next:numberShowInfo = 0
+Next:numberShowProcess = 0
+Next:numberShowEvent = 1
