@@ -80,3 +80,4 @@ We'll need to translate these Pythia 6 parameters to Pythia 8, since StringSpinn
 | `PARJ(41)`                    | `StringZ:aLund`                          | fragmentation function parameter $a$ in $\frac{1}{z} (1-z)^a \exp(-b m_T^2 / z)$ | 1.2  |
 | `PARJ(42)`                    | `StringZ:bLund`                          | fragmentation function parameter $b$ in $\frac{1}{z} (1-z)^a \exp(-b m_T^2 / z)$ | 0.58 |
 
+Some translations are found in <https://skands.web.cern.ch/slides/11/11-02-skands-uemb.pdf>
