@@ -17,6 +17,7 @@ src/DiSpinDict.*
 outz
 outroot
 outroot.*
+/data*
 radroot
 radroot.*
 diskim*
