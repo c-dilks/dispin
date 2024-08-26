@@ -18,16 +18,20 @@ PhaseSpace:pTHatMinDiverge = 0.5 ! extra $p_T$ cut to avoid divergences of some 
 PhaseSpace:mHatMin = 0.          ! minimum invariant mass
 
 ! Set dipole recoil on. Necessary for DIS + shower.
+!!! NOTE: From footnote in the StringSpinner paper: "We also recall that in
+!!! StringSpinner the parton showers are switched off because presently the
+!!! string+3 P0 model does not handle the more general string configurations
+!!! involving multiple partons that would be produced in the showering process."
+!!! - turning this on doesn't appear to change the kinematic distributions noticeably
 SpaceShower:dipoleRecoil = off
 
 ! QED radiation off lepton not handled yet by the new procedure.
 ! these are recommended when `SpaceShower:dipoleRecoil = on`
-PDF:lepton = off              ! do not use parton densities for lepton beams
+PDF:lepton = off              ! do not use parton densities for lepton beams; leptons will carry the full energy
 TimeShower:QEDshowerByL = off ! disallow leptons to radiate photons
 
 ! Choice of PDF = CTEQ5L LO (pSet=2).
-PDF:pSet = 2
-PDF:pHardSet = 2
+PDF:pSet = 13
 
 ! Switch off resonance decays, ISR, FSR, MPI and Bose-Einstein.
 ProcessLevel:resonanceDecays = off
@@ -37,26 +41,17 @@ PartonLevel:ISR = off
 PartonLevel:MPI = off
 HadronLevel:BoseEinstein = off
 
-! Switches for hadron production and decay.
-! HadronLevel:Decay = off
-111:onMode = off ! pi0
-311:onMode = off ! K0
-211:onMode = off ! pi+
-! 221:onMode = off ! eta
-! 331:onMode = off ! eta'
-! 311:onMode = off ! K0 decay
-
 ! Invariant mass distribution of resonances as in the string+3P0 model.
 ParticleData:modeBreitWigner=3 ! particles registered as having a mass width are given a mass in the range m_min < m < m_max, according to a truncated relativistic Breit-Wigner, i.e. quadratic in m.
-
-! Switch off automatic event listing in favour of manual.
-Next:numberShowInfo = 0
-Next:numberShowProcess = 0
-Next:numberShowEvent = 1
 
 ! Settings of string fragmentation parameters.
 StringPT:enhancedFraction = 0.0 ! the fraction of string breaks with enhanced width.
 StringPT:enhancedWidth = 0.0    ! the enhancement of the width in this fraction.
+StringZ:aLund = 1.2
+StringZ:bLund = 0.58
+StringFragmentation:stopMass = 0.0  ! minimum mass for string fragmentation, roughly PARJ(33)?
+! StringFragmentation:stopNewFlav = 0.5 ! slightly worse, and makes event generation take significantly longer
+! HadronLevel:mStringMin = 0.5 ! no effect
 
 ! Settings from `clasdis`
 ! - pythia 6 -> 8 translation from: https://skands.web.cern.ch/slides/11/11-02-skands-uemb.pdf
@@ -65,11 +60,23 @@ StringFlav:mesonUDvector = 0.7          ! for light (u, d) mesons (analogous to 
 StringFlav:mesonSvector = 0.75          ! for strange mesons      (analogous to PARJ(12): fraction of $K^* / K$)
 ! - momentum widths
 StringPT:sigma = 0.5                    ! pT width of the fragmentation process (analogous to PARJ(21))
-BeamRemnants:primordialKT = off         ! Allow or not selection of primordial kT according to the parameter values.
-                                        ! TODO: why do we get NO events if this is `on`?
-BeamRemnants:primordialKTremnant = 0.64 ! The width sigma_remn, assigned as a primordial kT to beam-remnant partons. (analogous to PARJ(99))
-                                        ! NOTE: this is ignored when `primordialKT == off`
+BeamRemnants:primordialKT = on
+BeamRemnants:primordialKThard = 0.64    ! initial kT width, analgous to PARL(3)
+BeamRemnants:halfScaleForKT = 0.0       ! set these params to zero, to try to make kT width relatively constant
+BeamRemnants:halfMassForKT = 0.0
+BeamRemnants:primordialKTremnant = 0.0
 
-! StringSpinner settings.
-StringSpinner:GLGT = 5     ! free parameter |GL/GT|
+
+!!! StringSpinner settings
+
+StringSpinner:GLGT = 1.4   ! free parameter |GL/GT|
+                           ! NOTE: fraction of long. pol. VMs: fL = |GL/GT|^2 / ( 2 + |GL/GT|^2 )
+                           ! 0 <= fL <= 1
+
 StringSpinner:thetaLT = 0  ! free parameter arg(GL/GT)
+                           ! -PI <= thetaLT <= +PI
+
+! Switch off automatic event listing in favour of manual.
+Next:numberShowInfo = 0
+Next:numberShowProcess = 0
+Next:numberShowEvent = 1

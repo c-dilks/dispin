@@ -105,8 +105,8 @@ elif scheme==2: # twist2
     asymMin = -0.095
     asymMax = 0.095
 elif scheme==3: # twist3
-    asymMin = -0.095
-    asymMax = 0.095
+    asymMin = -0.150
+    asymMax = 0.150
 elif scheme==4: # DSIDIS
     asymMax = 0.095
 elif scheme==12: # twist2, no theta-dependence
@@ -434,8 +434,8 @@ for l,lmap in plotmap.items():
         else:
             ket = "$|\\ell,"+str(m)+"\\rangle$"
         if scheme==4:
-            if m==0: ket="$|\sin(\Delta\phi)\\rangle$"
-            elif m==1: ket="$|\sin(2\Delta\phi)\\rangle$"
+            if m==0: ket="$|\\sin(\\Delta\\phi)\\rangle$"
+            elif m==1: ket="$|\\sin(2\\Delta\\phi)\\rangle$"
         axs[r,c].text(
             0.05,0.9,
             ket,
@@ -501,9 +501,9 @@ plt.ylim(asymMin,asymMax)
 # legend
 if len(legendLabels)>0 and scheme<2000:
     location = 'upper right'
-    padding = 1
-    if scheme==2 or scheme==3: padding=5
-    if scheme==32 or scheme==33: padding=12
+    padding = 3
+    # if scheme==2 or scheme==3: padding=5
+    # if scheme==32 or scheme==33: padding=12
     fig.legend(loc=location, borderaxespad=padding)
 
 # draw plots, either to file or to viewer

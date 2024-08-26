@@ -160,6 +160,10 @@ class EventTree : public TObject
     Float_t PhiD; // hadPhiH[qA] - hadPhiH[qB]
     Float_t yhb;
 
+    // SDME
+    Float_t sdmePhiU; // uppercase Phi, equivalent to -PhiH
+    Float_t sdmePhiL; // lowercase phi, approximately equivalent to PhiRp-PhiH
+
     // other
     Float_t hadPqBreit[2];
     Float_t hadPqCom[2];

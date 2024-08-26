@@ -29,8 +29,6 @@ int main(int argc, char** argv) {
   TString outFileN = Form("sss/%d.root",mode);
   int seed         = -1; // -1: default seed;  0: based on time;  1-900_000_000: fixed seed
   int pairType     = EncodePairType(kPip,kPim);
-  int stringSelection[2]         = {2, 2101}; // u === (ud)_0
-  TString stringSelectionDesc[2] = {"u", "(ud)_0"};
   if(argc==1) {
     cerr << endl << "USAGE: " << argv[0] << " [ARGUMENTS]..." << endl;
     cerr << endl << "ARGUMENTS:" << endl;
@@ -39,12 +37,8 @@ int main(int argc, char** argv) {
     cerr << " [outputFileName (default=" << outFileN << ")]" << endl;
     cerr << " [seed (default=" << seed << ")]" << endl;
     cerr << " [pairType (default=0x" << std::hex << pairType << std::dec << ")]" << endl;
-    cerr << " [stringSelection0 (default=" << stringSelection[0] << " for '" << stringSelectionDesc[0] << "')]" << endl;
-    cerr << " [stringSelection1 (default=" << stringSelection[1] << " for '" << stringSelectionDesc[1] << "')]" << endl;
     cerr << endl << "MODES: " << endl;
     for(int m=0; m<4; m++) cerr << "  " << m << ": " << GetModeStr(m) << endl;
-    cerr << endl;
-    cerr << "NOTE: set stringSelection arguments both to 0 to disable filtering of events by strings" << endl;
     cerr << endl;
     cerr << "See also HARD-CODED SETTINGS in the source file" << endl << endl;
     return 2;
@@ -56,8 +50,6 @@ int main(int argc, char** argv) {
   if(argc>ai) outFileN           = TString(argv[ai++]);
   if(argc>ai) seed               = (int)strtof(argv[ai++],NULL);
   if(argc>ai) pairType           = (int)strtof(argv[ai++],NULL);
-  if(argc>ai) stringSelection[0] = (int)strtof(argv[ai++],NULL);
-  if(argc>ai) stringSelection[1] = (int)strtof(argv[ai++],NULL);
   TString modeStr = GetModeStr(mode);
   if(modeStr.Contains("UNKNOWN")) return 1;
   cout << "ARGS: "        << endl;
@@ -66,10 +58,6 @@ int main(int argc, char** argv) {
   cout << "  outFileN         = " << outFileN << endl;
   cout << "  seed             = " << seed     << endl;
   cout << "  pairType         = " << "0x" << std::hex << pairType << std::dec << endl;
-  cout << "  stringSelection0 = " << stringSelection[0] << endl;
-  cout << "  stringSelection1 = " << stringSelection[1] << endl;
-
-  bool useStringSelection = stringSelection[0]!=0 && stringSelection[1]!=0;
 
   Pythia pythia;
   Event& EV = pythia.event;
@@ -198,14 +186,6 @@ int main(int argc, char** argv) {
   for (int iEvent = 0; iEvent < nEvent; ++iEvent) {
 
     if (!pythia.next()) continue;
-
-    // string selection
-    if(useStringSelection) {
-      if( EV[7].id() != stringSelection[0] ||
-          EV[8].id() != stringSelection[1] ) continue;
-    }
-    // cout << "string: " << EV[7].id() << " === " << EV[8].id() << endl;
-
     // if(iEvent < 3) EV.list();
 
     // event-level branches
@@ -278,7 +258,7 @@ int main(int argc, char** argv) {
               auto st = std::abs(par.status());
               if(st>=81 && st<=86) { // string fragmentation
                 // cout << "STRING: " << EV[mom1idx].id() << " " << EV[mom2idx].id() << endl;
-                genParentIdx[i] = mom1idx; // set "the" parent to the quark `stringSelection[0]`, as opposed to the diquark `stringSelection[1]`
+                genParentIdx[i] = mom1idx; // set "the" parent to the string's quark as opposed to the diquark // FIXME: might not work
                 genParentPid[i] = 92; // means "string fragment" downstream
               }
               else if(st>=101 && st<=106) { // R-hadron formation

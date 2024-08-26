@@ -90,6 +90,9 @@ EventTree::EventTree(TString filelist_, Int_t whichPair_) : qa(std::make_unique<
   chain->SetBranchAddress("PhiRp_r",&PhiRp_r);
   chain->SetBranchAddress("PhiRp_g",&PhiRp_g);
 
+  chain->SetBranchAddress("sdmePhiU",&sdmePhiU);
+  chain->SetBranchAddress("sdmePhiL",&sdmePhiL);
+
   // diphoton branches
   objDiphoton = new Diphoton();
   if(chain->GetBranch("diphM")) {
