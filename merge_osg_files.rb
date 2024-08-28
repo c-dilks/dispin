@@ -8,7 +8,7 @@ def print_log(name, val)
   puts name.rjust(30) + " = #{val}"
 end
 
-DataExt = 'hipo'
+DataExt = 'root'
 
 # user options
 @args = OpenStruct.new
@@ -56,11 +56,12 @@ raise 'option "--num" >= num input files, therefore there is nothing to do' if i
 
 # build commands
 puts "="*50
-puts "OUTPUT FILES:"
 merge_cmds = input_chunks.each_with_index.map do |input_chunk, chunk_num|
-  out_file = File.join @args.output_dir, "#{@args.prefix}_#{chunk_num.to_s.rjust(5, '0')}.#{DataExt}"
-  puts "  #{out_file}"
-  [ 'hadd', out_file, *input_chunk ]
+  [
+    'hadd',
+    File.join(@args.output_dir, "#{@args.prefix}_#{chunk_num.to_s.rjust(5, '0')}.#{DataExt}"),
+    *input_chunk,
+  ]
 end
 
 # execute
