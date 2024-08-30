@@ -177,11 +177,6 @@ plot_list = {
   'MmissDist' => {},
   'YHDist' => {},
   'deltaPhiDist' => {},
-  '/symmetry/symHadP' => {},
-  '/symmetry/symHadPt' => {},
-  '/symmetry/symHadPperp' => {},
-  '/symmetry/symHadZ' => {},
-  '/symmetry/symHadTheta' => {},
   'piPlushadEDist'      => { :subplot_of => 'hadECanv'     },
   'piMinushadEDist'     => { :subplot_of => 'hadECanv'     },
   'piPlushadPDist'      => { :subplot_of => 'hadPCanv'     },
@@ -203,6 +198,11 @@ plot_list = {
   'depolarizationFactors/kfCvsMh' => { :projection => 'y', :title => 'depol. C(#varepsilon,y) distribution'},
   'depolarizationFactors/kfVvsMh' => { :projection => 'y', :title => 'depol. V(#varepsilon,y) distribution'},
   'depolarizationFactors/kfWvsMh' => { :projection => 'y', :title => 'depol. W(#varepsilon,y) distribution'},
+  '/symmetry/symHadP' => {},
+  '/symmetry/symHadPt' => {},
+  '/symmetry/symHadPperp' => {},
+  '/symmetry/symHadZ' => {},
+  '/symmetry/symHadTheta' => {},
 }.map do |plot_name,settings|
   canv_name = "canv_#{plot_name.gsub /\//, '_'}"
   res = {
@@ -277,13 +277,13 @@ file_list.each do |file_hash|
     plot.Scale 1.0 / file_hash[:ele_yield]
     plot.SetMarkerStyle file_hash[:style]
     plot.SetMarkerColor file_hash[:color]
-    plot.SetMarkerSize 0.75
+    plot.SetMarkerSize 1.25
     plot.GetXaxis.SetRangeUser 0.25, 1.0 if plot_hash[:name] == 'MhDist'
     plot.SetMaximum plot_hash[:max]*1.1
     plot_pad = plot_hash[:canv].GetPad 1
     plot_pad.cd
     if file_hash.has_key?(:baseline) and file_hash[:baseline]
-      plot.SetLineWidth 3
+      plot.SetLineWidth 2
       plot.SetLineColor file_hash[:color]
       rat_hash[plot_hash[:name]] = {
         :baseline => plot.Clone('base_'+plot.GetName),
@@ -353,7 +353,8 @@ legend_canv = r.TCanvas.new 'legend', 'legend', 600, 600
 legend.Draw
 legend_canv.SaveAs 'ssscomp___legend.png'
 puts 'save plots'
-plot_list.each do |plot_hash|
+pdfname = 'ssscomp.pdf'
+plot_list.each_with_index do |plot_hash, idx|
   puts "save #{plot_hash[:name]}"
   ext = 'png'
   out_name = "ssscomp_#{plot_hash[:name].gsub '/', '_'}.#{ext}"
@@ -364,6 +365,15 @@ plot_list.each do |plot_hash|
     end
   end
   plot_hash[:canv].SaveAs out_name
+  case idx
+  when 0
+    pdfsym = '('
+  when plot_list.size-1
+    pdfsym = ')'
+  else
+    pdfsym = ''
+  end
+  plot_hash[:canv].SaveAs pdfname + pdfsym
 end
 
 # close
