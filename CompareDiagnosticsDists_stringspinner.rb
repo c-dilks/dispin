@@ -14,13 +14,43 @@ r.gROOT.SetBatch true
 # get the list of files, and decide legend titles and plot styles
 file_list = [
   {
-    :name  => 'plots.mcgen.root',
-    :title => 'CLASDIS',
-    :id    => 'mcgen',
+    :name  => 'plots.rga.inbending.fa18.root',
+    :title => 'CLAS12 Data',
+    :id    => 'data',
     :color => r.kBlack,
     :style => r.kFullCross,
     :baseline => true, # baseline plot MUST be first, and there can only be one
   },
+  {
+    :name  => 'plots.sss.aug24_LU_2.inbending.root',
+    :title => 'StringSpinner',
+    :id    => 'sss',
+    :color => r.kGreen+1,
+    :style => r.kFullCross,
+  },
+  {
+    :name  => 'plots.mc.richard.inbending.root',
+    :title => 'CLASDIS Richard',
+    :id    => 'mc_richard',
+    :color => r.kBlue,
+    :style => r.kFullCircle,
+  },
+  {
+    :name  => 'plots.mc.inbending.bg45.root',
+    :title => 'CLASDIS Old',
+    :id    => 'mc_old',
+    :color => r.kOrange-3,
+    :style => r.kFullSquare,
+  },
+  ##### generator level testing #####
+  # {
+  #   :name  => 'plots.mcgen.root',
+  #   :title => 'CLASDIS',
+  #   :id    => 'mcgen',
+  #   :color => r.kBlack,
+  #   :style => r.kFullCross,
+  #   :baseline => true, # baseline plot MUST be first, and there can only be one
+  # },
   # { ### test enabling kT
   #   :name  => 'plots.outroot.sss.GLGT_1.4.thetaLT_0.testAandBparams.root',
   #   :title => 'S.S. kT off',
@@ -56,13 +86,13 @@ file_list = [
   #   :color => r.kRed,
   #   :style => r.kFullCircle,
   # },
-  { ### test PDF sets
-    :name  => 'plots.sss.PDF13.root',
-    :title => 'S.S. NNPDF2.3 QCD+QED LO #alpha_{s}(M_{Z}) = 0.130',
-    :id    => 'pdf13',
-    :color => r.kCyan-7,
-    :style => r.kFullCircle,
-  },
+  # { ### test PDF sets
+  #   :name  => 'plots.sss.PDF13.root',
+  #   :title => 'S.S. NNPDF2.3 QCD+QED LO #alpha_{s}(M_{Z}) = 0.130',
+  #   :id    => 'pdf13',
+  #   :color => r.kCyan-7,
+  #   :style => r.kFullCircle,
+  # },
   # { ### test PDF sets
   #   :name  => 'plots.sss.PDF14.root',
   #   :title => 'S.S. NNPDF2.3 QCD+QED LO #alpha_{s}(M_{Z}) = 0.119',
@@ -84,13 +114,13 @@ file_list = [
   #   :color => r.kBlue,
   #   :style => r.kFullCircle,
   # },
-  { ### test particleOn mode (USES pdfSet = 13)
-    :name  => 'plots.sss.testOnMode.root',
-    :title => 'test onMode',
-    :id    => 'onMode',
-    :color => r.kMagenta,
-    :style => r.kFullCircle,
-  },
+  # { ### test particleOn mode (USES pdfSet = 13)
+  #   :name  => 'plots.sss.testOnMode.root',
+  #   :title => 'test onMode',
+  #   :id    => 'onMode',
+  #   :color => r.kMagenta,
+  #   :style => r.kFullCircle,
+  # },
 ]
 # Dir.glob("plots.outroot.sss*.root").reject{|f|f.include?'test'}.each do |file_name|
 #   # make the title
@@ -168,25 +198,28 @@ plot_list = {
   'piMinushadZDist'     => { :subplot_of => 'hadZCanv'     },
   'piPlushadXFDist'     => { :subplot_of => 'hadXFCanv'    },
   'piMinushadXFDist'    => { :subplot_of => 'hadXFCanv'    },
-  'depolarizationFactors/kfAvsMh' => { :projection => 'y', :title => 'A(#varepsilon,y) distribution' },
-  'depolarizationFactors/kfBvsMh' => { :projection => 'y', :title => 'B(#varepsilon,y) distribution'},
-  'depolarizationFactors/kfCvsMh' => { :projection => 'y', :title => 'C(#varepsilon,y) distribution'},
-  'depolarizationFactors/kfVvsMh' => { :projection => 'y', :title => 'V(#varepsilon,y) distribution'},
-  'depolarizationFactors/kfWvsMh' => { :projection => 'y', :title => 'W(#varepsilon,y) distribution'},
+  'depolarizationFactors/kfAvsMh' => { :projection => 'y', :title => 'depol. A(#varepsilon,y) distribution' },
+  'depolarizationFactors/kfBvsMh' => { :projection => 'y', :title => 'depol. B(#varepsilon,y) distribution'},
+  'depolarizationFactors/kfCvsMh' => { :projection => 'y', :title => 'depol. C(#varepsilon,y) distribution'},
+  'depolarizationFactors/kfVvsMh' => { :projection => 'y', :title => 'depol. V(#varepsilon,y) distribution'},
+  'depolarizationFactors/kfWvsMh' => { :projection => 'y', :title => 'depol. W(#varepsilon,y) distribution'},
 }.map do |plot_name,settings|
   canv_name = "canv_#{plot_name.gsub /\//, '_'}"
   res = {
     :name => plot_name,
-    :canv => r.TCanvas.new(canv_name, canv_name, 1000, 3*600),
+    :canv => r.TCanvas.new(canv_name, canv_name, 2*800, 2*600),
     :max => 0.0,
     :logx => false,
     :logy => false,
   }
   settings.each{ |k,v| res[k] = v }
-  res[:canv].Divide 1,3
-  (1..2).each{ |pad| res[:canv].GetPad(pad).SetGrid 1,1 }
+  res[:canv].Divide 2,2
+  [1,3].each do |pad|
+    res[:canv].GetPad(pad).SetGrid 1,1
+    res[:canv].GetPad(pad).SetLeftMargin 0.12
+  end
   res[:canv].GetPad(1).SetBottomMargin 0.0
-  res[:canv].GetPad(2).SetTopMargin 0.0
+  res[:canv].GetPad(3).SetTopMargin 0.0
   res
 end
 
@@ -290,7 +323,7 @@ end
 
 # draw ratios
 rat_hash.each do |name,hash|
-  hash[:canv].cd 2
+  hash[:canv].cd 3
   hash[:rat_leg] = r.TLegend.new 0.1, 0.1, 0.9, 0.9
   hash[:rats].each_with_index do |rat_plot,idx|
     rat_plot.SetTitle ''
@@ -308,8 +341,10 @@ rat_hash.each do |name,hash|
     chi2ndf = rat_fit.GetChisquare / rat_fit.GetNDF
     hash[:rat_leg].AddEntry rat_plot, "#chi^{2}/NDF = #{chi2ndf.round 3}", 'p' unless idx==0
   end
-  hash[:canv].cd 3
+  hash[:canv].cd 4
   hash[:rat_leg].Draw
+  hash[:canv].cd 2
+  legend.Draw
 end
 
 # output plots
