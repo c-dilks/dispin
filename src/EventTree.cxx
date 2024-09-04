@@ -396,9 +396,9 @@ void EventTree::GetEvent(Long64_t i) {
   /**************************************/
 
   // QA cuts
-  if(!useMCrec && !useMCgen && !useStringSpinner)
-    cutQA = qa->OkForAsymmetry(runnum, evnum);
-  else
+  // if(!useMCrec && !useMCgen && !useStringSpinner)
+  //   cutQA = qa->OkForAsymmetry(runnum, evnum);
+  // else
     cutQA = true; // no QA for MC data
 
   // DIS cuts
@@ -713,6 +713,7 @@ Bool_t EventTree::CheckPCALen() {
 
 // sampling fraction (SF) cut, for electrons
 Bool_t EventTree::CheckSampFrac() {
+  return true;
 
   // calorimeter diagonal cut, on PCAL and ECIN SF correlation
   if(eleP<4.5) sfcutDiag=true; // only applies above HTCC threshold
