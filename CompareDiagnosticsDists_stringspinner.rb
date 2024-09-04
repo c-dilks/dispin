@@ -13,8 +13,38 @@ r.gROOT.SetBatch true
 ##################################################################################
 # get the list of files, and decide legend titles and plot styles
 file_list = [
+#   {
+#     :name  => 'plots.rga.inbending.fa18.root',
+#     :title => 'CLAS12 Data',
+#     :id    => 'data',
+#     :color => r.kBlack,
+#     :style => r.kFullCross,
+#     :baseline => true, # baseline plot MUST be first, and there can only be one
+#   },
+#   {
+#     :name  => 'plots.sss.aug24_LU_2.inbending.root',
+#     :title => 'StringSpinner',
+#     :id    => 'sss',
+#     :color => r.kGreen+1,
+#     :style => r.kFullCross,
+#   },
+#   {
+#     :name  => 'plots.mc.richard.inbending.root',
+#     :title => 'CLASDIS Richard',
+#     :id    => 'mc_richard',
+#     :color => r.kBlue,
+#     :style => r.kFullCircle,
+#   },
+#   {
+#     :name  => 'plots.mc.inbending.bg45.root',
+#     :title => 'CLASDIS Old',
+#     :id    => 'mc_old',
+#     :color => r.kOrange-3,
+#     :style => r.kFullSquare,
+#   },
+  ##############
   {
-    :name  => 'plots.rga.inbending.fa18.root',
+    :name  => 'plots.nocuts.rga.inbending.fa18.root',
     :title => 'CLAS12 Data',
     :id    => 'data',
     :color => r.kBlack,
@@ -22,21 +52,21 @@ file_list = [
     :baseline => true, # baseline plot MUST be first, and there can only be one
   },
   {
-    :name  => 'plots.sss.aug24_LU_2.inbending.root',
+    :name  => 'plots.nocuts.sss.aug24_LU_2.inbending.root',
     :title => 'StringSpinner',
     :id    => 'sss',
     :color => r.kGreen+1,
     :style => r.kFullCross,
   },
   {
-    :name  => 'plots.mc.richard.inbending.root',
+    :name  => 'plots.nocuts.mc.richard.inbending.root',
     :title => 'CLASDIS Richard',
     :id    => 'mc_richard',
     :color => r.kBlue,
     :style => r.kFullCircle,
   },
   {
-    :name  => 'plots.mc.inbending.bg45.root',
+    :name  => 'plots.nocuts.mc.inbending.bg45.root',
     :title => 'CLASDIS Old',
     :id    => 'mc_old',
     :color => r.kOrange-3,
@@ -174,7 +204,7 @@ plot_list = {
   'PhiRDist' => {},
   'thetaDist' => {},
   'cosThetaDist' => {},
-  'MmissDist' => {},
+  'MmissDistZoom' => {},
   'YHDist' => {},
   'deltaPhiDist' => {},
   'piPlushadEDist'      => { :subplot_of => 'hadECanv'     },
