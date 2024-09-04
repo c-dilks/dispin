@@ -534,9 +534,10 @@ Bool_t EventTree::Valid() {
     Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) &&
     cutFiducial &&
     cutVertex &&
-    CheckPCALen() &&
-    CheckSampFrac() &&
-    CheckHadChi2pid(qA) && CheckHadChi2pid(qB);
+    ( useStringSpinner || useMCgen || CheckPCALen()   ) &&
+    ( useStringSpinner || useMCgen || CheckSampFrac() ) &&
+    ( useStringSpinner || useMCgen || CheckHadChi2pid(qA) ) &&
+    ( useStringSpinner || useMCgen || CheckHadChi2pid(qB) );
   // return cutQA && cutDIS && cutDihadron && cutHelicity &&
   //        cutFiducial && cutPID && cutVertex && cutFR;
   // NOTE: if you want to disable `cutDihadron`, you likely want to ensure `Tools::PairSame` is still checked
