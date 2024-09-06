@@ -8,6 +8,12 @@ r = PyCall.import_module 'ROOT'
 r.gStyle.SetOptStat 0
 r.gROOT.SetBatch true
 
+if ARGV.size<1
+  $stderr.puts "#{$0} [symmetric/asymmetric]"
+  exit 1
+end
+sym_arg = ARGV[0]
+
 # open trees
 trees = {
   :harut   => r.TTree.new,
@@ -19,11 +25,23 @@ trees = {
 end
 
 # cuts
-cuts = {
-  :harut   => 'TMath::Abs(pipp-pimp) > 1',
-  :timothy => 'TMath::Abs(pipp-pimp) > 1',
-  :chris   => 'evnum < 198878 && TMath::Abs(hadP[0]-hadP[1]) > 1',
+cuts_options = {
+  :symmetric => {
+    :harut   => 'TMath::Abs(pipp-pimp) < 1',
+    :timothy => 'TMath::Abs(pipp-pimp) < 1',
+    :chris   => 'evnum < 198878 && TMath::Abs(hadP[0]-hadP[1]) < 1',
+  },
+  :asymmetric => {
+    :harut   => 'TMath::Abs(pipp-pimp) > 1',
+    :timothy => 'TMath::Abs(pipp-pimp) > 1',
+    :chris   => 'evnum < 198878 && TMath::Abs(hadP[0]-hadP[1]) > 1',
+  },
 }
+cuts = cuts_options[sym_arg.to_sym]
+if cuts.nil?
+  $stderr.puts 'error: bad argument'
+  exit 1
+end
 
 # variables and their ranges
 var_hash = {
@@ -40,7 +58,7 @@ var_hash = {
 # define histograms
 Nbins = 50
 plot_hash = var_hash.keys.map do |var_key|
-  plots = trees.keys.map{ |human| [ human, r.TH1D.new("#{var_key.to_s}__#{human.to_s}", var_key.to_s, Nbins, *var_hash[var_key][:range]) ] }.to_h
+  plots = trees.keys.map{ |human| [ human, r.TH1D.new("#{var_key.to_s}__#{human.to_s}", "#{var_key.to_s} (#{sym_arg})", Nbins, *var_hash[var_key][:range]) ] }.to_h
   plots[:chris].SetLineColor r.kRed
   plots[:harut].SetLineColor r.kGreen+1
   plots[:timothy].SetLineColor r.kBlue
@@ -69,7 +87,7 @@ canv_hash.each do |var_key, canv|
 end
 
 # print PDF
-OutName = 'xcheck.pdf'
+OutName = "xcheck_#{sym_arg}.pdf"
 canv_hash.values.each_with_index do |canv, idx|
   if canv_hash.size == 1
     canv.SaveAs OutName
