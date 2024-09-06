@@ -523,7 +523,7 @@ static Float_t RundepPolarization(Int_t run, Bool_t v=true) {
   else if(run>=11335 && run<=11387) return v? 0.85048 : 0.01530;
   else if(run>=11389 && run<=11571) return v? 0.84262 : 0.01494; // NOTE: table last updated 1/15/2020, but run ended on 1/30
   /* RGC test */
-  else if(run==16333) return 0.80; // just a guess
+  else if(run==16333) return v? 0.80 : 0.02; // just a guess
   /* MC */
   else if(run==RUNNUM_MC)             return v? 0.86 : 0.0; // MC
   else if(run==RUNNUM_STRING_SPINNER) return v? 1.00 : 0.0; // StringSpinner
