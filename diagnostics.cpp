@@ -27,6 +27,7 @@ TString dist2Title(TString hadron, TString varX,TString varY);
 TString infiles;
 TString outfileN;
 Int_t whichPair;
+TString cutVer;
 Int_t whichHad[2];
 TString hadName[2];
 TString hadTitle[2];
@@ -38,14 +39,17 @@ int main(int argc, char** argv) {
    infiles = "outroot/*.root";
    outfileN = "plots.root";
    whichPair = EncodePairType(kPip,kPim);
+   cutVer = "default";
    if(argc==1) {
-     fprintf(stderr,"USAGE: %s [outroot file(s)] [output plots.root file] [pairType]\n",argv[0]);
+     fprintf(stderr,"USAGE: %s [outroot file(s)] [output plots.root file] [pairType] [cutVersion]\n",argv[0]);
+     fprintf(stderr,"\n          [cutVersion] can be 'default' or 'loose' (the default is 'default')\n");
      return 1;
    };
    if(argc>1) infiles = TString(argv[1]);
    if(argc>2) outfileN = TString(argv[2]);
    if(argc>3) whichPair = (Int_t)strtof(argv[3],NULL);
-   
+   if(argc>4) cutVer = TString(argv[4]);
+
    // get hadron pair from whichPair; note that in the print out, the 
    // order of hadron 0 and 1 is set by Constants::dihHadIdx
    printf("whichPair = 0x%x\n",whichPair);
@@ -56,9 +60,10 @@ int main(int argc, char** argv) {
      printf("hadron %d:  idx=%d  name=%s  title=%s\n",
        h,dihHadIdx(whichHad[qA],whichHad[qB],h),hadName[h].Data(),hadTitle[h].Data());
    };
+   printf("cutVer = %s\n", cutVer.Data());
    dihTitle = PairTitle(whichPair);
 
-   EventTree * ev = new EventTree(infiles,whichPair);
+   EventTree * ev = new EventTree(infiles,whichPair,EventTree::ParseCutVersion(cutVer));
 
 
    TFile * outfile = new TFile(outfileN,"RECREATE");

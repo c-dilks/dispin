@@ -6,7 +6,7 @@ using namespace std;
 
 EventTree::EventTree() : qa(std::make_unique<QA::QADB>()) {}
 
-EventTree::EventTree(TString filelist_, Int_t whichPair_) : qa(std::make_unique<QA::QADB>()) {
+EventTree::EventTree(TString filelist_, Int_t whichPair_, CutVersion cutVer_) : qa(std::make_unique<QA::QADB>()), cutVer(cutVer_) {
   printf("EventTree instantiated\n");
 
   debug = true;
@@ -90,8 +90,10 @@ EventTree::EventTree(TString filelist_, Int_t whichPair_) : qa(std::make_unique<
   chain->SetBranchAddress("PhiRp_r",&PhiRp_r);
   chain->SetBranchAddress("PhiRp_g",&PhiRp_g);
 
-  chain->SetBranchAddress("sdmePhiU",&sdmePhiU);
-  chain->SetBranchAddress("sdmePhiL",&sdmePhiL);
+  if(chain->GetBranch("sdmePhiU")) {
+    chain->SetBranchAddress("sdmePhiU",&sdmePhiU);
+    chain->SetBranchAddress("sdmePhiL",&sdmePhiL);
+  }
 
   // diphoton branches
   objDiphoton = new Diphoton();
@@ -528,8 +530,25 @@ void EventTree::GetEvent(Long64_t i) {
 /////////////////////////////////////////////////////////
 // MAIN ANALYSIS CUT
 Bool_t EventTree::Valid() {
-  return cutQA && cutDIS && cutDihadron && cutHelicity &&
-         cutFiducial && cutPID && cutVertex && cutFR;
+  switch(cutVer) {
+    case cutDefault:
+      return cutQA && cutDIS && cutDihadron && cutHelicity && cutFiducial && cutPID && cutVertex && cutFR;
+      break;
+    case cutLoose:
+      return
+        Q2 > 1.0 && W > 2.0 && eleP > 2.0 && hadP[qA] > 2.0 && hadP[qB] > 2.0 && /* skim cuts */
+        cutQA &&
+        Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) &&
+        cutFiducial &&
+        cutVertex &&
+        ( useStringSpinner || useMCgen || CheckPCALen()   ) &&
+        ( useStringSpinner || useMCgen || CheckSampFrac() ) &&
+        ( useStringSpinner || useMCgen || CheckHadChi2pid(qA) ) &&
+        ( useStringSpinner || useMCgen || CheckHadChi2pid(qB) );
+      break;
+    default:
+      throw std::runtime_error("EventTree::Valid(): unknown cut version");
+  }
   // NOTE: if you want to disable `cutDihadron`, you likely want to ensure `Tools::PairSame` is still checked
   //return Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) && cutHelicity; // disable "all" cuts
 };
