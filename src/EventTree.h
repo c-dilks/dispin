@@ -38,8 +38,11 @@
 class EventTree : public TObject
 {
   public:
+
+    enum CutVersion { cutDefault, cutLoose }; // controls the version of cuts
+
     EventTree();
-    EventTree(TString filelist_, Int_t whichPair_=0x34);
+    EventTree(TString filelist_, Int_t whichPair_=0x34, CutVersion cutVer_=CutVersion::cutDefault);
     ~EventTree();
 
     virtual void GetEvent(Long64_t i);
@@ -65,6 +68,16 @@ class EventTree : public TObject
     DIS * GetDISObj();
     Trajectory * GetElectronTraj() { return trEle; };
     Trajectory * GetHadronTraj(Int_t h) { return trHad[h]; };
+
+    // cut version
+    static CutVersion ParseCutVersion(TString s) {
+      if(s == "default")
+        return CutVersion::cutDefault;
+      else if(s == "loose")
+        return CutVersion::cutLoose;
+      else
+        throw std::runtime_error("unknown cut version '" + s + "'");
+    }
 
     //Float_t GetDepolarizationFactorApprox(Char_t kf);
     virtual Float_t GetDepolarizationFactor(Char_t kf);
@@ -262,6 +275,7 @@ class EventTree : public TObject
     Bool_t useStringSpinner;
 
   private:
+    CutVersion cutVer;
     std::unique_ptr<QA::QADB> qa;
     TChain * chain;
     TString filelist;
