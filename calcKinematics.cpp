@@ -297,6 +297,7 @@ int main(int argc, char** argv) {
   outrootTr->Branch("xF",&(dih->xF),"xF/F");
   outrootTr->Branch("alpha",&(dih->alpha),"alpha/F");
   outrootTr->Branch("theta",&(dih->theta),"theta/F");
+  outrootTr->Branch("thetaLI",&(dih->thetaLI),"thetaLI/F");
   outrootTr->Branch("zeta",&(dih->zeta),"zeta/F");
   outrootTr->Branch("Ph",&(dih->PhMag),"Ph/F");
   outrootTr->Branch("PhPerp",&(dih->PhPerpMag),"PhPerp/F");
