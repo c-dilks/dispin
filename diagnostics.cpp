@@ -593,7 +593,7 @@ int main(int argc, char** argv) {
    Int_t hadI[2];
    Float_t alphaDeg;
    for(int i=0; i<ev->ENT; i++) {
-     // if(i>10000) break; // limiter
+     // if(i>100000) break; // limiter
 
      ev->GetEvent(i);
 
@@ -1049,6 +1049,8 @@ int main(int argc, char** argv) {
    symHadYH->Write();
    symHadTheta->Write();
    outfile->cd("/");
+
+   std::cout << "\nFound " << MhDist->GetEntries() << " dihadrons\n\n";
 
    outfile->Close();
 
