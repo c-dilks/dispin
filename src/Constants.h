@@ -449,7 +449,7 @@ static Int_t RundepTorus(Int_t run, TString fileName="") {
   else if(run>=11093 && run<=11283) return kOutbending; // rgb_outbending_fa19
   else if(run>=11284 && run<=11300) return kInbending;  // rgb_BAND_inbending_fa19
   else if(run>=11323 && run<=11571) return kInbending;  // rgb_inbending_wi20
-  else if(run==16333) return kInbending;
+  else if(run==16771) return kInbending;
   else if(run==RUNNUM_MC) {
     if(fileName.Contains("inbending")) return kInbending;
     else if(fileName.Contains("outbending")) return kOutbending;
@@ -475,7 +475,7 @@ static Float_t RundepBeamEn(Int_t run) {
   else if(run>=11093 && run<=11283) return 10.4096; // rgb fall 19
   else if(run>=11284 && run<=11300) return 4.17179; // rgb fall BAND_FT 19
   else if(run>=11323 && run<=11571) return 10.3894; // rgb winter 20 (RCDB may still be incorrect)
-  else if(run==16333) return 10.5473;
+  else if(run==16771) return 10.5473;
   else if(run==RUNNUM_MC)             return DEFAULT_BEAM_ENERGY; // MC for RGA inbending
   else if(run==RUNNUM_STRING_SPINNER) return DEFAULT_BEAM_ENERGY; // StringSpinner
   else {
@@ -493,7 +493,7 @@ static Bool_t RundepHelicityFlip(Int_t run) {
   else if(run>=11093 && run<=11283) return false; // rgb fall 19
   else if(run>=11284 && run<=11300) return true;  // rgb fall BAND_FT 19
   else if(run>=11323 && run<=11571) return false; // rgb winter 20
-  else if(run==16333) return false;
+  else if(run==16771) return false;
   else {
     fprintf(stderr,"ERROR: RundepHelicityFlip unknown for run %d\n",run);
     return false;
@@ -523,7 +523,7 @@ static Float_t RundepPolarization(Int_t run, Bool_t v=true) {
   else if(run>=11335 && run<=11387) return v? 0.85048 : 0.01530;
   else if(run>=11389 && run<=11571) return v? 0.84262 : 0.01494; // NOTE: table last updated 1/15/2020, but run ended on 1/30
   /* RGC test */
-  else if(run==16333) return v? 0.80 : 0.02; // just a guess
+  else if(run==16771) return v? 0.80 : 0.02; // just a guess
   /* MC */
   else if(run==RUNNUM_MC)             return v? 0.86 : 0.0; // MC
   else if(run==RUNNUM_STRING_SPINNER) return v? 1.00 : 0.0; // StringSpinner
