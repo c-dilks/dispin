@@ -9,6 +9,7 @@ Beams:eB = 0.93827  ! Target energy
 
 ! Interaction mechanism.
 WeakBosonExchange:ff2ff(t:gmZ) = on  ! $\gamma*/Z^0$ $t$-channel exchange, with full interference between $\gamma*$ and $Z^0$
+! SoftQCD:all = on
 
 ! Phase-space cut: minimal Q2 of process.
 PhaseSpace:Q2Min = 1.0
@@ -46,7 +47,7 @@ ParticleData:modeBreitWigner=3 ! particles registered as having a mass width are
 
 ! Settings of string fragmentation parameters.
 StringPT:enhancedFraction = 0.0 ! the fraction of string breaks with enhanced width.
-StringPT:enhancedWidth = 0.0    ! the enhancement of the width in this fraction.
+StringPT:enhancedWidth = 1.0    ! the enhancement of the width in this fraction.
 StringZ:aLund = 1.2
 StringZ:bLund = 0.58
 StringFragmentation:stopMass = 0.0  ! minimum mass for string fragmentation, roughly PARJ(33)?

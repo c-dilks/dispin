@@ -116,7 +116,8 @@ int main(int argc, char** argv) {
   }
 
   // Initialize.
-  pythia.init();
+  if(!pythia.init())
+    return 1;
 
 
   ////////////////////////////////////////////////////////////////////

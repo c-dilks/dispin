@@ -43,44 +43,44 @@ file_list = [
 #     :style => r.kFullSquare,
 #   },
   ##############
-  {
-    :name  => 'plots.nocuts.rga.inbending.fa18.root',
-    :title => 'CLAS12 Data',
-    :id    => 'data',
-    :color => r.kBlack,
-    :style => r.kFullCross,
-    :baseline => true, # baseline plot MUST be first, and there can only be one
-  },
-  {
-    :name  => 'plots.nocuts.sss.aug24_LU_2.inbending.root',
-    :title => 'StringSpinner',
-    :id    => 'sss',
-    :color => r.kGreen+1,
-    :style => r.kFullCross,
-  },
-  {
-    :name  => 'plots.nocuts.mc.richard.inbending.root',
-    :title => 'CLASDIS Richard',
-    :id    => 'mc_richard',
-    :color => r.kBlue,
-    :style => r.kFullCircle,
-  },
-  {
-    :name  => 'plots.nocuts.mc.inbending.bg45.root',
-    :title => 'CLASDIS Old',
-    :id    => 'mc_old',
-    :color => r.kOrange-3,
-    :style => r.kFullSquare,
-  },
-  ##### generator level testing #####
   # {
-  #   :name  => 'plots.mcgen.root',
-  #   :title => 'CLASDIS',
-  #   :id    => 'mcgen',
+  #   :name  => 'plots.nocuts.rga.inbending.fa18.root',
+  #   :title => 'CLAS12 Data',
+  #   :id    => 'data',
   #   :color => r.kBlack,
   #   :style => r.kFullCross,
   #   :baseline => true, # baseline plot MUST be first, and there can only be one
   # },
+  # {
+  #   :name  => 'plots.nocuts.sss.aug24_LU_2.inbending.root',
+  #   :title => 'StringSpinner',
+  #   :id    => 'sss',
+  #   :color => r.kGreen+1,
+  #   :style => r.kFullCross,
+  # },
+  # {
+  #   :name  => 'plots.nocuts.mc.richard.inbending.root',
+  #   :title => 'CLASDIS Richard',
+  #   :id    => 'mc_richard',
+  #   :color => r.kBlue,
+  #   :style => r.kFullCircle,
+  # },
+  # {
+  #   :name  => 'plots.nocuts.mc.inbending.bg45.root',
+  #   :title => 'CLASDIS Old',
+  #   :id    => 'mc_old',
+  #   :color => r.kOrange-3,
+  #   :style => r.kFullSquare,
+  # },
+  ##### generator level testing #####
+  {
+    :name  => 'plots.mcgen.root',
+    :title => 'CLASDIS',
+    :id    => 'mcgen',
+    :color => r.kBlack,
+    :style => r.kFullCross,
+    :baseline => true, # baseline plot MUST be first, and there can only be one
+  },
   # { ### test enabling kT
   #   :name  => 'plots.outroot.sss.GLGT_1.4.thetaLT_0.testAandBparams.root',
   #   :title => 'S.S. kT off',
@@ -116,13 +116,20 @@ file_list = [
   #   :color => r.kRed,
   #   :style => r.kFullCircle,
   # },
-  # { ### test PDF sets
-  #   :name  => 'plots.sss.PDF13.root',
-  #   :title => 'S.S. NNPDF2.3 QCD+QED LO #alpha_{s}(M_{Z}) = 0.130',
-  #   :id    => 'pdf13',
-  #   :color => r.kCyan-7,
-  #   :style => r.kFullCircle,
-  # },
+  { ### test PDF sets
+    :name  => 'plots.sss.PDF13.root',
+    :title => 'S.S. NNPDF2.3 QCD+QED LO #alpha_{s}(M_{Z}) = 0.130',
+    :id    => 'pdf13',
+    :color => r.kCyan-7,
+    :style => r.kFullCircle,
+  },
+  { ### test
+    :name  => 'plots.sss.test_new_pythia.root',
+    :title => 'S.S. new pythia',
+    :id    => 'new',
+    :color => r.kGreen+1,
+    :style => r.kFullCircle,
+  },
   # { ### test PDF sets
   #   :name  => 'plots.sss.PDF14.root',
   #   :title => 'S.S. NNPDF2.3 QCD+QED LO #alpha_{s}(M_{Z}) = 0.119',
