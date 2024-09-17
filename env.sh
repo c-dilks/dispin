@@ -24,7 +24,12 @@ popd
 # find pythia
 pythia_search=pythia8-config
 which $pythia_search &&
-  export PYTHIADIR=$(realpath $(dirname $(which $pythia_search))/..) &&
+  # export PYTHIADIR=$(realpath $(dirname $(which $pythia_search))/..) &&
+  export PYTHIADIR=/home/dilks/j/pythia/install
+  export PYTHIA8=$PYTHIADIR
+  export PYTHIA8DATA=$PYTHIADIR/share/Pythia8/xmldoc
+  export LD_LIBRARY_PATH=$PYTHIADIR/lib${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+  export PATH=$PYTHIADIR/bin${PATH:+:${PATH}}
   export STRINGSPINNER=${DISPIN_HOME}/deps/StringSpinner
 
 echo -e "\e[1;35m==============================================\e[0m" >&2
