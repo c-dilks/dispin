@@ -13,6 +13,9 @@
 
 // dispin
 #include "src/Constants.h"
+#include "src/Dihadron.h"
+#include "src/DIS.h"
+#include "src/Trajectory.h"
 
 using namespace Pythia8;
 
@@ -129,6 +132,15 @@ int main(int argc, char** argv) {
   enum parEnum {kEle,kHadA,kHadB,nPar};
   TString parName[nPar] = {"ele", "hadA", "hadB" };
 
+  DIS * disEv = new DIS();
+  disEv->debug = 0;
+  Dihadron * dih = new Dihadron();
+  dih->debug = 0;
+  dih->useBreit = false;
+  Trajectory * traj[nPar];
+  for(int p=0; p<nPar; p++)
+    traj[p] = new Trajectory();
+
   Int_t   runnum, evnum, helicity;
   Int_t   Row[nPar], Pid[nPar];
   Float_t Px[nPar], Py[nPar], Pz[nPar], E[nPar];
@@ -139,6 +151,8 @@ int main(int argc, char** argv) {
   Int_t   genParentIdx[nPar];
   Int_t   genParentPid[nPar];
   Float_t Q2, W, x, y;
+  Float_t beamE, targetE;
+  Float_t beamPz, targetPz;
 
   auto SetParticleBranch = [&tr] (TString parStr, TString brName, void *brAddr, TString type) {
     TString fullBrName = parStr + TString("_") + brName;
@@ -168,6 +182,11 @@ int main(int argc, char** argv) {
   tr->Branch("SS_W",  &W,  "SS_W/F");
   tr->Branch("SS_x",  &x,  "SS_x/F");
   tr->Branch("SS_y",  &y,  "SS_y/F");
+  tr->Branch("Mmiss", &(dih->Mmiss), "Mmiss/F");
+  tr->Branch("beamE", &beamE, "beamE/F");
+  tr->Branch("targetE", &targetE, "targetE/F");
+  tr->Branch("beamPz", &beamPz, "beamPz/F");
+  tr->Branch("targetPz", &targetPz, "targetPz/F");
 
   // decode pairType
   Int_t h0, h1;
@@ -179,6 +198,7 @@ int main(int argc, char** argv) {
   }
   cout << "Selecting dihadrons with PIDs (" << whichPIDs[qA] << ", " << whichPIDs[qB] << ")" << endl;
   auto elePID = PartPID(kE);
+
 
   ////////////////////////////////////////////////////////////////////
   // EVENT LOOP
@@ -204,9 +224,27 @@ int main(int argc, char** argv) {
     std::vector<Int_t> hadRowList[2];
     Row[kEle] = -1;
     double eleE = 0;
+    beamE = -1;
+    targetE = -1;
     for(int row = 0; row < EV.size(); ++row) {
       auto par = EV[row];
-      if(!par.isFinal()) continue;
+      if(!par.isFinal()) {
+        if(par.status() == -12) {
+          switch(par.id()) {
+            case 11:
+              beamE = par.e();
+              beamPz = par.pz();
+              break;
+            case 2212:
+              targetE = par.e();
+              targetPz = par.pz();
+              break;
+            default:
+              cerr << "ERROR: unknown beam particle with PDG = " << par.id() << endl;
+          }
+        }
+        continue;
+      }
       if(par.id() == elePID) {
         if(par.e() > eleE) {
           eleE      = par.e();
@@ -274,6 +312,21 @@ int main(int argc, char** argv) {
             }
           }
         }
+        disEv->ResetVars();
+        dih->ResetVars();
+        disEv->SetBeamEnFromRun(runnum);
+        for(int p=0; p<nPar; p++) {
+          traj[p]->Row = Row[p];
+          traj[p]->Idx = PIDtoIdx(Pid[p]);
+          traj[p]->Momentum.SetPxPyPzE(Px[p],Py[p],Pz[p],E[p]);
+          traj[p]->Vertex.SetXYZ(Vx[p],Vy[p],Vz[p]);
+          traj[p]->chi2pid = chi2pid[p];
+          traj[p]->Status = status[p];
+          traj[p]->Beta = beta[p];
+        }
+        disEv->CalculateKinematics(traj[kEle]);
+        dih->CalculateKinematics(traj[kHadA], traj[kHadB], disEv);
+        // if(dih->Mmiss < 0.98) EV.list();
         tr->Fill();
       }
     }

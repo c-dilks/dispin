@@ -5,7 +5,15 @@ Beams:frameType = 2 ! the beams are back-to-back, but with different energies
 Beams:idA = 11      ! BeamA = electron beam
 Beams:idB = 2212    ! BeamB = proton target
 Beams:eA = 10.60410 ! Beam energy
-Beams:eB = 0.93827  ! Target energy
+Beams:eB = 0.0      ! Target energy (zero for fixed target, NOT the target mass)
+
+! Beams:allowMomentumSpread = off
+! Beams:allowVertexSpread = off
+! Beams:allowVariableEnergy = off
+! Beams:eWidthPert = 1.0
+! Beams:maxDevA = 0.0
+! Beams:maxDevB = 0.0
+! Beams:maxDevTime = 0.0
 
 ! Interaction mechanism.
 WeakBosonExchange:ff2ff(t:gmZ) = on  ! $\gamma*/Z^0$ $t$-channel exchange, with full interference between $\gamma*$ and $Z^0$
@@ -79,4 +87,4 @@ StringSpinner:thetaLT = 0  ! free parameter arg(GL/GT)
 ! Switch off automatic event listing in favour of manual.
 Next:numberShowInfo = 0
 Next:numberShowProcess = 0
-Next:numberShowEvent = 1
+Next:numberShowEvent = 0
