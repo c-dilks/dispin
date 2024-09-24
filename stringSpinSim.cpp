@@ -64,8 +64,8 @@ int main(int argc, char** argv) {
 
   Pythia pythia;
   Event& EV = pythia.event;
-  auto fhooks = std::make_shared<SimpleStringSpinner>();
-  fhooks->plugInto(pythia);
+  // auto fhooks = std::make_shared<SimpleStringSpinner>();
+  // fhooks->plugInto(pythia);
 
   // load steering file
   pythia.readFile("stringSpinSim.cmnd");
@@ -121,8 +121,8 @@ int main(int argc, char** argv) {
       case -1: polStr = "0.0,0.0,1.0";  break; // minus sign, since quark momentum is reversed after hard scattering
     }
     std::vector<std::string> quarks = {"u", "d", "s", "ubar", "dbar", "sbar"};
-    for(auto quark : quarks)
-      pythia.readString("StringSpinner:" + quark + "Polarisation = " + polStr);
+    // for(auto quark : quarks)
+    //   pythia.readString("StringSpinner:" + quark + "Polarisation = " + polStr);
   }
   if(targetPolarized) {
     SNucleon.p(0.0, 0.0, (double)targetSpin, 0.0);
@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
       case 1:  polStr = "0.0,0.0,1.0";  break;
       case -1: polStr = "0.0,0.0,-1.0"; break;
     }
-    pythia.readString("StringSpinner:targetPolarisation = " + polStr);
+    // pythia.readString("StringSpinner:targetPolarisation = " + polStr);
   }
 
   // Initialize.
@@ -276,7 +276,23 @@ int main(int argc, char** argv) {
     if(Row[kEle] == -1 || hadRowList[qA].empty() || hadRowList[qB].empty())
       continue;
 
-    EV.list();
+    // Pythia8::Vec4 vecBeam{0, 0, 10.60410, std::hypot(10.60410, 0.000511)};
+    // Pythia8::Vec4 vecTarget{0, 0, 0, 0.938};
+    // auto b = vecBeam+vecTarget;
+
+    // double pz_beam   = 10.60410;
+    // double pz_target = 0;
+    // double e_beam    = std::hypot(10.60410, 0.000511);
+    // double e_target  = 0.938;
+    //
+    // auto eCM = std::sqrt(std::pow(e_beam+e_target,2) - std::pow(pz_beam+pz_target, 2));
+    // auto betaZ = (pz_beam + pz_target) / (e_beam + e_target);
+    // auto gammaZ = (e_beam + e_target) / eCM;
+
+    // EV.bst(0., 0., betaZ, gammaZ);
+
+
+    EV.list(true, true, 3);
 
     // hadron pairing and tree filling
     for(auto iA : hadRowList[qA]) {

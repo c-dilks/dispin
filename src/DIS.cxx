@@ -63,6 +63,9 @@ void DIS::CalculateKinematics(Trajectory * tr) {
 
   // compute W
   vecW = vecBeam + vecTarget - vecElectron;
+  std::cout << "vecTarget: "; vecTarget.Print();
+  std::cout << "vecBeam: "; vecBeam.Print();
+  std::cout << "vecElectron: "; vecElectron.Print();
   W = vecW.M();
 
 
