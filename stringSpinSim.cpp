@@ -74,6 +74,21 @@ int main(int argc, char** argv) {
   pythia.readString("Random:setSeed = on");
   pythia.readString("Random:seed = " + std::to_string(seed));
 
+  // beam energy testing
+  /*
+  Pythia8::ParticleData& pdt = pythia.particleData;
+  double eNucleon = pdt.m0( 2212 );  // Target: proton
+  double pLepton  = 200; //10.60410;
+  double mLepton  = pdt.m0( 11 ); // electrons
+  double eLepton  = sqrt(pow(pLepton,2) + pow(mLepton,2));
+  cout << "NEW eLepton = " << eLepton << endl;
+  cout << "NEW eNucleon = " << eNucleon << endl;
+  // pythia.readString("Beams:eA = " + std::to_string(eLepton));
+  // pythia.readString("Beams:eB = " + std::to_string(eNucleon));
+  pythia.settings.parm("Beams:eA", eLepton);
+  pythia.settings.parm("Beams:eB", 5*eNucleon);
+  */
+
   // Choose to assign polarisations.
   int beamSpin, targetSpin;
   bool beamPolarized   = false;
@@ -261,6 +276,8 @@ int main(int argc, char** argv) {
     if(Row[kEle] == -1 || hadRowList[qA].empty() || hadRowList[qB].empty())
       continue;
 
+    EV.list();
+
     // hadron pairing and tree filling
     for(auto iA : hadRowList[qA]) {
       for(auto iB : hadRowList[qB]) {
@@ -326,10 +343,15 @@ int main(int argc, char** argv) {
         }
         disEv->CalculateKinematics(traj[kEle]);
         dih->CalculateKinematics(traj[kHadA], traj[kHadB], disEv);
-        // if(dih->Mmiss < 0.98) EV.list();
+        cout << "  e- row = " << Row[kEle]
+             << "  pi+ row = " << Row[kHadA]
+             << "  pi- row = " << Row[kHadB]
+             << "  M_X = " << dih->Mmiss
+             << endl;
         tr->Fill();
       }
     }
+    cout << "\n\n\n";
 
   } // end EVENT LOOP
 
