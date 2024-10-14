@@ -23,6 +23,11 @@ DEPS = -I$(shell root-config --incdir)
 LIBS = $(shell root-config --glibs)
 LIBS += -lMinuit -lRooFitCore -lRooFit -lRooStats -lProof -lMathMore
 
+# HIPO
+$(if $(shell if pkg-config hipo4; then echo HIPO found; fi), , $(error HIPO not found))
+DEPS += $(shell pkg-config hipo4 --cflags)
+LIBS += $(shell pkg-config hipo4 --libs)
+
 # BruFit
 DEPS += -I$(BRUFIT)/core
 LIBS += -L$(BRUFIT)/lib -lbrufit
