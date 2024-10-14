@@ -83,7 +83,7 @@ static TString PartTitle(Int_t p) {
     case kDiph: return "#gamma#gamma";
     case kDiphBasic: return "#gamma#gamma_{basic}";
     case kPioBG: return "#pi^{0}_{BG}";
-    case kNix: return "";
+    case kNix: return "nix";
     default:
       fprintf(stderr,"ERROR: bad PartTitle request\n");
       return "unknown";

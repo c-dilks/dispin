@@ -544,11 +544,17 @@ void EventTree::GetEvent(Long64_t i) {
 
   // dihadron cuts
   /* (note: PairSame ensures we have the correct channel, e.g., pi+pi-) */
-  cutDihadron =
-    Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) &&
-    Zpair < 0.95 && /* legacy; redundant with Mx>1.5 */
-    CheckMissingMass()
-    ;
+  if(singleHadronMode) {
+    cutDihadron =
+      hadIdx[qS] == whichHad[qS] &&
+      Z[qS] < 0.95 &&
+      CheckMissingMass();
+  } else {
+    cutDihadron =
+      Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) &&
+      Zpair < 0.95 && /* legacy; redundant with Mx>1.5 */
+      CheckMissingMass();
+  }
 
 
   // vertex cuts
