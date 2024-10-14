@@ -13,8 +13,25 @@ EventTree::EventTree(TString filelist_, Int_t whichPair_, CutVersion cutVer_) : 
 
   filelist = filelist_;
   DecodePairType(whichPair_,whichHad[qA],whichHad[qB]);
-  printf("\n>>> DIHADRON SELECTION: %s\n\n",PairName(whichHad[qA],whichHad[qB]).Data());
 
+  if(whichHad[qA] == kNix && whichHad[qB] != kNix) {
+    qNix             = qA;
+    qS               = qB;
+    singleHadronMode = true;
+  }
+  else if(whichHad[qA] != kNix && whichHad[qB] == kNix) {
+    qS               = qA;
+    qNix             = qB;
+    singleHadronMode = true;
+  }
+  else if(whichHad[qA] == kNix && whichHad[qB] == kNix) {
+    throw std::runtime_error("both hadrons can't be 'nix'");
+  }
+  else {
+    singleHadronMode = false;
+  }
+  if(singleHadronMode) printf("\n>>> SINGLE HADRON SELECTION: %s\n\n",PartName(whichHad[qS]).Data());
+  else                 printf("\n>>> DIHADRON SELECTION: %s\n\n",PairName(whichHad[qA],whichHad[qB]).Data());
 
   printf("reading tree chain from %s\n",filelist.Data());
   chain = new TChain("tree");
@@ -390,6 +407,54 @@ void EventTree::GetEvent(Long64_t i) {
   if(Mmiss<0) Mmiss *= -1;
 
 
+  /**************************************/
+  /* handle single-hadron mode          */
+  /**************************************/
+
+  // if single-hadron mode, convert all the dihadron kinematics (e.g. phiH) to single-hadron kinematics
+  cutSingleHadMode = true;
+  if(singleHadronMode) {
+    if(evnum != evnumTmp) {
+      uniqSingleHadList.clear();
+      evnumTmp = evnum;
+    }
+    if(uniqSingleHadList.find(hadRow[qS]) != uniqSingleHadList.end()) {
+      cutSingleHadMode = false;
+    }
+    else {
+      cutSingleHadMode = true;
+      uniqSingleHadList.insert(hadRow[qS]);
+      singleHadVec.SetPtEtaPhiE(
+          hadPt[qS],
+          hadEta[qS],
+          hadPhi[qS],
+          hadE[qS]
+          );
+      Mh      = singleHadVec.M();
+      Zpair   = Z[qS];
+      PhiH    = hadPhiH[qS];
+      Mmiss   = std::abs((objDIS->vecBeam + objDIS->vecTarget - objDIS->vecElectron - objDihadron->vecHad[qS]).M());
+      xF      = hadXF[qS];
+      alpha   = UNDEF;
+      YH      = hadYH[qS];
+      YCM     = hadYCM[qS];
+      zeta    = UNDEF;
+      theta   = UNDEF;
+      Ph      = hadP[qS];
+      PhPerp  = hadPperp[qS];
+      PhEta   = hadEta[qS];
+      PhPhi   = hadPhi[qS];
+      R       = UNDEF;
+      RPerp   = UNDEF;
+      RT      = UNDEF;
+      PhiR    = UNDEF;
+      PhiRq   = UNDEF;
+      PhiRp   = UNDEF;
+      PhiRp_r = UNDEF;
+      PhiRp_g = UNDEF;
+    }
+  }
+
 
   /**************************************/
   /* cut definitions                    */
@@ -409,26 +474,27 @@ void EventTree::GetEvent(Long64_t i) {
 
 
   // fragmentation region (FR) cuts
-  yhb = 0.0; // y_h bound for TFR/CFR separation
-  // Breit frame rapidity cuts
-  for(int h=0; h<2; h++) {
-    cutCFR[h] = hadYH[h] > yhb;
-    cutTFR[h] = hadYH[h] < -yhb;
-  };
-  /*for(int h=0; h<2; h++) { // Prokudin cuts:
-    cutCFR[h] = hadQt[h]<2 && Z[h]>0.2;
-    cutTFR[h] = hadQt[h]>1 &&
-      ( (x<0.45 && Z[h]<0.1) || (x>=0.45 && Z[h]<0.3) );
-  };*/
-  cutFR = hadXF[qA]>0 && hadXF[qB]>0; // PRL CFR
-  //cutFR = true; // bypass
-  //cutFR = cutCFR[qA] && cutCFR[qB]; // CFR/CFR
-  //cutFR = cutCFR[qA] && cutTFR[qB]; // CFR/TFR
-  //cutFR = cutTFR[qA] && cutCFR[qB]; // TFR/CFR
-  //cutFR = cutTFR[qA] && cutTFR[qB]; // TFR/TFR
-  //cutFR = hadXF[qA]<0 && hadXF[qB]<0; // xF<0 region
-  //cutFR = cutCFR[qA]; // pi+ in CFR, pi- no cut
-  //cutFR = Zpair>0.4; // try to look at decays from CFR rhos
+  if(singleHadronMode) cutFR = hadXF[qS]>0;
+  else                 cutFR = hadXF[qA]>0 && hadXF[qB]>0; // PRL CFR
+  // yhb = 0.0; // y_h bound for TFR/CFR separation
+  // // Breit frame rapidity cuts
+  // for(int h=0; h<2; h++) {
+  //   cutCFR[h] = hadYH[h] > yhb;
+  //   cutTFR[h] = hadYH[h] < -yhb;
+  // };
+  // /*for(int h=0; h<2; h++) { // Prokudin cuts:
+  //   cutCFR[h] = hadQt[h]<2 && Z[h]>0.2;
+  //   cutTFR[h] = hadQt[h]>1 &&
+  //     ( (x<0.45 && Z[h]<0.1) || (x>=0.45 && Z[h]<0.3) );
+  // };*/
+  // //cutFR = true; // bypass
+  // //cutFR = cutCFR[qA] && cutCFR[qB]; // CFR/CFR
+  // //cutFR = cutCFR[qA] && cutTFR[qB]; // CFR/TFR
+  // //cutFR = cutTFR[qA] && cutCFR[qB]; // TFR/CFR
+  // //cutFR = cutTFR[qA] && cutTFR[qB]; // TFR/TFR
+  // //cutFR = hadXF[qA]<0 && hadXF[qB]<0; // xF<0 region
+  // //cutFR = cutCFR[qA]; // pi+ in CFR, pi- no cut
+  // //cutFR = Zpair>0.4; // try to look at decays from CFR rhos
 
 
   // diphoton cuts and classification
@@ -493,8 +559,10 @@ void EventTree::GetEvent(Long64_t i) {
 
   // fiducial cuts
   // - note: status is required to be in FD, as a prerequisite
-  if(!useStringSpinner && !useMCgen)
-    cutFiducial = eleFiduCut && hadFiduCut[qA] && hadFiduCut[qB];
+  if(!useStringSpinner && !useMCgen) {
+    if(singleHadronMode)  cutFiducial = eleFiduCut && hadFiduCut[qS];
+    else                  cutFiducial = eleFiduCut && hadFiduCut[qA] && hadFiduCut[qB];
+  }
   else
     cutFiducial = true; // generated data have no detector info, ignore this cut
 
@@ -516,7 +584,8 @@ void EventTree::GetEvent(Long64_t i) {
       hadP[h] > minP[h] && /* minimum P cut only for charged hadrons */
       ( useStringSpinner || useMCgen || CheckHadChi2pid(h) ); /* refined hadron chi2pid cut */
   };
-  cutPID = cutElePID && cutHadPID[qA] && cutHadPID[qB];
+  if(singleHadronMode) cutPID = cutElePID && cutHadPID[qS];
+  else                 cutPID = cutElePID && cutHadPID[qA] && cutHadPID[qB];
 
 
   // check if helicity is defined
@@ -532,7 +601,7 @@ void EventTree::GetEvent(Long64_t i) {
 Bool_t EventTree::Valid() {
   switch(cutVer) {
     case cutDefault:
-      return cutQA && cutDIS && cutDihadron && cutHelicity && cutFiducial && cutPID && cutVertex && cutFR;
+      return cutQA && cutDIS && cutDihadron && cutHelicity && cutFiducial && cutPID && cutVertex && cutFR && cutSingleHadMode;
       break;
     case cutLoose:
       return
@@ -541,6 +610,7 @@ Bool_t EventTree::Valid() {
         Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) &&
         cutFiducial &&
         cutVertex &&
+        cutSingleHadMode &&
         ( useStringSpinner || useMCgen || CheckPCALen()   ) &&
         ( useStringSpinner || useMCgen || CheckSampFrac() ) &&
         ( useStringSpinner || useMCgen || CheckHadChi2pid(qA) ) &&
@@ -681,7 +751,8 @@ Bool_t EventTree::CheckVertex() {
   for(int h=0; h<2; h++) {
     vzdiff[h] = TMath::Abs(hadVertex[h][eZ]-eleVertex[eZ]);
   };
-  vzdiffBool = vzdiff[qA] < 20 && vzdiff[qB] < 20;
+  if(singleHadronMode) vzdiffBool = vzdiff[qS] < 20;
+  else                 vzdiffBool = vzdiff[qA] < 20 && vzdiff[qB] < 20;
 
   // full boolean:
   return vzBoolEle && vzdiffBool;
@@ -695,6 +766,8 @@ Bool_t EventTree::CheckVertex() {
 
 // check missing mass cut (which can depend on channel)
 Bool_t EventTree::CheckMissingMass() {
+  if(singleHadronMode)
+    return Mmiss>1.5; // single hadron
   if(Tools::PairSame(hadIdx[qA],hadIdx[qB],kPip,kPim))
     return Mmiss>1.5; // pi+,pi-
   else if(Tools::PairSame(hadIdx[qA],hadIdx[qB],kP,kPip))
