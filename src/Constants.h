@@ -42,6 +42,7 @@ enum particle_enum {
   kDiph,
   kDiphBasic,
   kPioBG,
+  kNix,
   nParticles
 };
 
@@ -61,7 +62,8 @@ static TString PartName(Int_t p) {
     case kDiph: return "diphoton";
     case kDiphBasic: return "diphotonBasic";
     case kPioBG: return "pi0bg";
-    default: 
+    case kNix: return "nix";
+    default:
       fprintf(stderr,"ERROR: bad PartName request\n");
       return "unknown";
   };
@@ -81,7 +83,8 @@ static TString PartTitle(Int_t p) {
     case kDiph: return "#gamma#gamma";
     case kDiphBasic: return "#gamma#gamma_{basic}";
     case kPioBG: return "#pi^{0}_{BG}";
-    default: 
+    case kNix: return "";
+    default:
       fprintf(stderr,"ERROR: bad PartTitle request\n");
       return "unknown";
   };
@@ -103,7 +106,8 @@ static Int_t PartPID(Int_t p) {
     case kDiph: return UNDEF; // (no PID)
     case kDiphBasic: return UNDEF; // (no PID)
     case kPioBG: return UNDEF; // (no PID)
-    default: 
+    case kNix: return 0;
+    default:
       fprintf(stderr,"ERROR: bad PartPID request\n");
       return UNDEF;
   };
@@ -130,7 +134,8 @@ static Float_t PartMass(Int_t p) {
     case kDiph: return UNDEF; // (use Diphoton class instead)
     case kDiphBasic: return UNDEF; // (use Diphoton class instead)
     case kPioBG: return UNDEF; // (use Diphoton class instead)
-    default: 
+    case kNix: return 0.0;
+    default:
       fprintf(stderr,"ERROR: bad PartMass request\n");
       return UNDEF;
   };
@@ -150,7 +155,8 @@ static Int_t PartCharge(Int_t p) {
     case kDiph: return 0;
     case kDiphBasic: return 0;
     case kPioBG: return 0;
-    default: 
+    case kNix: return 0;
+    default:
       fprintf(stderr,"ERROR: bad PartCharge request\n");
       return UNDEF;
   };
@@ -172,7 +178,8 @@ static Int_t PartColor(Int_t p) {
     case kDiph: return kMagenta;
     case kDiphBasic: return kMagenta;
     case kPioBG: return kViolet;
-    default: 
+    case kNix: return kGray;
+    default:
       fprintf(stderr,"ERROR: bad PartColor request\n");
       return kBlack;
   };
@@ -192,7 +199,8 @@ static TString PartColorName(Int_t p) {
     case kDiph: return "magenta";
     case kDiphBasic: return "magenta";
     case kPioBG: return "violet";
-    default: 
+    case kNix: return "gray";
+    default:
       fprintf(stderr,"ERROR: bad PartColor request\n");
       return "black";
   };

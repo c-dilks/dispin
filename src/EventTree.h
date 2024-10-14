@@ -192,7 +192,7 @@ class EventTree : public TObject
     ///////////////////////////
     //   EventCuts
     ///////////////////////////
-    Bool_t cutQ2,cutW,cutY,cutDIS,cutFR,cutQA;
+    Bool_t cutQ2,cutW,cutY,cutDIS,cutFR,cutQA,cutSingleHadMode;
     Bool_t cutCFR[2];
     Bool_t cutTFR[2];
     Bool_t cutDihadron;
@@ -303,6 +303,13 @@ class EventTree : public TObject
     Float_t minP[2];
 
     Bool_t hasBeamE;
+
+    Bool_t singleHadronMode{false}; // true if we are doing single-hadron SIDIS
+    Int_t qS{-1};   // the index (0 or 1) of the single hadron, when singleHadronMode==true
+    Int_t qNix{-1}; // the index (0 or 1) of the other hadron (of the dihadron) that we don't care about, when singleHadronMode==true
+    std::set<Int_t> uniqSingleHadList{}; // list of row numbers of single hadrons
+    decltype(evnum) evnumTmp{-1};
+    TLorentzVector singleHadVec;
 
   ClassDef(EventTree,1);
 };
