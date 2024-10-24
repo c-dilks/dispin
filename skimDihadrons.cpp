@@ -3,6 +3,7 @@
 #include <mutex>
 
 #include <hipo4/reader.h>
+#include <iguana/algorithms/AlgorithmSequence.h>
 
 #include <TFile.h>
 
@@ -29,8 +30,6 @@ int main(int argc, char** argv) {
 
   // OPTIONS ///////////////////////////////////////////////////////////////////////
   bool const verbose = false;
-  std::vector<particle_enum> const hadronAnaList       = { kPip, kPim };
-  std::vector<particle_enum> const singleHadronAnaList = { kP };
   //////////////////////////////////////////////////////////////////////////////////
 
   // define output ROOT file
@@ -96,22 +95,21 @@ int main(int argc, char** argv) {
     bankNamesList.push_back(name);
   hipo::banklist hipoBanks = hipoReader.getBanks(bankNamesList);
 
-  // build list of dihadrons' PDGs
-  std::vector<std::pair<int,int>> dihadronAnaList;
-  for(auto const idxA : hadronAnaList) {
-    for(auto const idxB : hadronAnaList) {
-      if(CorrectOrder(idxA, idxB)) {
-        dihadronAnaList.push_back({idxA, idxB});
-      }
-    }
-  }
-  std::cout << "ANALYSING THE FOLLOWING DIHADRONS:" << std::endl;
-  for(auto const& [idxA, idxB] : dihadronAnaList)
-    std::cout << " - " << PartName(idxA) << ", " << PartName(idxB) << std::endl;
-  std::cout << "ANALYSING THE FOLLOWING SINGLE HADRONS:" << std::endl;
-  for(auto const& idx : singleHadronAnaList)
-    std::cout << " - " << PartName(idx) << std::endl;
-  return 0;
+
+  // ==================================================================================
+  // setup iguana
+  // ==================================================================================
+
+  iguana::AlgorithmSequence iguanaSeq;
+  iguanaSeq.Add("physics::InclusiveKinematics");
+  iguanaSeq.Add("physics::DihadronKinematics");
+  iguanaSeq.Add("physics::SingleHadronKinematics");
+
+  // iguanaSeq.SetOption("physics::InclusiveKinematics", "log", "debug"); // NOTE: use the config file instead
+  iguanaSeq.SetConfigFileForEachAlgorithm("iguana_config.yaml"); // FIXME: assumes PWD has this file
+
+  iguanaSeq.Start(hipoBanks);
+
 
 
   // ==================================================================================
@@ -121,17 +119,21 @@ int main(int argc, char** argv) {
   unsigned long evCount = 0;
   while(hipoReader.next(hipoBanks)) {
     evCount++;
-    if(evCount>500) { std::cout << "stopping prematurely (limiter)" << std::endl; break; } // limiter
+    // if(evCount>500) { std::cout << "stopping prematurely (limiter)" << std::endl; break; } // limiter
     if(evCount % 100000 == 0) std::cout << "read " << evCount << " events" << std::endl;
 
     // get event-level information
-    int helicity = hipoBanks.at(b_event).getByte("helicity", 0);
-    int runnum   = hipoBanks.at(b_config).getInt("run", 0);
-    int evnum    = hipoBanks.at(b_config).getInt("event", 0);
+    int runnum = hipoBanks.at(b_config).getInt("run", 0);
+    int evnum  = hipoBanks.at(b_config).getInt("event", 0);
     std::call_once(print_once, [runnum]() { std::cout << "ANALYZING RUN " << runnum << std::endl; });
+
+    // iguana
+    iguanaSeq.Run(hipoBanks);
 
   }
 
+  // cleanup
+  iguanaSeq.Stop();
   diskimFile->Close();
   return 0;
 }
