@@ -1,13 +1,19 @@
 #include <string>
 #include <filesystem>
-#include <mutex>
+#include <cassert>
 
+// hipo
 #include <hipo4/reader.h>
+
+// iguana
 #include <iguana/algorithms/AlgorithmSequence.h>
 
+// ROOT
 #include <TFile.h>
 #include <TTree.h>
+#include <Math/Vector4D.h>
 
+// dispin
 #include "src/Tools.h"
 #include "src/Constants.h"
 
@@ -75,6 +81,7 @@ int main(int argc, char** argv) {
     "RUN::config",
     "REC::Particle",
     "REC::Calorimeter",
+    "REC::Scintillator",
     "REC::Track",
     "REC::Traj"
   };
@@ -91,11 +98,11 @@ int main(int argc, char** argv) {
   // ==================================================================================
 
   iguana::AlgorithmSequence iguanaSeq;
+  iguanaSeq.Add("clas12::SectorFinder");
   iguanaSeq.Add("physics::InclusiveKinematics");
   iguanaSeq.Add("physics::DihadronKinematics");
   iguanaSeq.Add("physics::SingleHadronKinematics");
 
-  // iguanaSeq.SetOption("physics::InclusiveKinematics", "log", "debug"); // NOTE: use the config file instead
   iguanaSeq.SetConfigFileForEachAlgorithm("iguana_config.yaml"); // FIXME: assumes PWD has this file
 
   iguanaSeq.Start(hipoBanks);
@@ -116,6 +123,7 @@ int main(int argc, char** argv) {
   auto b_mc_particle = useMCrec ? hipo::getBanklistIndex(hipoBanks, "MC::Particle") : 0;
   auto b_mc_lund     = useMCrec ? hipo::getBanklistIndex(hipoBanks, "MC::Lund") : 0;
   //// output banks
+  auto b_sector_finder     = hipo::getBanklistIndex(hipoBanks, "REC::Particle::Sector");
   auto b_inclusive_kin     = hipo::getBanklistIndex(hipoBanks, "physics::InclusiveKinematics");
   auto b_dihadron_kin      = hipo::getBanklistIndex(hipoBanks, "physics::DihadronKinematics");
   auto b_single_hadron_kin = hipo::getBanklistIndex(hipoBanks, "physics::SingleHadronKinematics");
@@ -130,7 +138,12 @@ int main(int argc, char** argv) {
   std::cout << "OUTPUT FILE: " << outputFileName  << std::endl;
   auto outputFile = new TFile(outputFileName , "RECREATE");
 
+  // OUTROOT TREE BRANCHES
   auto tr = new TTree("tree", "tree");
+  // - event-level branches
+  Int_t runnum{0};   tr->Branch("runnum",   &runnum,   "runnum/I");
+  Int_t evnum{0};    tr->Branch("evnum",    &evnum,    "evnum/I");
+  Int_t helicity{0}; tr->Branch("helicity", &helicity, "helicity/I");
   // - DIS kinematics branches
   Float_t W{0};     tr->Branch("W",     &W,     "W/F");
   Float_t Q2{0};    tr->Branch("Q2",    &Q2,    "Q2/F");
@@ -139,6 +152,7 @@ int main(int argc, char** argv) {
   Float_t y{0};     tr->Branch("y",     &y,     "y/F");
   Float_t beamE{0}; tr->Branch("beamE", &beamE, "beamE/F");
   // - electron kinematics branches
+  Int_t   eleRow{0};           tr->Branch("eleRow",     &eleRow,     "eleRow/I");
   Float_t eleE{0};             tr->Branch("eleE",       &eleE,       "eleE/F");
   Float_t eleP{0};             tr->Branch("eleP",       &eleP,       "eleP/F");
   Float_t elePt{0};            tr->Branch("elePt",      &elePt,      "elePt/F");
@@ -193,10 +207,6 @@ int main(int argc, char** argv) {
   // -- SDME kinematics
   Float_t sdmePhiU{0}; tr->Branch("sdmePhiU", &sdmePhiU, "sdmePhiU/F");
   Float_t sdmePhiL{0}; tr->Branch("sdmePhiL", &sdmePhiL, "sdmePhiL/F");
-  // - event-level branches
-  Int_t runnum{0};   tr->Branch("runnum",   &runnum,   "runnum/I");
-  Int_t evnum{0};    tr->Branch("evnum",    &evnum,    "evnum/I");
-  Int_t helicity{0}; tr->Branch("helicity", &helicity, "helicity/I");
   // - MC branches
   // --- generated DIS kinematics branches
   Float_t gen_W{0};  if(useMCrec) tr->Branch("gen_W",  &gen_W,  "gen_W/F");
@@ -256,26 +266,94 @@ int main(int argc, char** argv) {
   // ==================================================================================
   // event loop
   // ==================================================================================
-  std::once_flag print_once;
   unsigned long evCount = 0;
   while(hipoReader.next(hipoBanks)) {
     evCount++;
     // if(evCount>500) { std::cout << "stopping prematurely (limiter)" << std::endl; break; } // limiter
     if(evCount % 100000 == 0) std::cout << "read " << evCount << " events" << std::endl;
 
-    // get event-level information
-    int runnum = hipoBanks.at(b_config).getInt("run", 0);
-    int evnum  = hipoBanks.at(b_config).getInt("event", 0);
-    std::call_once(print_once, [runnum]() { std::cout << "ANALYZING RUN " << runnum << std::endl; });
-
     // iguana
     iguanaSeq.Run(hipoBanks);
 
+    // banks
+    auto const& bank_config            = hipoBanks.at(b_config);
+    auto const& bank_event             = hipoBanks.at(b_event);
+    auto const& bank_particle          = hipoBanks.at(b_particle);
+    auto const& bank_calorimeter       = hipoBanks.at(b_calorimeter);
+    auto const& bank_sector_finder     = hipoBanks.at(b_sector_finder);
+    auto const& bank_inclusive_kin     = hipoBanks.at(b_inclusive_kin);
+    auto const& bank_dihadron_kin      = hipoBanks.at(b_dihadron_kin);
+    auto const& bank_single_hadron_kin = hipoBanks.at(b_single_hadron_kin);
+
+    // get event-level information
+    if(bank_config.getRows() == 0 || bank_event.getRows() == 0)
+      continue;
+    runnum   = bank_config.getInt("run", 0);
+    evnum    = bank_config.getInt("event", 0);
+    helicity = bank_event.getByte("helicity", 0);
+
+    // get inclusive info
+    if(bank_inclusive_kin.getRows() == 0)
+      continue;
+    W     = bank_inclusive_kin.getDouble("W", 0);
+    Q2    = bank_inclusive_kin.getDouble("Q2", 0);
+    Nu    = bank_inclusive_kin.getDouble("nu", 0);
+    x     = bank_inclusive_kin.getDouble("x", 0);
+    y     = bank_inclusive_kin.getDouble("y", 0);
+    beamE = std::hypot(bank_inclusive_kin.getDouble("beamPz", 0), PartMass(kE));
+
+    // get scattered electron
+    eleRow = bank_inclusive_kin.getShort("pindex", 0);
+    ROOT::Math::PxPyPzMVector eleVec(
+        bank_particle.getFloat("px", eleRow),
+        bank_particle.getFloat("py", eleRow),
+        bank_particle.getFloat("pz", eleRow),
+        PartMass(kE)
+        );
+    eleE         = eleVec.E();
+    eleP         = eleVec.P();
+    elePt        = eleVec.Pt();
+    eleEta       = eleVec.Eta();
+    elePhi       = eleVec.Phi();
+    eleVertex[0] = bank_particle.getFloat("vx", eleRow);
+    eleVertex[1] = bank_particle.getFloat("vy", eleRow);
+    eleVertex[2] = bank_particle.getFloat("vz", eleRow);
+    eleStatus    = bank_particle.getShort("status", eleRow);
+    eleChi2pid   = bank_particle.getFloat("chi2pid", eleRow);
+    eleFiduCut   = true; // assume it has been done in iguana
+
+    // get calorimeter info for electron
+    elePCALen  = UNDEF;
+    eleECINen  = UNDEF;
+    eleECOUTen = UNDEF;
+    for(const auto& row : bank_calorimeter.getRowList()) {
+      if(bank_calorimeter.getShort("pindex", row) == eleRow) {
+        switch(bank_calorimeter.getByte("layer", row)) {
+          case 1:
+            elePCALen = bank_calorimeter.getFloat("energy", row);
+            break;
+          case 4:
+            eleECINen = bank_calorimeter.getFloat("energy", row);
+            break;
+          case 7:
+            eleECOUTen = bank_calorimeter.getFloat("energy", row);
+            break;
+        }
+      }
+    }
+
+    // get electron sector
+    assert(( bank_sector_finder.getInt("pindex", eleRow) == eleRow ));
+    eleSector = bank_sector_finder.getInt("sector", eleRow);
+
+    // fill the output tree
+    tr->Fill();
   }
 
   // write output and clean up
   iguanaSeq.Stop();
   tr->Write();
   outputFile->Close();
+  std::cout << "PRODUCED: " << outputFileName << std::endl;
   return 0;
 }
