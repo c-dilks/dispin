@@ -347,7 +347,7 @@ int main(int argc, char** argv) {
     }
 
     // get electron sector
-    assert(( bank_sector_finder.getInt("pindex", eleRow) == eleRow ));
+    assert(( bank_sector_finder.getShort("pindex", eleRow) == eleRow ));
     eleSector = bank_sector_finder.getInt("sector", eleRow);
 
     // handle single hadrons
