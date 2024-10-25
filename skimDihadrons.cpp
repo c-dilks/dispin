@@ -285,16 +285,20 @@ int main(int argc, char** argv) {
     auto const& bank_dihadron_kin      = hipoBanks.at(b_dihadron_kin);
     auto const& bank_single_hadron_kin = hipoBanks.at(b_single_hadron_kin);
 
-    // get event-level information
+    // make sure we have some data
     if(bank_config.getRows() == 0 || bank_event.getRows() == 0)
       continue;
+    if(bank_inclusive_kin.getRows() == 0)
+      continue;
+    if(bank_dihadron_kin.getRows() == 0 && bank_single_hadron_kin.getRows() == 0)
+      continue;
+
+    // get event-level information
     runnum   = bank_config.getInt("run", 0);
     evnum    = bank_config.getInt("event", 0);
     helicity = bank_event.getByte("helicity", 0);
 
     // get inclusive info
-    if(bank_inclusive_kin.getRows() == 0)
-      continue;
     W     = bank_inclusive_kin.getDouble("W", 0);
     Q2    = bank_inclusive_kin.getDouble("Q2", 0);
     Nu    = bank_inclusive_kin.getDouble("nu", 0);
@@ -320,7 +324,7 @@ int main(int argc, char** argv) {
     eleVertex[2] = bank_particle.getFloat("vz", eleRow);
     eleStatus    = bank_particle.getShort("status", eleRow);
     eleChi2pid   = bank_particle.getFloat("chi2pid", eleRow);
-    eleFiduCut   = true; // assume it has been done in iguana
+    eleFiduCut   = true; // iguana did the fiducial cuts
 
     // get calorimeter info for electron
     elePCALen  = UNDEF;
@@ -346,8 +350,76 @@ int main(int argc, char** argv) {
     assert(( bank_sector_finder.getInt("pindex", eleRow) == eleRow ));
     eleSector = bank_sector_finder.getInt("sector", eleRow);
 
-    // fill the output tree
-    tr->Fill();
+    // handle single hadrons
+    for(const auto& kinRow : bank_single_hadron_kin.getRowList()) {
+      hadIdx[0] = PIDtoIdx(bank_single_hadron_kin.getInt("pdg", kinRow));
+      hadIdx[1] = kNix;
+      pairType = EncodePairType(hadIdx[0], hadIdx[1]);
+
+      hadRow[0] = bank_single_hadron_kin.getShort("pindex", kinRow);
+      ROOT::Math::PxPyPzMVector hadVec(
+          bank_particle.getFloat("px", hadRow[0]),
+          bank_particle.getFloat("py", hadRow[0]),
+          bank_particle.getFloat("pz", hadRow[0]),
+          PartMass(kE)
+          );
+      hadE[0]         = hadVec.E();
+      hadP[0]         = hadVec.P();
+      hadPt[0]        = hadVec.Pt();
+      hadEta[0]       = hadVec.Eta();
+      hadPhi[0]       = hadVec.Phi();
+      hadXF[0]        = bank_single_hadron_kin.getDouble("xF", kinRow);
+      hadVertex[0][0] = bank_particle.getFloat("vx", hadRow[0]);
+      hadVertex[0][1] = bank_particle.getFloat("vy", hadRow[0]);
+      hadVertex[0][2] = bank_particle.getFloat("vz", hadRow[0]);
+      hadStatus[0]    = bank_particle.getShort("status", hadRow[0]);
+      hadBeta[0]      = bank_particle.getFloat("beta", hadRow[0]);
+      hadChi2pid[0]   = bank_particle.getFloat("chi2pid", hadRow[0]);
+      hadFiduCut[0]   = true; // iguana did the fiducial cuts
+
+      hadRow[1]       = UNDEF;
+      hadE[1]         = UNDEF;
+      hadP[1]         = UNDEF;
+      hadPt[1]        = UNDEF;
+      hadEta[1]       = UNDEF;
+      hadPhi[1]       = UNDEF;
+      hadXF[1]        = UNDEF;
+      hadVertex[1][0] = UNDEF;
+      hadVertex[1][1] = UNDEF;
+      hadVertex[1][2] = UNDEF;
+      hadStatus[1]    = UNDEF;
+      hadBeta[1]      = UNDEF;
+      hadChi2pid[1]   = UNDEF;
+      hadFiduCut[1]   = false;
+
+      Mh       = PartMass(hadIdx[0]);
+      Mmiss    = bank_single_hadron_kin.getDouble("MX", kinRow);
+      Z[0]     = bank_single_hadron_kin.getDouble("z", kinRow);
+      Z[1]     = UNDEF;
+      Zpair    = Z[0];
+      xF       = hadXF[0];
+      alpha    = UNDEF;
+      theta    = UNDEF;
+      thetaLI  = UNDEF;
+      zeta     = UNDEF;
+      Ph       = hadP[0];
+      PhPerp   = UNDEF; // FIXME: upstream this calculation
+      PhEta    = hadEta[0];
+      PhPhi    = hadPhi[0];
+      R        = UNDEF;
+      RPerp    = UNDEF;
+      RT       = UNDEF;
+      PhiH     = bank_single_hadron_kin.getDouble("phiH", kinRow);
+      PhiRq    = UNDEF;
+      PhiRp    = UNDEF;
+      PhiRp_r  = UNDEF;
+      PhiRp_g  = UNDEF;
+      sdmePhiU = UNDEF;
+      sdmePhiU = UNDEF;
+
+      // fill the output tree for this single hadron
+      tr->Fill();
+    }
   }
 
   // write output and clean up
