@@ -457,7 +457,7 @@ int main(int argc, char** argv) {
       }
 
       auto dihadVec = hadVec[0] + hadVec[1];
-      auto RVec     = 0.5 * (vecHad[0] - vecHad[1]);
+      auto RVec     = 0.5 * (hadVec[0] - hadVec[1]);
 
       Mh       = bank_dihadron_kin.getDouble("Mh", kinRow);
       Mmiss    = bank_dihadron_kin.getDouble("MX", kinRow);
