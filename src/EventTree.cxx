@@ -407,54 +407,6 @@ void EventTree::GetEvent(Long64_t i) {
   if(Mmiss<0) Mmiss *= -1;
 
 
-  /**************************************/
-  /* handle single-hadron mode          */
-  /**************************************/
-
-  // if single-hadron mode, convert all the dihadron kinematics (e.g. phiH) to single-hadron kinematics
-  cutSingleHadMode = true;
-  if(singleHadronMode) {
-    if(evnum != evnumTmp) {
-      uniqSingleHadList.clear();
-      evnumTmp = evnum;
-    }
-    if(uniqSingleHadList.find(hadRow[qS]) != uniqSingleHadList.end()) {
-      cutSingleHadMode = false;
-    }
-    else {
-      cutSingleHadMode = true;
-      uniqSingleHadList.insert(hadRow[qS]);
-      singleHadVec.SetPtEtaPhiE(
-          hadPt[qS],
-          hadEta[qS],
-          hadPhi[qS],
-          hadE[qS]
-          );
-      Mh      = singleHadVec.M();
-      Zpair   = Z[qS];
-      PhiH    = hadPhiH[qS];
-      Mmiss   = std::abs((objDIS->vecBeam + objDIS->vecTarget - objDIS->vecElectron - objDihadron->vecHad[qS]).M());
-      xF      = hadXF[qS];
-      alpha   = UNDEF;
-      YH      = hadYH[qS];
-      YCM     = hadYCM[qS];
-      zeta    = UNDEF;
-      theta   = UNDEF;
-      Ph      = hadP[qS];
-      PhPerp  = hadPperp[qS];
-      PhEta   = hadEta[qS];
-      PhPhi   = hadPhi[qS];
-      R       = UNDEF;
-      RPerp   = UNDEF;
-      RT      = UNDEF;
-      PhiR    = UNDEF;
-      PhiRq   = UNDEF;
-      PhiRp   = UNDEF;
-      PhiRp_r = UNDEF;
-      PhiRp_g = UNDEF;
-    }
-  }
-
 
   /**************************************/
   /* cut definitions                    */
@@ -607,7 +559,7 @@ void EventTree::GetEvent(Long64_t i) {
 Bool_t EventTree::Valid() {
   switch(cutVer) {
     case cutDefault:
-      return cutQA && cutDIS && cutDihadron && cutHelicity && cutFiducial && cutPID && cutVertex && cutFR && cutSingleHadMode;
+      return cutQA && cutDIS && cutDihadron && cutHelicity && cutFiducial && cutPID && cutVertex && cutFR;
       break;
     case cutLoose:
       return
@@ -616,7 +568,6 @@ Bool_t EventTree::Valid() {
         Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) &&
         cutFiducial &&
         cutVertex &&
-        cutSingleHadMode &&
         ( useStringSpinner || useMCgen || CheckPCALen()   ) &&
         ( useStringSpinner || useMCgen || CheckSampFrac() ) &&
         ( useStringSpinner || useMCgen || CheckHadChi2pid(qA) ) &&
