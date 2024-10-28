@@ -403,7 +403,7 @@ int main(int argc, char** argv) {
       thetaLI  = UNDEF;
       zeta     = UNDEF;
       Ph       = hadP[0];
-      PhPerp   = UNDEF; // FIXME: upstream this calculation
+      PhPerp   = bank_single_hadron_kin.getDouble("PhPerp", kinRow);
       PhEta    = hadEta[0];
       PhPhi    = hadPhi[0];
       R        = UNDEF;
@@ -468,7 +468,7 @@ int main(int argc, char** argv) {
       thetaLI  = UNDEF;
       zeta     = UNDEF;
       Ph       = dihadVec.P();
-      PhPerp   = UNDEF; // FIXME: upstream this calculation
+      PhPerp   = bank_dihadron_kin.getDouble("PhPerp", kinRow);
       PhEta    = dihadVec.Eta();
       PhPhi    = dihadVec.Phi();
       R        = RVec.P();
