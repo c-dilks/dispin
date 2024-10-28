@@ -361,7 +361,7 @@ int main(int argc, char** argv) {
           bank_particle.getFloat("px", hadRow[0]),
           bank_particle.getFloat("py", hadRow[0]),
           bank_particle.getFloat("pz", hadRow[0]),
-          PartMass(kE)
+          PartMass(hadIdx[0])
           );
       hadE[0]         = hadVec.E();
       hadP[0]         = hadVec.P();
@@ -418,6 +418,71 @@ int main(int argc, char** argv) {
       sdmePhiU = UNDEF;
 
       // fill the output tree for this single hadron
+      tr->Fill();
+    }
+
+    // handle dihadrons
+    for(const auto& kinRow : bank_dihadron_kin.getRowList()) {
+      hadIdx[0] = PIDtoIdx(bank_dihadron_kin.getInt("pdg_a", kinRow));
+      hadIdx[1] = PIDtoIdx(bank_dihadron_kin.getInt("pdg_b", kinRow));
+      pairType  = EncodePairType(hadIdx[0], hadIdx[1]);
+
+      hadRow[0] = bank_dihadron_kin.getShort("pindex_a", kinRow);
+      hadRow[1] = bank_dihadron_kin.getShort("pindex_b", kinRow);
+
+      ROOT::Math::PxPyPzMVector hadVec[2];
+
+      for(int h = 0; h < 2; h++) {
+        hadVec[h] = ROOT::Math::PxPyPzMVector(
+          bank_particle.getFloat("px", hadRow[h]),
+          bank_particle.getFloat("py", hadRow[h]),
+          bank_particle.getFloat("pz", hadRow[h]),
+          PartMass(hadIdx[h])
+          );
+        hadE[h]         = hadVec[h].E();
+        hadP[h]         = hadVec[h].P();
+        hadPt[h]        = hadVec[h].Pt();
+        hadEta[h]       = hadVec[h].Eta();
+        hadPhi[h]       = hadVec[h].Phi();
+        hadXF[h]        = bank_dihadron_kin.getDouble("xF", kinRow);
+        hadVertex[h][0] = bank_particle.getFloat("vx", hadRow[h]);
+        hadVertex[h][1] = bank_particle.getFloat("vy", hadRow[h]);
+        hadVertex[h][2] = bank_particle.getFloat("vz", hadRow[h]);
+        hadStatus[h]    = bank_particle.getShort("status", hadRow[h]);
+        hadBeta[h]      = bank_particle.getFloat("beta", hadRow[h]);
+        hadChi2pid[h]   = bank_particle.getFloat("chi2pid", hadRow[h]);
+        hadFiduCut[h]   = true; // iguana did the fiducial cuts
+        Z[h]            = bank_single_hadron_kin.getDouble("z", hadRow[h]);
+        assert((bank_single_hadron_kin.getShort("pindex", hadRow[h]) == hadRow[h])); // make sure pindex matches for single-hadron bank
+      }
+
+      auto dihadVec = hadVec[0] + hadVec[1];
+      auto RVec     = 0.5 * (vecHad[0] - vecHad[1]);
+
+      Mh       = bank_dihadron_kin.getDouble("Mh", kinRow);
+      Mmiss    = bank_dihadron_kin.getDouble("MX", kinRow);
+      Zpair    = bank_dihadron_kin.getDouble("z", kinRow);
+      xF       = bank_dihadron_kin.getDouble("xF", kinRow);
+      alpha    = UNDEF;
+      theta    = bank_dihadron_kin.getDouble("theta", kinRow);
+      thetaLI  = UNDEF;
+      zeta     = UNDEF;
+      Ph       = dihadVec.P();
+      PhPerp   = UNDEF; // FIXME: upstream this calculation
+      PhEta    = dihadVec.Eta();
+      PhPhi    = dihadVec.Phi();
+      R        = RVec.P();
+      RPerp    = UNDEF;
+      RT       = UNDEF;
+      PhiH     = bank_dihadron_kin.getDouble("phiH", kinRow);
+      PhiRq    = UNDEF;
+      PhiRp    = bank_dihadron_kin.getDouble("phiR", kinRow);
+      PhiRp_r  = UNDEF;
+      PhiRp_g  = UNDEF;
+      sdmePhiU = UNDEF;
+      sdmePhiU = UNDEF;
+
+      // fill the output tree for this dihadron
       tr->Fill();
     }
   }
