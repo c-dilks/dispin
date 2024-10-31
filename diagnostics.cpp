@@ -142,7 +142,7 @@ int main(int argc, char** argv) {
      hadPtDist[h] = new TH1D(TString(hadName[h]+"hadPtDist"),distTitle("p_{T}"),
        NBINS,0,4);
      hadPperpDist[h] = new TH1D(TString(hadName[h]+"hadPperpDist"),distTitle("p_{perp}"),
-       NBINS,0,2);
+       NBINS,Tools::BinLog(NBINS,0.01,2));
      hadEtaDist[h] = new TH1D(TString(hadName[h]+"hadEtaDist"),distTitle("#eta"),
        NBINS,0,5);
      hadThetaDist[h] = new TH1D(TString(hadName[h]+"hadThetaDist"),distTitle("#theta"),
