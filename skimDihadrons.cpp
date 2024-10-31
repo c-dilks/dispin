@@ -57,7 +57,7 @@ void MakeOutrootTree(
     )
 {
 
-  // OUTROOT TREE BRANCHES
+  // tree branches
   auto tr = new TTree("tree", "tree");
   // - event-level branches
   Int_t runnum{0};   tr->Branch("runnum",   &runnum,   "runnum/I");
@@ -409,6 +409,177 @@ void MakeOutrootTree(
 }
 
 
+// ==================================================================================
+// timothy tree maker, for epX cross check
+// ==================================================================================
+void MakeTimothyTree(
+    hipo::reader& hipoReader,
+    hipo::banklist& hipoBanks,
+    iguana::AlgorithmSequence& iguanaSeq
+    )
+{
+
+  // tree branches
+  auto tr = new TTree("tree", "tree");
+  Int_t    fiducial_status{0}; tr->Branch("fiducial_status", &fiducial_status, "fiducial_status/I");
+  Int_t    num_pos{0};         tr->Branch("num_pos",         &num_pos,         "num_pos/I"); //+
+  Int_t    num_neg{0};         tr->Branch("num_neg",         &num_neg,         "num_neg/I"); //+
+  Int_t    num_neutral{0};     tr->Branch("num_neutral",     &num_neutral,     "num_neutral/I"); //+
+  Int_t    runnum{0};          tr->Branch("runnum",          &runnum,          "runnum/I"); //+
+  Int_t    evnum{0};           tr->Branch("evnum",           &evnum,           "evnum/I"); //+
+  Int_t    helicity{0};        tr->Branch("helicity",        &helicity,        "helicity/I"); //+
+  Int_t    detector{0};        tr->Branch("detector",        &detector,        "detector/I");
+  Double_t beam_pol{0};        tr->Branch("beam_pol",        &beam_pol,        "beam_pol/D");
+  Double_t target_pol{0};      tr->Branch("target_pol",      &target_pol,      "target_pol/D");
+  Double_t e_p{0};             tr->Branch("e_p",             &e_p,             "e_p/D"); //+
+  Double_t e_theta{0};         tr->Branch("e_theta",         &e_theta,         "e_theta/D"); //+
+  Double_t e_phi{0};           tr->Branch("e_phi",           &e_phi,           "e_phi/D"); //+
+  Double_t vz_e{0};            tr->Branch("vz_e",            &vz_e,            "vz_e/D"); //+
+  Double_t p_p{0};             tr->Branch("p_p",             &p_p,             "p_p/D"); //+
+  Double_t p_theta{0};         tr->Branch("p_theta",         &p_theta,         "p_theta/D"); //+
+  Double_t p_phi{0};           tr->Branch("p_phi",           &p_phi,           "p_phi/D"); //+
+  Double_t vz_p{0};            tr->Branch("vz_p",            &vz_p,            "vz_p/D"); //+
+  Double_t open_angle{0};      tr->Branch("open_angle",      &open_angle,      "open_angle/D"); //+
+  Double_t Q2{0};              tr->Branch("Q2",              &Q2,              "Q2/D"); //+
+  Double_t W{0};               tr->Branch("W",               &W,               "W/D"); //+
+  Double_t Mx2{0};             tr->Branch("Mx2",             &Mx2,             "Mx2/D"); //+
+  Double_t x{0};               tr->Branch("x",               &x,               "x/D"); //+
+  Double_t y{0};               tr->Branch("y",               &y,               "y/D"); //+
+  Double_t t{0};               tr->Branch("t",               &t,               "t/D");
+  Double_t tmin{0};            tr->Branch("tmin",            &tmin,            "tmin/D");
+  Double_t z{0};               tr->Branch("z",               &z,               "z/D"); //+
+  Double_t xF{0};              tr->Branch("xF",              &xF,              "xF/D"); //+
+  Double_t pT{0};              tr->Branch("pT",              &pT,              "pT/D"); //+
+  Double_t xi{0};              tr->Branch("xi",              &xi,              "xi/D"); //+
+  Double_t eta{0};             tr->Branch("eta",             &eta,             "eta/D"); //+
+  Double_t phi{0};             tr->Branch("phi",             &phi,             "phi/D"); //+
+  Double_t DepA{0};            tr->Branch("DepA",            &DepA,            "DepA/D");
+  Double_t DepB{0};            tr->Branch("DepB",            &DepB,            "DepB/D");
+  Double_t DepC{0};            tr->Branch("DepC",            &DepC,            "DepC/D");
+  Double_t DepV{0};            tr->Branch("DepV",            &DepV,            "DepV/D");
+  Double_t DepW{0};            tr->Branch("DepW",            &DepW,            "DepW/D");
+
+  // event loop
+  unsigned long evCount = 0;
+  while(hipoReader.next(hipoBanks)) {
+    evCount++;
+    // if(evCount>500) { std::cout << "stopping prematurely (limiter)" << std::endl; break; } // limiter
+    if(evCount % 100000 == 0) std::cout << "read " << evCount << " events" << std::endl;
+
+    // iguana
+    iguanaSeq.Run(hipoBanks);
+
+    // banks
+    auto const& bank_config            = hipoBanks.at(b_config);
+    auto const& bank_event             = hipoBanks.at(b_event);
+    auto const& bank_particle          = hipoBanks.at(b_particle);
+    auto const& bank_calorimeter       = hipoBanks.at(b_calorimeter);
+    auto const& bank_sector_finder     = hipoBanks.at(b_sector_finder);
+    auto const& bank_inclusive_kin     = hipoBanks.at(b_inclusive_kin);
+    auto const& bank_single_hadron_kin = hipoBanks.at(b_single_hadron_kin);
+
+    // make sure we have some data
+    if(bank_config.getRows() == 0 || bank_event.getRows() == 0)
+      continue;
+    if(bank_inclusive_kin.getRows() == 0)
+      continue;
+    if(bank_single_hadron_kin.getRows() == 0)
+      continue;
+
+    // get event-level information
+    runnum   = bank_config.getInt("run", 0);
+    evnum    = bank_config.getInt("event", 0);
+    helicity = bank_event.getByte("helicity", 0);
+
+    // get inclusive info
+    W  = bank_inclusive_kin.getDouble("W", 0);
+    Q2 = bank_inclusive_kin.getDouble("Q2", 0);
+    x  = bank_inclusive_kin.getDouble("x", 0);
+    y  = bank_inclusive_kin.getDouble("y", 0);
+    auto beamE = std::hypot(bank_inclusive_kin.getDouble("beamPz", 0), PartMass(kE));
+
+    // get scattered electron
+    auto eleRow = bank_inclusive_kin.getShort("pindex", 0);
+    ROOT::Math::PxPyPzMVector eleVec(
+        bank_particle.getFloat("px", eleRow),
+        bank_particle.getFloat("py", eleRow),
+        bank_particle.getFloat("pz", eleRow),
+        PartMass(kE)
+        );
+    e_p     = eleVec.P();
+    e_theta = eleVec.Theta();
+    e_phi   = eleVec.Phi();
+    vz_e    = bank_particle.getFloat("vz", eleRow);
+
+    // get calorimeter info for electron
+    auto elePCALen  = UNDEF;
+    auto eleECINen  = UNDEF;
+    auto eleECOUTen = UNDEF;
+    for(const auto& row : bank_calorimeter.getRowList()) {
+      if(bank_calorimeter.getShort("pindex", row) == eleRow) {
+        switch(bank_calorimeter.getByte("layer", row)) {
+          case 1:
+            elePCALen = bank_calorimeter.getFloat("energy", row);
+            break;
+          case 4:
+            eleECINen = bank_calorimeter.getFloat("energy", row);
+            break;
+          case 7:
+            eleECOUTen = bank_calorimeter.getFloat("energy", row);
+            break;
+        }
+      }
+    }
+
+    // get electron sector
+    assert(( bank_sector_finder.getShort("pindex", eleRow) == eleRow ));
+    auto eleSector = bank_sector_finder.getInt("sector", eleRow);
+
+    // count particles
+    num_pos     = 0;
+    num_neg     = 0;
+    num_neutral = 0;
+    for(const auto& row : bank_particle.getRowList()) {
+      int charge = bank_particle.getByte("charge", row);
+      if(charge == 0)     num_neutral++;
+      else if(charge < 0) num_neg++;
+      else if(charge > 0) num_pos++;
+    }
+
+    // handle single hadrons
+    for(const auto& kinRow : bank_single_hadron_kin.getRowList()) {
+      auto hadIdx = PIDtoIdx(bank_single_hadron_kin.getInt("pdg", kinRow));
+      auto hadRow = bank_single_hadron_kin.getShort("pindex", kinRow);
+      ROOT::Math::PxPyPzMVector hadVec(
+          bank_particle.getFloat("px", hadRow),
+          bank_particle.getFloat("py", hadRow),
+          bank_particle.getFloat("pz", hadRow),
+          PartMass(hadIdx)
+          );
+      p_p     = hadVec.P();
+      p_theta = hadVec.Theta();
+      p_phi   = hadVec.Phi();
+      vz_p    = bank_particle.getFloat("vz", hadRow);
+      open_angle = Tools::AngleSubtend( { eleVec.Px(), eleVec.Py(), eleVec.Pz() }, { hadVec.Px(), hadVec.Py(), hadVec.Pz() });
+      z   = bank_single_hadron_kin.getDouble("z", kinRow);
+      xF  = bank_single_hadron_kin.getDouble("xF", kinRow);
+      pT  = bank_single_hadron_kin.getDouble("PhPerp", kinRow);
+      xi  = bank_single_hadron_kin.getDouble("xi", kinRow);
+      eta = hadVec.Eta(); // FIXME: breit frame rapidity?
+      phi = bank_single_hadron_kin.getDouble("phiH", kinRow);
+      Mx2 = TMath::Power(bank_single_hadron_kin.getDouble("MX", kinRow), 2);
+
+      // fill the output tree for this single hadron
+      tr->Fill();
+    }
+  }
+
+  // write output and clean up
+  iguanaSeq.Stop();
+  tr->Write();
+}
+
+
 
 // ==================================================================================
 // main
@@ -420,12 +591,14 @@ int main(int argc, char** argv) {
   TString outputDir;
   TString dataStream = "data";
   TString hipoType   = "skim";
+  TString whichTree  = "outroot";
   if(argc < 3) {
-    std::cerr << "USAGE: " << argv[0] << " [hipoFileName] [outputDir] [dataStream] [hipoType]" << std::endl;
+    std::cerr << "USAGE: " << argv[0] << " [hipoFileName] [outputDir] [dataStream] [hipoType] [whichTree]" << std::endl;
     std::cerr << "  [hipoFileName] the HIPO file to analyze" << std::endl;
     std::cerr << "  [outputDir]    the output dir, for the output `outroot` file" << std::endl;
     std::cerr << "  [dataStream]   'data', 'mcrec', or 'mcgen'; default = " << dataStream << std::endl;
     std::cerr << "  [hipoType]     'skim' or 'dst'; default = " << hipoType << std::endl;
+    std::cerr << "  [whichTree]    'outroot' or 'timothy'; default = " << whichTree << std::endl;
     return 1;
   }
   hipoFileName          = TString(argv[1]);
@@ -514,7 +687,12 @@ int main(int argc, char** argv) {
   auto outputFile = new TFile(outputFileName , "RECREATE");
 
   // make output tree
-  MakeOutrootTree(hipoReader, hipoBanks, iguanaSeq);
+  if(whichTree == "outroot")
+    MakeOutrootTree(hipoReader, hipoBanks, iguanaSeq);
+  else if(whichTree == "timothy")
+    MakeTimothyTree(hipoReader, hipoBanks, iguanaSeq);
+  else
+    throw std::runtime_error("ERROR: unknown arg whichTree = '" + whichTree + "'");
 
   // finish it
   outputFile->Close();
