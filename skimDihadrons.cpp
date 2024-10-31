@@ -18,125 +18,44 @@
 #include "src/Constants.h"
 
 
-int main(int argc, char** argv) {
+// ==================================================================================
+// shared vars
+// ==================================================================================
 
-  // ==================================================================================
-  // arguments
-  // ==================================================================================
+// flags for whether the input data are MC
+bool useMC;    // true if any MC mode is set
+bool useMCgen; // true if reading only MC generated particles
+bool useMCrec; // true if reading MC reconstructed particles, with matched generated particles
 
-  TString hipoFileName;
-  TString outputDir;
-  TString dataStream = "data";
-  TString hipoType   = "skim";
-  if(argc < 3) {
-    std::cerr << "USAGE: " << argv[0] << " [hipoFileName] [outputDir] [dataStream] [hipoType]" << std::endl;
-    std::cerr << "  [hipoFileName] the HIPO file to analyze" << std::endl;
-    std::cerr << "  [outputDir]    the output dir, for the output `outroot` file" << std::endl;
-    std::cerr << "  [dataStream]   'data', 'mcrec', or 'mcgen'; default = " << dataStream << std::endl;
-    std::cerr << "  [hipoType]     'skim' or 'dst'; default = " << hipoType << std::endl;
-    return 1;
-  }
-  hipoFileName          = TString(argv[1]);
-  outputDir             = TString(argv[2]);
-  if(argc>3) dataStream = TString(argv[3]);
-  if(argc>4) hipoType   = TString(argv[4]);
+// input banks
+hipo::banklist::size_type b_event;
+hipo::banklist::size_type b_config;
+hipo::banklist::size_type b_particle;
+hipo::banklist::size_type b_calorimeter;
+hipo::banklist::size_type b_track;
+hipo::banklist::size_type b_traj;
+// input MC banks
+hipo::banklist::size_type b_mc_particle;
+hipo::banklist::size_type b_mc_lund;
+// output banks
+hipo::banklist::size_type b_sector_finder;
+hipo::banklist::size_type b_inclusive_kin;
+hipo::banklist::size_type b_dihadron_kin;
+hipo::banklist::size_type b_single_hadron_kin;
 
-  // check `dataStream` argument
-  //// first check if there are any 'special' strings in `dataStream`
-  int disLeptonID = 11; // DIS lepton PDG code (11 for electron)
-  if(dataStream.Contains("positron"))
-    disLeptonID = -11;
-  //// then remove any 'special' strings
-  Tools::GlobalRegexp(dataStream, TRegexp("positron"), "");
-  Tools::GlobalRegexp(dataStream, TRegexp("rad"),      "");
-  //// then check if these are data, MC generated, or MC reconstructed
-  bool useMC    = false; // true if any MC mode is set
-  bool useMCgen = false; // true if reading only MC generated particles
-  bool useMCrec = false; // true if reading MC reconstructed particles, with matched generated particles
-  if(dataStream == "data") {
-    useMC = false;
-  }
-  else if(dataStream == "mcrec") {
-    useMC    = true;
-    useMCrec = true;
-  }
-  else if(dataStream == "mcgen") {
-    useMC    = true;
-    useMCgen = true;
-  }
-  else {
-    throw std::runtime_error("unrecognized dataStream");
-  }
-  if(useMC)
-    std::cout << "READING MONTE CARLO FILE" << std::endl;
+// list of bank names
+std::vector<std::string> inputBankNames;
 
 
-  // ==================================================================================
-  // read input file and set input banks
-  // ==================================================================================
-
-  // read the input HIPO file, and decide which banks to read
-  std::vector<std::string> inputBankNames = {
-    "REC::Event",
-    "RUN::config",
-    "REC::Particle",
-    "REC::Calorimeter",
-    "REC::Scintillator",
-    "REC::Track",
-    "REC::Traj"
-  };
-  if(useMCrec) {
-    inputBankNames.push_back("MC::Particle");
-    inputBankNames.push_back("MC::Lund");
-  }
-  hipo::reader hipoReader(hipoFileName, {0});
-  hipo::banklist hipoBanks = hipoReader.getBanks(inputBankNames);
-
-
-  // ==================================================================================
-  // setup iguana
-  // ==================================================================================
-
-  iguana::AlgorithmSequence iguanaSeq;
-  iguanaSeq.Add("clas12::SectorFinder");
-  iguanaSeq.Add("physics::InclusiveKinematics");
-  iguanaSeq.Add("physics::DihadronKinematics");
-  iguanaSeq.Add("physics::SingleHadronKinematics");
-
-  iguanaSeq.SetConfigFileForEachAlgorithm("iguana_config.yaml"); // FIXME: assumes PWD has this file
-
-  iguanaSeq.Start(hipoBanks);
-
-
-  // ==================================================================================
-  // bank indices
-  // ==================================================================================
-
-  //// input banks
-  auto b_event       = hipo::getBanklistIndex(hipoBanks, "REC::Event");
-  auto b_config      = hipo::getBanklistIndex(hipoBanks, "RUN::config");
-  auto b_particle    = hipo::getBanklistIndex(hipoBanks, "REC::Particle");
-  auto b_calorimeter = hipo::getBanklistIndex(hipoBanks, "REC::Calorimeter");
-  auto b_track       = hipo::getBanklistIndex(hipoBanks, "REC::Track");
-  auto b_traj        = hipo::getBanklistIndex(hipoBanks, "REC::Traj");
-  //// input MC banks
-  auto b_mc_particle = useMCrec ? hipo::getBanklistIndex(hipoBanks, "MC::Particle") : 0;
-  auto b_mc_lund     = useMCrec ? hipo::getBanklistIndex(hipoBanks, "MC::Lund") : 0;
-  //// output banks
-  auto b_sector_finder     = hipo::getBanklistIndex(hipoBanks, "REC::Particle::Sector");
-  auto b_inclusive_kin     = hipo::getBanklistIndex(hipoBanks, "physics::InclusiveKinematics");
-  auto b_dihadron_kin      = hipo::getBanklistIndex(hipoBanks, "physics::DihadronKinematics");
-  auto b_single_hadron_kin = hipo::getBanklistIndex(hipoBanks, "physics::SingleHadronKinematics");
-
-
-  // ==================================================================================
-  // setup output file
-  // ==================================================================================
-
-  TString outputFileName = outputDir + TString("/") + TString(std::filesystem::path(hipoFileName.Data()).filename()) + TString(".root");
-  std::cout << "INPUT FILE:  " << hipoFileName << std::endl;
-  std::cout << "OUTPUT FILE: " << outputFileName  << std::endl;
-  auto outputFile = new TFile(outputFileName , "RECREATE");
+// ==================================================================================
+// outroot tree maker
+// ==================================================================================
+void MakeOutrootTree(
+    hipo::reader& hipoReader,
+    hipo::banklist& hipoBanks,
+    iguana::AlgorithmSequence& iguanaSeq
+    )
+{
 
   // OUTROOT TREE BRANCHES
   auto tr = new TTree("tree", "tree");
@@ -262,10 +181,7 @@ int main(int argc, char** argv) {
   Int_t gen_hadParentIdx[2]{0,0}; if(useMCrec || useMCgen) tr->Branch("gen_hadParentIdx", gen_hadParentIdx, "gen_hadParentIdx[2]/I");
   Int_t gen_hadParentPid[2]{0,0}; if(useMCrec || useMCgen) tr->Branch("gen_hadParentPid", gen_hadParentPid, "gen_hadParentPid[2]/I");
 
-
-  // ==================================================================================
   // event loop
-  // ==================================================================================
   unsigned long evCount = 0;
   while(hipoReader.next(hipoBanks)) {
     evCount++;
@@ -490,6 +406,117 @@ int main(int argc, char** argv) {
   // write output and clean up
   iguanaSeq.Stop();
   tr->Write();
+}
+
+
+
+// ==================================================================================
+// main
+// ==================================================================================
+int main(int argc, char** argv) {
+
+  // arguments
+  TString hipoFileName;
+  TString outputDir;
+  TString dataStream = "data";
+  TString hipoType   = "skim";
+  if(argc < 3) {
+    std::cerr << "USAGE: " << argv[0] << " [hipoFileName] [outputDir] [dataStream] [hipoType]" << std::endl;
+    std::cerr << "  [hipoFileName] the HIPO file to analyze" << std::endl;
+    std::cerr << "  [outputDir]    the output dir, for the output `outroot` file" << std::endl;
+    std::cerr << "  [dataStream]   'data', 'mcrec', or 'mcgen'; default = " << dataStream << std::endl;
+    std::cerr << "  [hipoType]     'skim' or 'dst'; default = " << hipoType << std::endl;
+    return 1;
+  }
+  hipoFileName          = TString(argv[1]);
+  outputDir             = TString(argv[2]);
+  if(argc>3) dataStream = TString(argv[3]);
+  if(argc>4) hipoType   = TString(argv[4]);
+
+  // check `dataStream` argument
+  //// first check if there are any 'special' strings in `dataStream`
+  int disLeptonID = 11; // DIS lepton PDG code (11 for electron)
+  if(dataStream.Contains("positron"))
+    disLeptonID = -11;
+  //// then remove any 'special' strings
+  Tools::GlobalRegexp(dataStream, TRegexp("positron"), "");
+  Tools::GlobalRegexp(dataStream, TRegexp("rad"),      "");
+  //// then check if these are data, MC generated, or MC reconstructed
+  useMC    = false; // true if any MC mode is set
+  useMCgen = false; // true if reading only MC generated particles
+  useMCrec = false; // true if reading MC reconstructed particles, with matched generated particles
+  if(dataStream == "data") {
+    useMC = false;
+  }
+  else if(dataStream == "mcrec") {
+    useMC    = true;
+    useMCrec = true;
+  }
+  else if(dataStream == "mcgen") {
+    useMC    = true;
+    useMCgen = true;
+  }
+  else {
+    throw std::runtime_error("unrecognized dataStream");
+  }
+  if(useMC)
+    std::cout << "READING MONTE CARLO FILE" << std::endl;
+
+  // read the input HIPO file, and decide which banks to read
+  inputBankNames = {
+    "REC::Event",
+    "RUN::config",
+    "REC::Particle",
+    "REC::Calorimeter",
+    "REC::Scintillator",
+    "REC::Track",
+    "REC::Traj"
+  };
+  if(useMCrec) {
+    inputBankNames.push_back("MC::Particle");
+    inputBankNames.push_back("MC::Lund");
+  }
+  hipo::reader hipoReader(hipoFileName, {0});
+  hipo::banklist hipoBanks = hipoReader.getBanks(inputBankNames);
+
+  // setup iguana
+  iguana::AlgorithmSequence iguanaSeq;
+  iguanaSeq.Add("clas12::SectorFinder");
+  iguanaSeq.Add("physics::InclusiveKinematics");
+  iguanaSeq.Add("physics::DihadronKinematics");
+  iguanaSeq.Add("physics::SingleHadronKinematics");
+
+  iguanaSeq.SetConfigFileForEachAlgorithm("iguana_config.yaml"); // FIXME: assumes PWD has this file
+
+  iguanaSeq.Start(hipoBanks);
+
+  // bank indices
+  //// input banks
+  b_event       = hipo::getBanklistIndex(hipoBanks, "REC::Event");
+  b_config      = hipo::getBanklistIndex(hipoBanks, "RUN::config");
+  b_particle    = hipo::getBanklistIndex(hipoBanks, "REC::Particle");
+  b_calorimeter = hipo::getBanklistIndex(hipoBanks, "REC::Calorimeter");
+  b_track       = hipo::getBanklistIndex(hipoBanks, "REC::Track");
+  b_traj        = hipo::getBanklistIndex(hipoBanks, "REC::Traj");
+  //// input MC banks
+  b_mc_particle = useMCrec ? hipo::getBanklistIndex(hipoBanks, "MC::Particle") : 0;
+  b_mc_lund     = useMCrec ? hipo::getBanklistIndex(hipoBanks, "MC::Lund") : 0;
+  //// output banks
+  b_sector_finder     = hipo::getBanklistIndex(hipoBanks, "REC::Particle::Sector");
+  b_inclusive_kin     = hipo::getBanklistIndex(hipoBanks, "physics::InclusiveKinematics");
+  b_dihadron_kin      = hipo::getBanklistIndex(hipoBanks, "physics::DihadronKinematics");
+  b_single_hadron_kin = hipo::getBanklistIndex(hipoBanks, "physics::SingleHadronKinematics");
+
+  // setup output file
+  TString outputFileName = outputDir + TString("/") + TString(std::filesystem::path(hipoFileName.Data()).filename()) + TString(".root");
+  std::cout << "INPUT FILE:  " << hipoFileName << std::endl;
+  std::cout << "OUTPUT FILE: " << outputFileName  << std::endl;
+  auto outputFile = new TFile(outputFileName , "RECREATE");
+
+  // make output tree
+  MakeOutrootTree(hipoReader, hipoBanks, iguanaSeq);
+
+  // finish it
   outputFile->Close();
   std::cout << "PRODUCED: " << outputFileName << std::endl;
   return 0;

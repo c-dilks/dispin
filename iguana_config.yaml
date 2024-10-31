@@ -1,5 +1,10 @@
 # iguana configuration
 
+clas12::SectorFinder:
+  log: info
+  bank_charged: default
+  bank_uncharged: default
+
 physics::InclusiveKinematics:
   log: info
   initial_state:
