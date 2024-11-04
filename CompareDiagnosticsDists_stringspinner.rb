@@ -43,35 +43,35 @@ file_list = [
 #     :style => r.kFullSquare,
 #   },
   ##############
-  {
-    :name  => 'plots.nocuts.rga.inbending.fa18.root',
-    :title => 'CLAS12 Data',
-    :id    => 'data',
-    :color => r.kBlack,
-    :style => r.kFullCross,
-    :baseline => true, # baseline plot MUST be first, and there can only be one
-  },
-  {
-    :name  => 'plots.nocuts.sss.aug24_LU_2.inbending.root',
-    :title => 'StringSpinner',
-    :id    => 'sss',
-    :color => r.kGreen+1,
-    :style => r.kFullCross,
-  },
-  {
-    :name  => 'plots.nocuts.mc.richard.inbending.root',
-    :title => 'CLASDIS Richard',
-    :id    => 'mc_richard',
-    :color => r.kBlue,
-    :style => r.kFullCircle,
-  },
-  {
-    :name  => 'plots.nocuts.mc.inbending.bg45.root',
-    :title => 'CLASDIS Old',
-    :id    => 'mc_old',
-    :color => r.kOrange-3,
-    :style => r.kFullSquare,
-  },
+  # {
+  #   :name  => 'plots.nocuts.rga.inbending.fa18.root',
+  #   :title => 'CLAS12 Data',
+  #   :id    => 'data',
+  #   :color => r.kBlack,
+  #   :style => r.kFullCross,
+  #   :baseline => true, # baseline plot MUST be first, and there can only be one
+  # },
+  # {
+  #   :name  => 'plots.nocuts.sss.aug24_LU_2.inbending.root',
+  #   :title => 'StringSpinner',
+  #   :id    => 'sss',
+  #   :color => r.kGreen+1,
+  #   :style => r.kFullCross,
+  # },
+  # {
+  #   :name  => 'plots.nocuts.mc.richard.inbending.root',
+  #   :title => 'CLASDIS Richard',
+  #   :id    => 'mc_richard',
+  #   :color => r.kBlue,
+  #   :style => r.kFullCircle,
+  # },
+  # {
+  #   :name  => 'plots.nocuts.mc.inbending.bg45.root',
+  #   :title => 'CLASDIS Old',
+  #   :id    => 'mc_old',
+  #   :color => r.kOrange-3,
+  #   :style => r.kFullSquare,
+  # },
   ##### generator level testing #####
   # {
   #   :name  => 'plots.mcgen.root',
@@ -151,6 +151,29 @@ file_list = [
   #   :color => r.kMagenta,
   #   :style => r.kFullCircle,
   # },
+  ##############
+  {
+    :name  => 'plots.sss.GLGT_1.4.root',
+    :title => 'f_{L}=0.50',
+    :id    => 'glgt1',
+    :color => r.kBlack,
+    :style => r.kFullCross,
+    :baseline => true, # baseline plot MUST be first, and there can only be one
+  },
+  {
+    :name  => 'plots.sss.GLGT_0.2.root',
+    :title => 'f_{L}=0.02',
+    :id    => 'glgt2',
+    :color => r.kRed,
+    :style => r.kFullCross,
+  },
+  {
+    :name  => 'plots.sss.GLGT_5.0.root',
+    :title => 'f_{L}=0.93',
+    :id    => 'glgt3',
+    :color => r.kGreen+1,
+    :style => r.kFullCross,
+  },
 ]
 # Dir.glob("plots.outroot.sss*.root").reject{|f|f.include?'test'}.each do |file_name|
 #   # make the title
@@ -197,7 +220,7 @@ plot_list = {
   'WDist'      => {:logx=>false, :logy=>false},
   'XDist'      => {:logx=>false, :logy=>false},
   'YDist'      => {:logx=>false, :logy=>false},
-  'PhPerpDist' => {:logx=>false, :logy=>false},
+  'PhPerpDist' => {:logx=>true, :logy=>true},
   'MhDist' => {},
   'ZpairDist' => {},
   'PhiHDist' => {},
@@ -205,7 +228,7 @@ plot_list = {
   'thetaDist' => {},
   'cosThetaDist' => {},
   'MmissDistZoom' => {},
-  'YHDist' => {},
+  'YHDist' => { :logy=>true },
   'deltaPhiDist' => {},
   'piPlushadEDist'      => { :subplot_of => 'hadECanv'     },
   'piMinushadEDist'     => { :subplot_of => 'hadECanv'     },
@@ -213,8 +236,8 @@ plot_list = {
   'piMinushadPDist'     => { :subplot_of => 'hadPCanv'     },
   'piPlushadPtDist'     => { :subplot_of => 'hadPtCanv'    },
   'piMinushadPtDist'    => { :subplot_of => 'hadPtCanv'    },
-  'piPlushadPperpDist'  => { :subplot_of => 'hadPperpCanv' },
-  'piMinushadPperpDist' => { :subplot_of => 'hadPperpCanv' },
+  'piPlushadPperpDist'  => { :subplot_of => 'hadPperpCanv', :logx=>true, :logy=>true },
+  'piMinushadPperpDist' => { :subplot_of => 'hadPperpCanv', :logx=>true, :logy=>true },
   'piPlushadThetaDist'  => { :subplot_of => 'hadThetaCanv' },
   'piMinushadThetaDist' => { :subplot_of => 'hadThetaCanv' },
   'piPlushadPhiDist'    => { :subplot_of => 'hadPhiCanv'   },
@@ -223,6 +246,8 @@ plot_list = {
   'piMinushadZDist'     => { :subplot_of => 'hadZCanv'     },
   'piPlushadXFDist'     => { :subplot_of => 'hadXFCanv'    },
   'piMinushadXFDist'    => { :subplot_of => 'hadXFCanv'    },
+  'piPlushadYHDist'     => { :subplot_of => 'hadYHCanv', :logy=>true },
+  'piMinushadYHDist'    => { :subplot_of => 'hadYHCanv', :logy=>true },
   'depolarizationFactors/kfAvsMh' => { :projection => 'y', :title => 'depol. A(#varepsilon,y) distribution' },
   'depolarizationFactors/kfBvsMh' => { :projection => 'y', :title => 'depol. B(#varepsilon,y) distribution'},
   'depolarizationFactors/kfCvsMh' => { :projection => 'y', :title => 'depol. C(#varepsilon,y) distribution'},
