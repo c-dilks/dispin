@@ -758,7 +758,7 @@ Bool_t EventTree::CheckSampFrac() {
     Double_t sfMu[3][6];
     Double_t sfSigma[3][6];
 
-    if( (runnum>=5032 && runnum<=5666) || (runnum>=6616 && runnum<=6783) ) { // RGA
+    if( (runnum>=5032 && runnum<=5666) || (runnum>=6616 && runnum<=6783) || runnum==16346) { // RGA
       sfMu[0][0]    = 0.2531;   sfMu[0][1]    = 0.2550;   sfMu[0][2]    = 0.2514;   sfMu[0][3]    = 0.2494;   sfMu[0][4]    = 0.2528;   sfMu[0][5]    = 0.2521;
       sfMu[1][0]    = -0.6502;  sfMu[1][1]    = -0.7472;  sfMu[1][2]    = -0.7674;  sfMu[1][3]    = -0.4913;  sfMu[1][4]    = -0.3988;  sfMu[1][5]    = -0.703;
       sfMu[2][0]    = 4.939;    sfMu[2][1]    = 5.350;    sfMu[2][2]    = 5.102;    sfMu[2][3]    = 6.440;    sfMu[2][4]    = 6.149;    sfMu[2][5]    = 4.957;
