@@ -1,6 +1,12 @@
 #!/bin/bash
 # produces `diskim` file, and subsequently, `outroot` file
 
+echo """
+====================================================
+WARNING: this has been replaced by skimDihadrons.cpp
+====================================================
+""" >&2
+
 if [ $# -lt 1 ]; then
   echo "USAGE: $0 [skim file] [optional:outrootDir] [optional:datastream=data/mcrec/mcgen] [optional:hipotype=skim/dst]"
   echo "       you can also specify a directory of DST files, but you must also supply the \"dst\" hipotype argument"

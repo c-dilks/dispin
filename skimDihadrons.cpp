@@ -188,9 +188,6 @@ void MakeOutrootTree(
     // if(evCount>500) { std::cout << "stopping prematurely (limiter)" << std::endl; break; } // limiter
     if(evCount % 100000 == 0) std::cout << "read " << evCount << " events" << std::endl;
 
-    // iguana
-    iguanaSeq.Run(hipoBanks);
-
     // banks
     auto const& bank_config            = hipoBanks.at(b_config);
     auto const& bank_event             = hipoBanks.at(b_event);
@@ -202,8 +199,13 @@ void MakeOutrootTree(
     auto const& bank_single_hadron_kin = hipoBanks.at(b_single_hadron_kin);
 
     // make sure we have some data
-    if(bank_config.getRows() == 0 || bank_event.getRows() == 0)
+    if(bank_config.getRows() == 0 || bank_event.getRows() == 0 || bank_particle.getRows() == 0)
       continue;
+
+    // iguana
+    iguanaSeq.Run(hipoBanks);
+
+    // make sure we have iguana output
     if(bank_inclusive_kin.getRows() == 0)
       continue;
     if(bank_dihadron_kin.getRows() == 0 && bank_single_hadron_kin.getRows() == 0)
@@ -466,9 +468,6 @@ void MakeTimothyTree(
     // if(evCount>500) { std::cout << "stopping prematurely (limiter)" << std::endl; break; } // limiter
     if(evCount % 100000 == 0) std::cout << "read " << evCount << " events" << std::endl;
 
-    // iguana
-    iguanaSeq.Run(hipoBanks);
-
     // banks
     auto const& bank_config            = hipoBanks.at(b_config);
     auto const& bank_event             = hipoBanks.at(b_event);
@@ -479,8 +478,13 @@ void MakeTimothyTree(
     auto const& bank_single_hadron_kin = hipoBanks.at(b_single_hadron_kin);
 
     // make sure we have some data
-    if(bank_config.getRows() == 0 || bank_event.getRows() == 0)
+    if(bank_config.getRows() == 0 || bank_event.getRows() == 0 || bank_particle.getRows() == 0)
       continue;
+
+    // iguana
+    iguanaSeq.Run(hipoBanks);
+
+    // make sure we have iguana output
     if(bank_inclusive_kin.getRows() == 0)
       continue;
     if(bank_single_hadron_kin.getRows() == 0)
