@@ -185,7 +185,7 @@ void MakeOutrootTree(
   unsigned long evCount = 0;
   while(hipoReader.next(hipoBanks)) {
     evCount++;
-    // if(evCount>500) { std::cout << "stopping prematurely (limiter)" << std::endl; break; } // limiter
+    // if(evCount>100000) { std::cout << "stopping prematurely (limiter)" << std::endl; break; } // limiter
     if(evCount % 100000 == 0) std::cout << "read " << evCount << " events" << std::endl;
 
     // banks
@@ -465,7 +465,7 @@ void MakeTimothyTree(
   unsigned long evCount = 0;
   while(hipoReader.next(hipoBanks)) {
     evCount++;
-    // if(evCount>500) { std::cout << "stopping prematurely (limiter)" << std::endl; break; } // limiter
+    // if(evCount>100000) { std::cout << "stopping prematurely (limiter)" << std::endl; break; } // limiter
     if(evCount % 100000 == 0) std::cout << "read " << evCount << " events" << std::endl;
 
     // banks
@@ -609,6 +609,7 @@ int main(int argc, char** argv) {
   outputDir             = TString(argv[2]);
   if(argc>3) dataStream = TString(argv[3]);
   if(argc>4) hipoType   = TString(argv[4]);
+  if(argc>5) whichTree  = TString(argv[5]);
 
   // check `dataStream` argument
   //// first check if there are any 'special' strings in `dataStream`
