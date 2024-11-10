@@ -27,6 +27,7 @@ if(args.length>=3) inHipoType = args[2]
 ////////////////////////
 // OPTIONS
 def verbose = 0
+def allowLikePairs = false // if true, allows dihadrons with same PDGs, e.g., (pi+,pi+)
 hadPIDlist = [ 211, -211 ] // list of hadron PIDs which will be paired
 //hadPIDlist += [ 2212 ] // proton, antiproton
 //hadPIDlist += [ 22 ] // photons (not a hadron, but to be paired for pi0s)
@@ -668,6 +669,9 @@ inHipoList.each { inHipoFile ->
           // loop over pairs of hadrons with the specified PIDs
           hadTreeA.each { hadA ->
             hadTreeB.each { hadB ->
+
+              // allow/disallow like PIDs
+              if(!allowLikePairs && hadIdxA==hadIdxB) return
 
               // like PIDs -> take all permutations of pairs (no repetition)
               // unlike PIDs -> take all combinations of pairs
