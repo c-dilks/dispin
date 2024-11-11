@@ -355,6 +355,15 @@ void EventTree::GetEvent(Long64_t i) {
     gen_hadTheta[h] = useMCrec ? Tools::EtaToTheta(gen_hadEta[h]) : UNDEF;
   };
 
+  //
+  //
+  //
+  // FIXME: all these calculations, like depolarization, epsilon, breit frame rapidity
+  // can be removed from here once they are upstream in iguana
+  //
+  //
+  //
+
   // compute gamma and epsilon
   // - epsilon is the ratio of longitudinal to transverse photon flux
   gamma = 2*PartMass(kP)*x / TMath::Sqrt(Q2);
