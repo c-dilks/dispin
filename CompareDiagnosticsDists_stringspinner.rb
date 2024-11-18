@@ -253,11 +253,13 @@ plot_list = {
   'depolarizationFactors/kfCvsMh' => { :projection => 'y', :title => 'depol. C(#varepsilon,y) distribution'},
   'depolarizationFactors/kfVvsMh' => { :projection => 'y', :title => 'depol. V(#varepsilon,y) distribution'},
   'depolarizationFactors/kfWvsMh' => { :projection => 'y', :title => 'depol. W(#varepsilon,y) distribution'},
-  '/symmetry/symHadP' => {},
-  '/symmetry/symHadPt' => {},
+  '/symmetry/symHadP'     => {},
+  '/symmetry/symHadPt'    => {},
   '/symmetry/symHadPperp' => {},
-  '/symmetry/symHadZ' => {},
+  '/symmetry/symHadZ'     => {},
   '/symmetry/symHadTheta' => {},
+  '/symmetry/symHadXF' => {},
+  '/symmetry/symHadYH' => {},
 }.map do |plot_name,settings|
   canv_name = "canv_#{plot_name.gsub /\//, '_'}"
   res = {
