@@ -258,8 +258,8 @@ plot_list = {
   '/symmetry/symHadPperp' => {},
   '/symmetry/symHadZ'     => {},
   '/symmetry/symHadTheta' => {},
-  '/symmetry/symHadXF' => {},
-  '/symmetry/symHadYH' => {},
+  '/symmetry/symHadXF'    => {},
+  '/symmetry/symHadYH'    => {},
 }.map do |plot_name,settings|
   canv_name = "canv_#{plot_name.gsub /\//, '_'}"
   res = {

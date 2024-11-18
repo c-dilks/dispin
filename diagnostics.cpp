@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
    cutVer = "default";
    if(argc==1) {
      fprintf(stderr,"USAGE: %s [outroot file(s)] [output plots.root file] [pairType] [cutVersion]\n",argv[0]);
-     fprintf(stderr,"\n          [cutVersion] can be 'default' or 'loose' (the default is 'default')\n");
+     fprintf(stderr,"\n          [cutVersion] can be 'default' or 'loose' or 'exclusive' (the default is 'default')\n");
      return 1;
    };
    if(argc>1) infiles = TString(argv[1]);
