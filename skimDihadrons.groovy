@@ -21,9 +21,11 @@ import java.lang.Math.*
 def inHipoName = "../data/skim/skim4_005052.hipo" // skim file, or directory of DST files
 def dataStream = 'data' // 'data', 'mcrec', 'mcgen'
 def inHipoType = "skim" // options: "skim", "dst"
+def setHelicity = 0
 if(args.length>=1) inHipoName = args[0]
 if(args.length>=2) dataStream = args[1]
 if(args.length>=3) inHipoType = args[2]
+if(args.length>=4) setHelicity = args[3].toInteger()
 ////////////////////////
 // OPTIONS
 def verbose = 0
@@ -586,7 +588,7 @@ inHipoList.each { inHipoFile ->
 
 
       // get event-level information
-      helicity = eventBank.getByte('helicity',0)
+      helicity = setHelicity==0 ? eventBank.getByte('helicity',0) : setHelicity
       runnum   = configBank.getInt('run',0)
       evnum    = configBank.getInt('event',0)
       if(once) {
