@@ -287,6 +287,7 @@ int main(int argc, char** argv) {
    TH2D * hadPvsMmiss[2];
    TH2D * hadPperpVsMh[2];
    TH2D * hadPperpVsMmiss[2];
+   TH2D * hadPperp2vsHadZ2[2];
    TH2D * hadZvsMh[2];
    TH2D * hadZvsMmiss[2];
    TH2D * hadPperpVsYH[2];
@@ -334,6 +335,9 @@ int main(int argc, char** argv) {
      hadPperpVsMmiss[h] = new TH2D(TString("hadPperpVsMmiss_"+hadName[h]),
        TString(hadTitle[h]+" p_{perp} vs. M_{X};M_{X};p_{perp}"),
        2*NBINS,-1,4,NBINS,0,2);
+     hadPperp2vsHadZ2[h] = new TH2D(TString("hadPperp2vsHadZ2_"+hadName[h]),
+       TString(hadTitle[h]+" p_{perp}^{2} vs. z^{2};z^{2};p_{perp}^{2}"),
+       2*NBINS,0,1,2*NBINS,0,4);
      hadZvsMh[h] = new TH2D(TString("hadZvsMh_"+hadName[h]),
        TString(hadTitle[h]+" z vs. M_{h};M_{h};z"),
        2*NBINS,0,3,NBINS,0,1);
@@ -739,6 +743,7 @@ int main(int argc, char** argv) {
          hadPvsMmiss[h]->Fill(ev->Mmiss,ev->hadP[h]);
          hadPperpVsMh[h]->Fill(ev->Mh,ev->hadPperp[h]);
          hadPperpVsMmiss[h]->Fill(ev->Mmiss,ev->hadPperp[h]);
+         hadPperp2vsHadZ2[h]->Fill(TMath::Power(ev->Z[h],2), TMath::Power(ev->hadPperp[h],2));
          hadZvsMh[h]->Fill(ev->Mh,ev->Z[h]);
          hadZvsMmiss[h]->Fill(ev->Mmiss,ev->Z[h]);
          hadPperpVsYH[h]->Fill(ev->hadYH[h],ev->hadPperp[h]);
@@ -961,6 +966,7 @@ int main(int argc, char** argv) {
    for(int h=0; h<2; h++) hadPvsMmiss[h]->Write();
    for(int h=0; h<2; h++) hadPperpVsMh[h]->Write();
    for(int h=0; h<2; h++) hadPperpVsMmiss[h]->Write();
+   for(int h=0; h<2; h++) hadPperp2vsHadZ2[h]->Write();
    for(int h=0; h<2; h++) hadZvsMh[h]->Write();
    for(int h=0; h<2; h++) hadZvsMmiss[h]->Write();
    for(int h=0; h<2; h++) dihPhiHvsHadPhiH[h]->Write();
