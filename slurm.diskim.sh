@@ -11,11 +11,16 @@ if [ $# -lt 1 ];then
   set -e
   echo ""
   echo "Alternatively,"
-  echo "   $0 [train directory] [outroot dir] [datastream:data/mcrec/mcgen] [optional:skim/dst]"
+  echo "   $0 [train directory] [outroot dir] [datastream:data/mcrec/mcgen] [optional:skim/dst] [optional:set_helicity]"
   echo ""
   echo "      OPTIONS FOR SYSTEMATIC STUDIES:"
   echo "      - append \"rad\" to the end of datastream to run calcKinematics with RC beam model"
   echo "      - append \"positron\" to the end of datastream to reconstruct DIS kinematics with the POSITRON"
+  echo ""
+  echo "   [set_helicity]: 0  - do not alter the helicity (the default)"
+  echo "                   1  - set the helicity to +1 for all events (use this for OSG stringspinner output)"
+  echo "                  -1  - set the helicity to -1 for all events (use this for OSG stringspinner output)"
+  echo ""
   exit 2
 fi
 
@@ -26,14 +31,17 @@ if [ $# -eq 1 ]; then
   outrootdir=outroot.$(getDatasetSourceInfo.rb $datasetSource 'dataset')
   datastream=$(getDatasetSourceInfo.rb $datasetSource 'stream')
   hipotype="skim"
+  setHelicity=0
 # otherwise, use user-specified info
 else
   traindir=$1
   outrootdir=$2
   datastream="data"
   hipotype="skim"
+  setHelicity=0
   if [ $# -ge 3 ]; then datastream="$3"; fi
   if [ $# -ge 4 ]; then hipotype="$4"; fi
+  if [ $# -ge 5 ]; then setHelicity="$5"; fi
 fi
 
 # check setup
@@ -72,6 +80,16 @@ if [ "$hipotype" == "skim" ]; then
   fi
 fi
 
+# check setHelicity
+case $setHelicity in
+  0)
+    ;;
+  1|-1)
+    echo "WARNING: setting helicity to $setHelicity for ALL events! Ignore this warning if you wanted to do this (e.g., analyzing OSG data)" >&2
+    ;;
+  *)
+    echo "ERROR: unknown set_helicity argument '$setHelicity'; ignoring!" >&2
+esac
 
 # build list of files to process
 jobsuffix=$(echo $traindir|sed 's/\/$//'|sed 's/^.*\///g')
@@ -79,11 +97,11 @@ joblist=jobs.${jobsuffix}.slurm
 > $joblist
 if [ "$hipotype" == "skim" ]; then
   for skimfile in ${traindir}/*.hipo; do
-    echo "./runDiskim.sh $skimfile $outrootdir $datastream $hipotype" >> $joblist
+    echo "./runDiskim.sh $skimfile $outrootdir $datastream $hipotype $setHelicity" >> $joblist
   done
 elif [ "$hipotype" == "dst" ]; then
   for rundir in `ls -d ${traindir}/*/ | sed 's/\/$//'`; do
-    echo "./runDiskim.sh $rundir $outrootdir $datastream $hipotype" >> $joblist
+    echo "./runDiskim.sh $rundir $outrootdir $datastream $hipotype $setHelicity" >> $joblist
   done
 else
   echo "ERROR: unknown hipotype"

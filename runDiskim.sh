@@ -2,7 +2,7 @@
 # produces `diskim` file, and subsequently, `outroot` file
 
 if [ $# -lt 1 ]; then
-  echo "USAGE: $0 [skim file] [optional:outrootDir] [optional:datastream=data/mcrec/mcgen] [optional:hipotype=skim/dst]"
+  echo "USAGE: $0 [skim file] [optional:outrootDir] [optional:datastream=data/mcrec/mcgen] [optional:hipotype=skim/dst] [optional:set_helicity]"
   echo "       you can also specify a directory of DST files, but you must also supply the \"dst\" hipotype argument"
   exit 2
 fi
@@ -10,9 +10,11 @@ skimfile=$1
 outrootdir="outroot"
 datastream="data"
 hipotype="skim"
+setHelicity=0
 if [ $# -ge 2 ]; then outrootdir="$2"; fi
 if [ $# -ge 3 ]; then datastream="$3"; fi
 if [ $# -ge 4 ]; then hipotype="$4"; fi
+if [ $# -ge 5 ]; then setHelicity=$5; fi
 
 # check setup
 if [ -z "$DISPIN_HOME" ]; then
@@ -35,7 +37,7 @@ fi
 
 # produce (intermediate) diskim file
 diskimfile="diskim/$(echo $skimfile|sed 's/^.*\///g').root"
-run-groovy skimDihadrons.groovy $skimfile $datastream $hipotype
+run-groovy skimDihadrons.groovy $skimfile $datastream $hipotype $setHelicity
 sleep 1
 
 # run calcKinematics
