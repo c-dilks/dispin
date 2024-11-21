@@ -46,7 +46,7 @@ ParticleData:modeBreitWigner=3 ! particles registered as having a mass width are
 
 ! Settings of string fragmentation parameters.
 StringPT:enhancedFraction = 0.0 ! the fraction of string breaks with enhanced width.
-StringPT:enhancedWidth = 0.0    ! the enhancement of the width in this fraction.
+StringPT:enhancedWidth = 1.0    ! the enhancement of the width in this fraction.  !!!! WARNING: newest pythia has a min of 1.0 for this param!!!
 StringZ:aLund = 1.2
 StringZ:bLund = 0.58
 StringFragmentation:stopMass = 0.0  ! minimum mass for string fragmentation, roughly PARJ(33)?
@@ -79,4 +79,4 @@ StringSpinner:thetaLT = 0  ! free parameter arg(GL/GT)
 ! Switch off automatic event listing in favour of manual.
 Next:numberShowInfo = 0
 Next:numberShowProcess = 0
-Next:numberShowEvent = 1
+Next:numberShowEvent = 0
