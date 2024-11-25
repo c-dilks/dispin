@@ -1,0 +1,28 @@
+# iguana configuration
+
+clas12::SectorFinder:
+  log: info
+  bank_charged: default
+  bank_uncharged: default
+
+physics::InclusiveKinematics:
+  log: info
+  initial_state:
+    - default:
+      beam_direction: [ 0.0, 0.0, 1.0 ]
+      target_particle: proton
+  method:
+    beam_particle: electron
+    reconstruction: scattered_lepton
+    lepton_finder: highest_energy_FD_trigger
+
+physics::DihadronKinematics:
+  log: info
+  hadron_a_list: [ 211 ]
+  hadron_b_list: [ -211 ]
+  phi_r_method: RT_via_covariant_kT
+  theta_method: hadron_a
+
+physics::SingleHadronKinematics:
+  log: info
+  hadron_list: [ 2212 ]

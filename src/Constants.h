@@ -42,6 +42,7 @@ enum particle_enum {
   kDiph,
   kDiphBasic,
   kPioBG,
+  kNix,
   nParticles
 };
 
@@ -61,7 +62,8 @@ static TString PartName(Int_t p) {
     case kDiph: return "diphoton";
     case kDiphBasic: return "diphotonBasic";
     case kPioBG: return "pi0bg";
-    default: 
+    case kNix: return "nix";
+    default:
       fprintf(stderr,"ERROR: bad PartName request\n");
       return "unknown";
   };
@@ -81,7 +83,8 @@ static TString PartTitle(Int_t p) {
     case kDiph: return "#gamma#gamma";
     case kDiphBasic: return "#gamma#gamma_{basic}";
     case kPioBG: return "#pi^{0}_{BG}";
-    default: 
+    case kNix: return "nix";
+    default:
       fprintf(stderr,"ERROR: bad PartTitle request\n");
       return "unknown";
   };
@@ -103,7 +106,8 @@ static Int_t PartPID(Int_t p) {
     case kDiph: return UNDEF; // (no PID)
     case kDiphBasic: return UNDEF; // (no PID)
     case kPioBG: return UNDEF; // (no PID)
-    default: 
+    case kNix: return 0;
+    default:
       fprintf(stderr,"ERROR: bad PartPID request\n");
       return UNDEF;
   };
@@ -130,7 +134,8 @@ static Float_t PartMass(Int_t p) {
     case kDiph: return UNDEF; // (use Diphoton class instead)
     case kDiphBasic: return UNDEF; // (use Diphoton class instead)
     case kPioBG: return UNDEF; // (use Diphoton class instead)
-    default: 
+    case kNix: return 0.0;
+    default:
       fprintf(stderr,"ERROR: bad PartMass request\n");
       return UNDEF;
   };
@@ -150,7 +155,8 @@ static Int_t PartCharge(Int_t p) {
     case kDiph: return 0;
     case kDiphBasic: return 0;
     case kPioBG: return 0;
-    default: 
+    case kNix: return 0;
+    default:
       fprintf(stderr,"ERROR: bad PartCharge request\n");
       return UNDEF;
   };
@@ -172,7 +178,8 @@ static Int_t PartColor(Int_t p) {
     case kDiph: return kMagenta;
     case kDiphBasic: return kMagenta;
     case kPioBG: return kViolet;
-    default: 
+    case kNix: return kGray;
+    default:
       fprintf(stderr,"ERROR: bad PartColor request\n");
       return kBlack;
   };
@@ -192,7 +199,8 @@ static TString PartColorName(Int_t p) {
     case kDiph: return "magenta";
     case kDiphBasic: return "magenta";
     case kPioBG: return "violet";
-    default: 
+    case kNix: return "gray";
+    default:
       fprintf(stderr,"ERROR: bad PartColor request\n");
       return "black";
   };
@@ -449,6 +457,7 @@ static Int_t RundepTorus(Int_t run, TString fileName="") {
   else if(run>=11093 && run<=11283) return kOutbending; // rgb_outbending_fa19
   else if(run>=11284 && run<=11300) return kInbending;  // rgb_BAND_inbending_fa19
   else if(run>=11323 && run<=11571) return kInbending;  // rgb_inbending_wi20
+  else if(run==16346) return kInbending;                // rgc xcheck
   else if(run==RUNNUM_MC) {
     if(fileName.Contains("inbending")) return kInbending;
     else if(fileName.Contains("outbending")) return kOutbending;
@@ -474,6 +483,7 @@ static Float_t RundepBeamEn(Int_t run) {
   else if(run>=11093 && run<=11283) return 10.4096; // rgb fall 19
   else if(run>=11284 && run<=11300) return 4.17179; // rgb fall BAND_FT 19
   else if(run>=11323 && run<=11571) return 10.3894; // rgb winter 20 (RCDB may still be incorrect)
+  else if(run==16346) return 10.5473;               // rgc xcheck
   else if(run==RUNNUM_MC)             return DEFAULT_BEAM_ENERGY; // MC for RGA inbending
   else if(run==RUNNUM_STRING_SPINNER) return DEFAULT_BEAM_ENERGY; // StringSpinner
   else {
@@ -491,6 +501,7 @@ static Bool_t RundepHelicityFlip(Int_t run) {
   else if(run>=11093 && run<=11283) return false; // rgb fall 19
   else if(run>=11284 && run<=11300) return true;  // rgb fall BAND_FT 19
   else if(run>=11323 && run<=11571) return false; // rgb winter 20
+  else if(run==16346) return false;               // rgc xcheck
   else {
     fprintf(stderr,"ERROR: RundepHelicityFlip unknown for run %d\n",run);
     return false;
@@ -519,6 +530,7 @@ static Float_t RundepPolarization(Int_t run, Bool_t v=true) {
   else if(run>=11323 && run<=11334) return v? 0.87135 : 0.01464; // rgb_wi20
   else if(run>=11335 && run<=11387) return v? 0.85048 : 0.01530;
   else if(run>=11389 && run<=11571) return v? 0.84262 : 0.01494; // NOTE: table last updated 1/15/2020, but run ended on 1/30
+  else if(run==16346) return v? 0.82513 : 0.02;                  // rgc xcheck; FIXME: the uncertainty is just a GUESS
   /* MC */
   else if(run==RUNNUM_MC)             return v? 0.86 : 0.0; // MC
   else if(run==RUNNUM_STRING_SPINNER) return v? 1.00 : 0.0; // StringSpinner
