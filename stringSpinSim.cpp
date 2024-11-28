@@ -61,8 +61,8 @@ int main(int argc, char** argv) {
   cout << "  pairType         = " << "0x" << std::hex << pairType << std::dec << endl;
 
   Pythia pythia;
-  auto& EV = pythia.event;
-  auto& hard_process = pythia.process;
+  auto& EV = pythia.event;   // event record
+  auto& HP = pythia.process; // hard process record
   auto fhooks = std::make_shared<SimpleStringSpinner>();
   fhooks->plugInto(pythia);
 
@@ -191,8 +191,25 @@ int main(int argc, char** argv) {
   for (int iEvent = 0; iEvent < nEvent; ++iEvent) {
 
     if (!pythia.next()) continue;
+
+    // patch for <https://gitlab.com/Pythia8/releases/-/issues/529>
+    RotBstMatrix toLab;
+    Vec4 pLepLab   = HP[1].p(); // use the electron beam momentum
+    Vec4 pLepEvent = EV[1].p();
+    toLab.bst(pLepEvent, pLepLab);
+    EV.rotbst(toLab);
+    for(auto const& [name, row] : std::vector<std::pair<std::string,int>>{{"beam", 1}, {"target", 2}}) {
+      auto diff = std::max(
+          std::abs(EV[row].pz() - HP[row].pz()),
+          std::abs(EV[row].e()  - HP[row].e())
+          );
+      if(diff > 0.0001)
+        throw std::runtime_error("ERROR: mismatch of event-frame and hard-process-frame " + name + " momentum");
+    }
+
+    // print some events
     if(iEvent < 3) {
-      hard_process.list(false, false, 8);
+      HP.list(false, false, 8);
       EV.list(false, false, 8);
     }
 
