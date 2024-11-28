@@ -236,12 +236,13 @@ int main(int argc, char** argv) {
     }
   };
   // - additional String Spinner branches
-  Float_t SS_Q2, SS_W, SS_x, SS_y;
+  Float_t SS_Q2, SS_W, SS_x, SS_y, SS_kT;
   if(useStringSpinner) {
     ditr->SetBranchAddress("SS_Q2", &SS_Q2);
     ditr->SetBranchAddress("SS_W",  &SS_W);
     ditr->SetBranchAddress("SS_x",  &SS_x);
     ditr->SetBranchAddress("SS_y",  &SS_y);
+    ditr->SetBranchAddress("SS_kT", &SS_kT);
   }
 
   // define outroot file
@@ -392,6 +393,7 @@ int main(int argc, char** argv) {
     outrootTr->Branch("SS_W",  &SS_W,  "SS_W/F");
     outrootTr->Branch("SS_x",  &SS_x,  "SS_x/F");
     outrootTr->Branch("SS_y",  &SS_y,  "SS_y/F");
+    outrootTr->Branch("SS_kT", &SS_kT, "SS_kT/F");
   }
 
 
