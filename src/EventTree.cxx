@@ -546,6 +546,11 @@ Bool_t EventTree::Valid() {
         ( useStringSpinner || useMCgen || CheckHadChi2pid(qA) ) &&
         ( useStringSpinner || useMCgen || CheckHadChi2pid(qB) );
       break;
+    case cutExclusive:
+      // FIXME: need MX(e,pi+,X) > 1.6 && MX(e,pi-,X) > 1.6 && DeltaTheta({pi-}, {e,p,pi+}) < 1 degree
+      return Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) && Zpair > 0.9 && Mmiss < 1.05 && /* replaces cutDihadron */
+        cutQA && cutDIS && cutHelicity && cutFiducial && cutPID && cutVertex && cutFR; /* all the other cuts the same */
+      break;
     default:
       throw std::runtime_error("EventTree::Valid(): unknown cut version");
   }

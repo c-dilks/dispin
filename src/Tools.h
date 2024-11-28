@@ -43,7 +43,7 @@ class Tools {
       return min;
     };
 
-    
+
     // zoom out the vertical scale for the case where multiple
     // `TH1`s have been drawn with the "SAME" option, but the y-axis
     // range is improperly zoomed
@@ -80,6 +80,19 @@ class Tools {
       };
     };
 
+    // make equal-width log-scale bins for an axis
+    static Double_t* BinLog(Int_t nbins, Double_t lb, Double_t ub) {
+      if(lb<=0||ub<=0||lb>=ub) {
+        throw std::runtime_error("ERROR: bad axis range for Tools::BinLog");
+      }
+      lb = TMath::Log10(lb);
+      ub = TMath::Log10(ub);
+      Double_t wd = (ub-lb)/nbins;
+      Double_t *binArr = new Double_t[nbins+1];
+      for(int b=0; b<=nbins; b++)
+        binArr[b] = TMath::Power(10, lb+b*wd);
+      return binArr;
+    }
 
     // shift angle to the range [-PI,+PI)
     static Float_t AdjAngle(Float_t ang) {

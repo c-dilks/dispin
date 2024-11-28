@@ -39,7 +39,7 @@ class EventTree : public TObject
 {
   public:
 
-    enum CutVersion { cutDefault, cutLoose }; // controls the version of cuts
+    enum CutVersion { cutDefault, cutLoose, cutExclusive }; // controls the version of cuts
 
     EventTree();
     EventTree(TString filelist_, Int_t whichPair_=0x34, CutVersion cutVer_=CutVersion::cutDefault);
@@ -75,6 +75,8 @@ class EventTree : public TObject
         return CutVersion::cutDefault;
       else if(s == "loose")
         return CutVersion::cutLoose;
+      else if(s == "exclusive")
+        return CutVersion::cutExclusive;
       else
         throw std::runtime_error("unknown cut version '" + s + "'");
     }
