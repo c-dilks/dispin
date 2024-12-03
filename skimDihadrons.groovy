@@ -21,12 +21,15 @@ import java.lang.Math.*
 def inHipoName = "../data/skim/skim4_005052.hipo" // skim file, or directory of DST files
 def dataStream = 'data' // 'data', 'mcrec', 'mcgen'
 def inHipoType = "skim" // options: "skim", "dst"
+def setHelicity = 0
 if(args.length>=1) inHipoName = args[0]
 if(args.length>=2) dataStream = args[1]
 if(args.length>=3) inHipoType = args[2]
+if(args.length>=4) setHelicity = args[3].toInteger()
 ////////////////////////
 // OPTIONS
 def verbose = 0
+def allowLikePairs = false // if true, allows dihadrons with same PDGs, e.g., (pi+,pi+)
 hadPIDlist = [ 211, -211 ] // list of hadron PIDs which will be paired
 //hadPIDlist += [ 2212 ] // proton, antiproton
 //hadPIDlist += [ 22 ] // photons (not a hadron, but to be paired for pi0s)
@@ -585,7 +588,7 @@ inHipoList.each { inHipoFile ->
 
 
       // get event-level information
-      helicity = eventBank.getByte('helicity',0)
+      helicity = setHelicity==0 ? eventBank.getByte('helicity',0) : setHelicity
       runnum   = configBank.getInt('run',0)
       evnum    = configBank.getInt('event',0)
       if(once) {
@@ -668,6 +671,9 @@ inHipoList.each { inHipoFile ->
           // loop over pairs of hadrons with the specified PIDs
           hadTreeA.each { hadA ->
             hadTreeB.each { hadB ->
+
+              // allow/disallow like PIDs
+              if(!allowLikePairs && hadIdxA==hadIdxB) return
 
               // like PIDs -> take all permutations of pairs (no repetition)
               // unlike PIDs -> take all combinations of pairs
