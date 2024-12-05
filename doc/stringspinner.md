@@ -42,6 +42,10 @@ finalFit_stringspinner.sh
 finalPlot_stringspinner.sh
 ```
 
+> [!IMPORTANT]
+> do not allow the asymmetry fit to use the depolarization factor in any way; depolarization
+> is _not_ taken into account for StringSpinner
+
 
 ## Pythia Parameters
 

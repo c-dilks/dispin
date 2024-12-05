@@ -2,9 +2,10 @@
 
 ClassImp(BruAsymmetry)
 
-BruAsymmetry::BruAsymmetry(TString outdir_, TString minimizer_, Int_t whichSpinMC_)
+BruAsymmetry::BruAsymmetry(TString outdir_, TString minimizer_, Int_t whichSpinMC_, Bool_t useDepol_)
   : outdir(outdir_)
   , whichSpinMC(whichSpinMC_)
+  , useDepol(useDepol_)
 {
   // get minimizer enum
   minimizer = MinimizerStrToEnum(minimizer_);
@@ -53,7 +54,11 @@ BruAsymmetry::BruAsymmetry(TString outdir_, TString minimizer_, Int_t whichSpinM
   // category for spin
   spinBranch = whichSpinMC<0 ? "Spin_idx" : Form("SpinMC_%d_idx",whichSpinMC);
   FM->SetUp().LoadCategory(spinBranch+"[SpinP=1,SpinM=-1,SpinOff=0]");
-  
+
+  // warn if depolarization is disabled
+  if(!useDepol)
+    fprintf(stderr, "WARNING: depolarization factor is disabled; you may ignore this warning if you are fitting StringSpinner data\n");
+
   // unique ID variable
   FM->SetUp().SetIDBranchName("Idx");
 
@@ -98,15 +103,16 @@ void BruAsymmetry::AddNumerMod(Modulation * modu) {
 
   // determine which depolarization factor to use
   // - assumes LU, or DSIDIS twist 2
-  TString depolVar;
-  switch(modu->GetTw()) {
-    case 2: depolVar = "@Depol2[]"; break;
-    case 3: depolVar = "@Depol3[]"; break;
-    default: 
-      fprintf(stderr,"unknown depolarization factor; setting to 1\n");
-      depolVar = "1";
-  };
-  //depolVar = "1"; // OVERRIDE: disable depolarization factor in fit
+  TString depolVar = "1";
+  if(useDepol) {
+    switch(modu->GetTw()) {
+      case 2: depolVar = "@Depol2[]"; break;
+      case 3: depolVar = "@Depol3[]"; break;
+      default:
+        fprintf(stderr,"unknown depolarization factor; setting to 1\n");
+        depolVar = "1";
+    }
+  }
 
   TString polVar = "@Pol[]";
   TString spinVar = "@"+spinBranch+"[]";
