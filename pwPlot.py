@@ -102,8 +102,8 @@ asymMin = None
 if scheme==0: # twist3 m==0 states only
     asymMax = 0.25
 elif scheme==2: # twist2
-    asymMin = -0.095
-    asymMax = 0.095
+    asymMin = -0.150
+    asymMax = 0.150
 elif scheme==3: # twist3
     asymMin = -0.150
     asymMax = 0.150
@@ -373,9 +373,13 @@ for l,lmap in plotmap.items():
             # draw asymmetry graph to subplot
             label = ''
             if firstPlot and len(legendLabels)>0: label = legendLabels[infileIdx]
+            flip = 1.0
+            if 'sss' in infileN: ### FIXME: this is a hack!
+                flip = -1.0
             axs[r,c].errorbar(
                 list(map(lambda x:x+infileIdx*translation, asym.GetX())), # optionally offsets (translates) stacked plots
-                list(asym.GetY()),
+                list(map(lambda y:y*flip, asym.GetY())),
+                # list(asym.GetY()),
                 yerr=list(asym.GetEY()),
                 marker=mkrSty,
                 fillstyle=fillSty,
