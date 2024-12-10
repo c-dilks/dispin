@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
    cutVer = "default";
    if(argc==1) {
      fprintf(stderr,"USAGE: %s [outroot file(s)] [output plots.root file] [pairType] [cutVersion]\n",argv[0]);
-     fprintf(stderr,"\n          [cutVersion] can be 'default' or 'loose' (the default is 'default')\n");
+     fprintf(stderr,"\n          [cutVersion] can be 'default' or 'loose' or 'exclusive' (the default is 'default')\n");
      return 1;
    };
    if(argc>1) infiles = TString(argv[1]);
@@ -142,7 +142,7 @@ int main(int argc, char** argv) {
      hadPtDist[h] = new TH1D(TString(hadName[h]+"hadPtDist"),distTitle("p_{T}"),
        NBINS,0,4);
      hadPperpDist[h] = new TH1D(TString(hadName[h]+"hadPperpDist"),distTitle("p_{perp}"),
-       NBINS,0,2);
+       NBINS,Tools::BinLog(NBINS,0.01,2));
      hadEtaDist[h] = new TH1D(TString(hadName[h]+"hadEtaDist"),distTitle("#eta"),
        NBINS,0,5);
      hadThetaDist[h] = new TH1D(TString(hadName[h]+"hadThetaDist"),distTitle("#theta"),
@@ -193,7 +193,7 @@ int main(int argc, char** argv) {
    TH1D * MhDist = new TH1D("MhDist","M_{h} distribution;M_{h}",2*NBINS,0,3);
    TH1D * PhDist = new TH1D("PhDist","|P_{h}| distribution;|P_{h}|",NBINS,0,10);
    TH1D * PhPerpDist = new TH1D("PhPerpDist","|P_{h}^{perp}| distribution;|P_{h}^{perp}|",
-     NBINS,0,2);
+     NBINS,Tools::BinLog(NBINS,0.01,2));
    TH1D * ZpairDist = new TH1D("ZpairDist","z_{pair} distribution;z_{pair}",NBINS,0,1);
    TH1D * zetaDist = new TH1D("zetaDist","#zeta distribution;#zeta",NBINS,-1,1);
    TH1D * xFDist = new TH1D("xFDist","x_{F} distribution;x_{F}",NBINS,-2,2);
@@ -287,6 +287,7 @@ int main(int argc, char** argv) {
    TH2D * hadPvsMmiss[2];
    TH2D * hadPperpVsMh[2];
    TH2D * hadPperpVsMmiss[2];
+   TH2D * hadPperp2vsHadZ2[2];
    TH2D * hadZvsMh[2];
    TH2D * hadZvsMmiss[2];
    TH2D * hadPperpVsYH[2];
@@ -334,6 +335,9 @@ int main(int argc, char** argv) {
      hadPperpVsMmiss[h] = new TH2D(TString("hadPperpVsMmiss_"+hadName[h]),
        TString(hadTitle[h]+" p_{perp} vs. M_{X};M_{X};p_{perp}"),
        2*NBINS,-1,4,NBINS,0,2);
+     hadPperp2vsHadZ2[h] = new TH2D(TString("hadPperp2vsHadZ2_"+hadName[h]),
+       TString(hadTitle[h]+" p_{perp}^{2} vs. z^{2};z^{2};p_{perp}^{2}"),
+       2*NBINS,0,1,2*NBINS,0,4);
      hadZvsMh[h] = new TH2D(TString("hadZvsMh_"+hadName[h]),
        TString(hadTitle[h]+" z vs. M_{h};M_{h};z"),
        2*NBINS,0,3,NBINS,0,1);
@@ -739,6 +743,7 @@ int main(int argc, char** argv) {
          hadPvsMmiss[h]->Fill(ev->Mmiss,ev->hadP[h]);
          hadPperpVsMh[h]->Fill(ev->Mh,ev->hadPperp[h]);
          hadPperpVsMmiss[h]->Fill(ev->Mmiss,ev->hadPperp[h]);
+         hadPperp2vsHadZ2[h]->Fill(TMath::Power(ev->Z[h],2), TMath::Power(ev->hadPperp[h],2));
          hadZvsMh[h]->Fill(ev->Mh,ev->Z[h]);
          hadZvsMmiss[h]->Fill(ev->Mmiss,ev->Z[h]);
          hadPperpVsYH[h]->Fill(ev->hadYH[h],ev->hadPperp[h]);
@@ -961,6 +966,7 @@ int main(int argc, char** argv) {
    for(int h=0; h<2; h++) hadPvsMmiss[h]->Write();
    for(int h=0; h<2; h++) hadPperpVsMh[h]->Write();
    for(int h=0; h<2; h++) hadPperpVsMmiss[h]->Write();
+   for(int h=0; h<2; h++) hadPperp2vsHadZ2[h]->Write();
    for(int h=0; h<2; h++) hadZvsMh[h]->Write();
    for(int h=0; h<2; h++) hadZvsMmiss[h]->Write();
    for(int h=0; h<2; h++) dihPhiHvsHadPhiH[h]->Write();

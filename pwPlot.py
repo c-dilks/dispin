@@ -14,6 +14,7 @@ outputEXT = 'png'
 translation = 0.0
 legendLabels = []
 includePrelimLabel = False
+flipSignIfStringSpinner = False
 if len(sys.argv)-1 < 1:
     helpStr = f'''
     USAGE: {sys.argv[0]} [OPTION]... [FILE]...
@@ -57,6 +58,8 @@ if len(sys.argv)-1 < 1:
 
         -w  include PRELIMINARY watermark
 
+        -f  flip the sign if StringSpinner (if file name contains "sss")
+
     FILES
         brufit asym.root file(s), which will be stacked together on the output figure
 
@@ -66,7 +69,7 @@ if len(sys.argv)-1 < 1:
     print(helpStr,file=sys.stderr)
     exit(2)
 
-try: opts,args = getopt.getopt(sys.argv[1:],'s:x:e:o:t:l:w')
+try: opts,args = getopt.getopt(sys.argv[1:],'s:x:e:o:t:l:wf')
 except getopt.GetoptError:
     print('\n\nERROR: invalid arguments')
     exit(2)
@@ -78,6 +81,7 @@ for opt,arg in opts:
     if(opt=="-t"): translation = float(arg)
     if(opt=="-l"): legendLabels = arg.split(';')
     if(opt=="-w"): includePrelimLabel = True
+    if(opt=="-f"): flipSignIfStringSpinner = True
 infiles = args
 print(f'''
 CALLING {sys.argv[0]}:
@@ -102,8 +106,8 @@ asymMin = None
 if scheme==0: # twist3 m==0 states only
     asymMax = 0.25
 elif scheme==2: # twist2
-    asymMin = -0.095
-    asymMax = 0.095
+    asymMin = -0.150
+    asymMax = 0.150
 elif scheme==3: # twist3
     asymMin = -0.150
     asymMax = 0.150
@@ -370,12 +374,19 @@ for l,lmap in plotmap.items():
                 print("WARNING: need to define new colors",file=sys.stderr)
             mkrCol = errCol
 
+            # sign flip (for StringSpinner data)
+            flipSign = 1.0
+            if flipSignIfStringSpinner and 'sss' in infileN:
+                print(f'WARNING: flipping asymmetry sign for file {infileN}', file=sys.stderr)
+                flipSign = -1.0
+
             # draw asymmetry graph to subplot
             label = ''
             if firstPlot and len(legendLabels)>0: label = legendLabels[infileIdx]
             axs[r,c].errorbar(
                 list(map(lambda x:x+infileIdx*translation, asym.GetX())), # optionally offsets (translates) stacked plots
-                list(asym.GetY()),
+                list(map(lambda y:y*flipSign, asym.GetY())),
+                # list(asym.GetY()),
                 yerr=list(asym.GetEY()),
                 marker=mkrSty,
                 fillstyle=fillSty,

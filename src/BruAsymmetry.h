@@ -40,7 +40,7 @@
 class BruAsymmetry : public TObject
 {
   public:
-    BruAsymmetry(TString outdir_, TString minimizer_, Int_t whichSpinMC_=-1);
+    BruAsymmetry(TString outdir_, TString minimizer_, Int_t whichSpinMC_=-1, Bool_t useDepol_=true);
     ~BruAsymmetry();
 
     void AddNumerMod(Modulation * modu);
@@ -95,6 +95,7 @@ class BruAsymmetry : public TObject
     TString outdir;
     Int_t minimizer;
     Int_t whichSpinMC;
+    Bool_t useDepol;
     TString spinBranch;
     TString outlog;
 

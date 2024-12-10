@@ -7,44 +7,15 @@ r = PyCall.import_module 'ROOT'
 
 r.gStyle.SetOptStat 0
 r.gROOT.SetBatch true
+r.gStyle.SetTitleYOffset 1.5
 
 # NOTE: this script takes NO ARGUMENTS, instead, see the following
 # to decide the input files, their plot styles, etc.
 ##################################################################################
 # get the list of files, and decide legend titles and plot styles
 file_list = [
-#   {
-#     :name  => 'plots.rga.inbending.fa18.root',
-#     :title => 'CLAS12 Data',
-#     :id    => 'data',
-#     :color => r.kBlack,
-#     :style => r.kFullCross,
-#     :baseline => true, # baseline plot MUST be first, and there can only be one
-#   },
-#   {
-#     :name  => 'plots.sss.aug24_LU_2.inbending.root',
-#     :title => 'StringSpinner',
-#     :id    => 'sss',
-#     :color => r.kGreen+1,
-#     :style => r.kFullCross,
-#   },
-#   {
-#     :name  => 'plots.mc.richard.inbending.root',
-#     :title => 'CLASDIS Richard',
-#     :id    => 'mc_richard',
-#     :color => r.kBlue,
-#     :style => r.kFullCircle,
-#   },
-#   {
-#     :name  => 'plots.mc.inbending.bg45.root',
-#     :title => 'CLASDIS Old',
-#     :id    => 'mc_old',
-#     :color => r.kOrange-3,
-#     :style => r.kFullSquare,
-#   },
-  ##############
   {
-    :name  => 'plots.nocuts.rga.inbending.fa18.root',
+    :name  => 'plots.rga.inbending.fa18.subset.root',
     :title => 'CLAS12 Data',
     :id    => 'data',
     :color => r.kBlack,
@@ -52,105 +23,19 @@ file_list = [
     :baseline => true, # baseline plot MUST be first, and there can only be one
   },
   {
-    :name  => 'plots.nocuts.sss.aug24_LU_2.inbending.root',
+    :name  => 'plots.sss.nov18.root',
     :title => 'StringSpinner',
     :id    => 'sss',
     :color => r.kGreen+1,
-    :style => r.kFullCross,
-  },
-  {
-    :name  => 'plots.nocuts.mc.richard.inbending.root',
-    :title => 'CLASDIS Richard',
-    :id    => 'mc_richard',
-    :color => r.kBlue,
     :style => r.kFullCircle,
   },
   {
-    :name  => 'plots.nocuts.mc.inbending.bg45.root',
-    :title => 'CLASDIS Old',
-    :id    => 'mc_old',
-    :color => r.kOrange-3,
+    :name  => 'plots.mc.inbending.bg45.root',
+    :title => 'CLASDIS',
+    :id    => 'clasdis',
+    :color => r.kPink+1,
     :style => r.kFullSquare,
   },
-  ##### generator level testing #####
-  # {
-  #   :name  => 'plots.mcgen.root',
-  #   :title => 'CLASDIS',
-  #   :id    => 'mcgen',
-  #   :color => r.kBlack,
-  #   :style => r.kFullCross,
-  #   :baseline => true, # baseline plot MUST be first, and there can only be one
-  # },
-  # { ### test enabling kT
-  #   :name  => 'plots.outroot.sss.GLGT_1.4.thetaLT_0.testAandBparams.root',
-  #   :title => 'S.S. kT off',
-  #   :id    => 'ktoff',
-  #   :color => r.kOrange,
-  #   :style => r.kFullCircle,
-  # },
-  # { ### test enabling kT
-  #   :name  => 'plots.sss.test_kt_0.64.root',
-  #   :title => 'S.S. sigmaKThard = 0.64',
-  #   :id    => 'kton',
-  #   :color => r.kGreen+1,
-  #   :style => r.kFullCircle,
-  # },
-  # { ### test decreasing stopMass
-  #   :name  => 'plots.sss.test_stopMass_0.3.root',
-  #   :title => 'S.S. stopMass = 0.3',
-  #   :id    => 'stopmass03',
-  #   :color => r.kBlue,
-  #   :style => r.kFullCircle,
-  # },
-  # { ### test decreasing stopMass
-  #   :name  => 'plots.sss.test_stopMass_0.0.root',
-  #   :title => 'S.S. stopMass = 0.0',
-  #   :id    => 'stopmass00',
-  #   :color => r.kMagenta,
-  #   :style => r.kFullCircle,
-  # },
-  # { ### test PDF sets
-  #   :name  => 'plots.sss.PDF2.root',
-  #   :title => 'S.S. CTEQ 5L, LO #alpha_{s}(M_{Z}) = 0.127',
-  #   :id    => 'pdf2',
-  #   :color => r.kRed,
-  #   :style => r.kFullCircle,
-  # },
-  # { ### test PDF sets
-  #   :name  => 'plots.sss.PDF13.root',
-  #   :title => 'S.S. NNPDF2.3 QCD+QED LO #alpha_{s}(M_{Z}) = 0.130',
-  #   :id    => 'pdf13',
-  #   :color => r.kCyan-7,
-  #   :style => r.kFullCircle,
-  # },
-  # { ### test PDF sets
-  #   :name  => 'plots.sss.PDF14.root',
-  #   :title => 'S.S. NNPDF2.3 QCD+QED LO #alpha_{s}(M_{Z}) = 0.119',
-  #   :id    => 'pdf14',
-  #   :color => r.kViolet+1,
-  #   :style => r.kFullCircle,
-  # },
-  # { ### test PDF sets
-  #   :name  => 'plots.sss.PDF15.root',
-  #   :title => 'S.S. NNPDF2.3 QCD+QED NLO #alpha_{s}(M_{Z}) = 0.119',
-  #   :id    => 'pdf15',
-  #   :color => r.kGreen+2,
-  #   :style => r.kFullCircle,
-  # },
-  # { ### test PDF sets
-  #   :name  => 'plots.sss.PDF16.root',
-  #   :title => 'S.S. NNPDF2.3 QCD+QED NNLO #alpha_{s}(M_{Z}) = 0.119',
-  #   :id    => 'pdf16',
-  #   :color => r.kBlue,
-  #   :style => r.kFullCircle,
-  # },
-  # { ### test particleOn mode (USES pdfSet = 13)
-  #   :name  => 'plots.sss.testOnMode.root',
-  #   :title => 'test onMode',
-  #   :id    => 'onMode',
-  #   :color => r.kMagenta,
-  #   :style => r.kFullCircle,
-  # },
 ]
 # Dir.glob("plots.outroot.sss*.root").reject{|f|f.include?'test'}.each do |file_name|
 #   # make the title
@@ -197,7 +82,7 @@ plot_list = {
   'WDist'      => {:logx=>false, :logy=>false},
   'XDist'      => {:logx=>false, :logy=>false},
   'YDist'      => {:logx=>false, :logy=>false},
-  'PhPerpDist' => {:logx=>false, :logy=>false},
+  'PhPerpDist' => {:logx=>true, :logy=>true},
   'MhDist' => {},
   'ZpairDist' => {},
   'PhiHDist' => {},
@@ -205,7 +90,7 @@ plot_list = {
   'thetaDist' => {},
   'cosThetaDist' => {},
   'MmissDistZoom' => {},
-  'YHDist' => {},
+  'YHDist' => { :logy=>true },
   'deltaPhiDist' => {},
   'piPlushadEDist'      => { :subplot_of => 'hadECanv'     },
   'piMinushadEDist'     => { :subplot_of => 'hadECanv'     },
@@ -213,8 +98,8 @@ plot_list = {
   'piMinushadPDist'     => { :subplot_of => 'hadPCanv'     },
   'piPlushadPtDist'     => { :subplot_of => 'hadPtCanv'    },
   'piMinushadPtDist'    => { :subplot_of => 'hadPtCanv'    },
-  'piPlushadPperpDist'  => { :subplot_of => 'hadPperpCanv' },
-  'piMinushadPperpDist' => { :subplot_of => 'hadPperpCanv' },
+  'piPlushadPperpDist'  => { :subplot_of => 'hadPperpCanv', :logx=>true, :logy=>true },
+  'piMinushadPperpDist' => { :subplot_of => 'hadPperpCanv', :logx=>true, :logy=>true },
   'piPlushadThetaDist'  => { :subplot_of => 'hadThetaCanv' },
   'piMinushadThetaDist' => { :subplot_of => 'hadThetaCanv' },
   'piPlushadPhiDist'    => { :subplot_of => 'hadPhiCanv'   },
@@ -223,16 +108,20 @@ plot_list = {
   'piMinushadZDist'     => { :subplot_of => 'hadZCanv'     },
   'piPlushadXFDist'     => { :subplot_of => 'hadXFCanv'    },
   'piMinushadXFDist'    => { :subplot_of => 'hadXFCanv'    },
+  'piPlushadYHDist'     => { :subplot_of => 'hadYHCanv', :logy=>true },
+  'piMinushadYHDist'    => { :subplot_of => 'hadYHCanv', :logy=>true },
   'depolarizationFactors/kfAvsMh' => { :projection => 'y', :title => 'depol. A(#varepsilon,y) distribution' },
   'depolarizationFactors/kfBvsMh' => { :projection => 'y', :title => 'depol. B(#varepsilon,y) distribution'},
   'depolarizationFactors/kfCvsMh' => { :projection => 'y', :title => 'depol. C(#varepsilon,y) distribution'},
   'depolarizationFactors/kfVvsMh' => { :projection => 'y', :title => 'depol. V(#varepsilon,y) distribution'},
   'depolarizationFactors/kfWvsMh' => { :projection => 'y', :title => 'depol. W(#varepsilon,y) distribution'},
-  '/symmetry/symHadP' => {},
-  '/symmetry/symHadPt' => {},
+  '/symmetry/symHadP'     => {},
+  '/symmetry/symHadPt'    => {},
   '/symmetry/symHadPperp' => {},
-  '/symmetry/symHadZ' => {},
+  '/symmetry/symHadZ'     => {},
   '/symmetry/symHadTheta' => {},
+  '/symmetry/symHadXF'    => {},
+  '/symmetry/symHadYH'    => {},
 }.map do |plot_name,settings|
   canv_name = "canv_#{plot_name.gsub /\//, '_'}"
   res = {
@@ -243,13 +132,15 @@ plot_list = {
     :logy => false,
   }
   settings.each{ |k,v| res[k] = v }
-  res[:canv].Divide 2,2
+  res[:canv].Divide 2, 2, 0, 0
+  res[:canv].GetPad(1).SetTickx 2
+  res[:canv].GetPad(1).SetTopMargin 0.15
+  res[:canv].GetPad(3).SetBottomMargin 0.15
   [1,3].each do |pad|
     res[:canv].GetPad(pad).SetGrid 1,1
     res[:canv].GetPad(pad).SetLeftMargin 0.12
+    res[:canv].GetPad(pad).SetRightMargin 0.12
   end
-  res[:canv].GetPad(1).SetBottomMargin 0.0
-  res[:canv].GetPad(3).SetTopMargin 0.0
   res
 end
 
@@ -341,6 +232,7 @@ file_list.each do |file_hash|
     first_plot = false
     plot_pad.SetLogx if plot_hash[:logx]
     plot_pad.SetLogy if plot_hash[:logy]
+    plot.GetYaxis.ChangeLabel 1, -1, 0 unless plot_hash[:logy] # remove the '0.0' label (since it will be cutoff by the pad below)
   end
   first_file = false
 end
@@ -361,6 +253,7 @@ rat_hash.each do |name,hash|
     rat_plot.Divide hash[:baseline]
     rat_plot.SetMinimum 0.1
     rat_plot.SetMaximum 3.0
+    rat_plot.GetYaxis.ChangeLabel 6, -1, 0 # remove the '3.0' label (since it will be cutoff by the pad above)
     rat_plot.Draw idx==0 ? 'p hist' : 'p hist same'
     # fit to 'ratio = 1' to get a chi2
     rat_plot_xmin = rat_plot.GetXaxis.GetXmin

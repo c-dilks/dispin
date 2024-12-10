@@ -13,6 +13,7 @@
 
 // dispin
 #include "src/Constants.h"
+#include "src/Tools.h"
 
 using namespace Pythia8;
 
@@ -60,7 +61,8 @@ int main(int argc, char** argv) {
   cout << "  pairType         = " << "0x" << std::hex << pairType << std::dec << endl;
 
   Pythia pythia;
-  Event& EV = pythia.event;
+  auto& EV = pythia.event;   // event record
+  auto& HP = pythia.process; // hard process record
   auto fhooks = std::make_shared<SimpleStringSpinner>();
   fhooks->plugInto(pythia);
 
@@ -138,7 +140,8 @@ int main(int argc, char** argv) {
   Float_t beta[nPar];
   Int_t   genParentIdx[nPar];
   Int_t   genParentPid[nPar];
-  Float_t Q2, W, x, y;
+  Float_t Q2, W, x, y, kT;
+  Int_t   parton_pdg;
 
   auto SetParticleBranch = [&tr] (TString parStr, TString brName, void *brAddr, TString type) {
     TString fullBrName = parStr + TString("_") + brName;
@@ -168,6 +171,8 @@ int main(int argc, char** argv) {
   tr->Branch("SS_W",  &W,  "SS_W/F");
   tr->Branch("SS_x",  &x,  "SS_x/F");
   tr->Branch("SS_y",  &y,  "SS_y/F");
+  tr->Branch("SS_kT", &kT, "SS_kT/F"); // parton kT (momentum transverse to virtual photon)
+  tr->Branch("SS_parton_pdg", &parton_pdg, "SS_parton_pdg/I");
 
   // decode pairType
   Int_t h0, h1;
@@ -186,7 +191,30 @@ int main(int argc, char** argv) {
   for (int iEvent = 0; iEvent < nEvent; ++iEvent) {
 
     if (!pythia.next()) continue;
-    // if(iEvent < 3) EV.list();
+
+    // patch for <https://gitlab.com/Pythia8/releases/-/issues/529>
+    // FIXME: disabled, since it seems to shift the MX peaks in the _wrong_ direction
+    /*
+    RotBstMatrix toLab;
+    Vec4 pLepLab   = HP[1].p(); // use the electron beam momentum
+    Vec4 pLepEvent = EV[1].p();
+    toLab.bst(pLepEvent, pLepLab);
+    EV.rotbst(toLab);
+    for(auto const& [name, row] : std::vector<std::pair<std::string,int>>{{"beam", 1}, {"target", 2}}) {
+      auto diff = std::max(
+          std::abs(EV[row].pz() - HP[row].pz()),
+          std::abs(EV[row].e()  - HP[row].e())
+          );
+      if(diff > 0.0001)
+        throw std::runtime_error("ERROR: mismatch of event-frame and hard-process-frame " + name + " momentum");
+    }
+    */
+
+    // print some events
+    if(iEvent < 3) {
+      HP.list(false, false, 8);
+      EV.list(false, false, 8);
+    }
 
     // event-level branches
     runnum   = RUNNUM_STRING_SPINNER;
@@ -222,6 +250,35 @@ int main(int argc, char** argv) {
     }
     if(Row[kEle] == -1 || hadRowList[qA].empty() || hadRowList[qB].empty())
       continue;
+
+    // get kT (transverse momentum of the parton)
+    int row_init_ele    = -1;
+    int row_init_parton = -1;
+    kT = UNDEF;
+    parton_pdg = (Int_t) UNDEF;
+    for(auto const& mother : std::vector<int>{ EV[Row[kEle]].mother1(), EV[Row[kEle]].mother2() }) { // find the initial electron
+      if(EV[mother].id() == 11) {
+        row_init_ele = mother;
+        break;
+      }
+    }
+    for(int row = 0; row < EV.size(); ++row) {
+      if(EV[row].status() == -62) {  // -61 (-62): incoming outgoing subprocess particle with primordial kT included
+                                     // FIXME: pick one!
+        row_init_parton = row;
+        break;
+      }
+    }
+    if(row_init_ele >= 0 && row_init_parton >= 0) {
+      // virtual photon direction
+      auto phot_p = EV[Row[kEle]].p() - EV[row_init_ele].p();
+      // auto phot_p = EV[Row[kEle]].p() - Pythia8::Vec4(0, 0, 10.60410, 10.60410);
+      kT = Tools::Reject(
+          TVector3{ EV[row_init_parton].px(), EV[row_init_parton].py(), EV[row_init_parton].pz() },
+          TVector3{ phot_p.px(),              phot_p.py(),              phot_p.pz() }
+          ).Mag();
+      parton_pdg = (Int_t) EV[row_init_parton].id();
+    }
 
     // hadron pairing and tree filling
     for(auto iA : hadRowList[qA]) {

@@ -18,7 +18,8 @@ void asymBruFit(
     Int_t nbins0=6,  // number of bins for each dimension
     Int_t nbins1=-1, // - example: ivType=32, nbins0=6, nbins1=3, runs fit in 6 bins of z (iv=3) for 3 bins of Mh (iv=2)
     Int_t nbins2=-1, // - leave `-1` to use defaults defined in `src/Binning.cxx`
-    Int_t whichSpinMC=-1 // if >=0, use helicity from injected asymmetry (branch "SpinMC_`whichSpinMC`_idx")
+    Int_t whichSpinMC=-1, // if >=0, use helicity from injected asymmetry (branch "SpinMC_`whichSpinMC`_idx")
+    Int_t useDepol=1 // if 0, do not use depolarization, which is what you should do if you are analyzing stringspinner data
 ) {
 
   // set PROOF sandbox (where log files etc. are written)
@@ -28,7 +29,7 @@ void asymBruFit(
   printf("proof sandbox = %s\n",gEnv->GetValue("ProofLite.Sandbox","ERROR"));
 
   // instantiate brufit
-  BruAsymmetry * B = new BruAsymmetry(bruDir,minimizer,whichSpinMC);
+  BruAsymmetry * B = new BruAsymmetry(bruDir, minimizer, whichSpinMC, useDepol==0 ? false : true);
 
 
   // set binning scheme ------------------------------------------------------------------------------------
