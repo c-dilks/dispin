@@ -193,6 +193,8 @@ int main(int argc, char** argv) {
     if (!pythia.next()) continue;
 
     // patch for <https://gitlab.com/Pythia8/releases/-/issues/529>
+    // FIXME: disabled, since it seems to shift the MX peaks in the _wrong_ direction
+    /*
     RotBstMatrix toLab;
     Vec4 pLepLab   = HP[1].p(); // use the electron beam momentum
     Vec4 pLepEvent = EV[1].p();
@@ -206,6 +208,7 @@ int main(int argc, char** argv) {
       if(diff > 0.0001)
         throw std::runtime_error("ERROR: mismatch of event-frame and hard-process-frame " + name + " momentum");
     }
+    */
 
     // print some events
     if(iEvent < 3) {
