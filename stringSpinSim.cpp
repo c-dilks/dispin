@@ -248,8 +248,6 @@ int main(int argc, char** argv) {
         }
       }
     }
-    if(iEvent < 3)
-      std::cout << "scattered electron is row " << Row[kEle] << std::endl;
     if(Row[kEle] == -1 || hadRowList[qA].empty() || hadRowList[qB].empty())
       continue;
 
