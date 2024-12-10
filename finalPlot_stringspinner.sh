@@ -63,6 +63,7 @@ for s in 2 3; do
     pwPlot.py                             \
       -s $s                               \
       -l "$legendLabels"                  \
+      -f                                  \
       "${titleArgs[@]}"                   \
       "${sssFiles[@]}"                    \
       $clasDir/asym_minuit_BL$bl.root
