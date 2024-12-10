@@ -5,7 +5,7 @@ require 'fileutils'
 
 # settings #################
 NumEventsPerFile = 5e6.to_i
-NumFiles         = 14
+NumFiles         = 14 # `2` is good enough for `diagnostics.cpp`, `14` is good for asymmetries
 Modes            = [ 0, 1 ] # stringSpinSim.exe modes
 DiskimDir        = 'diskim.sss' # NOTE: files within this directory will be REMOVED
 OutrootDir       = 'outroot.sss' # NOTE: files within this directory will be REMOVED
