@@ -263,6 +263,7 @@ int main(int argc, char** argv) {
     }
     for(int row = 0; row < EV.size(); ++row) {
       if(EV[row].status() == -62) {  // -61 (-62): incoming outgoing subprocess particle with primordial kT included
+                                     // FIXME: pick one!
         row_init_parton = row;
         break;
       }
