@@ -1,13 +1,3 @@
-# specify which particle bank to read (data vs. MC)
-# 0 = REC::Particle -- for data
-# 1 = MC::Lund -- for MC generated (helicity injected)
-# 2 = MC::Particle -- for MC generated (helicity injected)
-# 3 = REC::Particle -- for MC reconstructed (helicity set by event-match to MCgen)
-PARTICLE_BANK = 0
-
-
-####################################
-
 # compiler and flags
 CXX = g++
 FLAGS = -g -Wno-deprecated -fPIC -fno-inline -Wno-write-strings
@@ -16,12 +6,21 @@ FLAGS += -DPARTICLE_BANK=$(PARTICLE_BANK)
 # extra flags for valgrind
 FLAGS += -O0
 
-
 # ROOT
 FLAGS += $(shell root-config --cflags)
 DEPS = -I$(shell root-config --incdir)
 LIBS = $(shell root-config --glibs)
 LIBS += -lMinuit -lRooFitCore -lRooFit -lRooStats -lProof -lMathMore
+
+# HIPO
+$(if $(shell if pkg-config hipo4; then echo HIPO found; fi), , $(error HIPO not found))
+DEPS += $(shell pkg-config hipo4 --cflags)
+LIBS += $(shell pkg-config hipo4 --libs)
+
+# Iguana
+$(if $(shell if pkg-config iguana; then echo iguana found; fi), , $(error iguana not found))
+DEPS += $(shell pkg-config iguana --cflags)
+LIBS += $(shell pkg-config iguana --libs)
 
 # BruFit
 DEPS += -I$(BRUFIT)/core
@@ -41,4 +40,3 @@ endif
 # DiSpin shared object name and source directory
 DISPIN = DiSpin
 DISPINOBJ := lib$(DISPIN).so
-

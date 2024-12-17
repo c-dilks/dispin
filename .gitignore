@@ -13,7 +13,7 @@ src/*.pcm
 *.sif
 !docDiagram.pdf
 .~lock*
-src/DiSpinDict.*
+src/DiSpinDict*
 outz
 outroot
 outroot.*

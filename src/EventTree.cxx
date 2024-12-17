@@ -13,8 +13,25 @@ EventTree::EventTree(TString filelist_, Int_t whichPair_, CutVersion cutVer_) : 
 
   filelist = filelist_;
   DecodePairType(whichPair_,whichHad[qA],whichHad[qB]);
-  printf("\n>>> DIHADRON SELECTION: %s\n\n",PairName(whichHad[qA],whichHad[qB]).Data());
 
+  if(whichHad[qA] == kNix && whichHad[qB] != kNix) {
+    qNix             = qA;
+    qS               = qB;
+    singleHadronMode = true;
+  }
+  else if(whichHad[qA] != kNix && whichHad[qB] == kNix) {
+    qS               = qA;
+    qNix             = qB;
+    singleHadronMode = true;
+  }
+  else if(whichHad[qA] == kNix && whichHad[qB] == kNix) {
+    throw std::runtime_error("both hadrons can't be 'nix'");
+  }
+  else {
+    singleHadronMode = false;
+  }
+  if(singleHadronMode) printf("\n>>> SINGLE HADRON SELECTION: %s\n\n",PartName(whichHad[qS]).Data());
+  else                 printf("\n>>> DIHADRON SELECTION: %s\n\n",PairName(whichHad[qA],whichHad[qB]).Data());
 
   printf("reading tree chain from %s\n",filelist.Data());
   chain = new TChain("tree");
@@ -338,6 +355,15 @@ void EventTree::GetEvent(Long64_t i) {
     gen_hadTheta[h] = useMCrec ? Tools::EtaToTheta(gen_hadEta[h]) : UNDEF;
   };
 
+  //
+  //
+  //
+  // FIXME: all these calculations, like depolarization, epsilon, breit frame rapidity
+  // can be removed from here once they are upstream in iguana
+  //
+  //
+  //
+
   // compute gamma and epsilon
   // - epsilon is the ratio of longitudinal to transverse photon flux
   gamma = 2*PartMass(kP)*x / TMath::Sqrt(Q2);
@@ -409,26 +435,27 @@ void EventTree::GetEvent(Long64_t i) {
 
 
   // fragmentation region (FR) cuts
-  yhb = 0.0; // y_h bound for TFR/CFR separation
-  // Breit frame rapidity cuts
-  for(int h=0; h<2; h++) {
-    cutCFR[h] = hadYH[h] > yhb;
-    cutTFR[h] = hadYH[h] < -yhb;
-  };
-  /*for(int h=0; h<2; h++) { // Prokudin cuts:
-    cutCFR[h] = hadQt[h]<2 && Z[h]>0.2;
-    cutTFR[h] = hadQt[h]>1 &&
-      ( (x<0.45 && Z[h]<0.1) || (x>=0.45 && Z[h]<0.3) );
-  };*/
-  cutFR = hadXF[qA]>0 && hadXF[qB]>0; // PRL CFR
-  //cutFR = true; // bypass
-  //cutFR = cutCFR[qA] && cutCFR[qB]; // CFR/CFR
-  //cutFR = cutCFR[qA] && cutTFR[qB]; // CFR/TFR
-  //cutFR = cutTFR[qA] && cutCFR[qB]; // TFR/CFR
-  //cutFR = cutTFR[qA] && cutTFR[qB]; // TFR/TFR
-  //cutFR = hadXF[qA]<0 && hadXF[qB]<0; // xF<0 region
-  //cutFR = cutCFR[qA]; // pi+ in CFR, pi- no cut
-  //cutFR = Zpair>0.4; // try to look at decays from CFR rhos
+  if(singleHadronMode) cutFR = hadXF[qS]>0;
+  else                 cutFR = hadXF[qA]>0 && hadXF[qB]>0; // PRL CFR
+  // yhb = 0.0; // y_h bound for TFR/CFR separation
+  // // Breit frame rapidity cuts
+  // for(int h=0; h<2; h++) {
+  //   cutCFR[h] = hadYH[h] > yhb;
+  //   cutTFR[h] = hadYH[h] < -yhb;
+  // };
+  // /*for(int h=0; h<2; h++) { // Prokudin cuts:
+  //   cutCFR[h] = hadQt[h]<2 && Z[h]>0.2;
+  //   cutTFR[h] = hadQt[h]>1 &&
+  //     ( (x<0.45 && Z[h]<0.1) || (x>=0.45 && Z[h]<0.3) );
+  // };*/
+  // //cutFR = true; // bypass
+  // //cutFR = cutCFR[qA] && cutCFR[qB]; // CFR/CFR
+  // //cutFR = cutCFR[qA] && cutTFR[qB]; // CFR/TFR
+  // //cutFR = cutTFR[qA] && cutCFR[qB]; // TFR/CFR
+  // //cutFR = cutTFR[qA] && cutTFR[qB]; // TFR/TFR
+  // //cutFR = hadXF[qA]<0 && hadXF[qB]<0; // xF<0 region
+  // //cutFR = cutCFR[qA]; // pi+ in CFR, pi- no cut
+  // //cutFR = Zpair>0.4; // try to look at decays from CFR rhos
 
 
   // diphoton cuts and classification
@@ -478,11 +505,17 @@ void EventTree::GetEvent(Long64_t i) {
 
   // dihadron cuts
   /* (note: PairSame ensures we have the correct channel, e.g., pi+pi-) */
-  cutDihadron =
-    Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) &&
-    Zpair < 0.95 && /* legacy; redundant with Mx>1.5 */
-    CheckMissingMass()
-    ;
+  if(singleHadronMode) {
+    cutDihadron =
+      hadIdx[qS] == whichHad[qS] &&
+      Z[qS] < 0.95 &&
+      CheckMissingMass();
+  } else {
+    cutDihadron =
+      Tools::PairSame(hadIdx[qA],hadIdx[qB],whichHad[qA],whichHad[qB]) &&
+      Zpair < 0.95 && /* legacy; redundant with Mx>1.5 */
+      CheckMissingMass();
+  }
 
 
   // vertex cuts
@@ -493,8 +526,10 @@ void EventTree::GetEvent(Long64_t i) {
 
   // fiducial cuts
   // - note: status is required to be in FD, as a prerequisite
-  if(!useStringSpinner && !useMCgen)
-    cutFiducial = eleFiduCut && hadFiduCut[qA] && hadFiduCut[qB];
+  if(!useStringSpinner && !useMCgen) {
+    if(singleHadronMode)  cutFiducial = eleFiduCut && hadFiduCut[qS];
+    else                  cutFiducial = eleFiduCut && hadFiduCut[qA] && hadFiduCut[qB];
+  }
   else
     cutFiducial = true; // generated data have no detector info, ignore this cut
 
@@ -516,7 +551,8 @@ void EventTree::GetEvent(Long64_t i) {
       hadP[h] > minP[h] && /* minimum P cut only for charged hadrons */
       ( useStringSpinner || useMCgen || CheckHadChi2pid(h) ); /* refined hadron chi2pid cut */
   };
-  cutPID = cutElePID && cutHadPID[qA] && cutHadPID[qB];
+  if(singleHadronMode) cutPID = cutElePID && cutHadPID[qS];
+  else                 cutPID = cutElePID && cutHadPID[qA] && cutHadPID[qB];
 
 
   // check if helicity is defined
@@ -686,7 +722,8 @@ Bool_t EventTree::CheckVertex() {
   for(int h=0; h<2; h++) {
     vzdiff[h] = TMath::Abs(hadVertex[h][eZ]-eleVertex[eZ]);
   };
-  vzdiffBool = vzdiff[qA] < 20 && vzdiff[qB] < 20;
+  if(singleHadronMode) vzdiffBool = vzdiff[qS] < 20;
+  else                 vzdiffBool = vzdiff[qA] < 20 && vzdiff[qB] < 20;
 
   // full boolean:
   return vzBoolEle && vzdiffBool;
@@ -700,6 +737,8 @@ Bool_t EventTree::CheckVertex() {
 
 // check missing mass cut (which can depend on channel)
 Bool_t EventTree::CheckMissingMass() {
+  if(singleHadronMode)
+    return Mmiss>1.5; // single hadron
   if(Tools::PairSame(hadIdx[qA],hadIdx[qB],kPip,kPim))
     return Mmiss>1.5; // pi+,pi-
   else if(Tools::PairSame(hadIdx[qA],hadIdx[qB],kP,kPip))
@@ -733,7 +772,7 @@ Bool_t EventTree::CheckSampFrac() {
     Double_t sfMu[3][6];
     Double_t sfSigma[3][6];
 
-    if( (runnum>=5032 && runnum<=5666) || (runnum>=6616 && runnum<=6783) ) { // RGA
+    if( (runnum>=5032 && runnum<=5666) || (runnum>=6616 && runnum<=6783) || runnum==16346) { // RGA
       sfMu[0][0]    = 0.2531;   sfMu[0][1]    = 0.2550;   sfMu[0][2]    = 0.2514;   sfMu[0][3]    = 0.2494;   sfMu[0][4]    = 0.2528;   sfMu[0][5]    = 0.2521;
       sfMu[1][0]    = -0.6502;  sfMu[1][1]    = -0.7472;  sfMu[1][2]    = -0.7674;  sfMu[1][3]    = -0.4913;  sfMu[1][4]    = -0.3988;  sfMu[1][5]    = -0.703;
       sfMu[2][0]    = 4.939;    sfMu[2][1]    = 5.350;    sfMu[2][2]    = 5.102;    sfMu[2][3]    = 6.440;    sfMu[2][4]    = 6.149;    sfMu[2][5]    = 4.957;
