@@ -16,6 +16,9 @@ static const Double_t UNDEF = -10000;
 static const Int_t RUNNUM_MC = 11; // TODO: when we have real run numbers, this will change!
 static const Int_t RUNNUM_STRING_SPINNER = 15;
 
+// QADB cook
+static const std::string QADB_COOK = "pass2";
+
 // default beam energy
 static const Float_t DEFAULT_BEAM_ENERGY = 10.6041; // default (RGA Fall18)
 

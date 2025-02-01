@@ -4,9 +4,12 @@ ClassImp(EventTree)
 
 using namespace std;
 
-EventTree::EventTree() : qa(std::make_unique<QA::QADB>()) {}
+EventTree::EventTree() : qa(std::make_unique<QA::QADB>(QADB_COOK)) {}
 
-EventTree::EventTree(TString filelist_, Int_t whichPair_, CutVersion cutVer_) : qa(std::make_unique<QA::QADB>()), cutVer(cutVer_) {
+EventTree::EventTree(TString filelist_, Int_t whichPair_, CutVersion cutVer_) :
+  qa(std::make_unique<QA::QADB>(QADB_COOK)),
+  cutVer(cutVer_)
+{
   printf("EventTree instantiated\n");
 
   debug = true;
@@ -276,6 +279,9 @@ EventTree::EventTree(TString filelist_, Int_t whichPair_, CutVersion cutVer_) : 
     chain->SetBranchAddress("gen_hadParentPid",gen_hadParentPid);
   }
 
+  // configure QA cuts (criteria)
+  QADBConfig::Setup(qa);
+
   // instantiate useful objects
   objDihadron = new Dihadron();
   objDIS = new DIS();
@@ -397,7 +403,7 @@ void EventTree::GetEvent(Long64_t i) {
 
   // QA cuts
   if(!useMCrec && !useMCgen && !useStringSpinner)
-    cutQA = qa->OkForAsymmetry(runnum, evnum);
+    cutQA = qa->Pass(runnum, evnum);
   else
     cutQA = true; // no QA for MC data
 
