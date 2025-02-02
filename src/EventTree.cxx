@@ -407,6 +407,16 @@ void EventTree::GetEvent(Long64_t i) {
   else
     cutQA = true; // no QA for MC data
 
+
+  // Helicity cuts
+  // -- correct the helicity, if not MC (based on single pi+ BSA QA timelines)
+  if(!useMCrec && !useMCgen && !useStringSpinner)
+    helicity *= qa->CorrectHelicitySign(runnum, evnum);
+  // -- check if helicity is defined
+  sps = this->SpinState();
+  cutHelicity = sps==sP || sps==sM;
+
+
   // DIS cuts
   cutQ2 = Q2 > 1.0; /* legacy */
   cutW = W > 2.0; /* legacy */
@@ -524,12 +534,6 @@ void EventTree::GetEvent(Long64_t i) {
   };
   cutPID = cutElePID && cutHadPID[qA] && cutHadPID[qB];
 
-
-  // check if helicity is defined
-  sps = this->SpinState();
-  cutHelicity = sps==sP || sps==sM;
-
-
 };
 
 
@@ -607,26 +611,8 @@ void EventTree::GetTrajectories(Long64_t i, Bool_t prog) {
 
 // translate "helicity" to a local index for the spin
 Int_t EventTree::SpinState() {
-  
-  if(runnum!=RUNNUM_MC && runnum!=RUNNUM_STRING_SPINNER) { // data run
-    if(RundepHelicityFlip(runnum)) { // helicity flipped
-      switch(helicity) {
-        case  1: return sM;
-        case -1: return sP;
-        case  0: return UNDEF;
-      };
-    } else { // helicity not flipped
-      switch(helicity) {
-        case  1: return sP;
-        case -1: return sM;
-        case  0: return UNDEF;
-      };
-    };
-    fprintf(stderr,"WARNING: bad SpinState request: %d\n",helicity);
-    return UNDEF;
-  }
 
-  else if(runnum==RUNNUM_MC) { // MC run - use injected helicity (DEPRECATED by `InjectionModel`)
+  if(runnum==RUNNUM_MC) { // MC run - use injected helicity (DEPRECATED by `InjectionModel`)
     /////////
     /* since usage of this method for MC has been replaced by InjectionModel, 
      * we now just return `sP`, a value that will not cause an error in the 
@@ -654,7 +640,7 @@ Int_t EventTree::SpinState() {
     */
   }
 
-  else if(runnum==RUNNUM_STRING_SPINNER) {
+  else { // data (PASS 2+ only) or stringspinner
     switch(helicity) {
       case  1: return sP;
       case -1: return sM;

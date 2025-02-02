@@ -486,21 +486,6 @@ static Float_t RundepBeamEn(Int_t run) {
 };
 
 
-// helicity flip
-static Bool_t RundepHelicityFlip(Int_t run) {
-  if     (run>= 5032 && run<= 5666) return true;  // rga fall 18
-  else if(run>= 6616 && run<= 6783) return true;  // rga spring 19
-  else if(run>= 6120 && run<= 6604) return true;  // rgb spring 19
-  else if(run>=11093 && run<=11283) return false; // rgb fall 19
-  else if(run>=11284 && run<=11300) return true;  // rgb fall BAND_FT 19
-  else if(run>=11323 && run<=11571) return false; // rgb winter 20
-  else {
-    fprintf(stderr,"ERROR: RundepHelicityFlip unknown for run %d\n",run);
-    return false;
-  };
-};
-
-
 // polarization
 // - set `v` to `false` to return polarization error
 static Float_t RundepPolarization(Int_t run, Bool_t v=true) {
