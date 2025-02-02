@@ -30,6 +30,20 @@ class QADBConfig {
        * REASONS FOR REJECTING: (other than not satisfying a REASON FOR ALLOWING):
        * - the run is very short, likely because of the Misc bit reason
        */
+      /* FIXME: move these notes to analysis note table
+The `Misc` defect bit must be handled specially. The `Misc` bit is assigned in the QADB
+whenever anything is observed in the QA timelines or electronic logbook which indicates
+the run or part of the run deviates from ``normal'' production running. The reason the `Misc`
+bit is assigned is stored in the QADB as a comment. Given a QA bin which (1) has the `Misc`
+bit assigned and (2) has not been rejected by any other QA criteria, it is the QADB user's
+choice whether or not to accept or reject that QA bin, based on the QADB comment (and
+their own logbook research). The following table lists runs for which at least one QA bin has the
+`Misc` defect bit assigned, with the following columns:
+- Run number
+- Accept `Misc` QA bins or not for ths analysis
+- Comment from the QADB
+- Additional comments specific to the decision for this analysis
+       */
       std::vector<int> allow_these_misc_assignments = {
         // 5032,    // TDC window adjustment
         5046,    // MVT HV off
