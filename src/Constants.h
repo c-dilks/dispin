@@ -3,6 +3,7 @@
 
 #include "TString.h"
 #include "TMath.h"
+#include "BeamEnergyTable.h"
 
 // pi
 // ---------------------------------------------------
@@ -470,15 +471,12 @@ static Int_t RundepTorus(Int_t run, TString fileName="") {
 
 // beam energy
 static Float_t RundepBeamEn(Int_t run) {
-  if     (run>= 5032 && run<= 5666) return 10.6041; // rga fall 18
-  else if(run>= 6616 && run<= 6783) return 10.1998; // rga spring 19
-  else if(run>= 6120 && run<= 6399) return 10.5986; // rgb spring 19
-  else if(run>= 6409 && run<= 6604) return 10.1998; // rgb spring 19
-  else if(run>=11093 && run<=11283) return 10.4096; // rgb fall 19
-  else if(run>=11284 && run<=11300) return 4.17179; // rgb fall BAND_FT 19
-  else if(run>=11323 && run<=11571) return 10.3894; // rgb winter 20 (RCDB may still be incorrect)
-  else if(run==RUNNUM_MC)             return DEFAULT_BEAM_ENERGY; // MC for RGA inbending
-  else if(run==RUNNUM_STRING_SPINNER) return DEFAULT_BEAM_ENERGY; // StringSpinner
+  if(run==RUNNUM_MC)
+    return DEFAULT_BEAM_ENERGY; // MC for RGA inbending
+  else if(run==RUNNUM_STRING_SPINNER)
+    return DEFAULT_BEAM_ENERGY; // StringSpinner
+  else if(auto it{BeamEnergyTable::table.find(run)}; it != BeamEnergyTable::table.end())
+    return it->second; // for data
   else {
     fprintf(stderr,"ERROR: RundepBeamEn unknown for run %d\n",run);
     return 0.0;
