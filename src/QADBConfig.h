@@ -29,34 +29,36 @@ class QADBConfig {
        * - unrelated to the FD pions and electron
        * REASONS FOR REJECTING: (other than not satisfying a REASON FOR ALLOWING):
        * - the run is very short, likely because of the Misc bit reason
+       * NOTE: these REASONS are documented below as ADDITIONAL COMMENTS, e.g.,
+       *   5032 // QADB Comment // My reasoning
        */
       std::vector<int> allow_these_misc_assignments = {
         // 5032,    // TDC window adjustment
-        5046,    // MVT HV off
-        5047,    // MVT HV off
-        5051,    // MVT HV off
-        // 5116,    // MVT detector 2 and 15 are off
-        // 5117,    // MVT detector 2 and 15 are off
+        5046,    // MVT HV off // no impact on pion BSA
+        5047,    // MVT HV off // no impact on pion BSA
+        5051,    // MVT HV off // no impact on pion BSA
+        5116,    // MVT detector 2 and 15 are off // no impact on pion BSA
+        5117,    // MVT detector 2 and 15 are off // no impact on pion BSA
         // 5119,    // scaler1 was in disconnected state
         // 5127,    // DC test: Short run with reduced DC readout window
-        5128,    // fraction of events with defined helicity is low
-        5129,    // fraction of events with defined helicity is low
-        5130,    // fraction of events with defined helicity is low
+        5128,    // fraction of events with defined helicity is low // no impact on pion BSA
+        5129,    // fraction of events with defined helicity is low // no impact on pion BSA
+        5130,    // fraction of events with defined helicity is low // no impact on pion BSA
         // 5137,    // ignorable, according to shift expert
         // 5138,    // short DC windows with offset and CND offset changed
-        5158,    // fraction of events with defined helicity is low
-        5159,    // fraction of events with defined helicity is low
-        5160,    // fraction of events with defined helicity is low
-        5163,    // fraction of events with defined helicity is low
-        5165,    // fraction of events with defined helicity is low
-        5166,    // fraction of events with defined helicity is low
-        5167,    // fraction of events with defined helicity is low
-        5168,    // fraction of events with defined helicity is low
-        5169,    // fraction of events with defined helicity is low
-        5180,    // fraction of events with defined helicity is low
-        5181,    // fraction of events with defined helicity is low
-        5182,    // fraction of events with defined helicity is low
-        5183,    // fraction of events with defined helicity is low
+        5158,    // fraction of events with defined helicity is low // no impact on pion BSA
+        5159,    // fraction of events with defined helicity is low // no impact on pion BSA
+        5160,    // fraction of events with defined helicity is low // no impact on pion BSA
+        5163,    // fraction of events with defined helicity is low // no impact on pion BSA
+        5165,    // fraction of events with defined helicity is low // no impact on pion BSA
+        5166,    // fraction of events with defined helicity is low // no impact on pion BSA
+        5167,    // fraction of events with defined helicity is low // no impact on pion BSA
+        5168,    // fraction of events with defined helicity is low // no impact on pion BSA
+        5169,    // fraction of events with defined helicity is low // no impact on pion BSA
+        5180,    // fraction of events with defined helicity is low // no impact on pion BSA
+        5181,    // fraction of events with defined helicity is low // no impact on pion BSA
+        5182,    // fraction of events with defined helicity is low // no impact on pion BSA
+        5183,    // fraction of events with defined helicity is low // no impact on pion BSA
         // 5194,    // beam was mostly off during this run
         // 5215,    // special run: HTCC trig. threshold set to 1 phe
         // 5225,    // high rates, trippy beam, varying current
@@ -66,10 +68,13 @@ class QADBConfig {
         // 5302,    // empty target run
         // 5316,    // production, ctof and svt issues
         // 5325,    // torus at 60%, changed beam current to 30 nA at 1 pm
-        // 5335,    // issue with dc13 at the end
-        // 5336,    // dc13 issue at the end again
-        // 5362,    // solenoid trip at the end
-        // 5369,    // DAQ lifetime issue at the end (not clear why)
+        // 5335,    // issue with dc13 at the end // very short run
+        // 5336,    // dc13 issue at the end again // very short run
+        5362,    // solenoid trip at the end // timelines look okay
+        5369,    // DAQ lifetime issue at the end (not clear why) // timelines look okay
+
+STOPPED HERE
+
         // 5370,    // Issue with tdc in ftof ecal sector 5
         // 5371,    // Missing Half of FTCal
         // 5377,    // rich4 ROC became un-responsive
@@ -107,7 +112,7 @@ class QADBConfig {
         // 5564,    // low lumi run, 5 nA; fraction of events with defined helicity is low
         // 5565,    // low lumi run, 5 nA; fraction of events with defined helicity is low
         // 5566,    // low lumi run, 5 nA; fraction of events with defined helicity is low
-        5567,    // fraction of events with defined helicity is low
+        5567,    // fraction of events with defined helicity is low // no impact on pion BSA
         // 5586,    // empty target
         // 5589,    // empty target
         // 5590,    // empty target
@@ -126,8 +131,8 @@ class QADBConfig {
         // 5652,    // Problem with scalers in EPICS GUI. Stopped the run to try solve the issue. Not sure if it is junk. 
         // 6616,    // low lumi run
         // 6618,    // low lumi run
-        6631,    // fraction of events with defined helicity is low; pi+ beam asymmetry looks normal
-        6632,    // fraction of events with defined helicity is low; pi+ beam asymmetry looks normal
+        6631,    // fraction of events with defined helicity is low; pi+ beam asymmetry looks normal // no impact on pion BSA
+        6632,    // fraction of events with defined helicity is low; pi+ beam asymmetry looks normal // no impact on pion BSA
         // 6696,    // FC charge issue
         // 6697,    // FC charge issue
         // 6699,    // FC charge issue
@@ -158,10 +163,10 @@ class QADBConfig {
         6756,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262
         6757,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262
         // 6760,    // FC charge issue
-        6775,    // fraction of events with defined helicity is low; pi+ beam asymmetry looks normal
-        6776,    // fraction of events with defined helicity is low; pi+ beam asymmetry looks normal
-        6777,    // fraction of events with defined helicity is low; pi+ beam asymmetry looks normal
-        6778,    // fraction of events with defined helicity is low; pi+ beam asymmetry looks normal
+        6775,    // fraction of events with defined helicity is low; pi+ beam asymmetry looks normal // no impact on pion BSA
+        6776,    // fraction of events with defined helicity is low; pi+ beam asymmetry looks normal // no impact on pion BSA
+        6777,    // fraction of events with defined helicity is low; pi+ beam asymmetry looks normal // no impact on pion BSA
+        6778,    // fraction of events with defined helicity is low; pi+ beam asymmetry looks normal // no impact on pion BSA
         // 11117,   // low lumi run, 7 nA
         // 11119,   // empty target run
         // 11120,   // low lumi run, 7 nA
