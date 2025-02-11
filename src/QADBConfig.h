@@ -74,45 +74,42 @@ class QADBConfig {
         // 5336,    // dc13 issue at the end again // very short run
         5362,    // solenoid trip at the end // timelines look okay
         5369,    // DAQ lifetime issue at the end (not clear why) // timelines look okay
-
-STOPPED HERE
-
         // 5370,    // Issue with tdc in ftof ecal sector 5
-        // 5371,    // Missing Half of FTCal
-        // 5377,    // rich4 ROC became un-responsive
-        // 5390,    // adcftof3vtp serdes PP14 down
-        // 5398,    // BST chip latch up 
-        // 5400,    // an SVT layer latch up
+        // 5371,    // Missing Half of FTCal // very short run
+        // 5377,    // rich4 ROC became un-responsive // very short run
+        // 5390,    // adcftof3vtp serdes PP14 down // very short run
+        // 5398,    // BST chip latch up // short run, pion BSA looks reasonable, but there were other possibly related problems in neighboring runs, so rejecting for analysis
+        // 5400,    // an SVT layer latch up // short run, pion BSA looks reasonable, but there were other possibly related problems in neighboring runs, so rejecting for analysis
         // 5402,    // Multiple issues (CTOF, ECAL...) in monitoring
-        // 5403,    // helicity problem in monitor; pion BSA looks okay
-        // 5404,    // helicity problem in monitor; pion BSA looks okay
-        // 5414,    // no htcc in trigger
-        // 5415,    // no htcc in trigger, BST chip latch up
-        // 5416,    // no htcc in trigger
-        // 5417,    // no htcc in trigger
+        // 5403,    // helicity problem in monitor; pion BSA looks okay // rejecting for safety
+        // 5404,    // helicity problem in monitor; pion BSA looks okay // rejecting for safety
+        // 5414,    // no htcc in trigger // many N/F outliers
+        // 5415,    // no htcc in trigger, BST chip latch up // many N/F outliers
+        // 5416,    // no htcc in trigger // many N/F outliers
+        // 5417,    // no htcc in trigger // many N/F outliers
         // 5418,    // low lumi run
         // 5419,    // low lumi run
 
         /* rga.outbending.fa18 */
-        // 5423,    // DC validation trigger
-        5434,    // lost connection to ECAL sector 2; data may still be okay though
-        // 5435,    // FC charge issue
-        // 5439,    // CTOF scalers looked bad
+        // 5423,    // DC validation trigger // pion BSA looks okay, but uses different trigger file
+        5434,    // lost connection to ECAL sector 2; data may still be okay though // QA timelines look okay
+        // 5435,    // FC charge issue // reject, since N/F is not correct; it's just the first few QA bins anyway
+        // 5439,    // CTOF scalers looked bad // very short run
         // 5443,    // low lumi run, 5 nA
         // 5444,    // low lumi run, 20 nA
-        5448,    // N/F for DVCS exclusivity cuts is 25% lower than adjacent runs; however, trigger N/F is consistent
-        // 5450,    // trigger bit issue
+        5448,    // N/F for DVCS exclusivity cuts is 25% lower than adjacent runs; however, trigger N/F is consistent // pion BSA looks normal
+        // 5450,    // trigger bit issue // short run
         // 5456,    // low lumi run, 15 nA (for most of it); TDC problem in FTOF sector 5
         // 5457,    // low lumi run, 16 nA; problem in HTCC sector 2
-        // 5462,    // dc42 links down
-        5495,    // BST occupancy plots empty
-        5496,    // empty BST occupancy
-        // 5504,    // unstable beam; DAQ problem at end of run
-        5505,    // this marks the run where the current changed from 40 to 50 nA; it changed about halfway through this run
-        // 5521,    // SVT latchup problem; not clear if this was for the whole run, or just near the end
-        // 5542,    // TRGbit=2 not present
-        // 5546,    // trigger bit 6 lost
-        // 5554,    // N/F in sector 1 is slightly lower than normal, for the whole run, but not enough to be an outlier
+        // 5462,    // dc42 links down // very short run, not much beam
+        // 5495,    // BST occupancy plots empty // pion BSA looks smaller than normal
+        // 5496,    // empty BST occupancy // very short run
+        // 5504,    // unstable beam; DAQ problem at end of run // only 5 minutes with beam
+        5505,    // this marks the run where the current changed from 40 to 50 nA; it changed about halfway through this run // pion BSA unaffected by this change
+        5521,    // SVT latchup problem; not clear if this was for the whole run, or just near the end // pion BSA and other timelines look okay
+        // 5542,    // TRGbit=2 not present // very short run
+        // 5546,    // trigger bit 6 lost // very short run
+        // 5554,    // N/F in sector 1 is slightly lower than normal, for the whole run, but not enough to be an outlier // rejected for safety
         // 5564,    // low lumi run, 5 nA; fraction of events with defined helicity is low
         // 5565,    // low lumi run, 5 nA; fraction of events with defined helicity is low
         // 5566,    // low lumi run, 5 nA; fraction of events with defined helicity is low
@@ -120,102 +117,102 @@ STOPPED HERE
         // 5586,    // empty target
         // 5589,    // empty target
         // 5590,    // empty target
-        // 5594,    // new trigger file
-        // 5595,    // 70 nA run; no FT trigger
-        // 5597,    // no FT trigger
-        // 5600,    // RICH alarm for tile 0,18
-        // 5602,    // 5 nA for the first 5 minutes of data taking
-        // 5607,    // FC charge issue
-        5610,    // SVT readout chip has zero scalers and corresponding occupancy plot has missing strip
-        // 5615,    // 5 nA and increasing current at beginning of this run
+        // 5594,    // new trigger file // very short run
+        // 5595,    // 70 nA run; no FT trigger // test run, actually, higher current than normal production
+        5597,    // no FT trigger // pion BSA looks okay, and N/F looks normal
+        // 5600,    // RICH alarm for tile 0,18 // very short run
+        // 5602,    // 5 nA for the first 5 minutes of data taking // reject, since it's just the first several QA bins
+        // 5607,    // FC charge issue // reject, since N/F is not correct; it's just the first few QA bins anyway
+        // 5610,    // SVT readout chip has zero scalers and corresponding occupancy plot has missing strip // very short run
+        // 5615,    // 5 nA and increasing current at beginning of this run // just affects the first 25 bins
         // 5617,    // junk
-        // 5620,    // ramping beam current 5 to 50 nA
-        5621,    // CND TDC problem
-        5623,    // CND TDC problem, ROC rebooted while DAQ was running
-        // 5652,    // Problem with scalers in EPICS GUI. Stopped the run to try solve the issue. Not sure if it is junk. 
+        // 5620,    // ramping beam current 5 to 50 nA // short run
+        5621,    // CND TDC problem // this analysis does not use the CND
+        5623,    // CND TDC problem, ROC rebooted while DAQ was running // this analysis does not use the CND
+        // 5652,    // Problem with scalers in EPICS GUI. Stopped the run to try solve the issue. Not sure if it is junk. // reject for safety
 
         /* rga.inbending.sp19 */
         // 6616,    // low lumi run
         // 6618,    // low lumi run
         6631,    // fraction of events with defined helicity is low; pi+ beam asymmetry looks normal // no impact on pion BSA
         6632,    // fraction of events with defined helicity is low; pi+ beam asymmetry looks normal // no impact on pion BSA
-        // 6696,    // FC charge issue
-        // 6697,    // FC charge issue
-        // 6699,    // FC charge issue
-        // 6710,    // FC charge issue
+        // 6696,    // FC charge issue // reject, since N/F is not correct; it's just the first few QA bins anyway
+        // 6697,    // FC charge issue // reject, since N/F is not correct; it's just the first few QA bins anyway
+        // 6699,    // FC charge issue // reject, since N/F is not correct; it's just the first few QA bins anyway
+        // 6710,    // FC charge issue // reject, since N/F is not correct; it's just the first few QA bins anyway
         // 6722,    // rgb_v9_1_faraday_noprescale trigger configuration; beam current is 10 nA
         // 6723,    // low lumi run
         // 6724,    // empty target run
         // 6725,    // empty target run
-        // 6730,    // N/F for sector 5 is slightly lower than that for adjacent runs, but not outlying
-        6734,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262
-        6736,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262
-        6737,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262
-        6738,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262
-        6739,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262
-        6740,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262
-        6741,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262
-        6742,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262
-        6743,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262
-        6744,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262
-        6746,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262
-        6747,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262
-        6748,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262
-        6749,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262
-        6750,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262
-        6753,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262
-        6754,    // FC charge issue; FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262
-        6755,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262
-        6756,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262
-        6757,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262
-        // 6760,    // FC charge issue
+        // 6730,    // N/F for sector 5 is slightly lower than that for adjacent runs, but not outlying // reject for safety
+        6734,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262 // no impact on pion BSA
+        6736,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262 // no impact on pion BSA
+        6737,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262 // no impact on pion BSA
+        6738,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262 // no impact on pion BSA
+        6739,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262 // no impact on pion BSA
+        6740,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262 // no impact on pion BSA
+        6741,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262 // no impact on pion BSA
+        6742,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262 // no impact on pion BSA
+        6743,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262 // no impact on pion BSA
+        6744,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262 // no impact on pion BSA
+        6746,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262 // no impact on pion BSA
+        6747,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262 // no impact on pion BSA
+        6748,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262 // no impact on pion BSA
+        6749,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262 // no impact on pion BSA
+        6750,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262 // no impact on pion BSA
+        6753,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262 // no impact on pion BSA
+        6754,    // FC charge issue; FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262 // no impact on pion BSA; bins which have FC charge issue are outliers and therefore are already filtered out
+        6755,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262 // no impact on pion BSA
+        6756,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262 // no impact on pion BSA
+        6757,    // FADC failure in ECAL sector 6; see https://logbooks.jlab.org/entry/3678262 // no impact on pion BSA
+        // 6760,    // FC charge issue // reject, since N/F is not correct; it's just the first few QA bins anyway
         6775,    // fraction of events with defined helicity is low; pi+ beam asymmetry looks normal // no impact on pion BSA
         6776,    // fraction of events with defined helicity is low; pi+ beam asymmetry looks normal // no impact on pion BSA
         6777,    // fraction of events with defined helicity is low; pi+ beam asymmetry looks normal // no impact on pion BSA
         6778,    // fraction of events with defined helicity is low; pi+ beam asymmetry looks normal // no impact on pion BSA
 
         /* rgb.inbending.sp19 */
-        6156,    // FTH and FTT HV off
+        6156,    // FTH and FTT HV off // no impact on pion BSA
         // 6167,    // low lumi run, 10 nA
         // 6168,    // low lumi run, 10 nA
         // 6169,    // low lumi run, 10 nA
         // 6170,    // low lumi run, 10 nA
-        // 6199,    // production run - short - lot of beam trips
-        // 6208,    // FC charge issue at beginning of run
-        6222,    // production. Lots of beam trips and MVT channel trips.
+        // 6199,    // production run - short - lot of beam trips // very short run
+        // 6208,    // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
+        // 6222,    // production. Lots of beam trips and MVT channel trips. // reject for safety, pion BSA statistics are rather low
         // 6226,    // low lumi run, 5 nA
         // 6227,    // low lumi run, 15 nA
-        // 6254,    // radiation monitor tripped in the Hall truck ramp
+        // 6254,    // radiation monitor tripped in the Hall truck ramp // very short run
         // 6262,    // empty target run
         // 6263,    // empty target run
         // 6265,    // band harp wire run
         // 6287,    // mmft1 ROC issue; no helicity info
-        6298,    // Production with new trigger configuration, current started at 35 nA, then increased to 50 nA
+        6298,    // Production with new trigger configuration, current started at 35 nA, then increased to 50 nA // pion BSA looks fine
         // 6322,    // low lumi run, 5 nA
         // 6323,    // low lumi run, 5 nA
         // 6342,    // alignment run
-        // 6346,    // FC charge issue at beginning of run
+        // 6346,    // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
         // 6350,    // empty target run
-        // 6356,    // FC charge issue at beginning of run
-        // 6357,    // FC charge issue at beginning of run
+        // 6356,    // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
+        // 6357,    // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
         // 6371,    // low lumi run, 5 nA
         // 6373,    // low lumi run, 5 nA
         // 6374,    // low lumi run, 5 nA
-        // 6385,    // FC charge issue at beginning of run
-        // 6386,    // no helicity info for QA bins 15 to 60
+        // 6385,    // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
+        // 6386,    // no helicity info for QA bins 15 to 60 // reject, even though lack of helicity info will also omit these data
         // 6389,    // empty target run
-        6396,    // no MVT1
+        6396,    // no MVT1 // pion BSA looks normal
         // 6446,    // low lumi run, 5 nA
         // 6447,    // low lumi run, 5 nA
         // 6448,    // low lumi run, 5 nA
-        // 6455,    // FC charge issue at beginning of run
-        // 6472,    // FC charge issue at beginning of run
-        // 6476,    // FC charge issue at beginning of run
-        6548,    // many QA bins have low fraction of events with helicity info, starting from QA bin 31
+        // 6455,    // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
+        // 6472,    // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
+        // 6476,    // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
+        6548,    // many QA bins have low fraction of events with helicity info, starting from QA bin 31 // pion BSA looks normal
         // 6551,    // mmft1 ROC busy; no helicity info
-        // 6561,    // unstable beam current in Hall B; beam tune to Hall C
-        6562,    // beam current started at 40 nA, but was increased to 50 nA for the last 1/4 of the run
-        6596,    // PCAL and ECAL TDC ROCS for sector 5 give error messages
+        // 6561,    // unstable beam current in Hall B; beam tune to Hall C // very short run anyway
+        // 6562,    // beam current started at 40 nA, but was increased to 50 nA for the last 1/4 of the run // reject since pion BSA looks too small (but also its statistics are poor)
+        // 6596,    // PCAL and ECAL TDC ROCS for sector 5 give error messages // reject, sector 5 is a total outlier for the entire run
         // 6599,    // empty target run
         // 6601,    // empty target run
         // 6603,    // empty target run
@@ -224,10 +221,10 @@ STOPPED HERE
         // 11117,   // low lumi run, 7 nA
         // 11119,   // empty target run
         // 11120,   // low lumi run, 7 nA
-        11132,   // N/F a bit higher than usual
-        // 11143,   // FC charge issue
-        // 11162,   // FC charge issue
-        // 11195,   // trigger bit alarm
+        // 11132,   // N/F a bit higher than usual // not clear why, reject for safety
+        // 11143,   // FC charge issue // reject, since N/F is not correct; it's just the first few QA bins anyway
+        // 11162,   // FC charge issue // reject, since N/F is not correct; it's just the first few QA bins anyway
+        // 11195,   // trigger bit alarm // reject, since only affects the last few QA bins
         // 11200,   // low lumi run, 7 nA
         // 11201,   // low lumi run, 7 nA
         // 11202,   // low lumi run, 7 nA
@@ -236,32 +233,32 @@ STOPPED HERE
         // 11207,   // low lumi run, 7 nA
         // 11210,   // low lumi run, 20 nA
         // 11244,   // test run
-        // 11287,   // update trigger file to add FT triggers
+        // 11287,   // update trigger file to add FT triggers // very short run
 
         /* rgb.inbending.sp20 */
         // 11323,   // low lumi run, 5 nA
         // 11324,   // low lumi run, 10 nA
         // 11325,   // low lumi run, 10 nA
-        // 11326,   // Short run at 30 nA to make sure DAQ is good
-        // 11327,   // 50 nA production run - lots of problems with DC HV trips
-        // 11336,   // low livetime (0.8) for most of the run; fraction of events with defined helicity is low
-        11338,   // low livetime (0.7-0.8) for most of the run; fraction of events with defined helicity is low
+        // 11326,   // Short run at 30 nA to make sure DAQ is good // lower current than normal; pion BSA has poor statistics; reject for safety
+        // 11327,   // 50 nA production run - lots of problems with DC HV trips // higher current seems to have caused several DC trips; reject, since this is a short run anyway
+        // 11336,   // low livetime (0.8) for most of the run; fraction of events with defined helicity is low // very little beam time, poor pion BSA statistics
+        11338,   // low livetime (0.7-0.8) for most of the run; fraction of events with defined helicity is low // pion BSA looks normal
         // 11340,   // beam modulation problems
         // 11341,   // beam modulation problems
         // 11342,   // beam modulation problems; bad trigger timing; fraction of events with defined helicity is low
-        // 11345,   // low livetime (0.7) for most of the run; fraction of events with defined helicity is low
+        // 11345,   // low livetime (0.7) for most of the run; fraction of events with defined helicity is low // reject, pion BSA looks way too high
         // 11347,   // varied beam current
         // 11348,   // continued RF phase tuning
         // 11352,   // RF phase tuning
         // 11354,   // RF phase tuning; fraction of events with defined helicity is low
         // 11356,   // RF phase tuning; varied beam current;fraction of events with defined helicity is low
-        11357,   // low livetime (0.75) for most of the run; fraction of events with defined helicity is low
-        11358,   // low livetime (0.8) for most of the run; fraction of events with defined helicity is low
-        // 11361,   // FC charge issue at beginning of run
+        // 11357,   // low livetime (0.75) for most of the run; fraction of events with defined helicity is low // reject, since still beam tuning
+        // 11358,   // low livetime (0.8) for most of the run; fraction of events with defined helicity is low // reject, since still beam tuning
+        // 11361,   // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first several QA bins anyway
         // 11372,   // used different trigger file, rgb_v9_1.cnf; N/F lower than usual; Beam current changed to 50 nA
-        // 11394,   // FC charge issue at beginning of run
-        // 11395,   // FC charge issue at beginning of run
-        // 11444,   // FC charge issue at beginning of run
+        // 11394,   // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
+        // 11395,   // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
+        // 11444,   // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
         // 11485,   // low lumi run, 10 nA
         // 11486,   // low lumi run, 10 nA
         // 11487,   // low lumi run, 10 nA
