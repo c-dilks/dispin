@@ -13,7 +13,7 @@ class QADBConfig {
         "TotalOutlier",   "TerminalOutlier",   "MarginalOutlier",   "SectorLoss",
         "TotalOutlierFT", "TerminalOutlierFT", "MarginalOutlierFT", "LossFT",
         "BSAUnknown",
-        "ChargeUnknown",
+        "ChargeHigh", "ChargeNegative", "ChargeUnknown",
         "PossiblyNoBeam",
         "Misc"
       };
@@ -33,6 +33,8 @@ class QADBConfig {
        *   5032 // QADB Comment // My reasoning
        */
       std::vector<int> allow_these_misc_assignments = {
+
+        /* rga.inbending.fa18 */
         // 5032,    // TDC window adjustment
         5046,    // MVT HV off // no impact on pion BSA
         5047,    // MVT HV off // no impact on pion BSA
@@ -90,6 +92,8 @@ STOPPED HERE
         // 5417,    // no htcc in trigger
         // 5418,    // low lumi run
         // 5419,    // low lumi run
+
+        /* rga.outbending.fa18 */
         // 5423,    // DC validation trigger
         5434,    // lost connection to ECAL sector 2; data may still be okay though
         // 5435,    // FC charge issue
@@ -129,6 +133,8 @@ STOPPED HERE
         5621,    // CND TDC problem
         5623,    // CND TDC problem, ROC rebooted while DAQ was running
         // 5652,    // Problem with scalers in EPICS GUI. Stopped the run to try solve the issue. Not sure if it is junk. 
+
+        /* rga.inbending.sp19 */
         // 6616,    // low lumi run
         // 6618,    // low lumi run
         6631,    // fraction of events with defined helicity is low; pi+ beam asymmetry looks normal // no impact on pion BSA
@@ -167,22 +173,8 @@ STOPPED HERE
         6776,    // fraction of events with defined helicity is low; pi+ beam asymmetry looks normal // no impact on pion BSA
         6777,    // fraction of events with defined helicity is low; pi+ beam asymmetry looks normal // no impact on pion BSA
         6778,    // fraction of events with defined helicity is low; pi+ beam asymmetry looks normal // no impact on pion BSA
-        // 11117,   // low lumi run, 7 nA
-        // 11119,   // empty target run
-        // 11120,   // low lumi run, 7 nA
-        11132,   // N/F a bit higher than usual
-        // 11143,   // FC charge issue
-        // 11162,   // FC charge issue
-        // 11195,   // trigger bit alarm
-        // 11200,   // low lumi run, 7 nA
-        // 11201,   // low lumi run, 7 nA
-        // 11202,   // low lumi run, 7 nA
-        // 11203,   // low lumi run, 7 nA
-        // 11206,   // low lumi run, 7 nA
-        // 11207,   // low lumi run, 7 nA
-        // 11210,   // low lumi run, 20 nA
-        // 11244,   // test run
-        // 11287,   // update trigger file to add FT triggers
+
+        /* rgb.inbending.sp19 */
         6156,    // FTH and FTT HV off
         // 6167,    // low lumi run, 10 nA
         // 6168,    // low lumi run, 10 nA
@@ -227,6 +219,26 @@ STOPPED HERE
         // 6599,    // empty target run
         // 6601,    // empty target run
         // 6603,    // empty target run
+
+        /* rgb.outbending.fa19 */
+        // 11117,   // low lumi run, 7 nA
+        // 11119,   // empty target run
+        // 11120,   // low lumi run, 7 nA
+        11132,   // N/F a bit higher than usual
+        // 11143,   // FC charge issue
+        // 11162,   // FC charge issue
+        // 11195,   // trigger bit alarm
+        // 11200,   // low lumi run, 7 nA
+        // 11201,   // low lumi run, 7 nA
+        // 11202,   // low lumi run, 7 nA
+        // 11203,   // low lumi run, 7 nA
+        // 11206,   // low lumi run, 7 nA
+        // 11207,   // low lumi run, 7 nA
+        // 11210,   // low lumi run, 20 nA
+        // 11244,   // test run
+        // 11287,   // update trigger file to add FT triggers
+
+        /* rgb.inbending.sp20 */
         // 11323,   // low lumi run, 5 nA
         // 11324,   // low lumi run, 10 nA
         // 11325,   // low lumi run, 10 nA
