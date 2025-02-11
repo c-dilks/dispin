@@ -68,7 +68,7 @@ class QADBConfig {
         // 5300,    // empty target run
         // 5301,    // empty target run
         // 5302,    // empty target run
-        // 5316,    // production, ctof and svt issues
+        // 5316,    // production, ctof and svt issues // there are also FTOF issues
         // 5325,    // torus at 60%, changed beam current to 30 nA at 1 pm
         // 5335,    // issue with dc13 at the end // very short run
         // 5336,    // dc13 issue at the end again // very short run
