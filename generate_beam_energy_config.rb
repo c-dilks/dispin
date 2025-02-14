@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 require './DatasetLooper.rb'
 
+# generates `src/BeamEnergyTable.{cxx,h}` using `get_beam_energy.groovy`
+
 dihadronTok = :none
 looper = DatasetLooper.new dihadronTok
 

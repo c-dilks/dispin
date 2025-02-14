@@ -1,6 +1,8 @@
 // get beam energy from RCDB
 import org.rcdb.*
 
+// get the beam energy for a list of runs; called by `generate_beam_energy_config.rb`
+
 // arguments
 if(args.length<1) {
   System.err.println "USAGE: run-groovy ${this.class.getSimpleName()}.groovy [LIST_OF_RUNS]"
