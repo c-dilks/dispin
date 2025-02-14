@@ -9,17 +9,17 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${BRUFIT}/lib
 [ -z "$JAVA_HOME" ] && export JAVA_HOME=$(realpath $(dirname $(realpath $(which java)))/..)
 
 # set dependency environment variables
-pushd deps
+pushd deps > /dev/null
 
-pushd j2root
+pushd j2root > /dev/null
 source setup.sh
-popd
+popd > /dev/null
 
-pushd clas12-qadb
-source ./env.sh
-popd
+pushd clas12-qadb > /dev/null
+source ./environ.sh
+popd > /dev/null
 
-popd
+popd > /dev/null
 
 # find pythia
 pythia_search=pythia8-config
@@ -43,6 +43,7 @@ echo ""
 echo "===== DISPIN ENVIRONMENT ====="
 env|grep --color -w DISPIN_HOME
 env|grep --color -w BRUFIT
+env|grep --color -w QADB
 env|grep --color -w LD_LIBRARY_PATH
 env|grep --color -w JAVA_HOME
 env|grep --color -w JYPATH

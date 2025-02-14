@@ -9,9 +9,6 @@
 #include <map>
 #include <vector>
 
-// CLAS12
-#include <QADB.h>
-
 // ROOT
 #include "TSystem.h"
 #include "TObject.h"
@@ -31,6 +28,7 @@
 #include "Dihadron.h"
 #include "Diphoton.h"
 #include "Tools.h"
+#include "QADBConfig.h"
 
 
 
