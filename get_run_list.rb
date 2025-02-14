@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 require './DatasetLooper.rb'
 
+# gets a list of runs, given an `outroot` directory
+
 if ARGV.empty?
   puts "USAGE: #{$0} [outroot dir]"
   exit 2
