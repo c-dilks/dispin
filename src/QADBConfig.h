@@ -3,6 +3,7 @@
 
 #include <QADB.h>
 
+// handles the QADB criteria: which defect bits to omit and how to handle `Misc` defect assignments
 class QADBConfig {
   public:
 
