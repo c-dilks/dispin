@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 
 # software paths
-export DISPIN_HOME=$(dirname $(realpath $0))
+if [ -z "${BASH_SOURCE[0]}" ]; then
+  export DISPIN_HOME=$(dirname $(realpath $0))
+else
+  export DISPIN_HOME=$(dirname $(realpath ${BASH_SOURCE[0]}))
+fi
 export BRUFIT=${DISPIN_HOME}/deps/brufit
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${BRUFIT}/lib
 
