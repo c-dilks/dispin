@@ -32,15 +32,16 @@ sleep 1
 catSpinroot.exe
 
 sleep 1
-fitmode=9 # L<=2
+fitmode=42 # |m|<=2
+#fitmode=8001 # |m|<=2 + DSIDIS mods
 
 # chi2 fit
-#asymFit.exe $fitmode 2 | tee spinroot/fitOutput_chi2.txt
-#pushd spinroot
-#mv asym_${fitmode}{,_chi2}.root
-#mv table_${fitmode}{,_chi2}.dat
-#for file in multi*.png; do mv $file result_chi2_${file}; done
-#popd
+asymFit.exe $fitmode 2 | tee spinroot/fitOutput_chi2.txt
+pushd spinroot
+mv asym_${fitmode}{,_chi2}.root
+mv table_${fitmode}{,_chi2}.dat
+for file in multi*.png; do mv $file result_chi2_${file}; done
+popd
 
 # ML fit
 asymFit.exe $fitmode 0 | tee spinroot/fitOutput_mlm.txt
@@ -51,7 +52,7 @@ for file in multi*.png; do mv $file result_mlm_${file}; done
 popd
 
 sleep 1
-mkdir -p spinroot_pw_${setnum}
-rm -r spinroot_pw_${setnum}
-mkdir -p spinroot_pw_${setnum}
-mv spinroot/* spinroot_pw_${setnum}/
+mkdir -p spinroot_final_${setnum}
+rm -r spinroot_final_${setnum}
+mkdir -p spinroot_final_${setnum}
+mv spinroot/* spinroot_final_${setnum}/
