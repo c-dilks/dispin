@@ -1,20 +1,21 @@
 #!/bin/bash
 
-if [ $# -ne 1 ]; then echo "USAGE: $0 [set_number]"; exit; fi
+if [ $# -lt 2 ]; then echo "USAGE: $0 [set_number] [outroot dir]"; exit; fi
 setnum=$1
+outrootDir=$2
 
 case $setnum in
   1)
-    slurm.buildSpinroot.sh outroot.inbending -b -i1 # vs. x 
+    slurm.buildSpinroot.sh $outrootDir -b -i1 # vs. x 
     ;;
   2)
-    slurm.buildSpinroot.sh outroot.inbending -b -i2 # vs. Mh 
+    slurm.buildSpinroot.sh $outrootDir -b -i2 # vs. Mh 
     ;;
   3)
-    slurm.buildSpinroot.sh outroot.inbending -b -i32 # vs. z , for 2 Mh bins
+    slurm.buildSpinroot.sh $outrootDir -b -i32 # vs. z , for 2 Mh bins
     ;;
   4)
-    slurm.buildSpinroot.sh outroot.inbending -b -i42 # vs. PhPerp, for 2 Mh bins 
+    slurm.buildSpinroot.sh $outrootDir -b -i42 # vs. PhPerp, for 2 Mh bins 
     ;;
   *)
     echo "ERROR: unknown set_number"
@@ -24,8 +25,8 @@ esac
 
 
 sleep 1
-#waitForSlurm.sh dispin
-waitForCondor.sh
+waitForSlurm.sh dispin
+# waitForCondor.sh
 
 sleep 1
 catSpinroot.exe

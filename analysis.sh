@@ -1,9 +1,8 @@
 #!/bin/bash
 
-if [ $# -lt 1 ]; then echo "USAGE: $0 [set_number] [outroot dir]"; exit; fi
+if [ $# -lt 2 ]; then echo "USAGE: $0 [set_number] [outroot dir]"; exit; fi
 setnum=$1
-outrootDir=outroot
-if [ $# -ge 2 ]; then outrootDir=$2; fi
+outrootDir=$2
 
 case $setnum in
   1)
@@ -26,8 +25,8 @@ esac
 
 
 sleep 1
-#waitForSlurm.sh dispin
-waitForCondor.sh
+waitForSlurm.sh dispin
+# waitForCondor.sh
 
 sleep 1
 catSpinroot.exe
