@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# do an asymmetry fit using the old RooFit MLM implementation
+# cf. `analysisBru.sh`
+
 if [ $# -lt 2 ]; then echo "USAGE: $0 [set_number] [outroot dir]"; exit; fi
 setnum=$1
 outrootDir=$2
@@ -25,7 +28,7 @@ esac
 
 
 sleep 1
-waitForSlurm.sh dispin
+waitForSlurm.sh dispin_buildSpinroot
 # waitForCondor.sh
 
 sleep 1
