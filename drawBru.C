@@ -287,6 +287,15 @@ void drawBru(
   //   };
   // };
 
+  printf("=========================================\n");
+  printf("NOTE: check the 'status' plot, where:\n");
+  printf("  0 : No issues\n");
+  printf("  1 : Covariance was made pos defined\n");
+  printf("  2 : Hesse is invalid\n");
+  printf("  3 : Edm is above max\n");
+  printf("  4 : Reached call limit\n");
+  printf("  5 : Covariance is not positive defined\n");
+  printf("=========================================\n");
 };
 
 
