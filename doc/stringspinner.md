@@ -38,7 +38,7 @@ root -b -q CompareDiagnosticsDists.C'("plots.sss.root","plots.mcgen.root","diagc
 
 Fit and plot asymmetries
 ```bash
-finalFit_stringspinner.sh
+analysis_stringspinner.sh
 finalPlot_stringspinner.sh
 ```
 

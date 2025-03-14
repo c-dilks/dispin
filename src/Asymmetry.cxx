@@ -9,6 +9,7 @@ Asymmetry::Asymmetry(Binning * binScheme, Int_t binNum) {
   debug = true;
   extendMLM = false; // if true, MLM fit will be extended
   yieldLimit = 1e6; // upper bound for extended MLM's yield parameter
+  writeSpinToCatTreeMC = false; // if true, write `Spin_idx` to MC catTree, 50/50 random
   ///////////////////////
 
 
@@ -374,6 +375,7 @@ Asymmetry::Asymmetry(Binning * binScheme, Int_t binNum) {
   treeActivated = false;
   injectAsym = false;
   IM = nullptr;
+  RNG = new TRandom(); // for spin in MC catTree
 
   if(debug) {
     printf("whichDim = %d\n",whichDim);
@@ -460,8 +462,13 @@ Bool_t Asymmetry::AddEvent(EventTree * ev) {
   if(theta<0 || theta>PI) return KickEvent("theta out of range",theta);
 
   // set spin state
-  spinn = ev->SpinState();
-  if(spinn<0 || spinn>=nSpin) return false;
+  if(isMC && writeSpinToCatTreeMC) { // if MC, and we want to put a spin in the catTree, use 50/50 random spin
+    auto rn = RNG->Uniform(); // \in [0,1]
+    spinn = rn < 0.5 ? sM : sP; // 50/50 random
+  } else { // otherwise use the data as is
+    spinn = ev->SpinState();
+    if(spinn<0 || spinn>=nSpin) return false;
+  }
 
   // set polarization
   pol = ev->Polarization();
@@ -1396,11 +1403,12 @@ Bool_t Asymmetry::KickEvent(TString reason,Float_t badValue) {
 
 
 // activate catTree (for bruFit)
-void Asymmetry::ActivateTree(Bool_t isMC, InjectionModel *IM_) {
+void Asymmetry::ActivateTree(Bool_t isMC_, InjectionModel *IM_) {
   if(IM_!=nullptr) {
     IM = IM_;
     injectAsym = true;
   };
+  isMC = isMC_;
   // TODO: (low priority) use the new CatTree class
   tree = new TTree("tree","tree");
   tree->Branch("PhiH",&tree_PhiH,"PhiH/D");
@@ -1427,9 +1435,9 @@ void Asymmetry::ActivateTree(Bool_t isMC, InjectionModel *IM_) {
   tree->Branch("Weight",&tree_Weight,"Weight/D");
   tree->Branch("Pol",&tree_Pol,"Pol/D");
   tree->Branch("PolErr",&tree_PolErr,"PolErr/D");
-  if(!isMC) {
+  if(!isMC || writeSpinToCatTreeMC)
     tree->Branch("Spin_idx",&tree_Spin_idx,"Spin_idx/I");
-  } else {
+  if(isMC) {
     tree->Branch("diphIsMCpi0",&tree_diphIsMCpi0,"diphIsMCpi0/O");
     tree->Branch("diphMCmatchDist",&tree_diphMCmatchDist,"diphMCmatchDist/D");
   };

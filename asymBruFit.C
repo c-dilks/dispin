@@ -44,6 +44,14 @@ void asymBruFit(
   DecodePairType(pairType,whichHad[qA],whichHad[qB]);
   Bool_t usePWexpansion = !( whichHad[qA]==kDiphBasic || whichHad[qB]==kDiphBasic ); // if there's a diphoton, sWeights may cause difficulty in PW fits, since M_gg correlates with theta
   printf("\nFit with %s\n\n", usePWexpansion ? "FULL PARTIAL WAVE EXPANSION" : "AZIMUTHAL MODULATIONS ONLY");
+  //
+  //
+  // TEST ///////////////
+  usePWexpansion = false; // turn off theta dependence
+  mcTree = ""; // turn off acceptance correction
+  // TEST ///////////////
+  //
+  //
   if(usePWexpansion) {
     // all A_LU partial waves up to L=Lmax
     const Int_t Lmax = 2;

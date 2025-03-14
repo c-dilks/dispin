@@ -51,6 +51,7 @@ void CompareCatTreeDists(
   CompareDist("X","x");
   CompareDist("Z","z");
   CompareDist("Q2","Q^{2} [GeV^{2}]");
+  CompareDist("Y","y");
   CompareDist("PhPerp","p_{T} [GeV]");
   CompareDist("PhiH","#phi_{h}");
   CompareDist("PhiR","#phi_{R}");
@@ -58,6 +59,11 @@ void CompareCatTreeDists(
   CompareDist("XF","x_{F}");
   CompareDist("Mmiss","M_{X}");
   CompareDist("DYsgn","#Delta Y_{h}");
+  CompareDist("Depol2","Depol. C/A");
+  CompareDist("Depol3","Depol. W/A");
+  CompareDist("DepolA","Depol. A");
+  CompareDist("DepolC","Depol. C");
+  CompareDist("DepolW","Depol. W");
   // CompareDist("diphM","M_{#gamma#gamma} [GeV]");
 };
 

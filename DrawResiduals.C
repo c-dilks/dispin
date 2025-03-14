@@ -49,7 +49,7 @@ void DrawResiduals(TString DirName,TString Var,TString minimizer_){
     TFile* fileR=new TFile(DirName+"/"+DataBins->GetBinName(ib)+"/"+resultsFileN);
     if(!fileR->IsOpen()) continue;
 
-    for(TString varName : {"PhiH","PhiR","Theta"}) {
+    for(TString varName : {"PhiH","PhiR","Theta", "Depol2", "Depol3", "Pol"}) {
       TString canvN = DataBins->GetBinName(ib)+"_"+varName;
       cout << "GET " << canvN << endl;
       TCanvas *canv = (TCanvas*)fileR->Get(canvN);
