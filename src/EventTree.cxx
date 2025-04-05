@@ -299,7 +299,7 @@ EventTree::EventTree(TString filelist_, Int_t whichPair_, CutVersion cutVer_) :
 
 
 void EventTree::GetEvent(Long64_t i) {
-  if(i%10000==0) printf("[+] %.2f%%\n",100*(float)i/((float)ENT));
+  if(i%10000==0) printf("[+] %.2f%%\n",100*(double)i/((double)ENT));
 
   chain->GetEntry(i);
 
@@ -758,7 +758,7 @@ Bool_t EventTree::CheckSampFrac() {
       // sfSigma[0][0] = 0.0116;  sfSigma[0][1] = 0.0155;  sfSigma[0][2] = 0.0115;  sfSigma[0][3] = 0.0104;  sfSigma[0][4] = 0.0145;  sfSigma[0][5] = 0.0085;
       // sfSigma[1][0] = 0.2024;  sfSigma[1][1] = 0.2095;  sfSigma[1][2] = 0.1564;  sfSigma[1][3] = 0.1989;  sfSigma[1][4] = 0.0470;  sfSigma[1][5] = 0.2886;
       // sfSigma[2][0] = -0.2808; sfSigma[2][1] = -0.3066; sfSigma[2][2] = 0.1420;  sfSigma[2][3] = 0.3124;  sfSigma[2][4] = 1.1334;  sfSigma[2][5] = -0.4543;
-      // // based on run 11483
+      // // based on run 11483 // PREFERRED //
       sfMu[0][0]    = 0.2433;  sfMu[0][1]    = 0.2421;  sfMu[0][2]    = 0.2415;  sfMu[0][3]    = 0.2486;  sfMu[0][4]    = 0.2419;  sfMu[0][5]    = 0.2447;
       sfMu[1][0]    = -0.8052; sfMu[1][1]    = -1.0495; sfMu[1][2]    = -1.1747; sfMu[1][3]    = -0.5170; sfMu[1][4]    = -0.6840; sfMu[1][5]    = -0.9022;
       sfMu[2][0]    = 5.2750;  sfMu[2][1]    = 4.4886;  sfMu[2][2]    = 4.4935;  sfMu[2][3]    = 5.9044;  sfMu[2][4]    = 5.6716;  sfMu[2][5]    = 4.9288;
