@@ -28,7 +28,7 @@ if(args.length>=3) inHipoType = args[2]
 if(args.length>=4) setHelicity = args[3].toInteger()
 ////////////////////////
 // OPTIONS
-def verbose = 0
+def verbose = false
 def allowLikePairs = false // if true, allows dihadrons with same PDGs, e.g., (pi+,pi+)
 hadPIDlist = [ 211, -211 ] // list of hadron PIDs which will be paired
 //hadPIDlist += [ 2212 ] // proton, antiproton
@@ -630,19 +630,17 @@ inHipoList.each { inHipoFile ->
       eleTree = growParticleTree(pids,disLeptonID)
       //if(verbose) { println "----- eleTree:"; println eleTree; }
 
-      // skip event if no electron found
-      if(eleTree.size()==0) continue
-
-
-      // CUT: choose maximum energy electron branch (only needed if more than
-      //      one candidate DIS electron was found)
-      eleDIS = eleTree.max{it.particle.e()}
       // CUT: electron must be in FD trigger
-      if(!useMCgen) {
-        if(eleDIS.status <= -3000 || eleDIS.status > -2000) continue
+      def eleTreeFDtrigger = useMCgen ? eleTree : eleTree.findAll{it.status > -3000 && it.status <= -2000}
+
+      // skip event if no electron found
+      if(eleTreeFDtrigger.size()==0) {
+        continue
       }
 
-      if(verbose) { println "----- eleDIS:"; println eleDIS.particle; }
+      // CUT: choose maximum energy electron
+      eleDIS = eleTreeFDtrigger.max{it.particle.e()}
+      if(verbose) { println "----- eleDIS at row ${eleDIS.row}:"; println eleDIS.particle; }
 
 
       //------------------------------
