@@ -89,7 +89,7 @@ class Asymmetry : public TObject
     void AppendData(TFile * tf);
     TString AppFileName(TFile * tf);
 
-    void ActivateTree(Bool_t isMC=false, InjectionModel *IM_=nullptr);
+    void ActivateTree(Bool_t isMC_=false, InjectionModel *IM_=nullptr);
 
     Double_t nEvents;
 
@@ -97,6 +97,7 @@ class Asymmetry : public TObject
     Bool_t successIVmode;
     Bool_t debug;
     Bool_t extendMLM;
+    Bool_t isMC{false};
     Double_t yieldLimit;
 
     Binning * BS;
@@ -321,6 +322,8 @@ class Asymmetry : public TObject
     Int_t tree_SpinMC_idx[EventTree::NumInjectionsMax];
 
     Bool_t treeActivated;
+    TRandom * RNG;
+    Bool_t writeSpinToCatTreeMC;
 
     InjectionModel *IM;
     Bool_t injectAsym;
