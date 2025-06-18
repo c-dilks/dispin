@@ -178,8 +178,11 @@ class QADBConfig {
         // 6168,    // low lumi run, 10 nA
         // 6169,    // low lumi run, 10 nA
         // 6170,    // low lumi run, 10 nA
+        6190,    // Run ended due to bug in trig file // no impact on pion BSA
         // 6199,    // production run - short - lot of beam trips // very short run
         // 6208,    // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
+        6219,    // FT alarm: B_DET_FTT_FEU:NActivecrates https://logbooks.jlab.org/entry/3652961. 3 NActive cates: https://logbooks.jlab.org/entry/3652984 // no impact on pion BSA
+        6220,    // FT alarm: B_DET_FTT_FEU:NActivecrates https://logbooks.jlab.org/entry/3652961. 3 NActive cates: https://logbooks.jlab.org/entry/3652984 // no impact on pion BSA
         // 6222,    // production. Lots of beam trips and MVT channel trips. // reject for safety, pion BSA statistics are rather low
         // 6226,    // low lumi run, 5 nA
         // 6227,    // low lumi run, 15 nA
@@ -187,32 +190,48 @@ class QADBConfig {
         // 6262,    // empty target run
         // 6263,    // empty target run
         // 6265,    // band harp wire run
+        // 6266,    // possibly a test run after vtp libraries changed // very short run
         // 6287,    // mmft1 ROC issue; no helicity info
         6298,    // Production with new trigger configuration, current started at 35 nA, then increased to 50 nA // pion BSA looks fine
+        // 6310,    // slight decrease in N/F for sector 2 // reject for safety
         // 6322,    // low lumi run, 5 nA
         // 6323,    // low lumi run, 5 nA
         // 6342,    // alignment run
-        // 6346,    // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
+        // 6346,    // FC charge issue at beginning of run; slight decrease in N/F for sector 3 // reject for safety
         // 6350,    // empty target run
         // 6356,    // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
-        // 6357,    // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
+        // 6357,    // FC charge issue at beginning of run; unstable yield, possibly due to 5 nA beam current // reject, since N/F is not correct; Misc defect bits are assigned only for the first few QA bins
+        6363,    // beam current at 40 nA instead of the usual 50 nA
         // 6371,    // low lumi run, 5 nA
         // 6373,    // low lumi run, 5 nA
         // 6374,    // low lumi run, 5 nA
+        6378,    // only run with correct HWP sign, therefore pion BSA and helicity sign are correct // the helicity sign is automatically corrected in this analysis, using the QADB
         // 6385,    // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
-        // 6386,    // no helicity info for QA bins 15 to 60 // reject, even though lack of helicity info will also omit these data
+        // 6386,    // no helicity info for QA bins 15 to 60; both N and F are very low, but N/F looks normal; unknown cause // reject since no helicity info
         // 6389,    // empty target run
         6396,    // no MVT1 // pion BSA looks normal
-        // 6446,    // low lumi run, 5 nA
+        6420,    // Lower yields sector 6; DC sector 6 channel issues? // the sector-6 yield is only slightly lower
+        // 6431,    // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
+        6437,    // sector 2 yields slightly low, possibly due to dead ECout v strips; see https://logbooks.jlab.org/entry/3665957 // the sector-2 yield is only slightly lower
+        6442,    // sector 2 yields slightly low, possibly due to dead ECout v strips; see https://logbooks.jlab.org/entry/3665957 // the sector-2 yield is only slightly lower
+        6443,    // sector 2 yields slightly low, possibly due to dead ECout v strips; see https://logbooks.jlab.org/entry/3665957 // the sector-2 yield is only slightly lower
+        6444,    // sector 2 yields slightly low, possibly due to dead ECout v strips; see https://logbooks.jlab.org/entry/3665957 // the sector-2 yield is only slightly lower
+        6445,    // sector 2 yields slightly low, possibly due to dead ECout v strips; see https://logbooks.jlab.org/entry/3665957 // the sector-2 yield is only slightly lower
+        // 6446,    // low lumi run, 5 nA; sector 4 went down for the last several QA bins
         // 6447,    // low lumi run, 5 nA
         // 6448,    // low lumi run, 5 nA
         // 6455,    // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
+        // 6460,    // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
+        // 6466,    // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
+        // 6470,    // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
         // 6472,    // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
         // 6476,    // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
         6548,    // many QA bins have low fraction of events with helicity info, starting from QA bin 31 // pion BSA looks normal
-        // 6551,    // mmft1 ROC busy; no helicity info
-        // 6561,    // unstable beam current in Hall B; beam tune to Hall C // very short run anyway
+        // 6551,    // mmft1 ROC busy; no helicity info; probably junk
+        // 6557,    // N/F slightly lower for sector 6, from QA bin 75 onward // reject for safety, and the Misc defect bit only applies to part of the run
+        // 6561,    // unstable beam current in Hall B; beam tune to Hall C; missing DC channels; junk // very short run anyway
         // 6562,    // beam current started at 40 nA, but was increased to 50 nA for the last 1/4 of the run // reject since pion BSA looks too small (but also its statistics are poor)
+        // 6591,    // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
         // 6596,    // PCAL and ECAL TDC ROCS for sector 5 give error messages // reject, sector 5 is a total outlier for the entire run
         // 6599,    // empty target run
         // 6601,    // empty target run
@@ -222,9 +241,11 @@ class QADBConfig {
         // 11117,   // low lumi run, 7 nA
         // 11119,   // empty target run
         // 11120,   // low lumi run, 7 nA
-        // 11132,   // N/F a bit higher than usual // not clear why, reject for safety
-        // 11143,   // FC charge issue // reject, since N/F is not correct; it's just the first few QA bins anyway
-        // 11162,   // FC charge issue // reject, since N/F is not correct; it's just the first few QA bins anyway
+        // 11121,   // mild reduction in N/F for sector 2 // reject for safety, it is only the last part of the run
+        11126,   // Lower beam current; Running briefly at 20nA instead of 40nA // pion BSA looks normal
+        11132,   // Higher normalized yields this run due to slightly smaller FC charge readouts // pion BSA looks normal
+        // 11143,   // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
+        // 11162,   // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
         // 11195,   // trigger bit alarm // reject, since only affects the last few QA bins
         // 11200,   // low lumi run, 7 nA
         // 11201,   // low lumi run, 7 nA
@@ -233,40 +254,53 @@ class QADBConfig {
         // 11206,   // low lumi run, 7 nA
         // 11207,   // low lumi run, 7 nA
         // 11210,   // low lumi run, 20 nA
+        // 11221,   // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
         // 11244,   // test run
-        // 11287,   // update trigger file to add FT triggers // very short run
+        // 11269,   // Small reduction in N/F for sector 2 // reject for safety, it is only the last part of the run
+        // 11287,   // update trigger file to add FT triggers // already excluded, since this is a run in the 4 GeV inbending period
 
-        /* rgb.inbending.sp20 */
-        // 11323,   // low lumi run, 5 nA
-        // 11324,   // low lumi run, 10 nA
-        // 11325,   // low lumi run, 10 nA
-        // 11326,   // Short run at 30 nA to make sure DAQ is good // lower current than normal; pion BSA has poor statistics; reject for safety
-        // 11327,   // 50 nA production run - lots of problems with DC HV trips // higher current seems to have caused several DC trips; reject, since this is a short run anyway
-        // 11336,   // low livetime (0.8) for most of the run; fraction of events with defined helicity is low // very little beam time, poor pion BSA statistics
-        11338,   // low livetime (0.7-0.8) for most of the run; fraction of events with defined helicity is low // pion BSA looks normal
-        // 11340,   // beam modulation problems
-        // 11341,   // beam modulation problems
-        // 11342,   // beam modulation problems; bad trigger timing; fraction of events with defined helicity is low
-        // 11345,   // low livetime (0.7) for most of the run; fraction of events with defined helicity is low // reject, pion BSA looks way too high
-        // 11347,   // varied beam current
-        // 11348,   // continued RF phase tuning
-        // 11352,   // RF phase tuning
-        // 11354,   // RF phase tuning; fraction of events with defined helicity is low
-        // 11356,   // RF phase tuning; varied beam current;fraction of events with defined helicity is low
-        // 11357,   // low livetime (0.75) for most of the run; fraction of events with defined helicity is low // reject, since still beam tuning
-        // 11358,   // low livetime (0.8) for most of the run; fraction of events with defined helicity is low // reject, since still beam tuning
-        // 11361,   // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first several QA bins anyway
-        // 11372,   // used different trigger file, rgb_v9_1.cnf; N/F lower than usual; Beam current changed to 50 nA
+        /* rgb.inbending.wi20 */
+        // 11323,   // low lumi run, 5 nA; during setup period
+        // 11324,   // low lumi run, 10 nA; during setup period
+        // 11325,   // low lumi run, 10 nA; during setup period
+        // 11326,   // Short run at 30 nA to make sure DAQ is good; during setup period
+        // 11327,   // 50 nA production run - lots of problems with DC HV trips; during setup period
+        // 11328,   // during setup period
+        // 11329,   // low lumi run, 20 nA; during setup period
+        // 11330,   // low lumi run, 20 nA; during setup period
+        // 11331,   // Taken during spin dance (20nA); during setup period
+        // 11336,   // low livetime (0.8) for most of the run; fraction of events with defined helicity is low; during setup period
+        // 11338,   // low livetime (0.7-0.8) for most of the run; fraction of events with defined helicity is low; during setup period
+        // 11339,   // during setup period
+        // 11340,   // beam modulation problems; during setup period
+        // 11341,   // beam modulation problems; during setup period
+        // 11342,   // beam modulation problems; bad trigger timing; fraction of events with defined helicity is low; during setup period
+        // 11345,   // low livetime (0.7) for most of the run; fraction of events with defined helicity is low; during setup period
+        // 11347,   // varied beam current; RF phase tuning; during setup period
+        // 11348,   // continued RF phase tuning; during setup period
+        // 11352,   // RF phase tuning; during setup period
+        // 11354,   // RF phase tuning; fraction of events with defined helicity is low; during setup period
+        // 11356,   // RF phase tuning; varied beam current; during setup period; fraction of events with defined helicity is low; during setup period
+        // 11357,   // low livetime (0.75) for most of the run; fraction of events with defined helicity is low; during setup period
+        // 11358,   // low livetime (0.8) for most of the run; fraction of events with defined helicity is low; during setup period
+        // 11361,   // FC charge issue at beginning of run; during setup period
+        // 11362,   // slight decrease in N/F for sector 3 // reject for safety, it is only the last part of the run
+        // 11364,   // slight decrease in N/F for sector 4 // reject for safety, it is only the last part of the run
+        // 11372,   // used different trigger file, rgb_v9_1.cnf; N/F lower than usual; Beam current changed to 50 nA // reject for safety
         // 11394,   // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
         // 11395,   // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
+        // 11414,   // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
+        // 11421,   // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
         // 11444,   // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
         // 11485,   // low lumi run, 10 nA
         // 11486,   // low lumi run, 10 nA
         // 11487,   // low lumi run, 10 nA
-        // 11502,   // beam current oscillations: https://logbooks.jlab.org/entry/3770100
+        // 11502,   // beam current oscillations: https://logbooks.jlab.org/entry/3770100 // reject for safety
+        // 11505,   // FC charge issue at beginning of run // reject, since N/F is not correct; it's just the first few QA bins anyway
         // 11521,   // Bad beam quality: Multiple DC channel trips due to beam current spikes
-        // 11544,   // poor beam current stability
-        // 11548    // the beam is pretty awful and this run is junk, says the logbook
+        // 11544,   // poor beam current stability // reject for safety
+        // 11548,   // the beam is pretty awful and this run is junk, says the logbook
+        // 11557,   // beam steering issues, causing increased F and a bit of variation in N/F // reject for safety
       };
 
       //////////////////////////////////////////////////////////////////////////////////
