@@ -409,9 +409,6 @@ void EventTree::GetEvent(Long64_t i) {
 
 
   // Helicity cuts
-  // -- correct the helicity, if not MC (based on single pi+ BSA QA timelines)
-  if(!useMCrec && !useMCgen && !useStringSpinner)
-    helicity *= qa->CorrectHelicitySign(runnum, evnum);
   // -- check if helicity is defined
   sps = this->SpinState();
   cutHelicity = sps==sP || sps==sM;

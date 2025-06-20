@@ -18,6 +18,9 @@
 #include "src/FiducialCuts.h"
 #include "src/Dihadron.h"
 
+// other
+#include <QADB.h>
+
 
 enum parEnum {kEle,kHadA,kHadB,nPar};
 TFile * diskimFile;
@@ -75,6 +78,7 @@ int main(int argc, char** argv) {
   RNG = new TRandomMixMax(0); // use UUID seed
   evnumTmp = -10000;
   beamEtmp = 0.0;
+  auto qa = std::make_unique<QA::QADB>(QADB_COOK); // for helicity sign correction
 
   // open diskim file
   diskimFile = new TFile(infileN,"READ");
@@ -116,7 +120,7 @@ int main(int argc, char** argv) {
 
   // define branch vars
   // - event branch vars
-  Int_t runnum, evnum, helicity;
+  Int_t runnum, evnum, helicity_original, helicity_corrected;
   // - particle branch vars; array index corresponds to parEnum
   Int_t   Row[nPar]; Int_t   genRow[nPar];
   Int_t   Pid[nPar]; Int_t   genPid[nPar];
@@ -144,7 +148,7 @@ int main(int argc, char** argv) {
   // - event branches
   ditr->SetBranchAddress("runnum",&runnum);
   ditr->SetBranchAddress("evnum",&evnum);
-  ditr->SetBranchAddress("helicity",&helicity);
+  ditr->SetBranchAddress("helicity",&helicity_original);
   // - particle branches
   for(int p=0; p<nPar; p++) {
     // - particle info
@@ -319,7 +323,7 @@ int main(int argc, char** argv) {
   // - event-level branches
   outrootTr->Branch("runnum",&runnum,"runnum/I");
   outrootTr->Branch("evnum",&evnum,"evnum/I");
-  outrootTr->Branch("helicity",&helicity,"helicity/I");
+  outrootTr->Branch("helicity",&helicity_corrected,"helicity/I");
 
 
   // - MC branches: generated matched to reconstructed
@@ -522,6 +526,11 @@ int main(int argc, char** argv) {
       };
     }; // end MC info
 
+    // correct the helicity, if not MC (based on single pi+ BSA QA timelines)
+    if(!useMCrec && !useMCgen && !useStringSpinner)
+      helicity_corrected = helicity_original * qa->CorrectHelicitySign(runnum, evnum);
+    else
+      helicity_corrected = helicity_original;
 
     // fill the outroot tree
     outrootTr->Fill();
