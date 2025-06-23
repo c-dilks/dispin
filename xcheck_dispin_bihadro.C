@@ -17,4 +17,5 @@ void xcheck_dispin_bihadro(TString infileN = "outroot.test_zone/nSidis_005032.hi
   infile->Close();
   outfile->Close();
   TFile* readfile = new TFile(outfile_name, "READ");
+  new TBrowser();
 }
