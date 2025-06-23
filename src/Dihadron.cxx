@@ -89,10 +89,8 @@ void Dihadron::CalculateKinematics(
   
 
   // compute missing mass
-  // - very rarely, vecMmiss is spacelike and has negative mass; thus
-  //   we take the absolute value for positive definite Mmiss
   vecMmiss = disVecW - vecPh;
-  Mmiss = TMath::Abs(vecMmiss.M());
+  Mmiss = vecMmiss.M(); // preserves the sign of MX2
 
   // compute opening angle
   alpha = Tools::AngleSubtend(pHad[qA],pHad[qB]);
