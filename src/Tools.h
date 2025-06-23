@@ -200,7 +200,7 @@ class Tools {
     // returns vA projected onto vB
     static TVector3 Project(TVector3 vA, TVector3 vB) {
 
-      if(fabs(vB.Dot(vB))<0.0001) {
+      if(!(std::abs(vB.Dot(vB))>0)) {
         //fprintf(stderr,"WARNING: Tools::Project to null vector\n");
         return TVector3(0,0,0);
       };
@@ -213,7 +213,7 @@ class Tools {
     // returns vC projected onto plane transverse to vD
     static TVector3 Reject(TVector3 vC, TVector3 vD) {
 
-      if(fabs(vD.Dot(vD))<0.0001) {
+      if(!(std::abs(vD.Dot(vD))>0)) {
         //fprintf(stderr,"WARNING: Tools::Reject to null vector\n");
         return TVector3(0,0,0);
       };
