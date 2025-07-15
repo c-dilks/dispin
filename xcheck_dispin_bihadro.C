@@ -1,5 +1,5 @@
 // cross check old code (dispin) with new code (bihadro)
-void xcheck_dispin_bihadro(TString infileN = "outroot.test_zone/nSidis_005032.hipo.root") {
+void xcheck_dispin_bihadro(TString infileN = "outroot.test_zone/nSidis_006666.hipo.root") {
 
   // open ROOT file
   auto infile = new TFile(infileN, "READ");
