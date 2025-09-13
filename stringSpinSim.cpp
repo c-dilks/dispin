@@ -252,6 +252,9 @@ int main(int argc, char** argv) {
       continue;
 
     // get kT (transverse momentum of the parton)
+    //
+    // FIXME: this algorithm needs validation !!!
+    //
     int row_init_ele    = -1;
     int row_init_parton = -1;
     kT = UNDEF;
