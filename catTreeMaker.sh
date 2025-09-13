@@ -72,3 +72,11 @@ ${ROOTSYS}/bin/hadd $outfile spinroot/tree*.root
 
 # add index variable
 root -b -q IndexCatTree.C'("'$outfile'")'
+
+# remove the non-indexed catTree file
+rm -v $outfile
+
+# move the catTree file to catTrees/, if it exists
+outdir=catTrees
+outfileIdx=$(echo $outfile | sed 's;\.root$;.idx.root;')
+[ -d "$outdir" ] && mv -v $outfileIdx $outdir/

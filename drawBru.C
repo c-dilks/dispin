@@ -96,7 +96,8 @@ void drawBru(
             fprintf(stderr,"ERROR: too many params\n"); return; };
           paramName = (*(paramSet->get()))[i]->GetName();
           if(paramName=="NLL") continue;
-          if(paramName.Contains("Yld")) moduList[nParams] = nullptr;
+          else if(paramName.Contains("Yld")) moduList[nParams] = nullptr;
+          else if(paramName == "status")     moduList[nParams] = nullptr;
           else moduList[nParams] = new Modulation(paramName);
           paramList[nParams] = paramName;
           printf("param %d:  %s\n",nParams,paramList[nParams].Data());
@@ -111,7 +112,8 @@ void drawBru(
         fprintf(stderr,"WARNING: ResultTree does not have 1 entry\n");
       for(int i=0; i<nParams; i++) {
         BB->GetResultTree()->SetBranchAddress(paramList[i],&(BB->paramVal[i]));
-        BB->GetResultTree()->SetBranchAddress(paramList[i]+"_err",&(BB->paramErr[i]));
+        if(paramList[i] != "status")
+          BB->GetResultTree()->SetBranchAddress(paramList[i]+"_err",&(BB->paramErr[i]));
         BB->GetResultTree()->GetEntry(0);
       };
 
@@ -123,7 +125,7 @@ void drawBru(
           BB->GetMcmcTree()->SetBranchAddress(paramList[i],&paramval[i]);
         };
         for(int i=0; i<nParams; i++) {
-          vTitle = moduList[i] ? moduList[i]->AsymmetryTitle() : "N";
+          vTitle = moduList[i] ? moduList[i]->AsymmetryTitle() : paramList[i];
           BB->GetParamVsSampleHist(i)->SetTitle(
             vTitle+" vs. MCMC sample"/*;sample;"+vTitle*/);
           BB->GetParamVsSampleHist(i)->GetXaxis()->SetLabelSize(axisTitleSize);
@@ -181,7 +183,7 @@ void drawBru(
       // define graph
       paramGr[i] = new TGraphErrors();
       paramGr[i]->SetName("gr_"+paramList[i]+blStr);
-      vTitle = moduList[i] ? moduList[i]->AsymmetryTitle() : "N";
+      vTitle = moduList[i] ? moduList[i]->AsymmetryTitle() : paramList[i];
       paramGr[i]->SetTitle(vTitle+" vs. "+hTitle/*+";"+hTitle+";"+vTitle*/);
       paramGr[i]->GetXaxis()->SetLabelSize(axisTitleSize);
       paramGr[i]->GetYaxis()->SetLabelSize(axisTitleSize);
@@ -285,6 +287,15 @@ void drawBru(
   //   };
   // };
 
+  printf("=========================================\n");
+  printf("NOTE: check the 'status' plot, where:\n");
+  printf("  0 : No issues\n");
+  printf("  1 : Covariance was made pos defined\n");
+  printf("  2 : Hesse is invalid\n");
+  printf("  3 : Edm is above max\n");
+  printf("  4 : Reached call limit\n");
+  printf("  5 : Covariance is not positive defined\n");
+  printf("=========================================\n");
 };
 
 

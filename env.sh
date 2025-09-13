@@ -8,6 +8,7 @@ else
 fi
 export BRUFIT=${DISPIN_HOME}/deps/brufit
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${BRUFIT}/lib
+export PATH=$DISPIN_HOME:$PATH
 
 # kludge to set JAVA_HOME, which is only needed for j2root
 [ -z "$JAVA_HOME" ] && export JAVA_HOME=$(realpath $(dirname $(realpath $(which java)))/..)

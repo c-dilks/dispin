@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# do an asymmetry fit using the old RooFit MLM implementation
-# cf. `analysisBru.sh`
-
 if [ $# -lt 2 ]; then echo "USAGE: $0 [set_number] [outroot dir]"; exit; fi
 setnum=$1
 outrootDir=$2
@@ -28,22 +25,23 @@ esac
 
 
 sleep 1
-waitForSlurm.sh dispin_buildSpinroot
+waitForSlurm.sh dispin
 # waitForCondor.sh
 
 sleep 1
 catSpinroot.exe
 
 sleep 1
-fitmode=9 # L<=2
+fitmode=42 # |m|<=2
+#fitmode=8001 # |m|<=2 + DSIDIS mods
 
-# chi2 fit (possibly not applicable for partial wave fits)
-#asymFit.exe $fitmode 2 | tee spinroot/fitOutput_chi2.txt
-#pushd spinroot
-#mv asym_${fitmode}{,_chi2}.root
-#mv table_${fitmode}{,_chi2}.dat
-#for file in multi*.png; do mv $file result_chi2_${file}; done
-#popd
+# chi2 fit
+asymFit.exe $fitmode 2 | tee spinroot/fitOutput_chi2.txt
+pushd spinroot
+mv asym_${fitmode}{,_chi2}.root
+mv table_${fitmode}{,_chi2}.dat
+for file in multi*.png; do mv $file result_chi2_${file}; done
+popd
 
 # ML fit
 asymFit.exe $fitmode 0 | tee spinroot/fitOutput_mlm.txt
@@ -54,7 +52,7 @@ for file in multi*.png; do mv $file result_mlm_${file}; done
 popd
 
 sleep 1
-mkdir -p spinroot_pw_${setnum}
-rm -r spinroot_pw_${setnum}
-mkdir -p spinroot_pw_${setnum}
-mv spinroot/* spinroot_pw_${setnum}/
+mkdir -p spinroot_final_${setnum}
+rm -r spinroot_final_${setnum}
+mkdir -p spinroot_final_${setnum}
+mv spinroot/* spinroot_final_${setnum}/
